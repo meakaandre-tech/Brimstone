@@ -28,12 +28,13 @@
     },
     {
       "id": "sift",
-      "title": "The Sift (Mielon's The Sift dimension; its own clock pinned too)",
+      "title": "The Sift (Mielon's The Sift dimension; its own clock and weather pinned too)",
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
         "execute in the_sift:the_sift run tp @a 0.5 200 0.5 45 20",
         "execute in the_sift:the_sift run time set 6000",
+        "execute in the_sift:the_sift run weather clear",
         "#wait 6",
         "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20"
       ]
