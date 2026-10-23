@@ -25,7 +25,7 @@ the window, vertex formats and render targets.
   `opengl` or `vulkan` (Video Settings: "Graphics API").
 - `PreferredGraphicsApi.getBackendsToTry()`: `vulkan` tries **Vulkan, then OpenGL**; `default` and `opengl` try
   **OpenGL, then Vulkan**.
-- In the `Minecraft` constructor: a launch argument (`GameConfig.GameData.forcedGraphicsApi`) overrides the option
+- In the `Minecraft` constructor: the launch argument `--graphicsBackend` (`GameConfig.GameData.forcedGraphicsApi`) overrides the option
   ("Graphics backend forced to {} by launch argument"). If the last start-up crashed, the option is reset (to
   `default`, or forced to `opengl`). With `default` it also asks `VulkanBackend.checkBackendAvailable()` up front.
   Then for each backend in order: `loadLibrary()`, `createDevice()`; on failure it logs "Failed to create backend

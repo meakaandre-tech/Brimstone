@@ -80,8 +80,9 @@ n=0
 for g in $groups; do
   n=$((n+1))
   rd=${g%%:*}; ids=$(echo "${g#*:}" | tr ',' ' ')
+  # clouds off: their position follows elapsed game time, which differs between runs, so they would only add noise
   # no version line: the file is datafixed from the oldest layout, where key codes are LWJGL2 numbers (22 = U)
-  printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nkey_key.use:22\n' "$rd" > run/options.txt
+  printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nkey_key.use:22\n' "$rd" > run/options.txt
   rm -f run/logs/latest.log
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)

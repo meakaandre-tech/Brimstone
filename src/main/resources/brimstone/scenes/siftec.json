@@ -15,13 +15,13 @@
       "id": "factory",
       "title": "SIFTEC factory: the buildings_a row of work-package-5 buildings",
       "renderDistance": 8,
-      "settleSeconds": 25,
+      "settleSeconds": 45,
       "setup": [
-        "execute in minecraft:overworld run tp @a 1240.5 200 1040.5 180 22",
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
         "#wait 6",
         "siftec worldtest buildings_a view 0",
         "#wait 4",
-        "execute in minecraft:overworld run tp @a 1240.5 200 1040.5 180 22"
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
       ]
     },
     {
@@ -42,6 +42,7 @@
       "settleSeconds": 8,
       "setup": [
         "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
         "execute in minecraft:overworld run tp @a 24.5 200 27.5 180 22",
         "#wait 5",
         "siftec worldtest hubui"
@@ -59,6 +60,7 @@
       "settleSeconds": 8,
       "setup": [
         "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
         "execute in minecraft:overworld run tp @a 2200.5 201 -1996.5 180 21",
         "#wait 5",
         "fill 2195 200 -2005 2205 200 -1995 minecraft:stone_bricks",

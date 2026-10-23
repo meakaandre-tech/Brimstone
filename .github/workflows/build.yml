@@ -192,9 +192,9 @@ jobs:
         id: compare
         shell: bash
         run: |
-          pip install --quiet --break-system-packages pillow numpy
           set +e
-          python3 -I ci/compare.py /tmp/res /tmp/ci/compare
+          python3 -m pip install --quiet --break-system-packages pillow numpy
+          python3 ci/compare.py /tmp/res /tmp/ci/compare
           echo "status=$?" >> "$GITHUB_OUTPUT"
           cat /tmp/ci/compare/report.md >> "$GITHUB_STEP_SUMMARY"
       - name: Publish logs, bench results and screenshots to the ci-logs branch

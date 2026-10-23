@@ -53,10 +53,11 @@ def main():
         shot = os.path.join(out, "shots", sid + ".png")
         subprocess.run(["import", "-window", "root", shot], check=False)
         entry["shot"] = os.path.exists(shot)
+        if screen:
+            # every run closes the scene's screen the same way before going on
+            xdo("key", "Escape")
+            time.sleep(1.5)
         if mode == "brimstone":
-            if screen:
-                xdo("key", "Escape")
-                time.sleep(1.5)
             start = os.path.getsize(latest) if os.path.exists(latest) else 0
             xdo("key", "slash")
             time.sleep(1.5)
