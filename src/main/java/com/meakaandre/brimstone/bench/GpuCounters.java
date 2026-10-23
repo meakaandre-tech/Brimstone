@@ -7,7 +7,8 @@ import java.util.concurrent.atomic.LongAdder;
  * here changes what is drawn. Totals only move while {@link #enabled} is set (during a bench run).
  *
  * <p>Uploads nest (an upload into transient memory may stage through a mapped block, a buffer write may stage through
- * transient memory), so only the outermost upload call on a thread is counted: {@link #enter()} / {@link #exit()}.
+ * transient memory), so only the outermost upload call on a thread is counted: {@link #enter()} at the start of each
+ * counted method, {@link #exit()} at each of its returns, and {@link #resetDepth()} at every frame boundary.
  */
 public final class GpuCounters {
     /** Kinds of draw call, one per backend entry point. */
@@ -37,7 +38,13 @@ public final class GpuCounters {
     }
 
     public static void exit() {
-        DEPTH.get()[0]--;
+        int[] d = DEPTH.get();
+        if (d[0] > 0) d[0]--;
+    }
+
+    /** At a frame boundary no upload is in progress on this thread: clears a depth an exception left behind. */
+    public static void resetDepth() {
+        DEPTH.get()[0] = 0;
     }
 
     public static void upload(Upload kind, long bytes) {

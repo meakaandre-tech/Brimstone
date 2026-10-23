@@ -87,19 +87,25 @@
     },
     {
       "id": "map",
-      "title": "SIFTEC fullscreen map (opened with its key, M), player pinned",
+      "title": "SIFTEC fullscreen map, centred on a pinned player",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
+        "gamemode creative @a",
+        "spreadplayers 300 -200 0 1 false @a",
+        "#wait 5",
+        "siftec worldtest map setup",
+        "#wait 40",
         "gamemode spectator @a",
         "execute in minecraft:overworld run tp @a 300.5 150 -199.5 0 0",
-        "#wait 30"
+        "#wait 3",
+        "siftec worldtest map open 1.5"
       ],
       "screen": {
-        "expect": "MapScreen",
-        "prompt": "Press M to open the map",
-        "ciKey": "m"
-      }
+        "expect": "MapScreen"
+      },
+      "requiresMod": "siftec_selftest",
+      "requiresNote": "SIFTEC's map unlocks through progression; its test command (siftec worldtest map) opens it, and that lives in SIFTEC's CI-only selftest mod, not in its release."
     }
   ],
   "prepare": [

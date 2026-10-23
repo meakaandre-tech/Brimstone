@@ -1,12 +1,13 @@
 package com.meakaandre.brimstone.mixin.counters;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.meakaandre.brimstone.bench.GpuCounters;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Counts uploads into 26.3's per-frame transient memory, in each implementation: OpenGL's persistent-mapping and
@@ -19,76 +20,64 @@ import org.spongepowered.asm.mixin.Mixin;
     "com.mojang.renderpearl.backend.vulkan.VulkanTransientMemory"
 })
 public abstract class TransientMemoryMixin {
-    @WrapMethod(method = "allocateStaging(JJIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice$MappedView;")
-    private GpuBufferSlice.MappedView brimstone$allocateStaging(long size, long alignment, int usage, long a, long b,
-                                                               Operation<GpuBufferSlice.MappedView> original) {
-        boolean outer = GpuCounters.enter();
-        try {
-            if (outer) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, size);
-            return original.call(size, alignment, usage, a, b);
-        } finally {
-            GpuCounters.exit();
-        }
+    @Inject(method = "allocateStaging(JJIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice$MappedView;", at = @At("HEAD"))
+    private void brimstone$allocateStaging(long size, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice.MappedView> cir) {
+        if (GpuCounters.enter()) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, size);
     }
 
-    @WrapMethod(method = "allocateGpuMapped(JJIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice$MappedView;")
-    private GpuBufferSlice.MappedView brimstone$allocateGpuMapped(long size, long alignment, int usage, long a, long b,
-                                                                 Operation<GpuBufferSlice.MappedView> original) {
-        boolean outer = GpuCounters.enter();
-        try {
-            if (outer) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, size);
-            return original.call(size, alignment, usage, a, b);
-        } finally {
-            GpuCounters.exit();
-        }
+    @Inject(method = "allocateStaging(JJIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice$MappedView;", at = @At("RETURN"))
+    private void brimstone$allocateStagingEnd(long size, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice.MappedView> cir) {
+        GpuCounters.exit();
     }
 
-    @WrapMethod(method = "uploadStaging(Ljava/util/List;JIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;")
-    private GpuBufferSlice brimstone$uploadStaging(List<ByteBuffer> data, long alignment, int usage, long a, long b,
-                                                   Operation<GpuBufferSlice> original) {
-        boolean outer = GpuCounters.enter();
-        try {
-            if (outer) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
-            return original.call(data, alignment, usage, a, b);
-        } finally {
-            GpuCounters.exit();
-        }
+    @Inject(method = "allocateGpuMapped(JJIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice$MappedView;", at = @At("HEAD"))
+    private void brimstone$allocateGpuMapped(long size, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice.MappedView> cir) {
+        if (GpuCounters.enter()) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, size);
     }
 
-    @WrapMethod(method = "uploadGpu(Ljava/util/List;JIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;")
-    private GpuBufferSlice brimstone$uploadGpu(List<ByteBuffer> data, long alignment, int usage, long a, long b,
-                                               Operation<GpuBufferSlice> original) {
-        boolean outer = GpuCounters.enter();
-        try {
-            if (outer) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
-            return original.call(data, alignment, usage, a, b);
-        } finally {
-            GpuCounters.exit();
-        }
+    @Inject(method = "allocateGpuMapped(JJIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice$MappedView;", at = @At("RETURN"))
+    private void brimstone$allocateGpuMappedEnd(long size, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice.MappedView> cir) {
+        GpuCounters.exit();
     }
 
-    @WrapMethod(method = "multiUploadStaging(Ljava/util/List;JI)Ljava/util/List;")
-    private List<GpuBufferSlice> brimstone$multiUploadStaging(List<ByteBuffer> data, long alignment, int usage,
-                                                              Operation<List<GpuBufferSlice>> original) {
-        boolean outer = GpuCounters.enter();
-        try {
-            if (outer) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
-            return original.call(data, alignment, usage);
-        } finally {
-            GpuCounters.exit();
-        }
+    @Inject(method = "uploadStaging(Ljava/util/List;JIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;", at = @At("HEAD"))
+    private void brimstone$uploadStaging(List<ByteBuffer> data, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice> cir) {
+        if (GpuCounters.enter()) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
     }
 
-    @WrapMethod(method = "multiUploadGpu(Ljava/util/List;JI)Ljava/util/List;")
-    private List<GpuBufferSlice> brimstone$multiUploadGpu(List<ByteBuffer> data, long alignment, int usage,
-                                                          Operation<List<GpuBufferSlice>> original) {
-        boolean outer = GpuCounters.enter();
-        try {
-            if (outer) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
-            return original.call(data, alignment, usage);
-        } finally {
-            GpuCounters.exit();
-        }
+    @Inject(method = "uploadStaging(Ljava/util/List;JIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;", at = @At("RETURN"))
+    private void brimstone$uploadStagingEnd(List<ByteBuffer> data, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice> cir) {
+        GpuCounters.exit();
+    }
+
+    @Inject(method = "uploadGpu(Ljava/util/List;JIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;", at = @At("HEAD"))
+    private void brimstone$uploadGpu(List<ByteBuffer> data, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice> cir) {
+        if (GpuCounters.enter()) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
+    }
+
+    @Inject(method = "uploadGpu(Ljava/util/List;JIJJ)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;", at = @At("RETURN"))
+    private void brimstone$uploadGpuEnd(List<ByteBuffer> data, long alignment, int usage, long a, long b, CallbackInfoReturnable<GpuBufferSlice> cir) {
+        GpuCounters.exit();
+    }
+
+    @Inject(method = "multiUploadStaging(Ljava/util/List;JI)Ljava/util/List;", at = @At("HEAD"))
+    private void brimstone$multiUploadStaging(List<ByteBuffer> data, long alignment, int usage, CallbackInfoReturnable<List<GpuBufferSlice>> cir) {
+        if (GpuCounters.enter()) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
+    }
+
+    @Inject(method = "multiUploadStaging(Ljava/util/List;JI)Ljava/util/List;", at = @At("RETURN"))
+    private void brimstone$multiUploadStagingEnd(List<ByteBuffer> data, long alignment, int usage, CallbackInfoReturnable<List<GpuBufferSlice>> cir) {
+        GpuCounters.exit();
+    }
+
+    @Inject(method = "multiUploadGpu(Ljava/util/List;JI)Ljava/util/List;", at = @At("HEAD"))
+    private void brimstone$multiUploadGpu(List<ByteBuffer> data, long alignment, int usage, CallbackInfoReturnable<List<GpuBufferSlice>> cir) {
+        if (GpuCounters.enter()) GpuCounters.upload(GpuCounters.Upload.TRANSIENT, bytes(data));
+    }
+
+    @Inject(method = "multiUploadGpu(Ljava/util/List;JI)Ljava/util/List;", at = @At("RETURN"))
+    private void brimstone$multiUploadGpuEnd(List<ByteBuffer> data, long alignment, int usage, CallbackInfoReturnable<List<GpuBufferSlice>> cir) {
+        GpuCounters.exit();
     }
 
     private static long bytes(List<ByteBuffer> data) {

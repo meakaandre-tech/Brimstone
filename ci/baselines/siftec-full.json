@@ -1,42 +1,38 @@
 {
-  "factory": {
-    "directBuffersMB": 5.81,
-    "drawCallsPerFrame": 315,
-    "heapUsedAfterGcMB": 424.03,
-    "runs": 4,
-    "uploadBytesPerFrame": 6508,
-    "uploadsPerFrame": 14
-  },
   "hub": {
-    "directBuffersMB": 8.06,
-    "drawCallsPerFrame": 411,
-    "heapUsedAfterGcMB": 489.95,
-    "runs": 4,
-    "uploadBytesPerFrame": 282500,
-    "uploadsPerFrame": 19
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 295.96,
+    "heapUsedAfterGcMB": 451.0,
+    "runs": [
+      10
+    ],
+    "uploadBytesPerFrame": 67484,
+    "uploadsPerFrame": 18
   },
   "mam": {
     "directBuffersMB": 8.12,
-    "drawCallsPerFrame": 398,
+    "drawCallsPerFrame": 340.12,
     "heapUsedAfterGcMB": 471.8,
-    "runs": 4,
-    "uploadBytesPerFrame": 24548,
+    "runs": [
+      4,
+      5,
+      6,
+      7,
+      10
+    ],
+    "uploadBytesPerFrame": 24656,
     "uploadsPerFrame": 21
-  },
-  "map": {
-    "directBuffersMB": 8.12,
-    "drawCallsPerFrame": 435,
-    "heapUsedAfterGcMB": 515.99,
-    "runs": 4,
-    "uploadBytesPerFrame": 85432,
-    "uploadsPerFrame": 18
   },
   "sift": {
     "directBuffersMB": 5.87,
-    "drawCallsPerFrame": 396,
-    "heapUsedAfterGcMB": 442.84,
-    "runs": 4,
-    "uploadBytesPerFrame": 68852,
+    "drawCallsPerFrame": 424.41,
+    "heapUsedAfterGcMB": 439.89,
+    "runs": [
+      7,
+      8,
+      10
+    ],
+    "uploadBytesPerFrame": 55764,
     "uploadsPerFrame": 19
   }
 }

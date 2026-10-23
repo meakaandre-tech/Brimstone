@@ -27,16 +27,20 @@ public final class CounterAudit implements IMixinConfigPlugin {
         List<String> pass = List.of("brimstone$drawIndexed", "brimstone$draw", "brimstone$multiDrawIndexed", "brimstone$multiDrawIndexedSeparate",
             "brimstone$multiDraw", "brimstone$multiDrawSeparate", "brimstone$drawIndexedIndirect", "brimstone$drawIndirect");
         EXPECTED.put("com.mojang.renderpearl.frontend.FrontendRenderPass", pass);
-        EXPECTED.put("com.mojang.renderpearl.frontend.FrontendCommandEncoder", List.of("brimstone$writeToBuffer", "brimstone$writeToTexture"));
-        EXPECTED.put("com.mojang.renderpearl.frontend.FrontendGpuDevice", List.of("brimstone$createBuffer"));
+        EXPECTED.put("com.mojang.renderpearl.frontend.FrontendCommandEncoder", List.of("brimstone$writeToBuffer", "brimstone$writeToBufferEnd",
+            "brimstone$writeToTexture", "brimstone$writeToTextureEnd"));
+        EXPECTED.put("com.mojang.renderpearl.frontend.FrontendGpuDevice", List.of("brimstone$createBuffer", "brimstone$createBufferEnd"));
         EXPECTED.put("com.mojang.renderpearl.frontend.FrontendGpuSurface", List.of("brimstone$present"));
-        List<String> transientMemory = List.of("brimstone$allocateStaging", "brimstone$allocateGpuMapped", "brimstone$uploadStaging",
-            "brimstone$uploadGpu", "brimstone$multiUploadStaging", "brimstone$multiUploadGpu");
+        List<String> transientMemory = new java.util.ArrayList<>();
+        for (String n : List.of("allocateStaging", "allocateGpuMapped", "uploadStaging", "uploadGpu", "multiUploadStaging", "multiUploadGpu")) {
+            transientMemory.add("brimstone$" + n);
+            transientMemory.add("brimstone$" + n + "End");
+        }
         EXPECTED.put("com.mojang.renderpearl.backend.opengl.GlTransientMemory$PersistentMapping", transientMemory);
         EXPECTED.put("com.mojang.renderpearl.backend.opengl.GlTransientMemory$Fallback", transientMemory);
         EXPECTED.put("com.mojang.renderpearl.backend.vulkan.VulkanTransientMemory", transientMemory);
-        EXPECTED.put("com.mojang.renderpearl.backend.opengl.GlBuffer$Direct", List.of("brimstone$map"));
-        EXPECTED.put("com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer$Direct", List.of("brimstone$map"));
+        EXPECTED.put("com.mojang.renderpearl.backend.opengl.GlBuffer$Direct", List.of("brimstone$map", "brimstone$mapEnd"));
+        EXPECTED.put("com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer$Direct", List.of("brimstone$map", "brimstone$mapEnd"));
     }
 
     /** Handlers found in each transformed target. */

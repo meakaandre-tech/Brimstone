@@ -59,18 +59,18 @@ Download `brimstone-26.3.jar` from the `latest` release of meakaandre-tech/Brims
    /brimstone bench sift confirm
    /brimstone bench hub confirm
    /brimstone bench mam confirm
-   /brimstone bench map confirm
    /brimstone bench water_glass confirm
    /brimstone bench mobs confirm
    /brimstone bench nether confirm
    ```
 
-   `hub` and `mam` stand you in front of the block and ask you to right-click it; `map` asks you to press **M**.
-   Measuring starts when the screen opens. Leave it open: the bench closes it when it is done.
+   `hub` and `mam` stand you in front of the block and ask you to right-click it. Measuring starts when the screen
+   opens. Leave it open: the bench closes it when it is done.
 
-   `factory` needs SIFTEC's selftest mod (its test commands), which SIFTEC's release doesn't include, so the bench
-   won't offer it in a normal SIFTEC instance. If you drop `siftec-selftest-26.3.jar` into the mods folder, run
-   `/brimstone bench factory confirm` too.
+   `factory` and `map` need SIFTEC's selftest mod (its test commands build the factory row and open the map), which
+   SIFTEC's release doesn't include, so the bench won't offer them in a normal SIFTEC instance. If you drop
+   `siftec-selftest-26.3.jar` into the mods folder, also run `/brimstone bench factory confirm` and
+   `/brimstone bench map confirm`.
 5. Memory after 10 minutes: `/brimstone bench sift 600 confirm`.
 
 ## What to paste back
