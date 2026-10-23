@@ -86,6 +86,15 @@ final class BenchReport {
         gpu.add("uploadBytesByKind", byKind(GpuCounters.Upload.values(), FrameRecorder.startBytes, FrameRecorder.endBytes, n));
         out.add("gpu", gpu);
         out.add("meshing", null);
+        JsonObject counters = new JsonObject();
+        JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
+        CounterAudit.missing().forEach(missing::add);
+        CounterAudit.notLoaded().forEach(notLoaded::add);
+        CounterAudit.applied().forEach(applied::add);
+        counters.add("missing", missing);
+        counters.add("notLoaded", notLoaded);
+        counters.add("applied", applied);
+        out.add("counters", counters);
 
         JsonObject memory = new JsonObject();
         memory.addProperty("heapUsedAvgMB", mb(mem.samples == 0 ? 0 : mem.heapUsedSum / mem.samples));
@@ -151,6 +160,9 @@ final class BenchReport {
             + " (effective " + disp.get("effectiveRenderDistance") + "), max fps " + disp.get("maxFps") + ", vsync " + disp.get("vsync"));
         line(b, "mods", mods.get("count") + " mods, list hash " + mods.get("hash").getAsString());
         line(b, "meshing", "not measured yet (no Brimstone mesher)");
+        JsonObject cnt = o.getAsJsonObject("counters");
+        line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")
+            + ", not loaded (backend not in use) " + cnt.get("notLoaded"));
         b.append(END);
         return b.toString();
     }

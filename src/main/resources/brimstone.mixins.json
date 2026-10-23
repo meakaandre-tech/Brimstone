@@ -4,12 +4,7 @@
   "package": "com.meakaandre.brimstone.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "counters.BufferMapMixin",
-    "counters.FrontendCommandEncoderMixin",
-    "counters.FrontendGpuDeviceMixin",
-    "counters.FrontendGpuSurfaceMixin",
-    "counters.FrontendRenderPassMixin",
-    "counters.TransientMemoryMixin"
+    "debug.GlHeuristicsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

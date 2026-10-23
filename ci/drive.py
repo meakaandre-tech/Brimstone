@@ -109,7 +109,7 @@ def main():
             start = os.path.getsize(latest) if os.path.exists(latest) else 0
             xdo("key", "slash")
             time.sleep(1.5)
-            xdo("type", "--delay", "40", f"brimstone bench {sid} {bench_seconds}")
+            xdo("type", "--delay", "40", f"brimstone bench {sid} {bench_seconds} confirm")
             time.sleep(0.5)
             xdo("key", "Return")
             waits = sum(float(c[6:]) for c in sc["setup"] if c.startswith("#wait "))

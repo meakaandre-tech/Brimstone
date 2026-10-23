@@ -4,16 +4,23 @@
   "version": "${version}",
   "name": "Brimstone",
   "description": "An all-in-one optimisation mod, starting with a renderer rewrite. Draws exactly what vanilla draws.",
-  "authors": ["Andre"],
+  "authors": [
+    "Andre"
+  ],
   "contact": {
     "sources": "https://github.com/meakaandre-tech/Brimstone"
   },
   "license": "LGPL-3.0-only",
   "environment": "*",
   "entrypoints": {
-    "client": ["com.meakaandre.brimstone.BrimstoneClient"]
+    "client": [
+      "com.meakaandre.brimstone.BrimstoneClient"
+    ]
   },
-  "mixins": ["brimstone.mixins.json"],
+  "mixins": [
+    "brimstone.mixins.json",
+    "brimstone.counters.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": ">=26.3- <26.4-",

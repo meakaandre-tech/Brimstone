@@ -17,6 +17,8 @@ package com.meakaandre.brimstone.probe;
  * @param deviceType           26.3's guess at the device type (INTEGRATED, DISCRETE, CPU, ...)
  * @param vanillaMultiDrawIndirect 26.3 itself enabled multi-draw indirect on this device
  * @param vanillaPersistentMapping 26.3 itself enabled persistent buffer mapping on this device
+ * @param vanillaMdiKnownIssues    26.3's own workaround flag: multi-draw indirect has known issues here (Intel
+ *                                 integrated); later modules must then use the plain-draw path
  */
 public record Capabilities(
     String gpuVendor,
@@ -31,7 +33,8 @@ public record Capabilities(
     boolean glBufferStorage,
     String deviceType,
     boolean vanillaMultiDrawIndirect,
-    boolean vanillaPersistentMapping
+    boolean vanillaPersistentMapping,
+    boolean vanillaMdiKnownIssues
 ) {
     public boolean isOpenGl() {
         return "OpenGL".equalsIgnoreCase(backend);
@@ -45,7 +48,8 @@ public record Capabilities(
             + " backend=" + backend + " os=\"" + os + "\" windowSystem=" + windowSystem + " cpuCores=" + cpuCores
             + " GL_ARB_multi_draw_indirect=" + mdi + " GL_ARB_buffer_storage=" + bs
             + " deviceType=" + deviceType + " vanilla.multiDrawIndirect=" + yesNo(vanillaMultiDrawIndirect)
-            + " vanilla.persistentMapping=" + yesNo(vanillaPersistentMapping);
+            + " vanilla.persistentMapping=" + yesNo(vanillaPersistentMapping)
+            + " vanilla.mdiKnownIssues=" + yesNo(vanillaMdiKnownIssues);
     }
 
     private static String yesNo(boolean b) {

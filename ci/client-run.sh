@@ -5,7 +5,9 @@
 # server and CI world from the siftec-world job), then one dev client per render distance the suite's scenes use,
 # drives the scenes (ci/drive.py), and leaves everything in $OUT. Brimstone runs put the built jar in the client's and
 # the server's mods; vanilla runs have no Brimstone anywhere (the dev classpath's own copy is emptied out first).
-# old runs hide multi-draw indirect and buffer storage and force GL down to vanilla's minimum (3.3).
+# old runs hide multi-draw indirect and buffer storage and force GL down to vanilla's minimum (3.3); the Brimstone old
+# run also sets brimstone.debug.forceIntelMdiIssue (vanilla's Intel multi-draw-indirect flag, the school laptop's path).
+# vk runs use Mesa's Vulkan driver (lavapipe) through the --graphicsBackend launch argument.
 set +e
 root=$PWD
 OUT=${OUT:-/tmp/out}
@@ -25,6 +27,10 @@ case "$RUN" in *-old)
   export MESA_GLSL_VERSION_OVERRIDE=330
   echo "old-GPU profile: MESA_EXTENSION_OVERRIDE='$MESA_EXTENSION_OVERRIDE' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330";;
 esac
+extra_args=""
+client_jvm=""
+case "$RUN" in *-vk) extra_args="--graphicsBackend vulkan"; echo "Vulkan profile: --graphicsBackend vulkan on lavapipe";; esac
+case "$RUN" in brimstone-old) client_jvm="-Dbrimstone.debug.forceIntelMdiIssue=true"; echo "old-GPU Brimstone run: $client_jvm";; esac
 
 # ---- server
 if [ "$SUITE" = siftec ]; then
@@ -54,7 +60,9 @@ if ! grep -q 'Done (' server/server.log; then echo "server did not start"; cp se
 
 # ---- client
 sudo apt-get update -q >/dev/null 2>&1
-sudo apt-get install -y -q xvfb xdotool x11-utils imagemagick libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2 mesa-utils python3-numpy python3-pil >/dev/null 2>&1
+sudo apt-get install -y -q xvfb xdotool x11-utils imagemagick libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2 mesa-utils mesa-vulkan-drivers libvulkan1 vulkan-tools python3-numpy python3-pil >/dev/null 2>&1
+lvp=$(ls /usr/share/vulkan/icd.d/lvp_icd*.json 2>/dev/null | head -1)
+case "$RUN" in *-vk) [ -n "$lvp" ] && export VK_DRIVER_FILES="$lvp" VK_ICD_FILENAMES="$lvp";; esac
 mkdir -p run/mods
 for j in server/mods/*.jar; do case "$j" in *fabric-api*) ;; *) cp "$j" run/mods/;; esac; done
 ls -l run/mods
@@ -70,7 +78,7 @@ export SDL_VIDEO_FORCE_EGL=1
 Xvfb :99 -screen 0 1280x720x24 >/dev/null 2>&1 &
 export DISPLAY=:99
 sleep 2
-(glxinfo -B; eglinfo -B 2>/dev/null | head -60) > "$OUT/gfx.txt" 2>&1
+(glxinfo -B; eglinfo -B 2>/dev/null | head -60; vulkaninfo --summary 2>/dev/null | head -60) > "$OUT/gfx.txt" 2>&1
 echo "op @a" >&3
 
 groups=$(python3 -c "
@@ -89,8 +97,8 @@ for g in $groups; do
   rm -f run/logs/latest.log
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)
-  (env -u CI timeout 2400 ./gradlew runClient --no-daemon -Dorg.gradle.console=plain -x compileJava -x processResources -x classes \
-     --args="--quickPlayMultiplayer localhost --width 1280 --height 720" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
+  (env -u CI JAVA_TOOL_OPTIONS="$client_jvm" timeout 2400 ./gradlew runClient --no-daemon -Dorg.gradle.console=plain -x compileJava -x processResources -x classes \
+     --args="--quickPlayMultiplayer localhost --width 1280 --height 720 $extra_args" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
   for i in $(seq 1 150); do
     now=$(grep -c 'joined the game' server/server.log)
     if [ "$now" -gt "$before" ] || grep -q '^EXIT' "$OUT/client-gradle-$n.log"; then break; fi

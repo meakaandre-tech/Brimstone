@@ -28,18 +28,20 @@ Download `brimstone-26.3.jar` from the `latest` release of meakaandre-tech/Brims
    left on **Default**. Leave the rest as you play.
 6. **Singleplayer → Create New World**: Game Mode **Creative**, **Allow Commands: On**, More → **Seed: 12345**,
    World Type Default. Create it and wait 30 seconds in the world.
-7. Type these one at a time, waiting for "[Brimstone] Bench ... done" before the next (each takes about 1.5 minutes):
+7. Type these one at a time, waiting for "[Brimstone] Bench ... done" before the next (each takes about 1.5 minutes).
+   A scene changes the world (gamerules, time, weather, game mode, your position, blocks and mobs it places), so the
+   bench refuses until you add `confirm`; without it, it tells you what it will change:
 
    ```
-   /brimstone bench flythrough
-   /brimstone bench spawn
-   /brimstone bench water_glass
-   /brimstone bench mobs
-   /brimstone bench nether
+   /brimstone bench flythrough confirm
+   /brimstone bench spawn confirm
+   /brimstone bench water_glass confirm
+   /brimstone bench mobs confirm
+   /brimstone bench nether confirm
    ```
 
    Run `flythrough` first: it flies over terrain that has never been generated, which is only true in a new world.
-8. Memory after 10 minutes (one run is enough): `/brimstone bench spawn 600`.
+8. Memory after 10 minutes (one run is enough): `/brimstone bench spawn 600 confirm`.
 9. Quit to the title screen.
 
 ## Instance 2: SIFTEC
@@ -52,15 +54,15 @@ Download `brimstone-26.3.jar` from the `latest` release of meakaandre-tech/Brims
 4. Wait 30 seconds, then run, one at a time:
 
    ```
-   /brimstone bench flythrough
-   /brimstone bench spawn
-   /brimstone bench sift
-   /brimstone bench hub
-   /brimstone bench mam
-   /brimstone bench map
-   /brimstone bench water_glass
-   /brimstone bench mobs
-   /brimstone bench nether
+   /brimstone bench flythrough confirm
+   /brimstone bench spawn confirm
+   /brimstone bench sift confirm
+   /brimstone bench hub confirm
+   /brimstone bench mam confirm
+   /brimstone bench map confirm
+   /brimstone bench water_glass confirm
+   /brimstone bench mobs confirm
+   /brimstone bench nether confirm
    ```
 
    `hub` and `mam` stand you in front of the block and ask you to right-click it; `map` asks you to press **M**.
@@ -68,8 +70,8 @@ Download `brimstone-26.3.jar` from the `latest` release of meakaandre-tech/Brims
 
    `factory` needs SIFTEC's selftest mod (its test commands), which SIFTEC's release doesn't include, so the bench
    won't offer it in a normal SIFTEC instance. If you drop `siftec-selftest-26.3.jar` into the mods folder, run
-   `/brimstone bench factory` too.
-5. Memory after 10 minutes: `/brimstone bench sift 600`.
+   `/brimstone bench factory confirm` too.
+5. Memory after 10 minutes: `/brimstone bench sift 600 confirm`.
 
 ## What to paste back
 

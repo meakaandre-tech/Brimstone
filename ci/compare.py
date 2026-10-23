@@ -30,7 +30,8 @@ RISE = 1.10
 SLACK = {"drawCallsPerFrame": 2.0, "uploadsPerFrame": 1.0, "uploadBytesPerFrame": 16384.0,
          "heapUsedAfterGcMB": 16.0, "directBuffersMB": 4.0}
 GATED = list(SLACK)
-PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "vanilla-old")}
+PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "vanilla-old"), "vulkan": ("brimstone-vk", "vanilla-vk")}
+RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "brimstone-full", "brimstone-old", "brimstone-vk"]
 
 
 def diff(a, b, out=None):
@@ -93,7 +94,7 @@ def main():
         scenes = [s for s in suite["scenes"]]
         sd = data.setdefault(name, {"noise": {}, "picture": {}, "counts": {}, "skipped": {}})
         lines.append(f"## Suite {name}\n")
-        runs = {r: os.path.join(res, f"{name}-{r}") for r in ["vanilla-a", "vanilla-b", "vanilla-old", "brimstone-full", "brimstone-old"]}
+        runs = {r: os.path.join(res, f"{name}-{r}") for r in RUNS}
         for r, d in runs.items():
             if not os.path.isdir(d):
                 failures.append(f"{name}: run {r} produced no results")
@@ -107,7 +108,12 @@ def main():
             if probe:
                 lines.append(f"  - probe: `{probe.group(1).strip()}`")
             old = r.endswith("-old")
+            vk = r.endswith("-vk")
             exts = ext.group(1) if ext else ""
+            if vk and (not m or m.group(1) != "Vulkan"):
+                failures.append(f"{name}/{r}: vanilla is not on the Vulkan backend ({m.group(1) if m else 'no backend line'})")
+            if not vk and m and m.group(1) != "OpenGL":
+                failures.append(f"{name}/{r}: expected OpenGL, got {m.group(1)}")
             if m and old and not m.group(2).strip().startswith("3.3"):
                 failures.append(f"{name}/{r}: GL version is not forced to 3.3 ({m.group(2).strip()})")
             if ext and old and ("GL_ARB_multi_draw_indirect" in exts or "GL_ARB_buffer_storage" in exts):
@@ -117,12 +123,25 @@ def main():
                     failures.append(f"{name}/{r}: no Brimstone capability line")
                 else:
                     p = probe.group(1)
-                    want = "no" if old else "yes"
-                    for e in ("GL_ARB_multi_draw_indirect", "GL_ARB_buffer_storage"):
-                        if f"{e}={want}" not in p:
-                            failures.append(f"{name}/{r}: probe shows {e} not {want}")
-                    if old and " gl=3.3 " not in p:
-                        failures.append(f"{name}/{r}: probe does not show gl=3.3")
+                    if vk:
+                        if " backend=Vulkan " not in p:
+                            failures.append(f"{name}/{r}: probe does not show backend=Vulkan")
+                    else:
+                        want = "no" if old else "yes"
+                        for e in ("GL_ARB_multi_draw_indirect", "GL_ARB_buffer_storage"):
+                            if f"{e}={want}" not in p:
+                                failures.append(f"{name}/{r}: probe shows {e} not {want}")
+                        if old and " gl=3.3 " not in p:
+                            failures.append(f"{name}/{r}: probe does not show gl=3.3")
+                        if old and "vanilla.mdiKnownIssues=yes" not in p:
+                            failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
+                    for f in glob.glob(os.path.join(d, "bench", "*.json")):
+                        bj = json.load(open(f))
+                        miss = bj.get("counters", {}).get("missing")
+                        if miss is None:
+                            failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
+                        elif miss:
+                            failures.append(f"{name}/{r}: counters that did not apply: {', '.join(miss)}")
                 srv = os.path.join(d, "server.log")
                 st = open(srv, errors="replace").read() if os.path.exists(srv) else ""
                 if not re.search(r"\bbrimstone\b", st):
@@ -130,8 +149,8 @@ def main():
                 if re.search(r"(ERROR|Exception)[^\n]*[Bb]rimstone|[Bb]rimstone[^\n]*(ERROR|Exception)", st):
                     failures.append(f"{name}/{r}: the server logged a Brimstone error")
         lines.append("")
-        lines.append("| scene | noise (vanilla a/b) % | limit % | full % | old-GPU % |")
-        lines.append("|---|---|---|---|---|")
+        lines.append("| scene | noise (vanilla a/b) % | limit % | full % | old-GPU % | Vulkan % |")
+        lines.append("|---|---|---|---|---|---|")
         skips = [drive_skips(d) for d in runs.values() if os.path.isdir(d)]
         for sc in scenes:
             sid = sc["id"]
@@ -142,7 +161,7 @@ def main():
                 failures.append(f"{name}/{sid}: skipped in some runs but not others")
             if sc.get("skip"):
                 sd["skipped"][sid] = sc["skip"]
-                lines.append(f"| {sid} | skipped: {sc['skip']} | | | |")
+                lines.append(f"| {sid} | skipped: {sc['skip']} | | | | |")
                 continue
             shot = lambda r: os.path.join(runs[r], "shots", sid + ".png")
             noise = diff(shot("vanilla-a"), shot("vanilla-b"), os.path.join(rep, "diff", f"{name}-{sid}-noise.png"))
@@ -160,7 +179,7 @@ def main():
                 elif dv["pct"] > limit:
                     failures.append(f"{name}/{sid}: {prof} differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
             fmt = lambda d: "missing" if d is None else f"{d['pct']}"
-            lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'])} | {fmt(row['old-gpu'])} |")
+            lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'])} | {fmt(row['old-gpu'])} | {fmt(row['vulkan'])} |")
         lines.append("")
         for prof, (b, _) in PAIRS.items():
             cur = bench_results(runs[b])

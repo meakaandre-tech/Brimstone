@@ -55,7 +55,8 @@ public final class CapabilityProbe {
             extensions.contains("GL_ARB_buffer_storage"),
             String.valueOf(info.type()),
             info.features().multiDrawIndirect(),
-            info.features().persistentMapping()
+            info.features().persistentMapping(),
+            info.hintsAndWorkarounds().multiDrawIndirectHasKnownIssues()
         );
     }
 
