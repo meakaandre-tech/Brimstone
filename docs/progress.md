@@ -106,6 +106,41 @@ median, plus memory; fly-through gated on memory only. Frozen from here on.
 
 ---
 
+## Package 1: terrain meshing and region buffers (in progress)
+
+**Goal (doc):** terrain meshed once on worker threads into a compact vertex format, kept in large persistent region
+buffers, drawn with few calls; the plain-draw path (Intel integrated, where vanilla distrusts multi-draw indirect)
+is the one that must be fast.
+
+**Done when (doc):** "Chunk sections mesh on worker threads into a compact vertex format, packed into large region
+buffers and drawn with few calls. Screenshots match vanilla pixel for pixel on solid blocks."
+
+**Starting point (research, `docs/terrain-research.md`):** vanilla 26.3 already meshes on worker threads, keeps
+meshes in big TLSF-allocated heaps per layer, and draws one multi-draw indirect per layer when the driver allows it.
+Without it (old-GPU profile, Intel integrated) it makes one draw per section per layer. Lighting, AO and tint are
+baked on the CPU at mesh time; FRAPI goes through Indigo inside SectionCompiler.
+
+**Approach:**
+1. Extend the CI dump to the classes the research couldn't see (ChunkSectionsToRender's inner draw classes,
+   SectionCompiler, DynamicGpuData, RenderPipelines, DefaultVertexFormat) and vanilla's terrain shader sources, to
+   pin down the vertex format and what the shaders compute.
+2. Keep vanilla's meshing (it already runs on worker threads and carries AO, light, tint and FRAPI); on the worker
+   thread, transcode each solid and cutout mesh into Brimstone's compact format (target 16 bytes a vertex).
+3. Brimstone's own region buffers (8x4x8 sections per region) with an allocator; uploads are small copies into place
+   through renderpearl's CommandEncoder, never reallocations.
+4. Draw solid and cutout through renderpearl only, with Brimstone's own pipeline and shaders (written fresh to give
+   the same result as vanilla's terrain shader): per region, one multi-draw call on the plain path; indirect only
+   where vanilla itself trusts multi-draw indirect (follows `hintsAndWorkarounds`). Translucent stays vanilla
+   (package 3).
+5. Any GL error or shader failure turns the module off with a log line and vanilla draws terrain again; CI fails if
+   that fallback fires.
+6. Proof: pixel diffs within the package-0 limits in all three profiles and both suites; draw calls per frame down
+   on the old-GPU profile; bytes uploaded and memory against the baselines; a meshing-time count in the bench.
+
+**Laptop bench:** pending (Andre away). Runs to do when back: listed in the package 1 report.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
@@ -113,4 +148,5 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Next:** package 1 on branch `package-1`.
+**Now:** package 1 on branch `package-1` (plan above). An implementation agent works on the branch; then a
+separate reviewer agent checks it against the done-when and the rules before the merge.
