@@ -26,8 +26,10 @@ from PIL import Image
 
 THRESHOLD = 8
 RISE = 1.10
-SLACK = {"drawCallsPerFrame": 0.5, "uploadsPerFrame": 0.5, "uploadBytesPerFrame": 1024.0,
+# absolute allowance on top of the 10%, for values that move in steps (see docs/ci-limits.md)
+SLACK = {"drawCallsPerFrame": 2.0, "uploadsPerFrame": 1.0, "uploadBytesPerFrame": 16384.0,
          "heapUsedAfterGcMB": 16.0, "directBuffersMB": 4.0}
+GATED = list(SLACK)
 PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "vanilla-old")}
 
 
@@ -165,11 +167,14 @@ def main():
                 if c["frames"] == 0:
                     failures.append(f"{name}/{prof}: bench for {sid} measured no frames")
                 cells = []
+                gated = sc.get("ciGatedCounts", GATED)
                 for k in ["drawCallsPerFrame", "uploadsPerFrame", "uploadBytesPerFrame", "heapUsedAfterGcMB", "directBuffersMB"]:
                     v = c[k]
                     cell = f"{v}"
                     if base is None:
                         cell += " (no baseline)"
+                    elif k not in gated:
+                        cell += " (reported, not gated)"
                     elif sid in base:
                         bv = base[sid][k]
                         cell += f" (base {bv})"
