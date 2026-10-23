@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "package-0"]
   workflow_dispatch:
 
 permissions:
