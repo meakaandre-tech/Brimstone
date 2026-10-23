@@ -47,15 +47,13 @@ Download `brimstone-26.3.jar` from the `latest` release of meakaandre-tech/Brims
 1. Copy your SIFTEC instance in Prism (right-click → **Copy Instance**) so your own worlds and settings stay apart.
 2. In the copy: Edit → Mods → **Add file** → `brimstone-26.3.jar`. Same Java, memory and 1280 × 720 window as above;
    same video settings (Unlimited, VSync off, GUI scale 2).
-3. **Create a new world** just for this: Creative, **Allow Commands: On**, **Seed: 12345**. The SIFTEC scenes use
-   SIFTEC's own test commands, which build things and reset that world's company progress (the HUB scene does),
-   so never run them in a world you play in.
+3. **Create a new world** just for this: Creative, **Allow Commands: On**, **Seed: 12345**. The scenes build
+   platforms and place a HUB and a MAM, so never run them in a world you play in.
 4. Wait 30 seconds, then run, one at a time:
 
    ```
    /brimstone bench flythrough
    /brimstone bench spawn
-   /brimstone bench factory
    /brimstone bench sift
    /brimstone bench hub
    /brimstone bench mam
@@ -65,9 +63,13 @@ Download `brimstone-26.3.jar` from the `latest` release of meakaandre-tech/Brims
    /brimstone bench nether
    ```
 
-   `hub` and `mam` stand you in front of the block and ask you to right-click it; measuring starts when the screen
-   opens. Leave it open: the bench closes it when it is done. `map` opens the fullscreen map by itself.
-5. Memory after 10 minutes: `/brimstone bench factory 600`.
+   `hub` and `mam` stand you in front of the block and ask you to right-click it; `map` asks you to press **M**.
+   Measuring starts when the screen opens. Leave it open: the bench closes it when it is done.
+
+   `factory` needs SIFTEC's selftest mod (its test commands), which SIFTEC's release doesn't include, so the bench
+   won't offer it in a normal SIFTEC instance. If you drop `siftec-selftest-26.3.jar` into the mods folder, run
+   `/brimstone bench factory` too.
+5. Memory after 10 minutes: `/brimstone bench sift 600`.
 
 ## What to paste back
 
