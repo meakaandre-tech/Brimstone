@@ -33,7 +33,7 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | core/flythrough | 4, 5, 6, 7, 8, 10 | 19 | 7.4623 | 14.95 |
 | core/mobs | 4, 5, 6, 7, 8, 10 | 19 | 0.1465 | 0.4 |
 | core/nether | 4, 5, 6, 7, 8, 10 | 19 | 0.385 | 0.8 |
-| core/spawn | 4, 5, 6, 7, 8, 10 | 19 | 2.3583 | 4.75 |
+| core/spawn | 12 | 4 | 5.0239 | 10.05 |
 | core/water_glass | 4, 5, 6, 7, 8, 10 | 19 | 3.2233 | 6.45 |
 | siftec/factory | 5, 6, 7 | 9 | 0.0344 | 0.3 |
 | siftec/hub | 10 | 4 | 4.36 | 8.75 |
@@ -61,34 +61,34 @@ runs). **Memory**: heap used after a GC at the end of the bench, and java.nio di
 **Baseline = the highest value across the clean runs listed.** CI fails when a count goes over **baseline x 1.10
 plus a step allowance**: 2 draw calls, 1 upload, 16 KiB, 16 MB heap, 4 MB direct (direct buffers grow in 2 MB steps
 and land on either side between runs). The fly-through is gated on memory only: its uploads and draw calls depend on
-how fast CI's server generates the new terrain. The Vulkan baselines come from one run so far.
+how fast CI's server generates the new terrain. The Vulkan baselines come from two runs; the core spawn scene's limit and baselines from one run (its camera moved to a fixed height in the last package-0 run).
 
 | suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB | runs |
 |---|---|---|---|---|---|---|---|
-| core-full | flythrough | 218.09 | 61 | 2109248 | 324.25 | 4.24 | 4,5,6,7,8,10 |
-| core-full | mobs | 240.07 | 17 | 1010948 | 268.37 | 6.99 | 4,5,6,7,8,10 |
-| core-full | nether | 215.94 | 12 | 19648 | 273.53 | 5.99 | 4,5,6,7,8,10 |
-| core-full | spawn | 220.84 | 15 | 36532 | 263.05 | 5.99 | 4,5,6,7,8,10 |
-| core-full | water_glass | 219.1 | 15 | 15576 | 250.02 | 5.99 | 4,5,6,7,8,10 |
-| core-old-gpu | flythrough | 1146.26 | 57 | 1988104 | 324.79 | 5.99 | 4,5,6,7,8,10 |
-| core-old-gpu | mobs | 433.84 | 16 | 1015892 | 268.23 | 5.99 | 4,5,6,7,8,10 |
-| core-old-gpu | nether | 687.04 | 11 | 10656 | 272.57 | 5.99 | 4,5,6,7,8,10 |
-| core-old-gpu | spawn | 992.09 | 14 | 13604 | 263.27 | 5.99 | 4,5,6,7,8,10 |
-| core-old-gpu | water_glass | 489.1 | 14 | 10264 | 249.83 | 5.99 | 4,5,6,7,8,10 |
-| core-vulkan | flythrough | 218.09 | 36 | 651160 | 317.92 | 4.23 | 10 |
-| core-vulkan | mobs | 182.57 | 17 | 993288 | 263.99 | 6.23 | 10 |
-| core-vulkan | nether | 187.27 | 12 | 19088 | 268.95 | 4.23 | 10 |
-| core-vulkan | spawn | 219.96 | 15 | 28992 | 260.21 | 4.23 | 10 |
-| core-vulkan | water_glass | 192.52 | 15 | 14828 | 244.39 | 4.23 | 10 |
-| siftec-full | hub | 295.96 | 18 | 67484 | 451.0 | 4.24 | 10 |
-| siftec-full | mam | 340.12 | 21 | 24656 | 471.8 | 8.12 | 4,5,6,7,10 |
-| siftec-full | sift | 424.41 | 19 | 55764 | 439.89 | 5.87 | 7,8,10 |
-| siftec-old-gpu | hub | 342.2 | 17 | 66484 | 451.46 | 5.99 | 10 |
-| siftec-old-gpu | mam | 400.79 | 20 | 22916 | 472.87 | 5.99 | 4,5,6,7,10 |
-| siftec-old-gpu | sift | 849.48 | 18 | 47292 | 441.24 | 4.12 | 7,8,10 |
-| siftec-vulkan | hub | 295.62 | 18 | 67484 | 450.49 | 3.46 | 10 |
-| siftec-vulkan | mam | 299.27 | 21 | 24656 | 462.56 | 5.46 | 10 |
-| siftec-vulkan | sift | 424.05 | 19 | 55980 | 439.9 | 3.46 | 10 |
+| core-full | flythrough | 218.16 | 61 | 2109248 | 324.25 | 4.24 | 4,5,6,7,8,10,11 |
+| core-full | mobs | 240.07 | 17 | 1010948 | 268.37 | 6.99 | 4,5,6,7,8,10,11 |
+| core-full | nether | 215.94 | 12 | 19648 | 273.53 | 5.99 | 4,5,6,7,8,10,11 |
+| core-full | spawn | 218.25 | 14 | 22476 | 259.07 | 3.99 | 12 |
+| core-full | water_glass | 219.1 | 15 | 15576 | 250.02 | 5.99 | 4,5,6,7,8,10,11 |
+| core-old-gpu | flythrough | 1146.26 | 57 | 1988104 | 324.79 | 5.99 | 4,5,6,7,8,10,11 |
+| core-old-gpu | mobs | 434.39 | 16 | 1015892 | 268.23 | 5.99 | 4,5,6,7,8,10,11 |
+| core-old-gpu | nether | 687.04 | 11 | 10656 | 272.57 | 5.99 | 4,5,6,7,8,10,11 |
+| core-old-gpu | spawn | 942.31 | 13 | 6372 | 256.29 | 3.73 | 12 |
+| core-old-gpu | water_glass | 489.1 | 14 | 10264 | 249.83 | 5.99 | 4,5,6,7,8,10,11 |
+| core-vulkan | flythrough | 218.25 | 62 | 2258432 | 318.06 | 4.23 | 10,11 |
+| core-vulkan | mobs | 240.09 | 17 | 1008176 | 264.31 | 6.23 | 10,11 |
+| core-vulkan | nether | 216.09 | 12 | 19912 | 268.95 | 4.23 | 10,11 |
+| core-vulkan | spawn | 218.94 | 15 | 27764 | 257.2 | 3.98 | 12 |
+| core-vulkan | water_glass | 219.09 | 15 | 15108 | 244.39 | 4.23 | 10,11 |
+| siftec-full | hub | 295.96 | 18 | 67484 | 451.33 | 4.24 | 10,11 |
+| siftec-full | mam | 340.12 | 21 | 24656 | 471.8 | 8.12 | 4,5,6,7,10,11 |
+| siftec-full | sift | 424.41 | 19 | 55764 | 440.07 | 5.87 | 7,8,10,11 |
+| siftec-old-gpu | hub | 342.2 | 17 | 66484 | 451.46 | 5.99 | 10,11 |
+| siftec-old-gpu | mam | 400.79 | 20 | 22916 | 472.87 | 5.99 | 4,5,6,7,10,11 |
+| siftec-old-gpu | sift | 849.48 | 18 | 73228 | 441.24 | 4.24 | 7,8,10,11 |
+| siftec-vulkan | hub | 316.68 | 18 | 67484 | 450.49 | 4.23 | 10,11 |
+| siftec-vulkan | mam | 352.85 | 21 | 24656 | 462.56 | 5.46 | 10,11 |
+| siftec-vulkan | sift | 424.25 | 19 | 55980 | 439.9 | 4.23 | 10,11 |
 
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.

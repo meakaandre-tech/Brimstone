@@ -47,6 +47,16 @@
     "uploadBytesPerFrame": 10656,
     "uploadsPerFrame": 11
   },
+  "spawn": {
+    "directBuffersMB": 3.73,
+    "drawCallsPerFrame": 942.31,
+    "heapUsedAfterGcMB": 256.29,
+    "runs": [
+      12
+    ],
+    "uploadBytesPerFrame": 6372,
+    "uploadsPerFrame": 13
+  },
   "water_glass": {
     "directBuffersMB": 5.99,
     "drawCallsPerFrame": 489.1,
