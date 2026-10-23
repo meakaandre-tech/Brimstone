@@ -86,6 +86,13 @@ def main():
             # park the mouse where no screen draws a tooltip, the same in every run
             xdo("mousemove", "1", "1")
             time.sleep(5)
+        if not screen:
+            # F3+A: vanilla's own "reload all chunks", so a section the client dropped or never meshed under load
+            # is rebuilt before the picture is taken; the same in every run
+            xdo("keydown", "F3")
+            xdo("key", "a")
+            xdo("keyup", "F3")
+            time.sleep(3)
         shot = os.path.join(out, "shots", sid + ".png")
         entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)

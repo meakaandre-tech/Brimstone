@@ -18,7 +18,8 @@
       "settleSeconds": 20,
       "setup": [
         "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
-        "#wait 6",
+        "execute in minecraft:overworld run forceload add 1180 960 1290 1040",
+        "#wait 10",
         "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
         "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
         "#wait 4",
@@ -87,7 +88,7 @@
         "#wait 5",
         "siftec worldtest map setup",
         "#wait 40",
-        "siftec worldtest map open 0.3"
+        "siftec worldtest map open 1.5"
       ],
       "screen": {
         "expect": "MapScreen"
@@ -96,7 +97,8 @@
   ],
   "prepare": [
     "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
-    "#wait 6",
+    "execute in minecraft:overworld run forceload add 1180 960 1290 1040",
+    "#wait 15",
     "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
     "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
     "#wait 90"
