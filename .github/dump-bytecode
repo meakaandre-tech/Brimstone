@@ -1,0 +1,4 @@
+^com\.mojang\.blaze3d\.
+^net\.minecraft\.client\.renderer\.(GameRenderer|LevelRenderer|SectionOcclusionGraph|chunk\.SectionRenderDispatcher.*|chunk\.ChunkSectionsToRender)$
+^net\.minecraft\.client\.(Minecraft|Screenshot|Options)$
+^net\.minecraft\.client\.gui\.render\.GuiRenderer$
