@@ -24,7 +24,9 @@
         "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
         "#wait 4",
         "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
-      ]
+      ],
+      "requiresMod": "siftec_selftest",
+      "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release."
     },
     {
       "id": "sift",
@@ -41,15 +43,19 @@
     },
     {
       "id": "hub",
-      "title": "SIFTEC HUB screen",
+      "title": "SIFTEC HUB screen (an unowned HUB: whoever right-clicks it takes it over)",
       "renderDistance": 8,
       "settleSeconds": 8,
       "setup": [
         "gamemode creative @a",
         "item replace entity @a weapon.mainhand with minecraft:air",
-        "execute in minecraft:overworld run tp @a 24.5 200 27.5 180 22",
+        "execute in minecraft:overworld run tp @a 2240.5 201 -1996.5 180 21",
         "#wait 5",
-        "siftec worldtest hubui"
+        "fill 2235 200 -2005 2245 200 -1995 minecraft:stone_bricks",
+        "fill 2235 201 -2005 2245 205 -1995 minecraft:air",
+        "setblock 2240 201 -2000 minecraft:air",
+        "setblock 2240 201 -2000 siftec:hub",
+        "execute in minecraft:overworld run tp @a 2240.5 201 -1996.5 180 21"
       ],
       "screen": {
         "expect": "HubScreen",
@@ -69,6 +75,7 @@
         "#wait 5",
         "fill 2195 200 -2005 2205 200 -1995 minecraft:stone_bricks",
         "fill 2195 201 -2005 2205 205 -1995 minecraft:air",
+        "setblock 2200 201 -2000 minecraft:air",
         "setblock 2200 201 -2000 siftec:mam",
         "execute in minecraft:overworld run tp @a 2200.5 201 -1996.5 180 21"
       ],
@@ -80,22 +87,18 @@
     },
     {
       "id": "map",
-      "title": "SIFTEC fullscreen map, centred on a pinned player",
+      "title": "SIFTEC fullscreen map (opened with its key, M), player pinned",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
-        "gamemode creative @a",
-        "spreadplayers 300 -200 0 1 false @a",
-        "#wait 5",
-        "siftec worldtest map setup",
-        "#wait 40",
         "gamemode spectator @a",
         "execute in minecraft:overworld run tp @a 300.5 150 -199.5 0 0",
-        "#wait 3",
-        "siftec worldtest map open 1.5"
+        "#wait 30"
       ],
       "screen": {
-        "expect": "MapScreen"
+        "expect": "MapScreen",
+        "prompt": "Press M to open the map",
+        "ciKey": "m"
       }
     }
   ],
@@ -107,5 +110,6 @@
     "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
     "#wait 90"
   ],
-  "prepareNote": "Run once per CI session before any screenshot: builds the factory row so its lighting has settled. The factory scene builds it too (only when the marker block under the platform is missing)."
+  "prepareNote": "Run once per CI session before any screenshot: builds the factory row so its lighting has settled. The factory scene builds it too (only when the marker block under the platform is missing).",
+  "prepareFor": "factory"
 }

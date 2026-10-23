@@ -58,6 +58,9 @@ sudo apt-get install -y -q xvfb xdotool x11-utils imagemagick libgl1-mesa-dri li
 mkdir -p run/mods
 for j in server/mods/*.jar; do case "$j" in *fabric-api*) ;; *) cp "$j" run/mods/;; esac; done
 ls -l run/mods
+# mod ids the client loads (pack jars plus the dev classpath's Minecraft, loader and Fabric API), for scenes that need one
+(for j in run/mods/*.jar; do unzip -p "$j" fabric.mod.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])" 2>/dev/null; done; echo minecraft fabricloader fabric-api) > "$OUT/mod-ids.txt"
+export MOD_IDS="$OUT/mod-ids.txt"
 # the dev classpath must not carry Brimstone: every run loads it from run/mods or not at all
 rm -rf build/classes/java/main build/resources/main
 mkdir -p build/classes/java/main build/resources/main

@@ -8,8 +8,8 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
   - noise: vanilla-a against vanilla-b, scene by scene;
   - picture: brimstone-full against vanilla-a, brimstone-old against vanilla-old; over ci/pixel-limits.json fails;
   - probe: Brimstone's capability line must show each profile (full: both extensions; old: neither, GL 3.3);
-  - counts (per-frame medians: chunk uploads come in bursts, so averages swing with timing; plus heap after GC and
-    direct buffers): each Brimstone profile's bench results against ci/baselines/<suite>-<profile>.json; a rise over 10%
+  - counts (draw calls: per-frame average, as frames that line up with a game tick draw more and the median flips;
+    uploads and bytes: per-frame median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results against ci/baselines/<suite>-<profile>.json; a rise over 10%
     fails. The current numbers are written to REPORT_DIR/baselines/ for committing;
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
@@ -52,7 +52,7 @@ def bench_results(run_dir):
         j = json.load(open(f))
         g, m = j["gpu"], j["memory"]
         out[j["scene"]] = {
-            "drawCallsPerFrame": g["drawCallsPerFrame"].get("p50", g["drawCallsPerFrame"]["avg"]),
+            "drawCallsPerFrame": g["drawCallsPerFrame"]["avg"],
             "uploadsPerFrame": g["uploadsPerFrame"].get("p50", g["uploadsPerFrame"]["avg"]),
             "uploadBytesPerFrame": g["uploadBytesPerFrame"].get("p50", g["uploadBytesPerFrame"]["avg"]),
             "drawCallsPerFrameAvg": g["drawCallsPerFrame"]["avg"],
@@ -62,6 +62,15 @@ def bench_results(run_dir):
             "meshingMsPerSection": None,
             "frames": j["fps"]["frames"],
         }
+    return out
+
+
+def drive_skips(run_dir):
+    out = {}
+    for f in glob.glob(os.path.join(run_dir, "drive-*.json")):
+        for e in json.load(open(f)):
+            if e.get("skipped"):
+                out[e["scene"]] = e["skipped"]
     return out
 
 
@@ -123,8 +132,14 @@ def main():
         lines.append("")
         lines.append("| scene | noise (vanilla a/b) % | limit % | full % | old-GPU % |")
         lines.append("|---|---|---|---|---|")
+        skips = [drive_skips(d) for d in runs.values() if os.path.isdir(d)]
         for sc in scenes:
             sid = sc["id"]
+            reasons = {s.get(sid) for s in skips}
+            if not sc.get("skip") and reasons and None not in reasons:
+                sc["skip"] = sorted(reasons)[0]
+            elif not sc.get("skip") and len(reasons) > 1:
+                failures.append(f"{name}/{sid}: skipped in some runs but not others")
             if sc.get("skip"):
                 sd["skipped"][sid] = sc["skip"]
                 lines.append(f"| {sid} | skipped: {sc['skip']} | | | |")
@@ -154,7 +169,7 @@ def main():
             base_file = f"ci/baselines/{name}-{prof}.json"
             base = json.load(open(base_file)) if os.path.exists(base_file) else None
             lines.append(f"### Counts, {name} {prof}\n")
-            lines.append("| scene | draw calls/frame (median) | uploads/frame (median) | upload bytes/frame (median) | heap after GC MB | direct MB |")
+            lines.append("| scene | draw calls/frame (avg) | uploads/frame (median) | upload bytes/frame (median) | heap after GC MB | direct MB |")
             lines.append("|---|---|---|---|---|---|")
             for sc in scenes:
                 sid = sc["id"]

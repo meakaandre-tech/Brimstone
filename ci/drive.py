@@ -47,6 +47,7 @@ def main():
     suite_file, fifo, out, latest, mode, bench_seconds = sys.argv[1:7]
     ids = sys.argv[7:]
     suite = json.load(open(suite_file))
+    loaded = set(open(os.environ["MOD_IDS"]).read().split()) if os.environ.get("MOD_IDS") else None
     scenes = {s["id"]: s for s in suite["scenes"]}
     os.makedirs(os.path.join(out, "shots"), exist_ok=True)
     console = open(fifo, "w", buffering=1)
@@ -62,7 +63,8 @@ def main():
     def xdo(*args):
         subprocess.run(["xdotool", *args], check=False)
 
-    if suite.get("prepare") and any(not scenes[i].get("skip") for i in ids):
+    runnable = [i for i in ids if not scenes[i].get("skip") and not (scenes[i].get("requiresMod") and loaded is not None and scenes[i]["requiresMod"] not in loaded)]
+    if suite.get("prepare") and runnable and (not suite.get("prepareFor") or suite["prepareFor"] in runnable):
         print("preparing the suite", flush=True)
         for cmd in suite["preamble"] + suite["prepare"]:
             send(cmd)
@@ -70,6 +72,8 @@ def main():
     for sid in ids:
         sc = scenes[sid]
         entry = {"scene": sid}
+        if not sc.get("skip") and sc.get("requiresMod") and loaded is not None and sc["requiresMod"] not in loaded:
+            sc["skip"] = "needs the mod " + sc["requiresMod"] + " (" + sc.get("requiresNote", "not loaded") + ")"
         if sc.get("skip"):
             entry["skipped"] = sc["skip"]
             summary.append(entry)

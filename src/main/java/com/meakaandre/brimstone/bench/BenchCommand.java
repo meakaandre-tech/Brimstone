@@ -45,8 +45,9 @@ public final class BenchCommand {
                 c.getSource().sendError(Component.literal("[Brimstone] No scene '" + id + "' here. Scenes: " + String.join(", ", Scenes.ids()) + ", here"));
                 return 0;
             }
-            if (scene.skip != null) {
-                c.getSource().sendError(Component.literal("[Brimstone] Scene '" + id + "' is skipped: " + scene.skip));
+            String why = Scenes.unavailable(scene);
+            if (why != null) {
+                c.getSource().sendError(Component.literal("[Brimstone] Scene '" + id + "' can't run here: " + why));
                 return 0;
             }
         }

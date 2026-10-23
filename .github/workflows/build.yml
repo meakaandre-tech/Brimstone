@@ -100,7 +100,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          asset=$(gh api repos/meakaandre-tech/SIFTEC/releases/tags/latest --jq '.assets[] | select(.name=="siftec-26.3.jar") | .id' || echo none)
+          asset=$(gh api repos/meakaandre-tech/SIFTEC/releases/tags/latest --jq '[.assets[] | "\(.name)=\(.id)"] | join(",")' | sha256sum | cut -c1-16 || echo none)
           files=$(cat siftec/.github/smoke-commands.txt siftec/.github/smoke-pack-mods siftec/.github/fetch-tb.py ci/siftec-world.sh gradle.properties | sha256sum | cut -c1-16)
           echo "key=siftec-world-$asset-$files" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4

@@ -33,6 +33,8 @@ public final class Scenes {
         public String title;
         /** Set when the scene cannot be set up yet: the bench and CI skip it and say why. */
         public String skip;
+        /** A mod this scene's setup needs on top of its suite's; without it the scene is not offered. */
+        public String requiresMod;
         public int renderDistance = 8;
         public int settleSeconds = 20;
         /** Commands sent as the player after the suite's preamble; "#wait N" pauses N seconds. */
@@ -91,9 +93,16 @@ public final class Scenes {
         return null;
     }
 
+    /** Null if the scene can run in this instance, otherwise why not. */
+    public static String unavailable(Scene sc) {
+        if (sc.skip != null) return sc.skip;
+        if (sc.requiresMod != null && !FabricLoader.getInstance().isModLoaded(sc.requiresMod)) return "needs the mod " + sc.requiresMod;
+        return null;
+    }
+
     public static List<String> ids() {
         List<String> ids = new ArrayList<>();
-        for (Suite s : suites()) for (Scene sc : s.scenes) ids.add(sc.id);
+        for (Suite s : suites()) for (Scene sc : s.scenes) if (unavailable(sc) == null) ids.add(sc.id);
         return ids;
     }
 }

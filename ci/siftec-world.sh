@@ -17,6 +17,13 @@ curl -fsSL -o server.jar "https://meta.fabricmc.net/v2/versions/loader/$mc/$load
 fapiurl=$(curl -fsSL "https://api.modrinth.com/v2/project/fabric-api/version" | python3 -c "import json,sys; v=[x for x in json.load(sys.stdin) if x['version_number']=='$fapi']; print(v[0]['files'][0]['url'])")
 curl -fsSL -o mods/fabric-api.jar "$fapiurl" || exit 1
 curl -fsSL -o mods/siftec-26.3.jar https://github.com/meakaandre-tech/SIFTEC/releases/download/latest/siftec-26.3.jar || exit 1
+# SIFTEC's test commands (siftec selftest / worldtest) are their own mod, built only in SIFTEC's CI and not in its
+# release; fetched when the release carries it, otherwise the scenes that need it are skipped
+if curl -fsSL -o mods/siftec-selftest-26.3.jar https://github.com/meakaandre-tech/SIFTEC/releases/download/latest/siftec-selftest-26.3.jar; then
+  echo "siftec selftest mod: from the latest release"
+else
+  rm -f mods/siftec-selftest-26.3.jar; echo "siftec selftest mod: not in SIFTEC's latest release"
+fi
 curl -fsSL -o mods/create-fly-26.3.jar https://github.com/meakaandre-tech/Create-Fly/releases/download/pack-26.3-latest/create-fly-26.3.jar || exit 1
 curl -fsSL -o mods/create-new-age-26.3.jar https://github.com/meakaandre-tech/Create-New-Age/releases/download/fabric-26.3-latest/create-new-age-fabric-26.3.jar || exit 1
 python3 -I "$S/fetch-tb.py" "$mc" /tmp/tb /tmp/out
