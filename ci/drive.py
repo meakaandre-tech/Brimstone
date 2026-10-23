@@ -33,6 +33,11 @@ def main():
     def xdo(*args):
         subprocess.run(["xdotool", *args], check=False)
 
+    if suite.get("prepare") and any(not scenes[i].get("skip") for i in ids):
+        print("preparing the suite", flush=True)
+        for cmd in suite["preamble"] + suite["prepare"]:
+            send(cmd)
+
     for sid in ids:
         sc = scenes[sid]
         entry = {"scene": sid}
@@ -49,6 +54,8 @@ def main():
         if screen and screen.get("ciKey"):
             xdo("key", screen["ciKey"])
         if screen:
+            # park the mouse where no screen draws a tooltip, the same in every run
+            xdo("mousemove", "1", "1")
             time.sleep(5)
         shot = os.path.join(out, "shots", sid + ".png")
         subprocess.run(["import", "-window", "root", shot], check=False)
@@ -57,6 +64,7 @@ def main():
             # every run closes the scene's screen the same way before going on
             xdo("key", "Escape")
             time.sleep(1.5)
+            xdo("mousemove", "640", "360")
         if mode == "brimstone":
             start = os.path.getsize(latest) if os.path.exists(latest) else 0
             xdo("key", "slash")

@@ -8,7 +8,8 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
   - noise: vanilla-a against vanilla-b, scene by scene;
   - picture: brimstone-full against vanilla-a, brimstone-old against vanilla-old; over ci/pixel-limits.json fails;
   - probe: Brimstone's capability line must show each profile (full: both extensions; old: neither, GL 3.3);
-  - counts: each Brimstone profile's bench results against ci/baselines/<suite>-<profile>.json; a rise over 10%
+  - counts (per-frame medians: chunk uploads come in bursts, so averages swing with timing; plus heap after GC and
+    direct buffers): each Brimstone profile's bench results against ci/baselines/<suite>-<profile>.json; a rise over 10%
     fails. The current numbers are written to REPORT_DIR/baselines/ for committing;
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
@@ -49,9 +50,11 @@ def bench_results(run_dir):
         j = json.load(open(f))
         g, m = j["gpu"], j["memory"]
         out[j["scene"]] = {
-            "drawCallsPerFrame": g["drawCallsPerFrame"]["avg"],
-            "uploadsPerFrame": g["uploadsPerFrame"]["avg"],
-            "uploadBytesPerFrame": g["uploadBytesPerFrame"]["avg"],
+            "drawCallsPerFrame": g["drawCallsPerFrame"].get("p50", g["drawCallsPerFrame"]["avg"]),
+            "uploadsPerFrame": g["uploadsPerFrame"].get("p50", g["uploadsPerFrame"]["avg"]),
+            "uploadBytesPerFrame": g["uploadBytesPerFrame"].get("p50", g["uploadBytesPerFrame"]["avg"]),
+            "drawCallsPerFrameAvg": g["drawCallsPerFrame"]["avg"],
+            "uploadBytesPerFrameAvg": g["uploadBytesPerFrame"]["avg"],
             "heapUsedAfterGcMB": m["heapUsedAfterGcMB"],
             "directBuffersMB": m.get("directBuffersMB", 0),
             "meshingMsPerSection": None,
@@ -149,7 +152,7 @@ def main():
             base_file = f"ci/baselines/{name}-{prof}.json"
             base = json.load(open(base_file)) if os.path.exists(base_file) else None
             lines.append(f"### Counts, {name} {prof}\n")
-            lines.append("| scene | draw calls/frame | uploads/frame | upload bytes/frame | heap after GC MB | direct MB |")
+            lines.append("| scene | draw calls/frame (median) | uploads/frame (median) | upload bytes/frame (median) | heap after GC MB | direct MB |")
             lines.append("|---|---|---|---|---|---|")
             for sc in scenes:
                 sid = sc["id"]

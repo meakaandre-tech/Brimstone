@@ -13,13 +13,14 @@
   "scenes": [
     {
       "id": "factory",
-      "title": "SIFTEC factory: the buildings_a row of work-package-5 buildings",
+      "title": "SIFTEC factory: the buildings_a row of work-package-5 buildings (built once, marked by bedrock at 1190 160 970)",
       "renderDistance": 8,
-      "settleSeconds": 45,
+      "settleSeconds": 20,
       "setup": [
         "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
         "#wait 6",
-        "siftec worldtest buildings_a view 0",
+        "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
+        "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
         "#wait 4",
         "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
       ]
@@ -78,18 +79,26 @@
       "id": "map",
       "title": "SIFTEC fullscreen map",
       "renderDistance": 8,
-      "settleSeconds": 8,
+      "settleSeconds": 15,
       "setup": [
         "gamemode creative @a",
         "spreadplayers 300 -200 0 1 false @a",
         "#wait 5",
         "siftec worldtest map setup",
-        "#wait 20",
+        "#wait 40",
         "siftec worldtest map open 0.3"
       ],
       "screen": {
         "expect": "MapScreen"
       }
     }
-  ]
+  ],
+  "prepare": [
+    "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
+    "#wait 6",
+    "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
+    "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
+    "#wait 90"
+  ],
+  "prepareNote": "Run once per CI session before any screenshot: builds the factory row so its lighting has settled. The factory scene builds it too (only when the marker block under the platform is missing)."
 }

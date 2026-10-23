@@ -160,7 +160,7 @@ final class BenchReport {
     }
 
     private static String stats(JsonObject s) {
-        return "avg " + s.get("avg") + ", p95 " + s.get("p95") + ", max " + s.get("max");
+        return "avg " + s.get("avg") + ", median " + s.get("p50") + ", p95 " + s.get("p95") + ", max " + s.get("max");
     }
 
     private static JsonObject perFrame(LongArrayList values) {
@@ -171,6 +171,7 @@ final class BenchReport {
         for (long x : v) sum += x;
         JsonObject o = new JsonObject();
         o.addProperty("avg", v.length == 0 ? 0 : round((double) sum / v.length));
+        o.addProperty("p50", pct(s, 0.50));
         o.addProperty("p95", pct(s, 0.95));
         o.addProperty("max", s.length == 0 ? 0 : s[s.length - 1]);
         return o;
