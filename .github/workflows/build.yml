@@ -66,6 +66,17 @@ jobs:
             cp /tmp/bc-classes.txt /tmp/ci/bytecode-classes.txt
             (xargs -a /tmp/bc-classes.txt -n 300 javap -p -s -c -constants -cp "$cp" 2>/dev/null || true) | gzip -9 > /tmp/ci/bytecode.txt.gz
           fi
+          # .github/dump-data: jar entry patterns (one per line) extracted from the game jars into data.tar.gz
+          if [ -f .github/dump-data ]; then
+            mkdir -p /tmp/ci-data
+            for j in $mcjars; do
+              while read -r pattern; do
+                [ -z "$pattern" ] && continue
+                unzip -o -q "$j" "$pattern" -d /tmp/ci-data 2>/dev/null || true
+              done < .github/dump-data
+            done
+            (cd /tmp/ci-data && tar czf /tmp/ci/data.tar.gz .) || true
+          fi
           cp build.log /tmp/ci/build.log 2>/dev/null
           sed -i "s#${GITHUB_WORKSPACE}/##g" /tmp/ci/build.log
           ls -l build/libs > /tmp/ci/jars.txt 2>&1
