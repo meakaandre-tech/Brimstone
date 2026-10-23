@@ -13,13 +13,11 @@
   "scenes": [
     {
       "id": "spawn",
-      "title": "World spawn of seed 12345, 8 chunks, daylight",
+      "title": "World spawn of seed 12345, 8 chunks, daylight (fixed camera height above the terrain)",
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
-        "execute in minecraft:overworld run tp @a 96.5 220 -27.5 0 15",
-        "#wait 6",
-        "execute in minecraft:overworld positioned 96.5 0 -27.5 positioned over motion_blocking run tp @a ~ ~3 ~ 0 15"
+        "execute in minecraft:overworld run tp @a 96.5 165 -27.5 0 30"
       ]
     },
     {

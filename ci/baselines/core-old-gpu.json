@@ -9,14 +9,15 @@
       6,
       7,
       8,
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 1988104,
     "uploadsPerFrame": 57
   },
   "mobs": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 433.84,
+    "drawCallsPerFrame": 434.39,
     "heapUsedAfterGcMB": 268.23,
     "runs": [
       4,
@@ -24,7 +25,8 @@
       6,
       7,
       8,
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 1015892,
     "uploadsPerFrame": 16
@@ -39,25 +41,11 @@
       6,
       7,
       8,
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 10656,
     "uploadsPerFrame": 11
-  },
-  "spawn": {
-    "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 992.09,
-    "heapUsedAfterGcMB": 263.27,
-    "runs": [
-      4,
-      5,
-      6,
-      7,
-      8,
-      10
-    ],
-    "uploadBytesPerFrame": 13604,
-    "uploadsPerFrame": 14
   },
   "water_glass": {
     "directBuffersMB": 5.99,
@@ -69,7 +57,8 @@
       6,
       7,
       8,
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 10264,
     "uploadsPerFrame": 14

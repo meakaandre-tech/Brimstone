@@ -2,9 +2,10 @@
   "hub": {
     "directBuffersMB": 4.24,
     "drawCallsPerFrame": 295.96,
-    "heapUsedAfterGcMB": 451.0,
+    "heapUsedAfterGcMB": 451.33,
     "runs": [
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 67484,
     "uploadsPerFrame": 18
@@ -18,7 +19,8 @@
       5,
       6,
       7,
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 24656,
     "uploadsPerFrame": 21
@@ -26,11 +28,12 @@
   "sift": {
     "directBuffersMB": 5.87,
     "drawCallsPerFrame": 424.41,
-    "heapUsedAfterGcMB": 439.89,
+    "heapUsedAfterGcMB": 440.07,
     "runs": [
       7,
       8,
-      10
+      10,
+      11
     ],
     "uploadBytesPerFrame": 55764,
     "uploadsPerFrame": 19
