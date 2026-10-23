@@ -1,0 +1,16 @@
+{
+  "core": {
+    "flythrough": 14.95,
+    "mobs": 0.4,
+    "nether": 0.8,
+    "spawn": 10.05,
+    "water_glass": 6.45
+  },
+  "siftec": {
+    "factory": 0.3,
+    "hub": 8.75,
+    "mam": 9.3,
+    "map": 11.35,
+    "sift": 1.15
+  }
+}

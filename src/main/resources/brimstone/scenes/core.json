@@ -1,0 +1,149 @@
+{
+  "suite": "core",
+  "requiresMod": null,
+  "description": "A plain world: only Fabric API and Brimstone. Coordinates assume nothing about the world but its seed (CI uses 12345).",
+  "preamble": [
+    "gamerule advance_time false",
+    "gamerule advance_weather false",
+    "gamerule send_command_feedback false",
+    "gamemode spectator @a",
+    "time set 6000",
+    "weather clear"
+  ],
+  "scenes": [
+    {
+      "id": "spawn",
+      "title": "World spawn of seed 12345, 8 chunks, daylight (fixed camera height above the terrain)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 96.5 165 -27.5 0 30"
+      ]
+    },
+    {
+      "id": "flythrough",
+      "title": "Fly-through over fresh terrain, 12 chunks, scripted path north at 10 blocks/s",
+      "renderDistance": 12,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a -6000.5 170 -6000.5 180 15"
+      ],
+      "velocity": [
+        0.0,
+        0.0,
+        -10.0
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciNote": "CI gates only memory here: upload volume and draw calls depend on how fast CI's server generates the new terrain."
+    },
+    {
+      "id": "water_glass",
+      "title": "Water, ice and stained glass in a glass tank",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35",
+        "#wait 6",
+        "fill 1990 199 -2010 2010 199 -1990 minecraft:smooth_stone",
+        "fill 1990 200 -2010 2010 208 -1990 minecraft:air",
+        "fill 1992 200 -2008 2008 205 -1992 minecraft:glass hollow",
+        "fill 1993 201 -2007 2007 204 -1993 minecraft:water",
+        "fill 1995 201 -2005 1997 203 -2003 minecraft:ice",
+        "fill 2002 201 -2005 2004 204 -2003 minecraft:light_blue_stained_glass",
+        "fill 1994 206 -1996 2006 206 -1996 minecraft:red_stained_glass_pane",
+        "fill 1990 200 -1990 2010 203 -1990 minecraft:white_stained_glass_pane",
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35"
+      ]
+    },
+    {
+      "id": "nether",
+      "title": "The nether",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:the_nether run tp @a 0.5 40 0.5 45 10"
+      ]
+    },
+    {
+      "id": "mobs",
+      "title": "A crowd of 64 mobs (no AI, fixed variants, so they hold still and look the same every run)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2100.5 208 -1985.5 180 30",
+        "#wait 6",
+        "fill 2090 199 -2010 2110 199 -1990 minecraft:grass_block",
+        "fill 2090 200 -2010 2110 207 -1990 minecraft:air",
+        "kill @e[type=!minecraft:player,x=2090,y=199,z=-2010,dx=20,dy=8,dz=20]",
+        "summon minecraft:cow 2093 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2093 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2093 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2093 200 -2001 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2093 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2093 200 -1997 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2093 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2093 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2095 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2095 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2095 200 -2003 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2095 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2095 200 -1999 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2095 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2095 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2095 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2097 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2097 200 -2005 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2097 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2097 200 -2001 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2097 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2097 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2097 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2097 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2099 200 -2007 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2099 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2099 200 -2003 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2099 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2099 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2099 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2099 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2099 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2101 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2101 200 -2005 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2101 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2101 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2101 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2101 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2101 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2101 200 -1993 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2103 200 -2007 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2103 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2103 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2103 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2103 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2103 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2103 200 -1995 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2103 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2105 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2105 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2105 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2105 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2105 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2105 200 -1997 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2105 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2105 200 -1993 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2107 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2107 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2107 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2107 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2107 200 -1999 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2107 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2107 200 -1995 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2107 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "execute in minecraft:overworld run tp @a 2100.5 208 -1985.5 180 30"
+      ]
+    }
+  ]
+}

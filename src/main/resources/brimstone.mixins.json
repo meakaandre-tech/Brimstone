@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.brimstone.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "debug.GlHeuristicsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "flythrough": {
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 218.16,
+    "heapUsedAfterGcMB": 324.25,
+    "runs": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "uploadBytesPerFrame": 2109248,
+    "uploadsPerFrame": 61
+  },
+  "mobs": {
+    "directBuffersMB": 6.99,
+    "drawCallsPerFrame": 240.07,
+    "heapUsedAfterGcMB": 268.37,
+    "runs": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "uploadBytesPerFrame": 1010948,
+    "uploadsPerFrame": 17
+  },
+  "nether": {
+    "directBuffersMB": 5.99,
+    "drawCallsPerFrame": 215.94,
+    "heapUsedAfterGcMB": 273.53,
+    "runs": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "uploadBytesPerFrame": 19648,
+    "uploadsPerFrame": 12
+  },
+  "spawn": {
+    "directBuffersMB": 3.99,
+    "drawCallsPerFrame": 218.25,
+    "heapUsedAfterGcMB": 259.07,
+    "runs": [
+      12
+    ],
+    "uploadBytesPerFrame": 22476,
+    "uploadsPerFrame": 14
+  },
+  "water_glass": {
+    "directBuffersMB": 5.99,
+    "drawCallsPerFrame": 219.1,
+    "heapUsedAfterGcMB": 250.02,
+    "runs": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "uploadBytesPerFrame": 15576,
+    "uploadsPerFrame": 15
+  }
+}
