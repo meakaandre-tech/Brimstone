@@ -42,6 +42,7 @@ jobs:
         run: |
           # .github/dump-signatures: javap -p of every game and Fabric API class; .github/dump-bytecode: javap -c of the
           # game classes whose names match a regex in that file (one per line). Facts for later packages' mixins.
+          set +e +o pipefail
           mkdir -p /tmp/ci
           ./gradlew dumpCompileClasspath --no-daemon -q -I /tmp/ci.gradle >/dev/null 2>&1 || true
           mcjars=$(find ~/.gradle/caches/fabric-loom .gradle/loom-cache -name '*.jar' 2>/dev/null | grep -iE 'minecraft' | grep -v sources || true)

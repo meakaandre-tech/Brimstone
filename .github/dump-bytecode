@@ -1,4 +1,6 @@
-^com\.mojang\.blaze3d\.
+^com\.mojang\.renderpearl\.
+^com\.mojang\.blaze3d\.(systems|platform|pipeline|buffers)\.
+^net\.minecraft\.client\.(Minecraft|Options|PreferredGraphicsApi|Screenshot|GraphicsPreset|OptionInstance)$
 ^net\.minecraft\.client\.renderer\.(GameRenderer|LevelRenderer|SectionOcclusionGraph|chunk\.SectionRenderDispatcher.*|chunk\.ChunkSectionsToRender)$
-^net\.minecraft\.client\.(Minecraft|Screenshot|Options)$
 ^net\.minecraft\.client\.gui\.render\.GuiRenderer$
+^net\.minecraft\.util\.datafix\.fixes\.OptionsForceDefaultGraphicsApiFix$
