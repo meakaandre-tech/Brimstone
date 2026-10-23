@@ -79,7 +79,7 @@
     },
     {
       "id": "map",
-      "title": "SIFTEC fullscreen map",
+      "title": "SIFTEC fullscreen map, centred on a pinned player",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
@@ -88,6 +88,9 @@
         "#wait 5",
         "siftec worldtest map setup",
         "#wait 40",
+        "gamemode spectator @a",
+        "execute in minecraft:overworld run tp @a 300.5 150 -199.5 0 0",
+        "#wait 3",
         "siftec worldtest map open 1.5"
       ],
       "screen": {

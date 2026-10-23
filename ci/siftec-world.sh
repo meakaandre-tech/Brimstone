@@ -43,6 +43,15 @@ done
 if grep -q 'Done (' server.log; then
   while read -r line; do case "$line" in "#sleep "*) sleep "${line#\#sleep }";; *) echo "$line" >&3; sleep 0.3;; esac; done < "$S/smoke-commands.txt"
   sleep 10
+  # Brimstone's own addition: generate the areas the SIFTEC scenes look at that SIFTEC's smoke run doesn't (The Sift
+  # around 0,0 and the MAM platform), so every client run loads the same saved chunks instead of generating them
+  echo "execute in the_sift:the_sift run forceload add -128 -128 127 127" >&3
+  echo "execute in minecraft:overworld run forceload add 2128 -2064 2271 -1937" >&3
+  sleep 150
+  echo "execute in the_sift:the_sift run forceload remove all" >&3
+  echo "execute in minecraft:overworld run forceload remove 2128 -2064 2271 -1937" >&3
+  echo "save-all flush" >&3
+  sleep 20
   echo "stop" >&3
   for i in $(seq 1 90); do grep -q '^EXIT' server.log && break; sleep 2; done
 fi
