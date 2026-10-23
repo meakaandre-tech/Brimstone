@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Drives one CI client session through a list of scenes.
+
+For each scene: send the suite's preamble and the scene's setup to the server console (the same commands the bench
+sends as the player), wait for it to settle, press the scene's key if it measures a screen, take a screenshot. In a
+Brimstone run it then types `/brimstone bench <scene> <seconds>` and waits for the bench's END line in latest.log.
+
+usage: drive.py SUITE_FILE FIFO OUT_DIR LATEST_LOG MODE(vanilla|brimstone) BENCH_SECONDS SCENE_ID...
+"""
+import json
+import os
+import subprocess
+import sys
+import time
+
+
+def main():
+    suite_file, fifo, out, latest, mode, bench_seconds = sys.argv[1:7]
+    ids = sys.argv[7:]
+    suite = json.load(open(suite_file))
+    scenes = {s["id"]: s for s in suite["scenes"]}
+    os.makedirs(os.path.join(out, "shots"), exist_ok=True)
+    console = open(fifo, "w", buffering=1)
+    summary = []
+
+    def send(cmd):
+        if cmd.startswith("#wait "):
+            time.sleep(float(cmd[6:]))
+        else:
+            console.write(cmd + "\n")
+            time.sleep(0.3)
+
+    def xdo(*args):
+        subprocess.run(["xdotool", *args], check=False)
+
+    for sid in ids:
+        sc = scenes[sid]
+        entry = {"scene": sid}
+        if sc.get("skip"):
+            entry["skipped"] = sc["skip"]
+            summary.append(entry)
+            print(f"scene {sid}: skipped ({sc['skip']})", flush=True)
+            continue
+        print(f"scene {sid}: setting up", flush=True)
+        for cmd in suite["preamble"] + sc["setup"]:
+            send(cmd)
+        time.sleep(sc.get("settleSeconds", 20))
+        screen = sc.get("screen")
+        if screen and screen.get("ciKey"):
+            xdo("key", screen["ciKey"])
+        if screen:
+            time.sleep(5)
+        shot = os.path.join(out, "shots", sid + ".png")
+        subprocess.run(["import", "-window", "root", shot], check=False)
+        entry["shot"] = os.path.exists(shot)
+        if mode == "brimstone":
+            if screen:
+                xdo("key", "Escape")
+                time.sleep(1.5)
+            start = os.path.getsize(latest) if os.path.exists(latest) else 0
+            xdo("key", "slash")
+            time.sleep(1.5)
+            xdo("type", "--delay", "40", f"brimstone bench {sid} {bench_seconds}")
+            time.sleep(0.5)
+            xdo("key", "Return")
+            waits = sum(float(c[6:]) for c in sc["setup"] if c.startswith("#wait "))
+            budget = time.time() + waits + sc.get("settleSeconds", 20) + int(bench_seconds) + 240
+            pressed = False
+            result = "timeout"
+            while time.time() < budget:
+                time.sleep(2)
+                with open(latest, errors="replace") as f:
+                    f.seek(start)
+                    tail = f.read()
+                if screen and screen.get("ciKey") and not pressed and f"BRIMSTONE BENCH WAITING FOR SCREEN scene={sid}" in tail:
+                    time.sleep(1)
+                    xdo("key", screen["ciKey"])
+                    pressed = True
+                if f"BRIMSTONE BENCH END scene={sid}" in tail:
+                    result = "done"
+                    break
+                if f"BRIMSTONE BENCH ABORTED scene={sid}" in tail:
+                    result = "aborted"
+                    break
+            entry["bench"] = result
+            print(f"scene {sid}: bench {result}", flush=True)
+            time.sleep(3)
+        summary.append(entry)
+    with open(os.path.join(out, "drive-" + "-".join(ids) + ".json"), "w") as f:
+        json.dump(summary, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()

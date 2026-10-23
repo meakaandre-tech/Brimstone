@@ -1,0 +1,93 @@
+{
+  "suite": "siftec",
+  "requiresMod": "siftec",
+  "description": "SIFTEC compat suite, offered only when SIFTEC is loaded. Uses SIFTEC's own test commands (op needed).",
+  "preamble": [
+    "gamerule advance_time false",
+    "gamerule advance_weather false",
+    "gamerule send_command_feedback false",
+    "gamemode spectator @a",
+    "time set 6000",
+    "weather clear"
+  ],
+  "scenes": [
+    {
+      "id": "factory",
+      "title": "SIFTEC factory: the buildings_a row of work-package-5 buildings",
+      "renderDistance": 8,
+      "settleSeconds": 25,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 1240.5 200 1040.5 180 22",
+        "#wait 6",
+        "siftec worldtest buildings_a view 0",
+        "#wait 4",
+        "execute in minecraft:overworld run tp @a 1240.5 200 1040.5 180 22"
+      ]
+    },
+    {
+      "id": "sift",
+      "title": "The Sift (Mielon's The Sift dimension)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in the_sift:the_sift run tp @a 0.5 200 0.5 45 20",
+        "#wait 6",
+        "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20"
+      ]
+    },
+    {
+      "id": "hub",
+      "title": "SIFTEC HUB screen",
+      "renderDistance": 8,
+      "settleSeconds": 8,
+      "setup": [
+        "gamemode creative @a",
+        "execute in minecraft:overworld run tp @a 24.5 200 27.5 180 22",
+        "#wait 5",
+        "siftec worldtest hubui"
+      ],
+      "screen": {
+        "expect": "HubScreen",
+        "prompt": "Right-click the HUB in front of you",
+        "ciKey": "u"
+      }
+    },
+    {
+      "id": "mam",
+      "title": "SIFTEC MAM screen",
+      "renderDistance": 8,
+      "settleSeconds": 8,
+      "setup": [
+        "gamemode creative @a",
+        "execute in minecraft:overworld run tp @a 2200.5 201 -1996.5 180 21",
+        "#wait 5",
+        "fill 2195 200 -2005 2205 200 -1995 minecraft:stone_bricks",
+        "fill 2195 201 -2005 2205 205 -1995 minecraft:air",
+        "setblock 2200 201 -2000 siftec:mam",
+        "execute in minecraft:overworld run tp @a 2200.5 201 -1996.5 180 21"
+      ],
+      "screen": {
+        "expect": "ContainerScreen",
+        "prompt": "Right-click the MAM in front of you",
+        "ciKey": "u"
+      }
+    },
+    {
+      "id": "map",
+      "title": "SIFTEC fullscreen map",
+      "renderDistance": 8,
+      "settleSeconds": 8,
+      "setup": [
+        "gamemode creative @a",
+        "spreadplayers 300 -200 0 1 false @a",
+        "#wait 5",
+        "siftec worldtest map setup",
+        "#wait 20",
+        "siftec worldtest map open 0.3"
+      ],
+      "screen": {
+        "expect": "MapScreen"
+      }
+    }
+  ]
+}

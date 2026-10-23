@@ -4,3 +4,5 @@
 ^net\.minecraft\.client\.renderer\.(GameRenderer|LevelRenderer|SectionOcclusionGraph|chunk\.SectionRenderDispatcher.*|chunk\.ChunkSectionsToRender)$
 ^net\.minecraft\.client\.gui\.render\.GuiRenderer$
 ^net\.minecraft\.util\.datafix\.fixes\.OptionsForceDefaultGraphicsApiFix$
+^net\.minecraft\.client\.main\.Main$
+^net\.minecraft\.world\.level\.gamerules\.GameRules$
