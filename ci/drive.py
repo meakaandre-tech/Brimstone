@@ -14,6 +14,35 @@ import sys
 import time
 
 
+def capture(path):
+    subprocess.run(["import", "-window", "root", path], check=False)
+
+
+def steady_shot(path, tries=12, gap=4.0, pct=1.0):
+    """Waits until two captures `gap` seconds apart differ on under `pct`% of pixels (chunks, lighting and map
+    tiles have caught up), then keeps the second. Animated scenes (water) may never get there: after `tries` it
+    keeps the last capture. Returns how many pairs it took, or -1 if it gave up. Same procedure in every run."""
+    import numpy as np
+    from PIL import Image
+    tmp = path + ".prev.png"
+    capture(tmp)
+    for i in range(tries):
+        time.sleep(gap)
+        capture(path)
+        try:
+            a = np.asarray(Image.open(tmp).convert("RGB"), dtype=np.int16)
+            b = np.asarray(Image.open(path).convert("RGB"), dtype=np.int16)
+            d = float((np.abs(a - b).max(axis=2) > 8).mean() * 100) if a.shape == b.shape else 100.0
+        except Exception:
+            d = 100.0
+        if d < pct:
+            os.remove(tmp)
+            return i + 1
+        os.replace(path, tmp)
+    os.replace(tmp, path)
+    return -1
+
+
 def main():
     suite_file, fifo, out, latest, mode, bench_seconds = sys.argv[1:7]
     ids = sys.argv[7:]
@@ -58,7 +87,7 @@ def main():
             xdo("mousemove", "1", "1")
             time.sleep(5)
         shot = os.path.join(out, "shots", sid + ".png")
-        subprocess.run(["import", "-window", "root", shot], check=False)
+        entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)
         if screen:
             # every run closes the scene's screen the same way before going on

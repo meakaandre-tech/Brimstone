@@ -54,7 +54,7 @@ if ! grep -q 'Done (' server/server.log; then echo "server did not start"; cp se
 
 # ---- client
 sudo apt-get update -q >/dev/null 2>&1
-sudo apt-get install -y -q xvfb xdotool x11-utils imagemagick libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2 mesa-utils >/dev/null 2>&1
+sudo apt-get install -y -q xvfb xdotool x11-utils imagemagick libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2 mesa-utils python3-numpy python3-pil >/dev/null 2>&1
 mkdir -p run/mods
 for j in server/mods/*.jar; do case "$j" in *fabric-api*) ;; *) cp "$j" run/mods/;; esac; done
 ls -l run/mods
