@@ -355,21 +355,6 @@ screenshots against the doc's done-when and the rules). Reviews kept in the sess
 `package-0` in main's CI trigger list (harmless; removed in this merge).
 
 
-### Second review (of `39ea855`) and merge
-
-No findings that break the doc or the rules. M-A (the `ghast` shot could fail on vanilla noise alone and proved
-nothing) was handled by the coordinator: the shot and its limits removed (none raised). Left for Andre (MINOR):
-- the resource-pack check looks at `textures/block`, `models/block` and `blockstates` only; packs using
-  `atlases/blocks.json` sprite remaps, connected-texture mods (Continuity, `optifine/` properties) or mods changing
-  block models in code are not covered; a stricter check would test each occluder's baked model and sprite
-  transparency;
-- the `x2309` gate only just covers its smallest object (a 20-35 px chest sliver against 30 px); the main
-  `occlusion_move` shot has no object-free twin, so its smallest object wasn't measured;
-- the static `occlusion` scene's strict limit is 20 px where package 2's finer rule gives 10 (kept at 20, the value
-  the green runs were judged against; 20 is still a tenth of the smallest visible object there, the 200 px golem);
-- the bench setups for `occlusion` and `occlusion_move` clear blocks and kill entities in a fixed area: run them in a
-  copy of the world.
-
 ### Laptop bench (Andre, when back)
 
 Same instances and steps as `docs/laptop-bench.md`, with the Brimstone jar from this branch (after the merge, the
@@ -738,6 +723,21 @@ Counts against baseline: every gated count is within its baseline in every profi
 - The `occlusion_move` limits come from one collection run.
 - The SIFTEC factory and map scenes are still skipped (the selftest jar is not in SIFTEC's release), so the
   Create-heavy factory isn't in CI.
+
+### Second review (of `39ea855`) and merge
+
+No findings that break the doc or the rules. M-A (the `ghast` shot could fail on vanilla noise alone and proved
+nothing) was handled by the coordinator: the shot and its limits removed (none raised). Left for Andre (MINOR):
+- the resource-pack check looks at `textures/block`, `models/block` and `blockstates` only; packs using
+  `atlases/blocks.json` sprite remaps, connected-texture mods (Continuity, `optifine/` properties) or mods changing
+  block models in code are not covered; a stricter check would test each occluder's baked model and sprite
+  transparency;
+- the `x2309` gate only just covers its smallest object (a 20-35 px chest sliver against 30 px); the main
+  `occlusion_move` shot has no object-free twin, so its smallest object wasn't measured;
+- the static `occlusion` scene's strict limit is 20 px where package 2's finer rule gives 10 (kept at 20, the value
+  the green runs were judged against; 20 is still a tenth of the smallest visible object there, the 200 px golem);
+- the bench setups for `occlusion` and `occlusion_move` clear blocks and kill entities in a fixed area: run them in a
+  copy of the world.
 
 ### Laptop bench (Andre, when back)
 
