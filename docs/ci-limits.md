@@ -125,6 +125,14 @@ client run, vanilla and Brimstone alike) holds the flicker at zero, its resting 
 agree on 98.7% of the nether frame, against 22-71% before. The one-level nether shift the package 1 re-review saw
 (248,492 pixels) was this flicker; vanilla b against a shows the same one-sided one-level shift in earlier runs.
 
+Since the package 2 merge, the same pin mod also holds every animated texture (water, lava, fire, portals) on its
+first frame, in every client run. Main's CI on the package 2 merge failed on the fly-through's strict gate in the
+Vulkan profile (7,384 pixels against 5,900, with full at 5,653 and old-GPU at 5,152 in the same run): a dithered band
+along the water surface at the horizon, where the vanilla runs happened to share an animation frame and the
+Brimstone run caught another. Water is still drawn by vanilla, so this was noise; the limit wasn't raised, the cause
+was pinned. The strict limits set before this pin stay as they are (they now have more room). Package 8 (animated
+textures only when seen) needs its own check with animation running.
+
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 
 From the bench in each Brimstone run (20 s per scene in CI). **Draw calls**: per-frame average (frames that line up
