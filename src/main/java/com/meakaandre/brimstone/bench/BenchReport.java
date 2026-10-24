@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.probe.Capabilities;
+import com.meakaandre.brimstone.terrain.TerrainStats;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
@@ -85,7 +86,8 @@ final class BenchReport {
         gpu.add("uploadsByKind", byKind(GpuCounters.Upload.values(), FrameRecorder.startUploads, FrameRecorder.endUploads, n));
         gpu.add("uploadBytesByKind", byKind(GpuCounters.Upload.values(), FrameRecorder.startBytes, FrameRecorder.endBytes, n));
         out.add("gpu", gpu);
-        out.add("meshing", null);
+        out.add("meshing", TerrainStats.meshingJson());
+        out.add("terrain", TerrainStats.terrainJson(n));
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
         CounterAudit.missing().forEach(missing::add);
@@ -159,7 +161,14 @@ final class BenchReport {
         line(b, "display", disp.get("width") + "x" + disp.get("height") + ", render distance " + disp.get("renderDistance")
             + " (effective " + disp.get("effectiveRenderDistance") + "), max fps " + disp.get("maxFps") + ", vsync " + disp.get("vsync"));
         line(b, "mods", mods.get("count") + " mods, list hash " + mods.get("hash").getAsString());
-        line(b, "meshing", "not measured yet (no Brimstone mesher)");
+        JsonObject mesh = o.getAsJsonObject("meshing"), ter = o.getAsJsonObject("terrain");
+        line(b, "meshing", mesh.get("sections") + " sections, ms per section avg " + mesh.get("msPerSection") + " (vanilla mesher avg "
+            + mesh.get("compileMsAvg") + ", p95 " + mesh.get("compileMsP95") + "; transcode per layer " + mesh.get("transcodeMsPerLayer") + ")");
+        line(b, "terrain", ter.get("state").getAsString() + " (" + ter.get("reason").getAsString() + "), fallbacks " + ter.get("fallbacks")
+            + ", " + ter.get("vertexBytes") + "-byte vertex (vanilla " + ter.get("vanillaVertexBytes") + "), path " + ter.get("lastDrawPath").getAsString()
+            + ", draws/frame " + ter.get("drawCallsPerFrame") + " for " + ter.get("sectionLayersPerFrame") + " section layers, " + ter.get("regions")
+            + " regions in " + ter.get("arenas") + " arenas (" + ter.get("usedMB") + " of " + ter.get("arenaMB") + " MB used; vanilla's format would need "
+            + ter.get("vanillaEquivalentMB") + " MB), layers taken " + ter.get("layersTaken") + ", kept by vanilla " + ter.get("layersKeptByVanilla"));
         JsonObject cnt = o.getAsJsonObject("counters");
         line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")
             + ", not loaded (backend not in use) " + cnt.get("notLoaded"));

@@ -19,7 +19,8 @@
   },
   "mixins": [
     "brimstone.mixins.json",
-    "brimstone.counters.mixins.json"
+    "brimstone.counters.mixins.json",
+    "brimstone.terrain.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.19.5",

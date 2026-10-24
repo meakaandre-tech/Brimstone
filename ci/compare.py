@@ -60,7 +60,8 @@ def bench_results(run_dir):
             "uploadBytesPerFrameAvg": g["uploadBytesPerFrame"]["avg"],
             "heapUsedAfterGcMB": m["heapUsedAfterGcMB"],
             "directBuffersMB": m.get("directBuffersMB", 0),
-            "meshingMsPerSection": None,
+            "meshingMsPerSection": (j.get("meshing") or {}).get("msPerSection"),
+            "terrain": j.get("terrain"),
             "frames": j["fps"]["frames"],
         }
     return out
@@ -135,8 +136,18 @@ def main():
                             failures.append(f"{name}/{r}: probe does not show gl=3.3")
                         if old and "vanilla.mdiKnownIssues=yes" not in p:
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
+                    # the terrain module must be on in every Brimstone run and must never have fallen back to vanilla
+                    if re.search(r"Brimstone terrain: (turned off|not used)", t):
+                        failures.append(f"{name}/{r}: the terrain module fell back to vanilla (see client log)")
+                    if "Brimstone terrain: on " not in t:
+                        failures.append(f"{name}/{r}: the terrain module never turned on")
                     for f in glob.glob(os.path.join(d, "bench", "*.json")):
                         bj = json.load(open(f))
+                        ter = bj.get("terrain")
+                        if ter is None:
+                            failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
+                        elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
+                            failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
                         miss = bj.get("counters", {}).get("missing")
                         if miss is None:
                             failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
@@ -218,6 +229,18 @@ def main():
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
+            lines.append("")
+            lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
+            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | vertex bytes | live vertices | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
+            lines.append("|---|---|---|---|---|---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None or not c.get("terrain"):
+                    continue
+                t = c["terrain"]
+                files = glob.glob(os.path.join(runs[b], "bench", f"*-{sc['id']}.json"))
+                mesh = (json.load(open(files[0])).get("meshing") or {}) if files else {}
+                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
