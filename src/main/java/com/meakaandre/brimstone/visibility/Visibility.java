@@ -19,10 +19,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -60,11 +62,11 @@ public final class Visibility {
      * docs/visibility-allowlist.md. Name tags, outlines, leashes, riders, sleeping and dying poses are excluded below.
      */
     static final Map<EntityType<?>, Double> ENTITY_MARGIN = Map.ofEntries(
-        Map.entry(EntityType.COW, 2.0), Map.entry(EntityType.MOOSHROOM, 2.0), Map.entry(EntityType.PIG, 2.0),
-        Map.entry(EntityType.SHEEP, 2.0), Map.entry(EntityType.CHICKEN, 2.0), Map.entry(EntityType.VILLAGER, 2.0),
-        Map.entry(EntityType.IRON_GOLEM, 2.0), Map.entry(EntityType.SNOW_GOLEM, 2.0), Map.entry(EntityType.ZOMBIE, 2.0),
-        Map.entry(EntityType.SKELETON, 2.0), Map.entry(EntityType.CREEPER, 2.0), Map.entry(EntityType.SPIDER, 2.0),
-        Map.entry(EntityType.ITEM, 2.0));
+        Map.entry(EntityTypes.COW, 2.0), Map.entry(EntityTypes.MOOSHROOM, 2.0), Map.entry(EntityTypes.PIG, 2.0),
+        Map.entry(EntityTypes.SHEEP, 2.0), Map.entry(EntityTypes.CHICKEN, 2.0), Map.entry(EntityTypes.VILLAGER, 2.0),
+        Map.entry(EntityTypes.IRON_GOLEM, 2.0), Map.entry(EntityTypes.SNOW_GOLEM, 2.0), Map.entry(EntityTypes.ZOMBIE, 2.0),
+        Map.entry(EntityTypes.SKELETON, 2.0), Map.entry(EntityTypes.CREEPER, 2.0), Map.entry(EntityTypes.SPIDER, 2.0),
+        Map.entry(EntityTypes.ITEM, 2.0));
 
     /**
      * Block entity allow-list: each type's renderer draws inside its block grown by one block on every side (lids,
@@ -72,9 +74,9 @@ public final class Visibility {
      * docs/visibility-allowlist.md. Not end gateways (beams), beacons, spawners, conduits or anything else.
      */
     static final java.util.Set<BlockEntityType<?>> BLOCK_ENTITY_TYPES = java.util.Set.of(
-        BlockEntityType.CHEST, BlockEntityType.TRAPPED_CHEST, BlockEntityType.ENDER_CHEST, BlockEntityType.SIGN,
-        BlockEntityType.HANGING_SIGN, BlockEntityType.BANNER, BlockEntityType.BELL, BlockEntityType.SHULKER_BOX,
-        BlockEntityType.DECORATED_POT, BlockEntityType.CAMPFIRE, BlockEntityType.LECTERN, BlockEntityType.ENCHANTING_TABLE);
+        BlockEntityTypes.CHEST, BlockEntityTypes.TRAPPED_CHEST, BlockEntityTypes.ENDER_CHEST, BlockEntityTypes.SIGN,
+        BlockEntityTypes.HANGING_SIGN, BlockEntityTypes.BANNER, BlockEntityTypes.BELL, BlockEntityTypes.SHULKER_BOX,
+        BlockEntityTypes.DECORATED_POT, BlockEntityTypes.CAMPFIRE, BlockEntityTypes.LECTERN, BlockEntityTypes.ENCHANTING_TABLE);
     static final double BLOCK_ENTITY_MARGIN = 1.0;
 
     private static volatile State state = State.STARTING;
