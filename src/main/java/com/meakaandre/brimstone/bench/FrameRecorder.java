@@ -48,7 +48,6 @@ public final class FrameRecorder {
     /** Called from the frontend surface's present, on the render thread. */
     public static void onPresent() {
         GpuCounters.resetDepth();
-        MemoryLog.onPresent();
         if (!recording) return;
         long now = System.nanoTime();
         long[] d = GpuCounters.snapshot(GpuCounters.DRAWS);

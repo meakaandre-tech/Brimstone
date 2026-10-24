@@ -157,7 +157,7 @@ def main():
         for r, d in runs.items():
             t = logs(d)
             if os.path.isdir(d) and "brimstone_ci_pin" not in t:
-                failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker and texture animation) is not among the loaded mods")
+                failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order) is not among the loaded mods")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
             probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)

@@ -139,7 +139,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/translucent_move_oit, .x2404, .x2414, .x2424, .back, .bare_back (package 3) | at most 6 | at most 5 (dry run) | 10 |
 | core/translucent_move_oit.low (package 3) | 7/4 | 7 (dry run) | 20 |
 | core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
-| SIFTEC/hologram (package 3) | 15/10 (run 40123696828) | 14560 (dry run) | 21840 |
+| SIFTEC/hologram (package 3) | 7/4 (run 40139105024, with the batch order pin; 15/10 before it, run 40123696828) | 18 (dry run, run 40139105024) | 30 (was 21840 before the pin) |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
@@ -150,12 +150,19 @@ smallest translucent element tested there, the single ice block in front of the 
 `back` and `bare_back` shots (the same view without that block): far above the strict limit of 10. Every other
 element (the stripes, the tank, the panes, the ice inside the water) is larger.
 
-The hologram scene is the exception: Create's outliner draws the outline in one of two brightness states (all its
-pixels 6% brighter or not), and which one a run gets does not depend on Brimstone (vanilla's GL 3.3 run had the
-bright one in run 40121527770, both dry-run Brimstone runs in run 40123696828, while vanilla a and b had the dim one
-both times). That flip changes the whole outline (about 14,500 pixels), so the strict limit of 21,840 is larger than
-the outline: the strict gate cannot see a wrong outline there. The 8/255 gate (0.55%) does: a missing or recoloured
-outline changes about 1.6% of the frame by far more than 8 levels. Written down as a deviation in docs/progress.md.
+The hologram scene was an exception until 2026-10-25: Create's outliner drew the Build Gun hologram in one of two
+brightness states (the far edges 3.6% darker or not), so its first strict limit (21,840) was larger than the whole
+outline (about 14,500 pixels) and the strict gate could not see a wrong outline. Probe runs (40135570271,
+40138168127) found the cause: the game's outline feature phase groups submits into batches by render type in a map
+whose order follows identity hash codes, so from one game start to the next the outliner's translucent checkered
+faces were drawn before or after its solid edges; when the edges came first, the far edges (seen through the faces)
+were blended under them. The outliner's own state (colour, light, alpha, pose, normals) and the lightmap's inputs were
+identical in both states. Since then the CI pin mod (`FeatureBatchOrderMixin`) keeps those batches in the order they
+were first submitted, in every client run, vanilla and Brimstone alike: all vanilla runs now draw the outline the
+same way (they agree on 100% of the hologram frame), and the strict limit was re-collected by the rule above in a
+SIFTEC noise collection run (40139105024): vanilla b/a 7/4, Brimstone dry run 15 (full) and 18 (old-GPU), so
+18 x 1.5 = 27, rounded up to **30**. About 3,900 pixels of the outline lie over Brimstone's water, so an error there
+alone now fails the strict gate.
 
 Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
 fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until

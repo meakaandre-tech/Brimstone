@@ -577,16 +577,6 @@ public final class TerrainStore {
         return ((long) (x >> 7) & 0x3FFFFFL) << 42 | ((long) (z >> 7) & 0x3FFFFFL) << 20 | ((long) (y >> 6) & 0xFFFFFL);
     }
 
-    /** DIAGNOSTIC (branch only, removed before merge): queue and map sizes for the long-run memory log. */
-    public static String diagSizes() {
-        synchronized (LOCK) {
-            int idx = 0;
-            for (Entry[] es : ENTRIES.values()) if (es[TRANSLUCENT] != null && es[TRANSLUCENT].index != null) idx++;
-            return "entries=" + ENTRIES.size() + " translucentWithIndex=" + idx + " staged=" + STAGED.size() + " dropped=" + DROPPED.size()
-                + " releasedTranslucent=" + RELEASED_TRANSLUCENT.size() + " pendingClose=" + PENDING_CLOSE.size();
-        }
-    }
-
     public static Snapshot snapshot() {
         synchronized (LOCK) {
             long used = 0;

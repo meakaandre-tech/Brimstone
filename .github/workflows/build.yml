@@ -200,7 +200,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [siftec]
+        suite: [core, siftec]
         run: [vanilla-a, vanilla-b, vanilla-old, vanilla-vk, brimstone-full, brimstone-old, brimstone-vk]
     steps:
       - uses: actions/checkout@v4
@@ -232,9 +232,6 @@ jobs:
           RUN: ${{ matrix.run }}
           OUT: /tmp/out/${{ matrix.suite }}-${{ matrix.run }}
           BENCH_SECONDS: "20"
-          # DIAGNOSTIC (branch only): noise collection for the hologram's strict limit with the outliner pin
-          VISIBILITY_DRY_RUN: "1"
-          TRANSLUCENCY_DRY_RUN: "1"
         run: |
           chmod +x gradlew
           if [ -f siftec-server.tar ]; then tar xf siftec-server.tar; fi
@@ -246,7 +243,6 @@ jobs:
           name: res-${{ matrix.suite }}-${{ matrix.run }}
           path: /tmp/out
 
-  # DIAGNOSTIC (branch only, removed before merge): this run takes only the SIFTEC suite (outliner draw order)
   compare:
     needs: [build, client]
     # also after a failed build, so its log (build/build.log) reaches ci-logs; compare then fails on the missing runs
