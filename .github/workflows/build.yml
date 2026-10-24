@@ -235,7 +235,8 @@ jobs:
 
   compare:
     needs: [build, client]
-    if: always() && needs.build.result == 'success'
+    # also after a failed build, so its log (build/build.log) reaches ci-logs; compare then fails on the missing runs
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
