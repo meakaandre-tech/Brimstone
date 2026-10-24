@@ -789,6 +789,29 @@
     ],
     "samples": 9
   },
+  "siftec/hologram": {
+    "all": [
+      0.0027,
+      0.238,
+      0.2629
+    ],
+    "limit": 0.55,
+    "max": 0.2629,
+    "note": "package 3 collection run (SIFTEC suite in translucency dry run); not run on Vulkan (lavapipe crash, vanilla too); the strict samples are the outliner outline's two brightness states (vanilla-old was in the other state in run 40121527770)",
+    "runs": [
+      40123696828
+    ],
+    "samples": 3,
+    "strictDryRun": [
+      14560,
+      14324
+    ],
+    "strictLimit": 21840,
+    "strictVanillaBA": [
+      15,
+      10
+    ]
+  },
   "siftec/hub": {
     "all": [
       0.1806,

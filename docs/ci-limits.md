@@ -66,6 +66,12 @@ Every sample was at most 0.001%, so the rule's floor applies (0.3). See the tabl
 | core/translucent_move.back / .bare_back | at most 0.0002 | 0.3 |
 | core/translucent_move_oit (all seven shots) | at most 0.001 | 0.3 |
 | core/water_glass_oit | 0.0037, 0.003, 0.0033, 0.0035 | 0.3 |
+| siftec/hologram (run 40123696828; not run on Vulkan) | 0.0027 (vanilla a/b), 0.2629 (full), 0.238 (old-GPU) | 0.55 |
+
+The SIFTEC `hologram` scene (package 3) was sampled in run 40123696828, with only the SIFTEC suite in translucency
+dry run. It is not run in the two Vulkan runs (`ciSkipRuns`): Mesa's lavapipe segfaults as soon as Create's outliner
+draws the hologram, in vanilla's Vulkan run as much as Brimstone's, so its samples and limits cover the other three
+profiles, and its strict gate uses the three other vanilla runs.
 
 The occlusion_move shots (package 2) were sampled in the collection run 40091787069, also in dry run. The happy
 ghast, whose tentacles animate, appears only in the last shot (`ghast`), so its animation adds noise to no other
@@ -133,6 +139,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/translucent_move_oit, .x2404, .x2414, .x2424, .back, .bare_back (package 3) | at most 6 | at most 5 (dry run) | 10 |
 | core/translucent_move_oit.low (package 3) | 7/4 | 7 (dry run) | 20 |
 | core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
+| SIFTEC/hologram (package 3) | 15/10 (run 40123696828) | 14560 (dry run) | 21840 |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
@@ -142,6 +149,13 @@ smallest translucent element tested there, the single ice block in front of the 
 8,148-8,157 pixels on screen in every vanilla run (3,429-3,433 differ by more than 8/255), measured between the
 `back` and `bare_back` shots (the same view without that block): far above the strict limit of 10. Every other
 element (the stripes, the tank, the panes, the ice inside the water) is larger.
+
+The hologram scene is the exception: Create's outliner draws the outline in one of two brightness states (all its
+pixels 6% brighter or not), and which one a run gets does not depend on Brimstone (vanilla's GL 3.3 run had the
+bright one in run 40121527770, both dry-run Brimstone runs in run 40123696828, while vanilla a and b had the dim one
+both times). That flip changes the whole outline (about 14,500 pixels), so the strict limit of 21,840 is larger than
+the outline: the strict gate cannot see a wrong outline there. The 8/255 gate (0.55%) does: a missing or recoloured
+outline changes about 1.6% of the frame by far more than 8 levels. Written down as a deviation in docs/progress.md.
 
 Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
 fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
@@ -224,6 +238,8 @@ moving camera makes vanilla sort again and upload new index lists at times that 
 | core-vulkan | translucent_move (memory gated only) | 126.0 | 15 | 10220 | 268.35 | 5.46 |
 | core-vulkan | water_glass_oit | 131.0 | 15 | 15024 | 245.99 | 3.46 |
 | core-vulkan | translucent_move_oit (memory gated only) | 131.0 | 15 | 10332 | 248.38 | 3.46 |
+| siftec-full | hologram (run 40123696828, SIFTEC dry run) | 119.16 | 24 | 70368 | 453.57 | 4.24 |
+| siftec-old-gpu | hologram (run 40123696828, SIFTEC dry run) | 155.07 | 23 | 70624 | 452.39 | 3.73 |
 
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
