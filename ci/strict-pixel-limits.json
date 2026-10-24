@@ -5,7 +5,7 @@
     "nether": 900,
     "spawn": 18000,
     "water_glass": 25500,
-    "occlusion": 100
+    "occlusion": 20
   },
   "siftec": {
     "hub": 12500,
