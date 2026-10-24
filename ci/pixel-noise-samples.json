@@ -252,5 +252,18 @@
       10
     ],
     "samples": 10
+  },
+  "core/occlusion": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40079570978 (package 2, Brimstone in visibility dry run)"
+    ]
   }
 }

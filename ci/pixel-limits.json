@@ -4,7 +4,8 @@
     "mobs": 0.4,
     "nether": 0.8,
     "spawn": 10.05,
-    "water_glass": 6.45
+    "water_glass": 6.45,
+    "occlusion": 0.25
   },
   "siftec": {
     "factory": 0.3,

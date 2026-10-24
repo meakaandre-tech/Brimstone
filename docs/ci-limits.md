@@ -40,6 +40,11 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | siftec/mam | 4, 5, 6, 7, 10 | 16 | 4.6265 | 9.3 |
 | siftec/map | 6, 7 | 6 | 5.6602 | 11.35 |
 | siftec/sift | 7, 8, 10 | 10 | 0.5553 | 1.15 |
+| core/occlusion (package 2) | 40079570978 | 4 | 0.0 | 0.25 |
+
+The core occlusion scene (package 2) was sampled in run 40079570978 with Brimstone's visibility module in dry run
+(deciding and counting but hiding nothing, so Brimstone drew exactly vanilla's set): vanilla a/b and all three
+Brimstone profiles differed on 0.0% of pixels, so the rule's floor applies (0 + 0.25).
 
 The SIFTEC factory and map limits come from earlier runs; both scenes are skipped while SIFTEC's test commands are
 missing from its release (they need the `siftec_selftest` mod), so they aren't checked now.
@@ -66,7 +71,8 @@ where the other three vanilla runs agree, plus the counts of Brimstone builds th
 (a7aff90, ae203ca, 14479f5). Core scenes count from the shared core world on (a7aff90; before it, spawn noise was
 129,368 pixels); SIFTEC scenes from every run with screenshots (82ba60c onwards).
 
-**Limit = the largest sample x 1.5, rounded up to 100 pixels.**
+**Limit = the largest sample x 1.5, rounded up to 100 pixels** (package 2: a scene whose samples are all 0 gets one
+rounding step, 100 pixels, rather than a limit of 0; first used for core/occlusion).
 
 | scene | vanilla b/a samples (pixels) | Brimstone samples, max | limit |
 |---|---|---|---|
@@ -75,6 +81,7 @@ where the other three vanilla runs agree, plus the counts of Brimstone builds th
 | core/water_glass | 2566/16964, 12740/1330, 4798/1040 | 1336 | 25500 |
 | core/nether | after the lightmap pin: 230/80; before it, on the side where the flicker matched: 216, 27, 96, 339, 26, 549, 36, 250 | 4 | 900 |
 | core/mobs | 304/268, 382/126, 30/104 | 105 | 600 |
+| core/occlusion (package 2) | 0/0 (run 40079570978) | 0 (dry run, all three profiles) | 100 |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
@@ -106,16 +113,19 @@ how fast CI's server generates the new terrain. The Vulkan baselines come from t
 | core-full | mobs | 240.07 | 17 | 1010948 | 268.37 | 6.99 | 4,5,6,7,8,10,11 |
 | core-full | nether | 215.94 | 12 | 19648 | 273.53 | 5.99 | 4,5,6,7,8,10,11 |
 | core-full | spawn | 218.25 | 14 | 22476 | 259.07 | 3.99 | 12 |
+| core-full | occlusion (package 2) | 159.53 | 15 | 126320 | 265.1 | 4.24 | 40079570978 (dry run) |
 | core-full | water_glass | 219.1 | 15 | 15576 | 250.02 | 5.99 | 4,5,6,7,8,10,11 |
 | core-old-gpu | flythrough | 1146.26 | 57 | 1988104 | 324.79 | 5.99 | 4,5,6,7,8,10,11 |
 | core-old-gpu | mobs | 434.39 | 16 | 1015892 | 268.23 | 5.99 | 4,5,6,7,8,10,11 |
 | core-old-gpu | nether | 687.04 | 11 | 10656 | 272.57 | 5.99 | 4,5,6,7,8,10,11 |
 | core-old-gpu | spawn | 942.31 | 13 | 6372 | 256.29 | 3.73 | 12 |
+| core-old-gpu | occlusion (package 2) | 169.7 | 14 | 124172 | 264.64 | 4.24 | 40079570978 (dry run) |
 | core-old-gpu | water_glass | 489.1 | 14 | 10264 | 249.83 | 5.99 | 4,5,6,7,8,10,11 |
 | core-vulkan | flythrough | 218.25 | 62 | 2258432 | 318.06 | 4.23 | 10,11 |
 | core-vulkan | mobs | 240.09 | 17 | 1008176 | 264.31 | 6.23 | 10,11 |
 | core-vulkan | nether | 216.09 | 12 | 19912 | 268.95 | 4.23 | 10,11 |
 | core-vulkan | spawn | 218.94 | 15 | 27764 | 257.2 | 3.98 | 12 |
+| core-vulkan | occlusion (package 2) | 161.13 | 15 | 126356 | 264.78 | 3.98 | 40079570978 (dry run) |
 | core-vulkan | water_glass | 219.09 | 15 | 15108 | 244.39 | 4.23 | 10,11 |
 | siftec-full | hub | 295.96 | 18 | 67484 | 451.33 | 4.24 | 10,11 |
 | siftec-full | mam | 340.12 | 21 | 24656 | 471.8 | 8.12 | 4,5,6,7,10,11 |
@@ -126,6 +136,9 @@ how fast CI's server generates the new terrain. The Vulkan baselines come from t
 | siftec-vulkan | hub | 316.68 | 18 | 67484 | 450.49 | 4.23 | 10,11 |
 | siftec-vulkan | mam | 352.85 | 21 | 24656 | 462.56 | 5.46 | 10,11 |
 | siftec-vulkan | sift | 424.25 | 19 | 55980 | 439.9 | 4.23 | 10,11 |
+
+The occlusion scene's baselines (package 2) come from one run with Brimstone's visibility module in dry run, i.e. with
+Brimstone drawing exactly vanilla's entities and block entities.
 
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
