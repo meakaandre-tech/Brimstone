@@ -776,6 +776,33 @@ Note its `ms/frame` and `max` (the culling cost on the laptop's CPU) next to FPS
 
 ---
 
+## Package 3: translucency (in progress)
+
+**Goal (doc):** translucent terrain (water, glass, ice, stained glass, Build Gun holograms) sorted back to front
+correctly as the camera moves, with the sorting off the main thread; drawn from Brimstone's region buffers like solid
+and cutout (package 1), so translucent no longer goes through vanilla's path.
+
+**Done when (doc):** "Water, glass, ice and Build Gun holograms sorted correctly when the camera moves; sorting off the
+main thread."
+
+**Starting point:** vanilla 26.3 already resorts translucent sections on a worker (`ResortTransparencyTask`) when the
+camera crosses a block, re-uploading only the index buffer, and skips sorting when Improved Transparency (OIT) is on
+(`docs/terrain-research.md`). Package 1 left translucent with vanilla.
+
+**Approach:**
+1. Take translucent layers into Brimstone's buffers in the exact (or compact, where exact) format, keeping vanilla's
+   quad set; sort on a worker thread with the same ordering vanilla produces for the same camera position (so the
+   picture matches), re-uploading only indices; trigger when vanilla would.
+2. Respect vanilla's OIT setting: when OIT is on, vanilla doesn't sort; Brimstone must give the same result.
+3. Build Gun holograms are SIFTEC block displays/ghost blocks: find how they draw (entity path or terrain) and make
+   sure they sort correctly; if they aren't terrain, they stay vanilla and the check is that they still look the
+   same.
+4. CI: a moving-camera scene through water and stained glass (fixed-point shots under both pixel gates, as in
+   package 2's occlusion_move), the existing water and glass scene, and OIT on and off.
+5. Proof: draw calls down on old-GPU for translucent, bytes, pixel gates, sorting time on the worker measured.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
@@ -783,6 +810,5 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Now:** package 2 (visibility) implemented on branch `package-2` (green; see its section): next, review rounds, then
-merge. CI's dry-run switch (`VISIBILITY_DRY_RUN=1` in the client job's env) samples a new scene's noise with
-Brimstone drawing exactly vanilla's set.
+**Now:** package 3 (translucency) on branch `package-3`: plan above; fresh implementation agent, then review rounds,
+then merge.
