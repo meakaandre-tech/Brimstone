@@ -359,6 +359,356 @@
     ],
     "samples": 4
   },
+  "core/translucent_move": {
+    "all": [
+      0.0001,
+      0.0001,
+      0.0001,
+      0.0002
+    ],
+    "limit": 0.3,
+    "max": 0.0002,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      0,
+      2,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      0,
+      1
+    ]
+  },
+  "core/translucent_move.back": {
+    "all": [
+      0.0001,
+      0.0001,
+      0.0002,
+      0.0002
+    ],
+    "limit": 0.3,
+    "max": 0.0002,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      0,
+      2,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      3,
+      3
+    ]
+  },
+  "core/translucent_move.bare_back": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0001
+    ],
+    "limit": 0.3,
+    "max": 0.0001,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      4,
+      1,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      1,
+      0
+    ]
+  },
+  "core/translucent_move.low": {
+    "all": [
+      0.0004,
+      0.0004,
+      0.0004,
+      0.0009
+    ],
+    "limit": 0.3,
+    "max": 0.0009,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      4,
+      4,
+      11
+    ],
+    "strictLimit": 20,
+    "strictVanillaBA": [
+      2,
+      4
+    ]
+  },
+  "core/translucent_move.x2404": {
+    "all": [
+      0.0,
+      0.0002,
+      0.0002,
+      0.0003
+    ],
+    "limit": 0.3,
+    "max": 0.0003,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      3,
+      2,
+      2
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      0,
+      0
+    ]
+  },
+  "core/translucent_move.x2414": {
+    "all": [
+      0.0,
+      0.0,
+      0.0001,
+      0.0002
+    ],
+    "limit": 0.3,
+    "max": 0.0002,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      3,
+      0,
+      2
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      0,
+      3
+    ]
+  },
+  "core/translucent_move.x2424": {
+    "all": [
+      0.0,
+      0.0,
+      0.0001,
+      0.0001
+    ],
+    "limit": 0.3,
+    "max": 0.0001,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      1,
+      1,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      1,
+      2
+    ]
+  },
+  "core/translucent_move_oit": {
+    "all": [
+      0.0,
+      0.0001,
+      0.0001,
+      0.0002
+    ],
+    "limit": 0.3,
+    "max": 0.0002,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      2,
+      0,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      2,
+      0
+    ]
+  },
+  "core/translucent_move_oit.back": {
+    "all": [
+      0.0,
+      0.0001,
+      0.0003,
+      0.0004
+    ],
+    "limit": 0.3,
+    "max": 0.0004,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      3,
+      2,
+      2
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      0,
+      1
+    ]
+  },
+  "core/translucent_move_oit.bare_back": {
+    "all": [
+      0.0001,
+      0.0002,
+      0.0002,
+      0.0002
+    ],
+    "limit": 0.3,
+    "max": 0.0002,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      1,
+      3,
+      1
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      1,
+      2
+    ]
+  },
+  "core/translucent_move_oit.low": {
+    "all": [
+      0.0003,
+      0.0004,
+      0.0005,
+      0.001
+    ],
+    "limit": 0.3,
+    "max": 0.001,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      3,
+      7,
+      2
+    ],
+    "strictLimit": 20,
+    "strictVanillaBA": [
+      7,
+      4
+    ]
+  },
+  "core/translucent_move_oit.x2404": {
+    "all": [
+      0.0,
+      0.0001,
+      0.0003,
+      0.0003
+    ],
+    "limit": 0.3,
+    "max": 0.0003,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      1,
+      1,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      6,
+      1
+    ]
+  },
+  "core/translucent_move_oit.x2414": {
+    "all": [
+      0.0,
+      0.0002,
+      0.0002,
+      0.0002
+    ],
+    "limit": 0.3,
+    "max": 0.0002,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      1,
+      5,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      3,
+      3
+    ]
+  },
+  "core/translucent_move_oit.x2424": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0003
+    ],
+    "limit": 0.3,
+    "max": 0.0003,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      1,
+      3,
+      0
+    ],
+    "strictLimit": 10,
+    "strictVanillaBA": [
+      0,
+      1
+    ]
+  },
   "core/water_glass": {
     "all": [
       0.5409,
@@ -392,6 +742,31 @@
       10
     ],
     "samples": 19
+  },
+  "core/water_glass_oit": {
+    "all": [
+      0.003,
+      0.0033,
+      0.0035,
+      0.0037
+    ],
+    "limit": 0.3,
+    "max": 0.0037,
+    "note": "package 3 collection run (translucency dry run)",
+    "runs": [
+      40115084815
+    ],
+    "samples": 4,
+    "strictDryRun": [
+      15,
+      12,
+      12
+    ],
+    "strictLimit": 40,
+    "strictVanillaBA": [
+      23,
+      14
+    ]
   },
   "siftec/factory": {
     "all": [

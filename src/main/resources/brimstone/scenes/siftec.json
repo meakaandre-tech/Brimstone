@@ -109,27 +109,30 @@
     },
     {
       "id": "hologram",
-      "title": "SIFTEC Build Gun hologram: the Wormhole Gateway's placement outline (green where it fits, red where blocked) over a water pool with stained glass (package 3)",
+      "title": "SIFTEC Build Gun hologram (green where the building fits, red where blocked) over a water pool with stained glass, high above the terrain (package 3)",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
         "gamemode creative @a",
         "item replace entity @a weapon.mainhand with minecraft:air",
-        "execute in minecraft:overworld run tp @a 2160.5 200 -1984.5 180 35",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30",
         "#wait 5",
-        "fill 2150 190 -2012 2172 212 -1978 minecraft:air",
-        "tp @e[type=!minecraft:player,x=2150,y=190,z=-2012,dx=22,dy=22,dz=34] 2160.5 -200 -1995.5",
-        "fill 2150 199 -2012 2172 199 -1978 minecraft:smooth_stone",
-        "fill 2152 200 -2006 2168 202 -1989 minecraft:glass hollow",
-        "fill 2153 202 -2005 2167 202 -1990 minecraft:air",
-        "fill 2153 200 -2005 2167 201 -1990 minecraft:water",
-        "fill 2154 200 -1996 2155 203 -1994 minecraft:light_blue_stained_glass",
-        "fill 2165 200 -2000 2166 203 -1998 minecraft:red_stained_glass",
-        "item replace entity @a weapon.mainhand with siftec:wormhole_gateway",
-        "execute in minecraft:overworld run tp @a 2160.5 200 -1984.5 180 35"
+        "fill 2148 285 -2014 2174 305 -1978 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2148,y=285,z=-2014,dx=26,dy=20,dz=36] 2160.5 -200 -1995.5",
+        "fill 2148 289 -2014 2174 289 -1978 minecraft:smooth_stone",
+        "fill 2152 289 -2008 2168 292 -1992 minecraft:glass hollow",
+        "fill 2153 292 -2007 2167 292 -1993 minecraft:air",
+        "fill 2153 290 -2007 2167 291 -1993 minecraft:water",
+        "fill 2156 290 -1999 2157 293 -1997 minecraft:light_blue_stained_glass",
+        "fill 2163 290 -2003 2164 293 -2001 minecraft:red_stained_glass",
+        "item replace entity @a weapon.mainhand with siftec:build_gun",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30"
       ],
       "ciRequiresTranslucent": true,
-      "ciNote": "The hologram is drawn by Create's outliner (SIFTEC's PrefabPreview / BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla over Brimstone's translucent water and glass."
+      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla over Brimstone's translucent water and glass. CI presses Tab once after the setup (the Build Gun's next-tab key: selects the first Power building; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. An earlier version held the Wormhole Gateway, whose outline (a 48x54 structure) stalled the Vulkan runs, vanilla's too.",
+      "ciKeys": [
+        "Tab"
+      ]
     }
   ],
   "prepare": [

@@ -221,9 +221,10 @@ jobs:
           RUN: ${{ matrix.run }}
           OUT: /tmp/out/${{ matrix.suite }}-${{ matrix.run }}
           BENCH_SECONDS: "20"
-          # MARKED NOISE COLLECTION RUN (package 3): translucent terrain stays with vanilla in the Brimstone runs, so
-          # the new scenes' samples are noise; ci/compare.py fails every such run. Removed again in the next commit.
-          TRANSLUCENCY_DRY_RUN: "1"
+          # MARKED NOISE COLLECTION RUN for the SIFTEC suite only (package 3, the rebuilt hologram scene): translucent
+          # terrain stays with vanilla in the SIFTEC Brimstone runs, so that scene's samples are noise; ci/compare.py
+          # fails every such run. The core suite runs Brimstone for real. Removed again in the next commit.
+          TRANSLUCENCY_DRY_RUN: ${{ matrix.suite == 'siftec' && '1' || '0' }}
         run: |
           chmod +x gradlew
           if [ -f siftec-server.tar ]; then tar xf siftec-server.tar; fi

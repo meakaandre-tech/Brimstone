@@ -16,7 +16,22 @@
     "occlusion_move.x2305": 0.25,
     "occlusion_move.x2309": 0.3,
     "spawn": 10.05,
-    "water_glass": 6.45
+    "translucent_move": 0.3,
+    "translucent_move.back": 0.3,
+    "translucent_move.bare_back": 0.3,
+    "translucent_move.low": 0.3,
+    "translucent_move.x2404": 0.3,
+    "translucent_move.x2414": 0.3,
+    "translucent_move.x2424": 0.3,
+    "translucent_move_oit": 0.3,
+    "translucent_move_oit.back": 0.3,
+    "translucent_move_oit.bare_back": 0.3,
+    "translucent_move_oit.low": 0.3,
+    "translucent_move_oit.x2404": 0.3,
+    "translucent_move_oit.x2414": 0.3,
+    "translucent_move_oit.x2424": 0.3,
+    "water_glass": 6.45,
+    "water_glass_oit": 0.3
   },
   "siftec": {
     "factory": 0.3,

@@ -90,6 +90,11 @@ def main():
             # park the mouse where no screen draws a tooltip, the same in every run
             xdo("mousemove", "1", "1")
             time.sleep(5)
+        # keys a scene needs pressed after its setup (package 3: the Build Gun's next-tab key, which picks a building
+        # so its hologram shows); the same in every run
+        for k in sc.get("ciKeys", []):
+            xdo("key", k)
+            time.sleep(1.5)
         if not screen:
             # F3+A: vanilla's own "reload all chunks", so a section the client dropped or never meshed under load
             # is rebuilt before the picture is taken; the same in every run
