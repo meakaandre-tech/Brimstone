@@ -9,8 +9,11 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
   - picture: brimstone-full against vanilla-a, brimstone-old against vanilla-old; over ci/pixel-limits.json fails;
   - probe: Brimstone's capability line must show each profile (full: both extensions; old: neither, GL 3.3);
   - counts (draw calls: per-frame average, as frames that line up with a game tick draw more and the median flips;
-    uploads and bytes: per-frame median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results against ci/baselines/<suite>-<profile>.json; a rise over 10%
-    fails. The current numbers are written to REPORT_DIR/baselines/ for committing;
+    a scene with "ciDrawCallGate": "median" is gated on the per-frame median instead, as its average follows the
+    runner's frame rate (design doc, Testing: "Counts that follow the runner's speed"); uploads and bytes: per-frame
+    median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results
+    against ci/baselines/<suite>-<profile>.json; a rise over 10% fails. The current numbers are written to
+    REPORT_DIR/baselines/ for committing;
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
@@ -96,6 +99,7 @@ def bench_results(run_dir):
             "uploadsPerFrame": g["uploadsPerFrame"].get("p50", g["uploadsPerFrame"]["avg"]),
             "uploadBytesPerFrame": g["uploadBytesPerFrame"].get("p50", g["uploadBytesPerFrame"]["avg"]),
             "drawCallsPerFrameAvg": g["drawCallsPerFrame"]["avg"],
+            "drawCallsPerFrameMedian": g["drawCallsPerFrame"].get("p50"),
             "uploadBytesPerFrameAvg": g["uploadBytesPerFrame"]["avg"],
             "heapUsedAfterGcMB": m["heapUsedAfterGcMB"],
             "directBuffersMB": m.get("directBuffersMB", 0),
@@ -345,12 +349,17 @@ def main():
         lines.append("")
         for prof, (b, _) in PAIRS.items():
             cur = bench_results(runs[b])
+            # scenes whose draw-call average follows the runner's frame rate are gated (and baselined) on the median
+            median_gated = {sc["id"] for sc in scenes if sc.get("ciDrawCallGate") == "median"}
+            for sid in median_gated:
+                if sid in cur:
+                    cur[sid]["drawCallsPerFrame"] = cur[sid]["drawCallsPerFrameMedian"]
             sd["counts"][prof] = cur
             json.dump(cur, open(os.path.join(rep, "baselines", f"{name}-{prof}.json"), "w"), indent=2, sort_keys=True)
             base_file = f"ci/baselines/{name}-{prof}.json"
             base = json.load(open(base_file)) if os.path.exists(base_file) else None
             lines.append(f"### Counts, {name} {prof}\n")
-            lines.append("| scene | draw calls/frame (avg) | uploads/frame (median) | upload bytes/frame (median) | heap after GC MB | direct MB |")
+            lines.append("| scene | draw calls/frame (avg, or median where marked) | uploads/frame (median) | upload bytes/frame (median) | heap after GC MB | direct MB |")
             lines.append("|---|---|---|---|---|---|")
             for sc in scenes:
                 sid = sc["id"]
@@ -370,6 +379,8 @@ def main():
                 for k in ["drawCallsPerFrame", "uploadsPerFrame", "uploadBytesPerFrame", "heapUsedAfterGcMB", "directBuffersMB"]:
                     v = c[k]
                     cell = f"{v}"
+                    if k == "drawCallsPerFrame" and sid in median_gated:
+                        cell += f" median (avg {c['drawCallsPerFrameAvg']})"
                     if base is None:
                         cell += " (no baseline)"
                     elif k not in gated:
@@ -378,7 +389,7 @@ def main():
                         bv = base[sid][k]
                         cell += f" (base {bv})"
                         if v > bv * RISE + SLACK[k]:
-                            failures.append(f"{name}/{prof}/{sid}: {k} rose from {bv} to {v} (over 10%)")
+                            failures.append(f"{name}/{prof}/{sid}: {k}{' (median)' if k == 'drawCallsPerFrame' and sid in median_gated else ''} rose from {bv} to {v} (over 10%)")
                     cells.append(cell)
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
             if base is None:

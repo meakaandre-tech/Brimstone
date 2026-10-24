@@ -238,14 +238,27 @@ moving camera makes vanilla sort again and upload new index lists at times that 
 | core-vulkan | translucent_move (memory gated only) | 126.0 | 15 | 10220 | 268.35 | 5.46 |
 | core-vulkan | water_glass_oit | 131.0 | 15 | 15024 | 245.99 | 3.46 |
 | core-vulkan | translucent_move_oit (memory gated only) | 131.0 | 15 | 10332 | 248.38 | 3.46 |
-| siftec-full | hologram (run 40123696828, SIFTEC dry run) | 119.16 | 24 | 70368 | 453.57 | 4.24 |
-| siftec-old-gpu | hologram (run 40123696828, SIFTEC dry run) | 155.07 | 23 | 70624 | 452.39 | 3.73 |
+| siftec-full | hologram (draw calls: **median**, see below; the rest run 40123696828, SIFTEC dry run) | 166 | 24 | 70368 | 453.57 | 4.24 |
+| siftec-old-gpu | hologram (draw calls: **median**, see below; the rest run 40123696828, SIFTEC dry run) | 167 | 23 | 70624 | 452.39 | 3.73 |
 
-Caveat (open, for Andre): the hologram scene runs below CI's 30 fps cap on slower runners (22-30 fps seen), and its
-per-frame draw-call average follows the frame rate (frames that line up with a game tick draw about 50 more there):
-about 119 at 30 fps, 144-155 at 22-24 fps, median 166-170 in every run. The full-profile baseline (119.16) is from a
-30 fps sample, so that gate failed once on a slow runner with Brimstone's own draws unchanged (run 40128444322,
-144.24 at 23.6 fps). Not raised; see docs/progress.md, package 3, "Open issues".
+### Hologram draw calls: gated on the median (decided by Andre, 2026-10-25)
+
+The hologram scene runs below CI's 30 fps cap on slower runners, and its per-frame draw-call *average* follows the
+frame rate (frames that line up with a game tick draw more): about 119 at 30 fps, 142-148 at 22-24 fps, while
+Brimstone's own draws are the same in every run. Per the design doc (Testing, "Counts that follow the runner's
+speed"), this scene alone is gated on the per-frame **median** (`"ciDrawCallGate": "median"` in `siftec.json`), in
+every profile it runs in (full and old-GPU; not run on Vulkan). Baseline = the highest clean median from package 3's
+runs on `4cb5419`, `6d48fc7` and later. Every other scene and every other count is gated as before.
+
+| run | commit | full: median (avg) | old-GPU: median (avg) | clean? |
+|---|---|---|---|---|
+| 40123696828 | `4cb5419` | 166 (119.16) | 170 (155.07) | no: translucency and visibility dry run (Brimstone drew vanilla's set, vanilla drew the translucent terrain) |
+| 40126212181 | `6d48fc7` | 166 (118.92) | 167 (124.18) | yes (green) |
+| 40128444322 | `0db931b` | 166 (144.24) | 167 (148.72) | yes (failed only on this average) |
+| 40130610610 | `13f56fb` | 166 (142.45) | 167 (146.9) | yes (failed only on this average) |
+
+Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2). The dry run's 170 is left out: in a dry run Brimstone isn't
+drawing the translucent terrain itself, so its count is not Brimstone's.
 
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.

@@ -47,24 +47,25 @@ jobs:
         run: |
           # .github/dump-signatures: javap -p of every game and Fabric API class; .github/dump-bytecode: javap -c of the
           # game classes whose names match a regex in that file (one per line). Facts for later packages' mixins.
+          # Nothing of Mojang's is published (design doc, Rules: Mojang code): the dumps and the class lists go to
+          # /tmp/dumps, an Actions artifact kept for 1 day, never to the public ci-logs branch. /tmp/ci holds only
+          # Brimstone's own build log and jar list.
           set +e +o pipefail
-          mkdir -p /tmp/ci
+          mkdir -p /tmp/ci /tmp/dumps
           ./gradlew dumpCompileClasspath --no-daemon -q -I /tmp/ci.gradle >/dev/null 2>&1 || true
-          cp /tmp/compile-cp.txt /tmp/ci/compile-cp.txt
           mcjars=$(find ~/.gradle/caches/fabric-loom .gradle/loom-cache -name '*.jar' 2>/dev/null | grep -iE 'minecraft' | grep -v sources || true)
-          echo "$mcjars" > /tmp/ci/mcjars.txt
+          echo "$mcjars" > /tmp/mcjars.txt
           fabricjars=$(grep -E '/fabric-[^/]*\.jar$' /tmp/compile-cp.txt 2>/dev/null | grep -v sources | tr '\n' ' ')
           if [ -f .github/dump-signatures ]; then
             jars="$mcjars $fabricjars"
             cp=$(echo $jars | tr ' ' ':')
-            for j in $jars; do unzip -Z1 "$j" | grep '\.class$' ; done | sed 's/\.class$//' | sort -u | sed 's#/#.#g' | grep -v 'package-info\|module-info' > /tmp/ci/classes.txt
-            (xargs -a /tmp/ci/classes.txt -n 300 javap -p -cp "$cp" 2>/dev/null || true) | gzip -9 > /tmp/ci/javap-all.txt.gz
+            for j in $jars; do unzip -Z1 "$j" | grep '\.class$' ; done | sed 's/\.class$//' | sort -u | sed 's#/#.#g' | grep -v 'package-info\|module-info' > /tmp/dumps/classes.txt
+            (xargs -a /tmp/dumps/classes.txt -n 300 javap -p -cp "$cp" 2>/dev/null || true) | gzip -9 > /tmp/dumps/javap-all.txt.gz
           fi
           if [ -f .github/dump-bytecode ]; then
             cp=$(echo $mcjars | tr ' ' ':')
-            for j in $mcjars; do unzip -Z1 "$j" | grep '\.class$' ; done | sed 's/\.class$//' | sort -u | sed 's#/#.#g' | grep -E -f .github/dump-bytecode > /tmp/bc-classes.txt || true
-            cp /tmp/bc-classes.txt /tmp/ci/bytecode-classes.txt
-            (xargs -a /tmp/bc-classes.txt -n 300 javap -p -s -c -constants -cp "$cp" 2>/dev/null || true) | gzip -9 > /tmp/ci/bytecode.txt.gz
+            for j in $mcjars; do unzip -Z1 "$j" | grep '\.class$' ; done | sed 's/\.class$//' | sort -u | sed 's#/#.#g' | grep -E -f .github/dump-bytecode > /tmp/dumps/bytecode-classes.txt || true
+            (xargs -a /tmp/dumps/bytecode-classes.txt -n 300 javap -p -s -c -constants -cp "$cp" 2>/dev/null || true) | gzip -9 > /tmp/dumps/bytecode.txt.gz
           fi
           cp build.log /tmp/ci/build.log 2>/dev/null
           sed -i "s#${GITHUB_WORKSPACE}/##g" /tmp/ci/build.log
@@ -74,6 +75,14 @@ jobs:
         with:
           name: build-logs
           path: /tmp/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          # game class dumps: kept for 1 day, never published (see the step above)
+          name: game-dumps
+          path: /tmp/dumps
+          retention-days: 1
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
           name: brimstone-jar
@@ -89,8 +98,10 @@ jobs:
           echo "Mixin jar: $mixin"
           test -n "$mixin"
           mkdir -p /tmp/pin/classes /tmp/pin-out
-          javac --release 21 -cp "$mixin" -d /tmp/pin/classes $(find ci/pin-mod/src -name '*.java')
-          cp ci/pin-mod/fabric.mod.json ci/pin-mod/brimstone_ci_pin.mixins.json /tmp/pin/classes/
+          # the game's compile classpath (and the game jars) too, so the pin mixins can name the game's types
+          cp="$mixin:$(tr '\n' ':' < /tmp/compile-cp.txt):$(tr '\n' ':' < /tmp/mcjars.txt)"
+          javac --release 25 -cp "$cp" -d /tmp/pin/classes $(find ci/pin-mod/src -name '*.java')
+          cp ci/pin-mod/fabric.mod.json ci/pin-mod/*.mixins.json /tmp/pin/classes/
           (cd /tmp/pin/classes && jar cf /tmp/pin-out/ci-pin.jar .)
           unzip -l /tmp/pin-out/ci-pin.jar
       - uses: actions/upload-artifact@v4
@@ -247,9 +258,10 @@ jobs:
           path: /tmp/res
           merge-multiple: true
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: build-logs
-          path: /tmp/ci/build
+          path: /tmp/build-logs
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -269,6 +281,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/ci/runs && { cp -r /tmp/res/* /tmp/ci/runs/ 2>/dev/null || echo 'no client results'; }
+          # Brimstone's own build log only: no game class dumps or lists on ci-logs (they are the 1-day game-dumps artifact)
+          cp /tmp/build-logs/build.log /tmp/ci/build.log 2>/dev/null || echo 'no build log'
+          rm -rf /tmp/ci/build
           echo "${GITHUB_SHA} ${GITHUB_REF_NAME} ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" > /tmp/ci/commit.txt
           cd /tmp/ci
           git init -q -b ci-logs

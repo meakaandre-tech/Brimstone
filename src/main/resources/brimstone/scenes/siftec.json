@@ -109,6 +109,7 @@
     },
     {
       "id": "hologram",
+      "ciDrawCallGate": "median",
       "title": "SIFTEC Build Gun hologram (green where the building fits) in front of a water pool, high above the terrain (package 3)",
       "renderDistance": 8,
       "settleSeconds": 15,

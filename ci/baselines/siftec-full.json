@@ -1,10 +1,12 @@
 {
   "hologram": {
     "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 119.16,
+    "drawCallsPerFrame": 166,
     "heapUsedAfterGcMB": 453.57,
     "runs": [
-      40123696828
+      40126212181,
+      40128444322,
+      40130610610
     ],
     "uploadBytesPerFrame": 70368,
     "uploadsPerFrame": 24
