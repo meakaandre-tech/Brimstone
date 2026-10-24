@@ -93,8 +93,8 @@ how fast CI's server generates the new terrain. The Vulkan baselines come from t
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
 
-Meshing time per section is not measured yet: there is no Brimstone mesher. The bench's JSON has a `meshing` field
-for it.
+Meshing time per section is measured since package 1 (the bench's `meshing` block: vanilla's mesher plus Brimstone's
+transcode, sections meshed while measuring) and shown in CI's report; it is not gated (it follows CI's CPU load).
 
 ## Counter audit
 
