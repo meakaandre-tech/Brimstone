@@ -121,12 +121,13 @@
         "tp @e[type=!minecraft:player,x=2148,y=285,z=-2014,dx=26,dy=20,dz=38] 2160.5 -200 -1995.5",
         "fill 2148 288 -2014 2174 288 -1976 minecraft:stone",
         "fill 2148 289 -2014 2174 289 -1976 minecraft:smooth_stone",
+        "fill 2151 288 -2010 2169 288 -1992 minecraft:sea_lantern",
         "fill 2151 289 -2010 2169 289 -1992 minecraft:water",
         "item replace entity @a weapon.mainhand with siftec:build_gun",
         "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30"
       ],
       "ciRequiresTranslucent": true,
-      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla in front of Brimstone's translucent water. CI presses Tab once after the setup (the Build Gun's next-tab key: picks the first Power building, the Power Pole Mk.1; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. The last setup step moves the camera three blocks, so vanilla sorts the water again from where the picture is taken. Not run on Vulkan: lavapipe segfaults (libvulkan_lvp.so) as soon as the outliner draws, in vanilla's run too (runs 40115084815 and 40119107821).",
+      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla in front of Brimstone's translucent water. CI presses Tab once after the setup (the Build Gun's next-tab key: picks the first Power building, the Power Pole Mk.1; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. The pool's floor is sea lanterns: up there water freezes over at random where block light is low (ice in vanilla's own runs, run 40121527770), and light 14 at the surface stops it. The last setup step moves the camera three blocks, so vanilla sorts the water again from where the picture is taken. Not run on Vulkan: lavapipe segfaults (libvulkan_lvp.so) as soon as the outliner draws, in vanilla's run too (runs 40115084815 and 40119107821).",
       "ciKeys": [
         "Tab"
       ],
