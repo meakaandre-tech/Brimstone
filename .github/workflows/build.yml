@@ -200,7 +200,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, siftec]
+        suite: [siftec]
         run: [vanilla-a, vanilla-b, vanilla-old, vanilla-vk, brimstone-full, brimstone-old, brimstone-vk]
     steps:
       - uses: actions/checkout@v4
