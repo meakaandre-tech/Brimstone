@@ -14,4 +14,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface RenderSectionInvoker {
     @Invoker("vertexBufferUploadCallback")
     void brimstone$vertexBufferUploaded(CompiledSectionMesh mesh, ChunkSectionLayer layer);
+
+    @Invoker("releaseSectionMesh")
+    void brimstone$releaseSectionMesh(net.minecraft.client.renderer.chunk.SectionMesh mesh);
 }

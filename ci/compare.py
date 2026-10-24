@@ -231,8 +231,8 @@ def main():
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             lines.append("")
             lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
-            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | vertex bytes | live vertices | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
-            lines.append("|---|---|---|---|---|---|---|---|---|---|")
+            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | vertex bytes | live vertices | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | rounded positions / UVs % | meshing ms/section (vanilla mesher p95) |")
+            lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
             for sc in scenes:
                 c = cur.get(sc["id"])
                 if sc.get("skip") or c is None or not c.get("terrain"):
@@ -240,7 +240,7 @@ def main():
                 t = c["terrain"]
                 files = glob.glob(os.path.join(runs[b], "bench", f"*-{sc['id']}.json"))
                 mesh = (json.load(open(files[0])).get("meshing") or {}) if files else {}
-                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
+                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {t.get('roundedPositionPct')} / {t.get('roundedUvPct')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")

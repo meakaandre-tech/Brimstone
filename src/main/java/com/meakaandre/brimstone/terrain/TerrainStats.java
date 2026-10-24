@@ -14,8 +14,9 @@ public final class TerrainStats {
     static final AtomicLong LAYERS_TAKEN = new AtomicLong();
     static final AtomicLong LAYERS_KEPT_BY_VANILLA = new AtomicLong();
     static final AtomicLong VERTICES = new AtomicLong();
-    /** Layers vanilla kept because a vertex was off the compact grid, or out of range. */
-    static final AtomicLong KEPT_PRECISION = new AtomicLong();
+    /** Vertices whose position or UV was off the compact grid and rounded; layers vanilla kept (out of range). */
+    static final AtomicLong ROUNDED_POSITIONS = new AtomicLong();
+    static final AtomicLong ROUNDED_UVS = new AtomicLong();
     static final AtomicLong KEPT_RANGE = new AtomicLong();
 
     // measuring window
@@ -121,7 +122,8 @@ public final class TerrainStats {
         o.addProperty("layersKeptByVanilla", LAYERS_KEPT_BY_VANILLA.get());
         long v = VERTICES.get();
         o.addProperty("verticesTranscoded", v);
-        o.addProperty("layersKeptOffGrid", KEPT_PRECISION.get());
+        o.addProperty("roundedPositionPct", v == 0 ? 0 : round(ROUNDED_POSITIONS.get() * 100.0 / v));
+        o.addProperty("roundedUvPct", v == 0 ? 0 : round(ROUNDED_UVS.get() * 100.0 / v));
         o.addProperty("layersKeptOutOfRange", KEPT_RANGE.get());
         o.addProperty("drawCallsPerFrame", frames == 0 ? 0 : round((double) windowDraws / frames));
         o.addProperty("sectionLayersPerFrame", frames == 0 ? 0 : round((double) windowSectionLayers / frames));

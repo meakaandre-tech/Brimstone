@@ -22,9 +22,11 @@ import org.lwjgl.system.MemoryUtil;
  * </pre>
  *
  * Positions on the 1/2048-block grid (every model position on vanilla's 1/16-pixel grid) and UVs on the
- * 1/65536 grid come back bit-exact in the shader. A layer with any vertex that would not come back exactly (random
- * plant offsets, rotated models, UVs off the grid), or that doesn't fit (alpha other than 255, positions outside the
- * range), is not transcoded: vanilla keeps it and draws it as before. The bench counts both.
+ * 1/65536 grid (every 1/16 texel of an atlas up to 4096 wide) come back bit-exact in the shader, so block faces draw
+ * exactly as vanilla's. Values off those grids (random plant offsets, fluid heights and flow UVs, rotated model
+ * parts) are rounded to the nearest step: at most 1/4096 block and 1/131072 of the atlas. The bench counts how many
+ * vertices were rounded. A layer that doesn't fit at all (alpha other than 255, positions outside -8..24, UVs outside
+ * the atlas) is not transcoded: vanilla keeps it and draws it as before.
  */
 public final class CompactVertex {
     public static final int BYTES = 16;
@@ -79,6 +81,7 @@ public final class CompactVertex {
         long in = MemoryUtil.memAddress(src);
         ByteBuffer out = MemoryUtil.memAlloc(count * BYTES);
         long o = MemoryUtil.memAddress(out);
+        int inexactPos = 0, inexactUv = 0;
         for (int i = 0; i < count; i++, in += VANILLA_BYTES, o += BYTES) {
             float fx = MemoryUtil.memGetFloat(in), fy = MemoryUtil.memGetFloat(in + 4), fz = MemoryUtil.memGetFloat(in + 8);
             float fu = MemoryUtil.memGetFloat(in + 16), fv = MemoryUtil.memGetFloat(in + 20);
@@ -89,13 +92,8 @@ public final class CompactVertex {
                 TerrainStats.KEPT_RANGE.incrementAndGet();
                 return null;
             }
-            if (x / 2048f - 8f != fx || y / 2048f - 8f != fy || z / 2048f - 8f != fz
-                || decodeUv(u) != fu || decodeUv(v) != fv) {
-                // not on the grid (a random plant offset, a rotated model): vanilla keeps this layer, exactly
-                MemoryUtil.memFree(out);
-                TerrainStats.KEPT_PRECISION.incrementAndGet();
-                return null;
-            }
+            if (x / 2048f - 8f != fx || y / 2048f - 8f != fy || z / 2048f - 8f != fz) inexactPos++;
+            if (decodeUv(u) != fu || decodeUv(v) != fv) inexactUv++;
             int block = light(MemoryUtil.memGetShort(in + 24));
             int sky = light(MemoryUtil.memGetShort(in + 26));
             MemoryUtil.memPutShort(o, (short) x);
@@ -110,6 +108,8 @@ public final class CompactVertex {
             MemoryUtil.memPutShort(o + 14, (short) v);
         }
         TerrainStats.VERTICES.addAndGet(count);
+        if (inexactPos != 0) TerrainStats.ROUNDED_POSITIONS.addAndGet(inexactPos);
+        if (inexactUv != 0) TerrainStats.ROUNDED_UVS.addAndGet(inexactUv);
         return out;
     }
 
@@ -120,15 +120,13 @@ public final class CompactVertex {
     }
 
     /**
-     * Atlas UV in 1/65536 steps; 65535 stands for exactly 1.0 (the right or bottom edge of the atlas), so a value
-     * that would round to 65535 without being 1.0 can't be stored and the layer stays with vanilla (-1). Outside
-     * 0..1 also -1.
+     * Atlas UV in 1/65536 steps; 65535 stands for exactly 1.0 (the right or bottom edge of the atlas), so other values
+     * near 1 stop at 65534. Outside 0..1 (beyond float noise) -1.
      */
     private static int uv(float t) {
         if (t == 1.0f) return 65535;
-        if (!(t >= 0f && t < 1f)) return -1;
-        int k = Math.round(t * 65536f);
-        return k >= 65535 ? -1 : k;
+        if (!(t >= -0.0001f && t < 1.0001f)) return -1;
+        return Math.max(0, Math.min(65534, Math.round(t * 65536f)));
     }
 
     /** What the shader reads back for a stored UV. */

@@ -186,7 +186,13 @@ public final class TerrainStore {
             for (Staged s : done) {
                 Entry[] es = ENTRIES.get(s.mesh);
                 if (es == null || es[layerIndex(s.layer)] == null) continue;
-                ((RenderSectionInvoker) s.section).brimstone$vertexBufferUploaded(s.mesh, s.layer);
+                RenderSectionInvoker section = (RenderSectionInvoker) s.section;
+                if (s.section.getSectionMesh().getCompileTaskStartTime() > s.mesh.getCompileTaskStartTime()) {
+                    // a newer mesh of this section is already in: this one must not replace it, it just goes
+                    section.brimstone$releaseSectionMesh(s.mesh);
+                    continue;
+                }
+                section.brimstone$vertexBufferUploaded(s.mesh, s.layer);
             }
         }
     }
