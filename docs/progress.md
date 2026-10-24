@@ -2,8 +2,8 @@
 
 ## Where things stand
 
-- **Now:** packages 0 (repo, CI, bench harness) and 1 (terrain meshing and region buffers) done and merged; next is
-  package 2 (visibility). See "Hand-off" at the bottom for the exact state.
+- **Now:** packages 0 (repo, CI, bench harness) and 1 (terrain meshing and region buffers) done and merged; package 2
+  (visibility) on branch `package-2`, green after the first review's fixes, awaiting re-review. See "Hand-off" at the bottom for the exact state.
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
@@ -351,7 +351,9 @@ screenshots against the doc's done-when and the rules). Reviews kept in the sess
     the frame on spawn and water and glass, 17% on MAM, could hide; MAM's limit comes from one fade outlier).
   - m3: no runtime GPU-error detection on Vulkan; Vulkan plain path not in CI; the transient hand-back gap.
 
-**Merged** to main as `MERGE1_SHA`; main run MAIN1_RUN.
+**Merged** to main as `7534f16` (main run https://github.com/meakaandre-tech/Brimstone/actions/runs/40075302839, green, `latest` published). The package 0 merge had accidentally kept
+`package-0` in main's CI trigger list (harmless; removed in this merge).
+
 
 ### Laptop bench (Andre, when back)
 
@@ -385,6 +387,395 @@ with `plain, one multi-draw per region and layer` (Intel integrated: vanilla's f
 
 ---
 
+## Package 2: visibility
+
+**Branch** `package-2` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40093135028
+on `a09678d`, after the review fixes (every profile, both suites, compare passed). The first green version, before
+review, was `5d7dc04` (run 40083026856). **ci-logs** (overwritten by later runs): `compare/report.md` has every table
+below plus a "Visibility" table per suite and profile; `runs/<suite>-brimstone-*/bench/*.json` have the `visibility`
+block; `runs/core-*/shots/occlusion_move.*.png` are the fixed-point shots.
+
+**Done when (doc):** "Frustum plus cave culling over sections; block entities and entities hidden when nothing can see
+them. No pop-in in the benchmark fly-through."
+
+### What vanilla 26.3 already does (research, from the bytecode dump)
+
+- **Sections: frustum and cave graph, already.**
+  - `SectionOcclusionGraph` walks a breadth-first graph from the camera's section through each section's
+    `VisibilitySet`: which faces connect through non-opaque cells, built by `VisGraph` from
+    `BlockState.isSolidRender`. A direction rule ("smart cull") keeps the walk from turning back toward the camera.
+  - Full rebuilds run on the background executor; partial updates run on the render thread when a mesh swaps in.
+  - The result is an octree. `LevelExtractor.applyFrustum` collects the sections in the frustum into
+    `LevelRenderer.visibleSections`, but only when the camera has turned by a whole degree or the graph has changed.
+  - That list is the only input of the terrain draw lists, vanilla's and Brimstone's (package 1). This is the doc's
+    "cave graph walked from the camera's section".
+- **Entities: frustum only.**
+  - `LevelExtractor.isEntityVisible` is `EntityRenderDispatcher.shouldRender` (a frustum test on the renderer's
+    culling box, plus the leash and rider cases) and `LevelRenderer.isSectionCompiledAndVisible`. The latter only
+    checks that the entity's section has a mesh and is faded in to 0.3.
+  - It does **not** ask the cave graph: an entity in a cave section the graph has culled is still drawn, and so is
+    one behind a wall in a visible section.
+- **Block entities: per section only.**
+  - `extractVisibleBlockEntities` takes every renderable block entity of every section in `visibleSections` (faded in
+    to 0.3). There is no test per block entity, neither frustum nor occlusion.
+  - Block entities whose renderer draws off-screen (beacons, structure blocks) are a separate global list.
+- **No GPU occlusion queries, no hierarchical depth.**
+- **Graph quality:** the graph is conservative for straight lines of sight (a line crosses each section through two
+  connected faces and never reverses on an axis). But it can be stale while it rebuilds asynchronously, and it culls
+  whole sections only.
+
+### What was built (`src/main/java/com/meakaandre/brimstone/visibility/`, `mixin/visibility/`)
+
+1. **Sections: vanilla's set, exactly.**
+   - Brimstone adds no section culling. The brief forbids dropping any section vanilla draws, and vanilla's graph
+     already is the doc's frustum plus cave graph. Brimstone's terrain keeps drawing from vanilla's `visibleSections`.
+   - New: a per-frame audit while a bench measures (`TerrainRenderer.audit`). Every solid and cutout layer with
+     geometry, of every section in vanilla's visible list, must be in Brimstone's draw list or in vanilla's own buffers
+     (checked under vanilla's lock). Any layer that is in neither is counted as pop-in.
+2. **Entities and block entities: an occlusion test that proves invisibility** (`Occlusion`). After vanilla's own test
+   says "draw", Brimstone may still say "nothing can see it". The proof is a slab: a plane `axis = k` strictly between
+   the camera and the object's box, such that every line from the camera to the box crosses the plane inside a
+   rectangle whose every cell, beyond the plane, is:
+   - a full opaque cube Brimstone trusts: a `minecraft:` block with `isSolidRender()` (the predicate vanilla's own
+     cave graph and face culling use), a plain model, and no random offset;
+   - showing a face toward the camera that is actually drawn: vanilla's `Block.shouldRenderFace` against the cell in
+     front;
+   - in a section vanilla draws this frame (in `visibleSections`), fully faded in, whose mesh was built after the last
+     change to anything it depends on. `SectionChanges` tracks every `SectionUpdateTracker.setDirty`, every block
+     change (including those vanilla builds no new mesh for), chunk data arriving or dropped (with neighbours), and
+     level resets. It uses the same "compile start after change" comparison vanilla uses for its transient blocks.
+
+   Such a line meets that drawn opaque face before it reaches the box, so the depth test hides it. Details:
+   - The camera is treated as a box of ±0.25 blocks, because view bobbing moves the eye by about 0.1.
+   - The rectangle bounds all segments from that box to the object's box. The crossing point is monotone in every
+     corner coordinate, so its extremes are at corners.
+   - Candidate planes come from walking the grid along the centre segment: a plane that can prove anything is crossed
+     there in one of its cells.
+   - The test doesn't depend on the view direction, so screen edges, roll and bobbing need nothing special.
+   - Glass, leaves, slabs, fluids and any modded block never occlude. Nearby objects (no plane fits between) are never
+     hidden.
+   - Not tried: a rectangle over 4096 cells, or more than 32 full rectangles per object.
+   - The geometry was checked before coding with a Python model against brute-force random rays: about 1100 hidden
+     cases, 0 violations; deliberately broken variants were caught. The reviewer's independent model agrees
+     (`scratchpad/model/slab.py` in the session; not in the repo).
+3. **Which objects: allow-lists** (`Visibility.ENTITY_MARGIN`, `Visibility.BLOCK_ENTITY_TYPES`). The type and the
+   extent reasoning for each are in **`docs/visibility-allowlist.md`**. The object's class and its renderer's class
+   must also be vanilla's.
+   - **Entities:** cow, mooshroom, pig, sheep, chicken, villager, iron golem, snow golem, zombie, skeleton, creeper,
+     spider, item. Box: vanilla's culling box grown by 2 blocks on every side, times the scale attribute.
+   - **Never hidden, whatever the type:** a custom name, glowing, leashed, riding or ridden, sleeping, dying, the
+     camera entity.
+   - **Block entities:** chest, trapped chest, ender chest, sign, hanging sign, banner, bell, shulker box, decorated
+     pot, campfire, lectern, enchanting table. Box: the block grown by 1.
+   - Everything else is never hidden: end gateways, beacons, ghasts and every modded type (Create, Flywheel,
+     GeckoLib...).
+4. **No frustum test of Brimstone's own.** The frame is drawn with view bobbing and the damage tilt on top of the
+   frustum vanilla culls with, so a per-block-entity frustum test was unsound (review M1). It is gone; block entities
+   are only ever hidden by the occlusion proof.
+5. **Cost:**
+   - Render thread, inside vanilla's extract phase, with a budget of 2 ms per frame. The timer covers all the work per
+     object; past the budget, the rest of the frame's objects are drawn untested.
+   - Measured in CI (llvmpipe, 4 cores shared): 0.00-0.16 ms per frame on average, at most 0.6 ms in one frame, never
+     over budget.
+   - No worker threads: the cost doesn't call for them.
+6. **Crash safety and deferral:** states STARTING, ON, DEFERRED, OFF.
+   - **Turning on** happens at the first frame, only if:
+     - every change-tracking hook landed (its own mixin config, not required, with a plugin that checks them);
+     - the two added members applied (an invoker on `EntityRenderer`, a frame stamp on `RenderSection`).
+   - **Nothing is hidden** while Brimstone's terrain is handing sections back.
+   - **DEFERRED** (nothing hidden, one WARN line) while any pack other than the game's own supplies a block texture,
+     model or blockstate in the `minecraft` namespace (`VisibilityResources`). In 26.3 a quad's draw layer follows its
+     texture's transparency, so such a pack could make an "opaque" block see-through. This is checked again on every
+     resource reload.
+   - **OFF:** any exception turns the module off for the session with one ERROR line. CI fails on that line, on
+     deferral and on any `fallbacks`.
+7. **Bench** (`visibility` block and log line), per frame:
+   - sections visible;
+   - entities and block entities vanilla would draw, how many Brimstone tested, and how many it hid;
+   - ms per frame (average, max, frames over budget);
+   - section layers missing (the audit);
+   - the ray check's objects, rays, violations and unchecked objects, both in the window and since start-up;
+   - tracked section changes.
+
+### Pop-in check (CI)
+
+- **Terrain:** the audit in 1 runs in every Brimstone bench frame, fly-through included. compare.py fails on any
+  missing section layer, and if the audit didn't run.
+- **Entities and block entities, every frame:** every Brimstone client run sets
+  `-Dbrimstone.debug.verifyVisibility=true`. Each object Brimstone hides is then checked independently
+  (`VisibilityCheck`):
+  - Rays go from the exact camera position to a grid on the box Brimstone claimed hidden: points at most half a block
+    apart, edges and corners included.
+  - A ray that reaches its point without first entering an opaque cube through a drawn face is a violation.
+  - The check is view-independent, like the test: it checks every point, on screen or not. So no camera transform
+    (frustum, bobbing, damage tilt) can make it skip a point, and frustum-type bugs can't hide from it.
+  - It shares only the opaque-cube rule with the test, none of its geometry.
+  - compare.py fails on: any violation, in the measuring window or at any other time since start-up; any
+    `Brimstone visibility check:` warning in the client log; any hidden object left unchecked (ray budget 100,000 per
+    frame).
+- **Moving and changing (review M3): scene `occlusion_move`.** The occlusion layout, with the camera sliding along the
+  wall at 0.8 blocks per second for the 20 s bench. Objects are hidden and come into view through the window and the
+  two-block doorway as the camera passes. Scripted commands during the bench (`measureSteps`, sent by the bench):
+  - at 2, 4, 9, 11, 15 and 17 s, a pig is teleported between a hidden spot, the doorway, and the opening (the moving
+    entity);
+  - at 6 s, part of the wall in front of a hidden cow and chest is removed with `fill ... air`;
+  - at 13 s, that part is put back.
+
+  The per-frame ray check covers every frame of that pass (about 2,770 hidden objects and 1.5 million rays per
+  profile, 0 violations). Fixed-point shots of the same layout (`ciShots`), taken the same way in every vanilla and
+  Brimstone run, are compared with vanilla under both gates:
+
+  | shot | what it shows |
+  |---|---|
+  | `occlusion_move` | the start of the path, x 2293.5 |
+  | `x2297`, `x2305` | other points of the path |
+  | `x2309` | the moved pig in the doorway |
+  | `open` | after the wall opening |
+  | `closed` | after it was closed again |
+    | `bare_*` | the same views with every object removed, to measure each object's on-screen area |
+- **What can't be measured:**
+  - Vanilla runs don't bench, so there is no per-frame comparison with vanilla's own picture while moving. The
+    per-frame proof is the ray check, and the screenshots compare fixed points.
+  - The ray check reads the world, not the drawn mesh. So it cannot see a mesh older than the world, i.e. Brimstone
+    trusting a wall that the world has but the drawn mesh doesn't have yet. The section-freshness rule guards against
+    that. The wall-closing step exercises it, and the `closed` shot compares the end state, but the frames in between
+    are not measured against vanilla.
+  - Sections fading in are excluded by the test (fully faded in only), so they can't be measured.
+- **Pictures:** both pixel gates in every scene and shot.
+- **The fly-through itself has nothing to hide:** only the player and 1-2 block entities are in view, none hidden.
+  There, the pop-in proof is the terrain audit (0 missing layers of about 430 visible sections, every frame, every
+  profile). Hiding while moving is proved in `occlusion_move`.
+
+### Review fixes (review of `9f21a13`)
+
+- **B1 (end gateway beams hidden):** block entities are an allow-list now. End gateways, beacons and everything not
+  listed are never tested.
+- **M2 (ghast tentacles outside the margin):** entities are an allow-list with a margin of 2 blocks times scale, and
+  extents were checked per type (`docs/visibility-allowlist.md`). Ghast, happy ghast, ghastling and squid are not on
+  it. The `occlusion_move.ghast` shot was removed before the merge (second review, M-A): its vanilla noise from the happy
+  ghast's tentacle animation came within 1 px of its limit, and it proved nothing about hiding (a happy ghast is never
+  hidden, and with the 2-block margin its box's view of the wall reaches the window). Earlier text: it showed a happy ghast whose body the wall hides while its tentacles hang in the
+  window (about 365 visible pixels). It is identical to vanilla under both gates.
+- **M1 (block-entity frustum test against the cull frustum):** removed. The ray check is now view-independent, which
+  is stronger than testing against the drawn view: it checks every point regardless of the camera transform.
+- **M3 (no moving or changing evidence):** `occlusion_move`, as above.
+- **Strict limit of the occlusion scene (m4 / item 4):**
+  - The static `occlusion` scene is unchanged from `9f21a13` (all its samples were 0 in three runs). Its strict limit
+    came down from 100 to 20 pixels. The smallest hideable object seen there, the iron golem in the doorway, covers
+    about 200.
+  - I first rebuilt that scene (bigger doorway, the happy ghast in it). In the collection run that showed vanilla
+    noise of up to 139 strict pixels, from the ghast's animated tentacles, above the old limit of 100, which may not be
+    raised. So the rebuilt layout lives only in `occlusion_move`, without the small sign, and the ghast only in its own
+    last shot.
+  - Package 2's shots use the finer rule written down in `docs/ci-limits.md` (largest sample × 1.5, rounded up to 10
+    pixels, at least 10).
+  - Every hideable object visible in a shot covers more than that shot's strict limit. Measured against the `bare_*`
+    shots by projecting each object's box:
+    - `x2297`: smallest 350 pixels, limit 10;
+    - `x2305`: 94 pixels, limit 10 (the window seen at an angle);
+    - `x2309`: 35 pixels, limit 30 (a chest seen at a grazing angle through the window; this is the tight case);
+    - `open`: 486 pixels, limit 10;
+    - `closed`: 627 pixels, limit 10.
+- **m1 (dry run can go green):** compare.py fails any run whose client log or bench shows a dry run. Dry run is only
+  set in marked noise-collection runs (`VISIBILITY_DRY_RUN=1` in the client job's env), which therefore always fail.
+- **m3 (SectionChanges silently resets):** at the 65,536-entry cap, entries are dropped whose section has since got a
+  newer mesh, or has left the view area. Vanilla resets a section's mesh when its slot moves (`setSectionNode` →
+  `reset`), so any later mesh is newer. Only if less than a quarter is freed does everything count as changed until
+  rebuilt, with a WARN line.
+- **m8 (budget timer):** it now covers all the work per object (type and class checks, renderer lookup, test), plus a
+  cap of 32 full rectangles per object.
+- **m2 (ray-check limits):** warnings outside the measuring window are counted (`violationsSinceStart`) and gated, and
+  sampling went from 16 points per face to at most half a block apart, edges included. The check is described as a
+  sampled check, not a proof.
+- **m5 / item 6 (x-ray resource packs):** the module defers, as in 6 above.
+- **m6 (dump):** see "Deviations" for exactly what is dumped and published.
+- **m7:** the `package-2` trigger in `build.yml` is the branch-only commit and is stripped at merge (left as is, as the
+  coordinator asked).
+- **CI infrastructure** (fixing these didn't count as attempts):
+  - the compare job now also runs after a failed build, so `build/build.log` reaches ci-logs;
+  - publishing tolerates missing client results.
+
+### Evidence (run 40093135028)
+
+Pixel differences (% of pixels whose largest channel differs by more than 8). The limits are unchanged except for the
+new shots.
+
+| suite / scene | noise (vanilla a/b) | limit | full | old-GPU | Vulkan |
+|---|---|---|---|---|---|
+| core / spawn | 0.68 | 10.05 | 0.25 | 0.48 | 0.36 |
+| core / fly-through | 0.04 | 14.95 | 0.02 | 0.03 | 0.06 |
+| core / water and glass | 0.95 | 6.45 | 0.70 | 1.63 | 1.16 |
+| core / nether | 0.22 | 0.8 | 0.03 | 0.31 | 0.21 |
+| core / mobs | 0.11 | 0.4 | 0.12 | 0.10 | 0.09 |
+| core / occlusion | 0.00 | 0.25 | 0.00 | 0.00 | 0.00 |
+| core / occlusion_move (10 shots) | 0.00 | 0.25 | 0.00 | 0.00 | 0.00 |
+| core / occlusion_move.x2309 | 0.00 | 0.3 | 0.0065 | 0.0067 | 0.0065 |
+| SIFTEC / The Sift | 0.05 | 1.15 | 0.16 | 0.16 | 0.17 |
+| SIFTEC / HUB | 0.01 | 8.75 | 3.30 | 4.20 | 4.03 |
+| SIFTEC / MAM | 0.05 | 9.3 | 3.53 | 4.43 | 4.29 |
+
+Strict gate (pixels where all four vanilla runs agree exactly and Brimstone differs at all):
+
+| scene | limit | full | old-GPU | Vulkan |
+|---|---|---|---|---|
+| core/spawn | 18000 | 179 | 668 | 1896 |
+| core/fly-through | 5900 | 243 | 304 | 94 |
+| core/water and glass | 25500 | 1041 | 1095 | 934 |
+| core/nether | 900 | 60 | 146 | 146 |
+| core/mobs | 600 | 50 | 42 | 61 |
+| core/occlusion | 20 | 0 | 0 | 0 |
+| core/occlusion_move, x2297, x2305, open, closed, bare_* | 10-110 | 0 | 0 | 0 |
+| core/occlusion_move.x2309 | 30 | 0 | 1 | 0 |
+| SIFTEC/The Sift | 4900 | 1071 | 703 | 947 |
+| SIFTEC/HUB | 12500 | 0 | 28 | 833 |
+| SIFTEC/MAM | 155100 | 0 | 28 | 833 |
+
+Visibility, per measured frame (full profile; the other two profiles agree within rounding):
+
+| scene | sections visible | entities vanilla draws (tested, hidden) | block entities (tested, hidden) | cull ms (max) | layers missing | ray check: objects / rays / violations |
+|---|---|---|---|---|---|---|
+| spawn | 344 | 1 (0, 0) | 11 (1, 0) | 0.03 (0.08) | 0 | 0 / 0 / 0 |
+| fly-through | 432 | 1 (0, 0) | 1.9 (0, 0) | 0.00 | 0 | 0 / 0 / 0 |
+| water and glass | 139 | 1 (0, 0) | 0 | 0.00 | 0 | 0 / 0 / 0 |
+| nether | 300 | 1 (0, 0) | 1 (1, 0) | 0.02 (0.05) | 0 | 0 / 0 / 0 |
+| mobs | 107 | 97 (96, 0) | 0 | 0.15 (0.30) | 0 | 0 / 0 / 0 |
+| occlusion | 49 | 11 (10, 2) | 9 (9, 4) | 0.07 (0.10) | 0 | 3,594 / 1,626,884 / 0 |
+| occlusion_move (moving, wall opened and closed) | 51 | 10 (9, 2.4) | 6 (6, 2.3) | 0.06 (0.26) | 0 | 2,768 / 1,498,090 / 0 |
+| SIFTEC The Sift / HUB / MAM | 244 / 38 / 55 | 1-3 (0, 0) | 0-1 (0, 0) | 0.00 | 0 | 0 / 0 / 0 |
+
+- The player counts as one entity vanilla draws in every scene; Brimstone never tests it.
+- The mob crowd stands in the open, so nothing there is hidden.
+- In SIFTEC nothing is hidden either: its machines are Create's (left to Create and Flywheel), its scenes hold no
+  allow-listed objects behind walls, and its packs don't replace vanilla block resources (the module was `on`, not
+  deferred).
+
+Counts against baseline: every gated count is within its baseline in every profile and both suites.
+- **Occlusion scene** (baseline = the dry-run run, Brimstone drawing vanilla's set):
+  - draw calls 158.1 / 167.5 / 157.5 against 159.5 / 169.7 / 161.1 (full / old-GPU / Vulkan);
+  - upload bytes per frame (median) 100 KB / 98 KB / 100 KB against 126 / 124 / 126 KB.
+- **occlusion_move:** upload bytes 82 KB against the dry run's 105 KB (memory is the only gated count there).
+
+### Runs
+
+1. `ddae18c` run 40079570978: dry run, sampling. Failed only on the new scene's missing limits, as planned.
+2. `c6adfc8` run 40081970862: failed on SIFTEC The Sift old-GPU, because vanilla's own old-GPU screenshot caught F3+A's
+   chat line faded. CI now clears chat with F3+D.
+3. `5d7dc04` run 40083026856: green (version reviewed as `9f21a13`).
+4. Review fixes, `2523819` run 40087083634: compile error (the type constants live in `EntityTypes` /
+   `BlockEntityTypes` in 26.3). It was found once the CI-infrastructure fix published the build log (runs 40087964679
+   and 40090080697).
+5. `f64b961` run 40090286336: marked collection run. Showed the rebuilt static scene's ghast noise; no other failure
+   than the planned ones.
+6. `7849b9b` run 40091787069: marked collection run for the final `occlusion_move` layout; only the planned failures.
+7. `a09678d` run 40093135028: green.
+
+### Deviations from the doc and the brief
+
+- **No section culling of Brimstone's own.** Vanilla already has the doc's frustum plus cave graph, and anything
+  stricter could only drop sections vanilla draws, which the brief forbids. Brimstone keeps vanilla's set and audits
+  it.
+- **The occlusion test is a slab proof, not a general occlusion query.** It is exact where it says "hidden", but it
+  hides less than a depth-buffer test would (no combining of partial occluders, generous boxes, allow-listed types
+  only).
+- **No worker threads** (cost 0.00-0.16 ms per frame in CI). The 2 ms budget caps the render-thread cost.
+- **CI:**
+  - new scenes `occlusion` and `occlusion_move` (with `ciShots` fixed-point screenshots and `measureSteps` commands
+    during the bench), with their own limits and baselines;
+  - the ray check is on in every Brimstone run;
+  - a dry-run switch that is only for marked collection runs;
+  - chat is cleared after F3+A;
+  - compare.py gates the visibility block, dry run, deferral and ray-check warnings;
+  - the compare job publishes ci-logs even after a failed build.
+- **What CI dumps and publishes (correcting the earlier "nothing is published"):**
+  - No game files (shaders, textures, data) are extracted or published.
+  - As before (the known exception, still to decide), the build job publishes on the public `ci-logs` branch
+    `build/javap-all.txt.gz`: `javap -p` signatures of every game and Fabric API class. It also publishes
+    `build/bytecode.txt.gz`: `javap -c` bytecode of the game classes matched by `.github/dump-bytecode`.
+  - Package 2 added 8 patterns to that list:
+    - `client.renderer.(SectionOcclusionGraph.*|Octree.*|ViewArea)`;
+    - `client.SectionUpdateTracker.*`;
+    - `client.renderer.chunk.(VisGraph|VisibilitySet)`;
+    - `client.renderer.entity.(EntityRenderer|EntityRenderDispatcher|LivingEntityRenderer|MobRenderer)`;
+    - `client.renderer.blockentity.(BlockEntityRenderDispatcher|BlockEntityRenderer)`;
+    - `client.renderer.culling.Frustum`;
+    - `client.Camera`;
+    - `client.multiplayer.ClientChunkCache.*`.
+  - The full list is in `build/bytecode-classes.txt`.
+
+### Choices Andre should confirm
+
+- **The allow-lists and margins** (`docs/visibility-allowlist.md`). The extents come from the vanilla model layouts,
+  not from 26.3 model bytecode, which isn't in the dump.
+- **Deferring the whole module** while any pack supplies `minecraft` block textures, models or blockstates. This is
+  simple and safe, but a texture pack that changes only grass would also turn hiding off.
+- **The finer strict-limit rule for package 2's shots** (× 1.5, rounded up to 10, at least 10) and the static scene's
+  limit of 20. The `x2309` shot is tight: a 35-pixel sliver of a chest against a limit of 30.
+- **The ray check is view-independent rather than "against the drawn view"** (stronger, simpler).
+- **Clearing chat (F3+D) in CI** before world screenshots.
+- **Baselines are left as they were.** The occlusion scene's upload bytes could come down (126 KB to about 100 KB);
+  the old-GPU draw-call baselines from package 1 still could too.
+
+### Remaining trade-offs and open issues
+
+- The fly-through has nothing to hide, so hiding while moving is proved in `occlusion_move`, not in the fly-through.
+- The frames between a wall being built and its new mesh arriving are guarded by the freshness rule, but not measured
+  against vanilla (see "What can't be measured").
+- The `occlusion_move` limits come from one collection run.
+- The SIFTEC factory and map scenes are still skipped (the selftest jar is not in SIFTEC's release), so the
+  Create-heavy factory isn't in CI.
+
+### Second review (of `39ea855`) and merge
+
+No findings that break the doc or the rules. M-A (the `ghast` shot could fail on vanilla noise alone and proved
+nothing) was handled by the coordinator: the shot and its limits removed (none raised). Left for Andre (MINOR):
+- the resource-pack check looks at `textures/block`, `models/block` and `blockstates` only; packs using
+  `atlases/blocks.json` sprite remaps, connected-texture mods (Continuity, `optifine/` properties) or mods changing
+  block models in code are not covered; a stricter check would test each occluder's baked model and sprite
+  transparency;
+- the `x2309` gate only just covers its smallest object (a 20-35 px chest sliver against 30 px); the main
+  `occlusion_move` shot has no object-free twin, so its smallest object wasn't measured;
+- the static `occlusion` scene's strict limit is 20 px where package 2's finer rule gives 10 (kept at 20, the value
+  the green runs were judged against; 20 is still a tenth of the smallest visible object there, the 200 px golem);
+- the bench setups for `occlusion` and `occlusion_move` clear blocks and kill entities in a fixed area: run them in a
+  copy of the world.
+
+### Laptop bench (Andre, when back)
+
+Same instances and steps as `docs/laptop-bench.md`, with this branch's jar (after the merge, the `latest` release).
+Plain instance:
+
+```
+/brimstone bench occlusion confirm
+/brimstone bench occlusion_move confirm
+/brimstone bench mobs confirm
+/brimstone bench flythrough confirm
+/brimstone bench spawn confirm
+/brimstone bench water_glass confirm
+/brimstone bench nether confirm
+```
+
+SIFTEC instance:
+
+```
+/brimstone bench sift confirm
+/brimstone bench hub confirm
+/brimstone bench mam confirm
+/brimstone bench occlusion confirm
+/brimstone bench occlusion_move confirm
+/brimstone bench mobs confirm
+/brimstone bench flythrough confirm
+```
+
+Paste the latest.log blocks (or the JSON files). The `visibility` line should say:
+- `on`, `fallbacks 0`, `section layers missing 0`;
+- in `occlusion`, about 2 entities and 4 block entities hidden per frame;
+- in `occlusion_move`, about 2.4 and 2.3.
+
+Note its `ms/frame` and `max` (the culling cost on the laptop's CPU) next to FPS and frame times. If it says
+`deferred`, the log line names the pack that replaces vanilla block resources.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
@@ -392,5 +783,6 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Now:** package 2 (visibility) on branch `package-2`: plan in its section above, implementation by a fresh agent,
-then review rounds, then merge.
+**Now:** package 2 (visibility) implemented on branch `package-2` (green; see its section): next, review rounds, then
+merge. CI's dry-run switch (`VISIBILITY_DRY_RUN=1` in the client job's env) samples a new scene's noise with
+Brimstone drawing exactly vanilla's set.

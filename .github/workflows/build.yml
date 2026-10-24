@@ -234,12 +234,14 @@ jobs:
 
   compare:
     needs: [build, client]
-    if: always() && needs.build.result == 'success'
+    # also after a failed build, so its log (build/build.log) reaches ci-logs; compare then fails on the missing runs
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           pattern: res-*
           path: /tmp/res
@@ -266,7 +268,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          mkdir -p /tmp/ci/runs && cp -r /tmp/res/* /tmp/ci/runs/ 2>/dev/null
+          mkdir -p /tmp/ci/runs && { cp -r /tmp/res/* /tmp/ci/runs/ 2>/dev/null || echo 'no client results'; }
           echo "${GITHUB_SHA} ${GITHUB_REF_NAME} ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" > /tmp/ci/commit.txt
           cd /tmp/ci
           git init -q -b ci-logs

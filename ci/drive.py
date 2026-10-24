@@ -97,9 +97,24 @@ def main():
             xdo("key", "a")
             xdo("keyup", "F3")
             time.sleep(3)
+            # F3+D: vanilla's "clear chat", so F3+A's "Reloading all chunks" line (whose fade-out depends on how long the
+            # steady-shot wait takes) is in no screenshot; the same in every run (package 2: a vanilla run once caught
+            # it faded and the others not)
+            xdo("keydown", "F3")
+            xdo("key", "d")
+            xdo("keyup", "F3")
+            time.sleep(1)
         shot = os.path.join(out, "shots", sid + ".png")
         entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)
+        # extra fixed points (package 2): commands to the server, then a screenshot named <scene>.<name>, the same in
+        # every run; the Brimstone bench afterwards sets the scene up again from scratch
+        for extra in sc.get("ciShots", []):
+            for cmd in extra["commands"]:
+                send(cmd)
+            time.sleep(3)
+            p = os.path.join(out, "shots", sid + "." + extra["name"] + ".png")
+            entry.setdefault("extraShots", {})[extra["name"]] = steady_shot(p)
         if screen:
             # every run closes the scene's screen the same way before going on
             xdo("key", "Escape")

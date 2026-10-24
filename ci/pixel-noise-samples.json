@@ -101,6 +101,250 @@
     ],
     "samples": 19
   },
+  "core/occlusion": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40079570978 (package 2, Brimstone in visibility dry run)"
+    ]
+  },
+  "core/occlusion_move": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.bare_open": {
+    "all": [
+      0.0,
+      0.0026,
+      0.0,
+      0.0133
+    ],
+    "limit": 0.3,
+    "max": 0.0133,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      8,
+      0,
+      69
+    ],
+    "strictLimit": 110
+  },
+  "core/occlusion_move.bare_x2297": {
+    "all": [
+      0.0,
+      0.0034,
+      0.0,
+      0.0073
+    ],
+    "limit": 0.3,
+    "max": 0.0073,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      31,
+      0,
+      43
+    ],
+    "strictLimit": 70
+  },
+  "core/occlusion_move.bare_x2300": {
+    "all": [
+      0.0,
+      0.0043,
+      0.0,
+      0.0148
+    ],
+    "limit": 0.3,
+    "max": 0.0148,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      6,
+      0,
+      60
+    ],
+    "strictLimit": 90
+  },
+  "core/occlusion_move.bare_x2305": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.bare_x2309": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.closed": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.open": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.x2297": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.x2305": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10
+  },
+  "core/occlusion_move.x2309": {
+    "all": [
+      0.0046,
+      0.0068,
+      0.0031,
+      0.0046
+    ],
+    "limit": 0.3,
+    "max": 0.0068,
+    "runs": [
+      "40091787069 (package 2 collection run, Brimstone in visibility dry run)"
+    ],
+    "strict": [
+      0,
+      16,
+      15,
+      19,
+      5
+    ],
+    "strictLimit": 30
+  },
   "core/spawn": {
     "all": [
       0.3683,

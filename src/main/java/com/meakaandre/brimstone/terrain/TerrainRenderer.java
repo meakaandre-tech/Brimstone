@@ -1,5 +1,7 @@
 package com.meakaandre.brimstone.terrain;
 
+import com.meakaandre.brimstone.bench.GpuCounters;
+import com.meakaandre.brimstone.visibility.VisibilityStats;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.renderer.DynamicGpuData;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.util.Util;
 import org.lwjgl.PointerBuffer;
@@ -180,10 +183,15 @@ public final class TerrainRenderer {
         long fadeMs = Util.toMillis(fadeSeconds);
         List<TerrainStore.Region> touched = new ArrayList<>();
 
+        boolean audit = GpuCounters.enabled;
+        int audited = 0;
+        AUDIT_MESHES.clear();
+        AUDIT_LAYERS.clear();
         synchronized (TerrainStore.LOCK) {
             TerrainStore.closePending();
             for (SectionRenderDispatcher.RenderSection section : visible) {
                 TerrainStore.Entry[] es = TerrainStore.ENTRIES.get(section.getSectionMesh());
+                if (audit) audited += audit(section.getSectionMesh(), es);
                 if (es == null) continue;
                 TerrainStore.Entry any = es[0] != null ? es[0] : es[1];
                 if (any == null) continue;
@@ -230,6 +238,47 @@ public final class TerrainRenderer {
             for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) for (RegionDraw rd : ad.regions) rd.ubo = rd.region.ubo;
         }
         if (maxIndexCount > 0) RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS).requestIndexCount(maxIndexCount);
+        if (audit) VisibilityStats.terrainFrame(audited, missingFromVanilla());
+    }
+
+    // pop-in audit (only while a bench measures): solid and cutout layers of vanilla's visible sections that have
+    // geometry must be drawn by Brimstone (in this frame's draw lists) or by vanilla (in its buffers)
+    private static final List<SectionMesh> AUDIT_MESHES = new ArrayList<>();
+    private static final List<ChunkSectionLayer> AUDIT_LAYERS = new ArrayList<>();
+    private static final ChunkSectionLayer[] OPAQUE_LAYERS = {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT};
+
+    /** Counts this section's layers with geometry; remembers those Brimstone doesn't hold, for vanilla's check. */
+    private static int audit(SectionMesh mesh, TerrainStore.Entry[] es) {
+        int n = 0;
+        for (int li = 0; li < 2; li++) {
+            if (mesh.getSectionDraw(OPAQUE_LAYERS[li]) == null) continue;
+            n++;
+            TerrainStore.Entry e = es == null ? null : es[li];
+            if (e == null || (e.parts[0] == null && e.parts[1] == null)) {
+                AUDIT_MESHES.add(mesh);
+                AUDIT_LAYERS.add(OPAQUE_LAYERS[li]);
+            }
+        }
+        return n;
+    }
+
+    /** Of the layers Brimstone doesn't hold, those vanilla's buffers don't hold either (under vanilla's own lock). */
+    private static int missingFromVanilla() {
+        if (AUDIT_MESHES.isEmpty()) return 0;
+        SectionRenderDispatcher dispatcher = net.minecraft.client.Minecraft.getInstance().levelRenderer.sectionRenderDispatcher();
+        if (dispatcher == null) return AUDIT_MESHES.size();
+        int missing = 0;
+        dispatcher.lock();
+        try {
+            for (int i = 0; i < AUDIT_MESHES.size(); i++) {
+                if (dispatcher.getRenderSectionSlice(AUDIT_MESHES.get(i), AUDIT_LAYERS.get(i)) == null) missing++;
+            }
+        } finally {
+            dispatcher.unlock();
+        }
+        AUDIT_MESHES.clear();
+        AUDIT_LAYERS.clear();
+        return missing;
     }
 
     private static ArenaDraws arenaDraws(int list, TerrainStore.Arena arena) {
