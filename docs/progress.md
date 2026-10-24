@@ -2,8 +2,8 @@
 
 ## Where things stand
 
-- **Now:** packages 0 (repo, CI, bench harness) and 1 (terrain meshing and region buffers) done and merged; package 2
-  (visibility) on branch `package-2`, green after the first review's fixes, awaiting re-review. See "Hand-off" at the bottom for the exact state.
+- **Now:** packages 0 (repo, CI, bench harness), 1 (terrain meshing and region buffers) and 2 (visibility) done and
+  merged; package 3 (translucency) on branch `package-3`, green, awaiting review. See "Hand-off" at the bottom.
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
@@ -776,30 +776,285 @@ Note its `ms/frame` and `max` (the culling cost on the laptop's CPU) next to FPS
 
 ---
 
-## Package 3: translucency (in progress)
+## Package 3: translucency
 
-**Goal (doc):** translucent terrain (water, glass, ice, stained glass, Build Gun holograms) sorted back to front
-correctly as the camera moves, with the sorting off the main thread; drawn from Brimstone's region buffers like solid
-and cutout (package 1), so translucent no longer goes through vanilla's path.
+**Branch** `package-3` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40126212181 on `6d48fc7` (every profile, both suites, compare
+passed). **ci-logs** (overwritten by later runs): `compare/report.md` has every table below plus a "Translucency" table
+per suite and profile; `runs/<suite>-brimstone-*/bench/*.json` have the `translucency` block;
+`runs/core-*/shots/translucent_move*.png` and `water_glass_oit.png` are the new fixed-point shots,
+`runs/siftec-*/shots/hologram.png` the Build Gun hologram.
 
 **Done when (doc):** "Water, glass, ice and Build Gun holograms sorted correctly when the camera moves; sorting off the
 main thread."
 
-**Starting point:** vanilla 26.3 already resorts translucent sections on a worker (`ResortTransparencyTask`) when the
-camera crosses a block, re-uploading only the index buffer, and skips sorting when Improved Transparency (OIT) is on
-(`docs/terrain-research.md`). Package 1 left translucent with vanilla.
+### What vanilla 26.3 already does (research, from the bytecode dump; details in `docs/terrain-research.md` 6a)
 
-**Approach:**
-1. Take translucent layers into Brimstone's buffers in the exact (or compact, where exact) format, keeping vanilla's
-   quad set; sort on a worker thread with the same ordering vanilla produces for the same camera position (so the
-   picture matches), re-uploading only indices; trigger when vanilla would.
-2. Respect vanilla's OIT setting: when OIT is on, vanilla doesn't sort; Brimstone must give the same result.
-3. Build Gun holograms are SIFTEC block displays/ghost blocks: find how they draw (entity path or terrain) and make
-   sure they sort correctly; if they aren't terrain, they stay vanilla and the check is that they still look the
-   same.
-4. CI: a moving-camera scene through water and stained glass (fixed-point shots under both pixel gates, as in
-   package 2's occlusion_move), the existing water and glass scene, and OIT on and off.
-5. Proof: draw calls down on old-GPU for translucent, bytes, pixel gates, sorting time on the worker measured.
+- Every translucent layer is sorted back to front when it is built (camera position at the start of the build task)
+  and gets its own index list. The sort: quad centre = midpoint of the first and third corner, key = squared distance
+  to the camera, stable merge sort, far first (ties keep build order).
+- When the camera crosses a block, vanilla schedules `ResortTransparencyTask`s on its worker threads (nearby visible
+  sections always, the rest round-robin), only for sections whose point of view changed. A task builds a new index
+  list and hands only that list to `addSectionBuffersToUberBuffer(TRANSLUCENT, mesh, null, indices)`; vanilla uploads
+  it at the end of the frame.
+- Translucent sections are drawn in exactly the reverse of the visible-section list when vanilla sorts; with
+  Improved Transparency on, vanilla doesn't sort (no resort tasks, `sortTranslucent` false) and draws in list order,
+  in three passes (depth bounds, transmittance, accumulate) with the `OIT_TERRAIN` pipelines.
+- On the plain path (Intel integrated) vanilla makes one draw per translucent section per pass.
+
+### What was built (`terrain/`, `mixin/terrain/`, `assets/brimstone/shaders/core/terrain.vsh`)
+
+1. **Translucent layers in Brimstone's buffers** (`Terrain.takeTranslucent`, `TerrainStore`). Where a freshly built
+   section's translucent layer would go into vanilla's buffers, Brimstone converts its vertices as for solid and
+   cutout (one exact format per layer, compact 16 bytes or wide 28; a layer with any vertex alpha below 255 goes wide)
+   and keeps **vanilla's own sorted index list as it is**, in the same arena as the vertices. So the quad order inside
+   a section is vanilla's, ties included, by construction.
+2. **Sorting: vanilla's own, on vanilla's worker threads, when vanilla decides.** Each new index list a
+   `ResortTransparencyTask` makes for a layer Brimstone holds is taken on that worker thread (copied), and at the end
+   of the frame, where vanilla uploads its own, Brimstone writes **only that list**, in place over the old one
+   (`TerrainStore.rewriteIndices`). Nothing is re-sorted on the render thread and no thread is added. A late list for
+   a mesh vanilla has let go of is dropped (vanilla would draw nothing of it either). With Improved Transparency on
+   vanilla schedules no resorts, so none happen.
+3. **Draw order: vanilla's.** `TerrainRenderer.buildTranslucentRuns` takes the translucent layers of vanilla's visible
+   sections in list order, reversed on frames where vanilla sorts (from vanilla's own `sortTranslucent` argument), and
+   only merges *consecutive* sections that share format, arena, index type and (plain path) region into one draw call,
+   so batching never reorders anything.
+   - Plain path (no multi-draw indirect, Intel integrated): one `multiDrawIndexed` per run with per-section index
+     offsets (`glMultiDrawElementsBaseVertex`); the interleaved form on Vulkan devices that have it; one draw per
+     section without either.
+   - Indirect path: one indirect multi-draw per run from the frame's one Brimstone command list (as package 1).
+4. **Pipelines made from the game's** (`TerrainPipelines.derive`): for classic translucent and for each of the three
+   Improved Transparency stages, Brimstone's pipeline is the game's multi-draw terrain pipeline for that draw with
+   only the vertex shader (Brimstone's), its vertex layout and, on the plain path, the region uniform block swapped:
+   the game's fragment shader, defines, blending, colour targets, depth state, culling and uniform blocks are taken
+   from it unchanged. The vertex shader skips the lightmap in the stages that only need coverage (`OIT_ALPHA_ONLY`),
+   as the game's does. Checked locally on CI's Mesa (`scratchpad/p3/harness3.py`, not in the repo): Brimstone's
+   vertex stage and vanilla's, fed the same 200,000 vertices, give bit-identical outputs with and without
+   `OIT_ALPHA_ONLY` (both formats), and with any alpha in the wide format.
+5. **Brimstone draws translucent in vanilla's pass(es)**, right after vanilla's own part, from the same hook as solid
+   and cutout; the hook now receives vanilla's pipeline overrides and tells classic, each Improved Transparency stage
+   and the wireframe view apart (`TerrainPipelines.translucentMode`). An override it does not know turns the module
+   off (fallback, logged).
+6. **No mixing with vanilla's own translucent draws.** A visible section whose translucent layer vanilla still holds
+   (meshed before Brimstone turned on) is sent back to vanilla's mesher once, so its next mesh comes to Brimstone
+   (`TerrainRenderer.translucentOthers`); frames where both drew translucent are counted ("mixed frames"). A
+   translucent layer Brimstone cannot hold (over 8 MB, no index list) turns the module off: a layer must never be split
+   between vanilla and Brimstone, or the order between sections would no longer be vanilla's.
+7. **Crash safety:** every translucent path runs inside the module's existing fallback (`Terrain.fail`: one ERROR line,
+   terrain handed back to vanilla); CI fails on any fallback.
+8. **Bench** (`translucency` block and log line, `TranslucencyStats`): translucent section layers and Brimstone's
+   translucent draws per frame, vanilla's own translucent layers and mixed frames, Improved Transparency stage draws,
+   vanilla's sorts while measuring (count, ms average/p95/max, how many on the render thread; `SortStateMixin` times
+   `MeshData.SortState.buildSortedIndexBuffer`), new index lists taken and uploaded, and the check below.
+
+### The per-frame check (CI: `-Dbrimstone.debug.verifyTranslucency=true` in every Brimstone run; `TranslucencyCheck`)
+
+Every frame, against what vanilla would draw for the same camera:
+- **section order:** the sections in Brimstone's translucent draw calls, read back from those calls, equal vanilla's
+  order worked out separately from vanilla's visible list (reversed when vanilla sorts);
+- **latest sort:** each section is drawn with the index list from vanilla's latest sort of that mesh (the camera
+  position vanilla sorted for, captured where vanilla builds the sorting, `RenderSection.createVertexSorting`, must
+  give the mesh's own point of view), unless a newer list is already on its way in, as it would be for vanilla;
+- **back to front:** each index list Brimstone wrote names every quad once and orders them by non-increasing
+  distance from that camera position (quad centres from the layer's vertices, computed separately; float tolerance;
+  ties not checked, as their order is vanilla's own bytes).
+
+compare.py fails on any miss (in or outside the measuring window), on any measured mixed frame, on a dry run, on a
+translucent scene where Brimstone drew no translucent sections, and on an Improved Transparency scene not drawn with
+it in every measured frame (and on others drawn with it).
+
+### CI
+
+- **`translucent_move`** (core): water in a glass tank, a wall of stained glass in stripes of six colours (faces
+  between different colours are drawn, so many translucent quads overlap), ice inside the water and a single ice
+  block in front of the stripes, white glass panes; the camera slides past at 1.5 blocks/s for the 20 s bench, so
+  vanilla re-sorts as it crosses blocks (180 sorts per bench). Six fixed-point shots (`ciShots`), taken after the
+  camera moved there: `x2404`, `x2414`, `x2424`, `low` (close, oblique), `back` (the start again, after the others),
+  `bare_back` (the single ice block removed: it covers 8,148-8,157 pixels, far above the strict limit of 10).
+- **`water_glass`** (existing) and **`water_glass_oit`**, **`translucent_move_oit`** (Improved Transparency on).
+  **Choice: scenes, not a profile.** Improved Transparency is a client option, so the OIT scenes run in their own
+  client session with `improvedTransparency:true` in options.txt (`clientOptions` in the scene file; `client-run.sh`
+  groups sessions by render distance and client options; the bench sets and restores it on a laptop). A profile
+  would have doubled every scene in every GPU profile; the scenes cover the translucent cases in all three GPU
+  profiles at the cost of one more client session.
+- **`hologram`** (SIFTEC): see below.
+- Limits from the marked collection runs by the documented rules (`docs/ci-limits.md`): core scenes from run
+  40115084815, the hologram from run 40123696828 (SIFTEC suite only in dry run). The pin mod holds the lightmap flicker and
+  texture animation; the scenes clear their area by teleporting entities to y=-200.
+
+### Build Gun holograms
+
+SIFTEC draws them with Create's outliner (`BuildGunClient` and `PrefabPreview` call `Outliner.showCluster(...)` with a
+checkered face texture), not as terrain, so they stay on their own path. The `hologram` scene checks that they still
+look exactly the same over Brimstone's translucent water: the player holds the Build Gun, CI presses its next-tab key
+(Tab, a new per-scene `ciKeys` list in `drive.py`, the same in every run), which picks the first Power building (the
+Power Pole Mk.1), and its green outline stands in front of a water pool, high above the terrain.
+- Not run on Vulkan: Mesa's lavapipe segfaults (`libvulkan_lvp.so`) as soon as the outliner draws, in vanilla's
+  Vulkan run as much as Brimstone's (runs 40115084815 and 40119107821). The scene lists the two Vulkan runs in
+  `ciSkipRuns`; compare.py leaves the Vulkan profile out for this scene only (strict gate on the other three vanilla
+  runs).
+- Rebuilt on the way: the first version held the Wormhole Gateway, whose outline (a 48x54 structure) was the first
+  crash; the second and third (a glass tank with stained glass, then a plain pool) had vanilla a/b noise of 3.6% and
+  3.3%, because ice formed at random on the water (water freezes at that altitude where block light is low; I first
+  took the second version's noise for vanilla's own translucent order). The pool is now lit from below with sea
+  lanterns (light 14 at the surface), and its noise is 0.003-0.03%.
+
+### Evidence (run 40126212181)
+
+Pixel differences under both gates (8/255: % of pixels; strict: pixels where every vanilla run agrees exactly and the
+Brimstone run differs at all). Limits from `docs/ci-limits.md`; none changed for existing scenes.
+
+| suite / shot | noise (vanilla a/b) % | limit % | full % | old-GPU % | Vulkan % | strict limit | full | old-GPU | Vulkan |
+|---|---|---|---|---|---|---|---|---|---|
+| core / water_glass | 0.0026 | 6.45 | 0.0029 | 0.0042 | 0.0053 | 25500 | 17 | 24 | 23 |
+| core / water_glass_oit | 0.0044 | 0.3 | 0.0048 | 0.0037 | 0.0049 | 40 | 18 | 17 | 25 |
+| core / translucent_move | 0.0001 | 0.3 | 0.0 | 0.0 | 0.0001 | 10 | 1 | 0 | 1 |
+| core / translucent_move.x2404 | 0.0001 | 0.3 | 0.0001 | 0.0002 | 0.0001 | 10 | 1 | 1 | 2 |
+| core / translucent_move.x2414 | 0.0003 | 0.3 | 0.0002 | 0.0002 | 0.0 | 10 | 1 | 2 | 1 |
+| core / translucent_move.x2424 | 0.0 | 0.3 | 0.0 | 0.0004 | 0.0 | 10 | 1 | 3 | 1 |
+| core / translucent_move.low | 0.0002 | 0.3 | 0.0008 | 0.0003 | 0.0004 | 20 | 7 | 4 | 3 |
+| core / translucent_move.back | 0.0 | 0.3 | 0.0001 | 0.0002 | 0.0002 | 10 | 1 | 1 | 2 |
+| core / translucent_move.bare_back | 0.0003 | 0.3 | 0.0004 | 0.0001 | 0.0 | 10 | 1 | 1 | 0 |
+| core / translucent_move_oit | 0.0 | 0.3 | 0.0001 | 0.0004 | 0.0002 | 10 | 1 | 2 | 2 |
+| core / translucent_move_oit.x2404 | 0.0001 | 0.3 | 0.0 | 0.0001 | 0.0001 | 10 | 0 | 2 | 2 |
+| core / translucent_move_oit.x2414 | 0.0003 | 0.3 | 0.0001 | 0.0003 | 0.0002 | 10 | 1 | 0 | 4 |
+| core / translucent_move_oit.x2424 | 0.0003 | 0.3 | 0.0003 | 0.0001 | 0.0004 | 10 | 1 | 1 | 2 |
+| core / translucent_move_oit.low | 0.0005 | 0.3 | 0.0004 | 0.0005 | 0.0005 | 20 | 5 | 5 | 6 |
+| core / translucent_move_oit.back | 0.0002 | 0.3 | 0.0002 | 0.0003 | 0.0001 | 10 | 1 | 1 | 0 |
+| core / translucent_move_oit.bare_back | 0.0001 | 0.3 | 0.0001 | 0.0001 | 0.0001 | 10 | 0 | 1 | 0 |
+| SIFTEC / hologram | 0.0282 | 0.55 | 0.2626 | 0.0257 | not run (lavapipe crash, vanilla too) | 21840 | 14333 | 9 | not run |
+| SIFTEC / The Sift | 0.2298 | 1.15 | 0.1968 | 0.1886 | 0.1875 | 4900 | 863 | 486 | 763 |
+| SIFTEC / HUB | 0.1879 | 8.75 | 1.7259 | 4.3373 | 4.4633 | 12500 | 16 | 405 | 796 |
+| SIFTEC / MAM | 0.1092 | 9.3 | 1.6369 | 4.5525 | 4.5964 | 155100 | 16 | 405 | 296 |
+
+The other scenes (spawn, fly-through, nether, mobs, occlusion, occlusion_move with its shots) passed both gates
+as before; their numbers are in `compare/report.md`. The hologram's full-profile 14,333 strict pixels are the
+outline's bright state (see "Deviations").
+
+**Translucent draws per frame** (Brimstone's translucent section layers -> its draw calls for them; vanilla's own
+path makes one draw per section layer per pass on old-GPU, and about one per pass on full and Vulkan):
+
+| scene | old-GPU | full | Vulkan |
+|---|---|---|---|
+| spawn | 150 -> 14 | 150 -> 1 | (as full) |
+| fly-through (not gated) | 186 -> 42 | 192 -> 31 | |
+| water_glass | 4 -> 1 | 4 -> 1 | 4 -> 1 |
+| translucent_move | 7 -> 5 | 7 -> 4 | 7 -> 4 |
+| water_glass_oit (three stage passes) | 12 -> 3 | 12 -> 3 | 12 -> 3 |
+| translucent_move_oit (three stage passes) | 21 -> 15 | 21 -> 12 | 21 -> 12 |
+| SIFTEC The Sift | 6 -> 2 | 6 -> 1 | 6 -> 1 |
+| SIFTEC hologram | 4 -> 1 | 4 -> 1 | not run |
+
+Total draw calls per frame against baseline (old-GPU): water_glass 140.0 (457.8), water_glass_oit 145.0 (154.0),
+translucent_move 142.0 (141.14, memory gated only), translucent_move_oit 155.0 (161.0), spawn and the rest well under.
+Every gated count (draw calls, uploads, upload bytes, heap after GC, direct buffers) is within its baseline in every
+profile and both suites. Heap after GC moved by at most about +1 MB (Vulkan spawn 258.22 against 257.2); direct buffers
+by one or two 2 MB steps in a few scenes (hologram full 8.24 against 4.24, within the 4 MB step allowance); upload bytes
+per frame are at or under the baselines in the gated scenes except water_glass_oit on full (15,744 against 14,688,
+within the gate).
+
+**Sorting** (vanilla's own `buildSortedIndexBuffer`, timed while measuring; 0 on the render thread in every scene and
+profile): translucent_move 180 sorts per 20 s bench, average 0.10 / 0.15 / 0.14 ms (full / old-GPU / Vulkan), p95
+0.13-0.23 ms, max 2.4-4.0 ms, 180 new index lists uploaded; fly-through about 860-900 sorts, average 0.03 ms;
+occlusion_move 36 sorts, 32 lists uploaded. With Improved Transparency no sorts and no uploads, as in vanilla.
+
+**Per-frame check:** 0 misses in every scene, profile and suite, in the measuring windows and since start-up
+(translucent_move: 2,114-2,744 section layers checked per bench; spawn 23,848 on old-GPU), 0 mixed frames, 0 unchecked
+entries in the translucent scenes.
+
+**Memory:** translucent layers now live in Brimstone's arenas (wide for water, compact where exact: translucent_move's
+live terrain 23.4-23.6 bytes per vertex against vanilla's 28); arenas are now vertex and index buffers.
+
+### Runs
+
+1. `168102e` run 40115084815: marked collection run (all Brimstone runs in translucency dry run). Only the planned
+   failures, plus the SIFTEC Vulkan hologram crash (Wormhole Gateway outline, vanilla too).
+2. `8251625` run 40119107821: core real (passed every gate), SIFTEC collection for the rebuilt hologram; Vulkan crash
+   again (lavapipe, vanilla too) and hologram noise (ice forming on the water).
+3. `32a4224` run 40121527770: core real (passed again), SIFTEC collection for the water-pool hologram with the Vulkan
+   skip; hologram noise from ice forming.
+4. `4cb5419` run 40123696828: core real (passed again), SIFTEC collection for the lit pool: clean, apart from the
+   outline's brightness flip (noise).
+5. `6d48fc7` run 40126212181: everything real, every profile and both suites: **green**.
+6. This docs commit (evidence above): its own run, see the hand-off.
+
+Five CI runs of real attempts so far (1-4 failed by design as marked collection runs, as the brief counts them).
+
+### Deviations from the doc and the plan
+
+- **Sorting is vanilla's own, not a new sorter.** The doc asks for translucent sections sorted back to front on a
+  worker thread; vanilla 26.3 already does that on its worker threads, and Brimstone's picture must equal vanilla's
+  including the order of ties. Brimstone therefore keeps vanilla's index lists byte for byte and takes every new one
+  vanilla's resort task makes; it re-uploads only those lists. No new threads (the CPU is shared with the integrated
+  server).
+- **Fewer draw calls on the plain path, not always on the indirect path.** On old-GPU (vanilla's per-section path)
+  translucent goes from one draw per section per pass to one per run: water and glass 4 to 1, translucent_move 7 to 5,
+  with Improved Transparency 12 to 3 and 21 to 15 per frame. On full and Vulkan vanilla already draws all translucent
+  with one indirect draw per pass; Brimstone needs one per run (format and arena changes split runs): 4 for
+  translucent_move (12 with Improved Transparency). Totals stay within the baselines there.
+- **Improved Transparency order matches vanilla when vanilla's translucent geometry fits in one of its 128 MiB heaps**
+  (then vanilla draws in list order); with more, vanilla groups by heap, which Brimstone does not imitate.
+- **The hologram scene's strict gate cannot resolve the outline.** Create's outliner draws it in one of two
+  brightness states (every outline pixel 6% brighter or not), independent of Brimstone (vanilla's GL 3.3 run had the
+  bright state in run 40121527770, vanilla a and b the dim one in every run). By the documented rule that flip sets the
+  strict limit (21,840 pixels) above the outline's own size (about 14,500), against the brief's "smallest visible thing
+  larger than the strict limit". The 8/255 gate (0.55%) still catches a missing or recoloured outline (about 1.6% of
+  the frame); every translucent element in the core scenes is far above its strict limit (smallest: 8,151 pixels
+  against 10).
+- **The hologram is not checked on Vulkan** (lavapipe segfaults drawing it, vanilla too).
+- **CI:** new scenes and limits; per-session client options; per-scene `ciKeys` and `ciSkipRuns`; the translucency
+  dry-run switch (marked collection runs only); compare.py's translucency gates and table.
+
+### Choices Andre should confirm
+
+- Keeping vanilla's sort (byte-identical order) over a Brimstone sorter.
+- OIT as scenes (own client session) rather than a profile.
+- The hologram scene: Build Gun with the first Power building picked by a CI key press, not run on Vulkan
+  (lavapipe crash in vanilla too).
+- Translucent index lists in the same arena as their vertices (arenas are now vertex + index buffers).
+- A translucent layer Brimstone cannot hold turns the whole terrain module off (rather than leaving that layer to
+  vanilla, which would break the order between sections).
+- Translucent layers keep the per-layer compact/wide choice. Putting every translucent layer in the wide format
+  would end runs only at arena (and plain-path region) changes, e.g. one indirect draw per pass on full and Vulkan
+  instead of 4 (translucent_move) or 31 (fly-through), at 12 more bytes per vertex of the translucent layers that are
+  now compact.
+- The hologram scene's strict limit (above), and accepting that the hologram is not checked on Vulkan.
+- Baselines left as they were; the old-GPU draw-call baselines (e.g. water_glass 457.8, measured 117-140) could
+  come down.
+
+### Remaining trade-offs and open issues
+
+- Right after the module turns on (and while terrain is handed back), sections vanilla still holds are drawn by
+  vanilla before Brimstone's, so for those few frames the order between the two sets may not be vanilla's (counted as
+  mixed frames; CI requires none in measured frames).
+- The per-frame check reads Brimstone's own copy of each index list (what it wrote), not the GPU buffer.
+- The hologram is not checked on Vulkan; Build Gun buildings other than the Power Pole Mk.1 are not in CI.
+- SIFTEC factory and map scenes are still skipped (SIFTEC's selftest jar is not in its release).
+
+### Laptop bench (Andre, when back)
+
+Same instances and steps as `docs/laptop-bench.md`, with this branch's jar (after the merge, the `latest` release).
+Plain instance:
+
+```
+/brimstone bench water_glass confirm
+/brimstone bench translucent_move confirm
+/brimstone bench water_glass_oit confirm
+/brimstone bench translucent_move_oit confirm
+/brimstone bench spawn confirm
+/brimstone bench flythrough confirm
+```
+
+The `_oit` scenes switch Improved Transparency on for the run and put it back afterwards. SIFTEC instance:
+
+```
+/brimstone bench hologram confirm
+/brimstone bench sift confirm
+```
+
+For `hologram`, press Tab once with the Build Gun in hand before measuring starts (it picks the Power Pole Mk.1).
+Paste the latest.log blocks (or the JSON files). The `translucency` line should say `vanilla's own 0.0, mixed frames
+0` and `on the render thread 0`; note its draws per frame and the sort times (`sorts ... ms avg, p95, max`) next to
+FPS and frame times.
 
 ---
 
@@ -810,5 +1065,8 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Now:** package 3 (translucency) on branch `package-3`: plan above; fresh implementation agent, then review rounds,
-then merge.
+**Now:** package 3 (translucency) on branch `package-3`, implemented and green (run 40126212181 on `6d48fc7`, then this
+docs commit's own run); next: review rounds, then merge. The branch still carries the branch-only CI trigger commit
+(`package-3` in `build.yml`), to be stripped at merge. Scratch tools from this package (not in the repo): a compile
+check against stubs generated from the javap dump (`scratchpad/p3/stubgen/check.sh`), the shader harness with OIT
+defines (`scratchpad/p3/harness3.py`), limit and evidence scripts (`scratchpad/p3/newlimits.py`, `tables.py`).
