@@ -3,7 +3,7 @@
 ## Where things stand
 
 - **Now:** package 0 (repo, CI, bench harness) done and merged; package 1 (terrain meshing and region buffers) done
-  on branch `package-1`, green, awaiting review. See "Hand-off" at the bottom for the exact state.
+  on branch `package-1`, review fixes in, green, awaiting re-review. See "Hand-off" at the bottom for the exact state.
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
@@ -106,143 +106,187 @@ median, plus memory; fly-through gated on memory only. Frozen from here on.
 
 ---
 
-## Package 1: terrain meshing and region buffers (done on the branch, awaiting review)
+## Package 1: terrain meshing and region buffers (done on the branch, review fixes in, awaiting re-review)
 
-**Branch** `package-1` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40063424378
-on `1312f85` (every profile, both suites, compare passed). **ci-logs** (overwritten by later runs): `compare/report.md`
-has every table below plus a "Terrain module" table per suite and profile; `runs/<suite>-brimstone-*/bench/*.json` have
-the `meshing` and `terrain` blocks.
+**Branch** `package-1` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40067617184
+on `a7aff90` (every profile, both suites, compare passed, first run after the review fixes). **ci-logs** (overwritten by
+later runs): `compare/report.md` has every table below plus a "Terrain module" table per suite and profile;
+`runs/<suite>-brimstone-*/bench/*.json` have the `meshing` and `terrain` blocks.
 
 **Done when (doc):** "Chunk sections mesh on worker threads into a compact vertex format, packed into large region
 buffers and drawn with few calls. Screenshots match vanilla pixel for pixel on solid blocks."
 
 ### What was built (`src/main/java/com/meakaandre/brimstone/terrain/`, `mixin/terrain/`, `assets/brimstone/shaders/core/terrain.vsh`)
 
-1. **Meshing on worker threads into a 16-byte vertex.** Vanilla's mesher keeps running on its worker threads (AO,
+1. **Meshing on worker threads, every vertex exact.** Vanilla's mesher keeps running on its worker threads (AO,
    light, tint and FRAPI models through Indigo all baked as before). Where a finished section's layer would go into
    vanilla's buffers (`RenderSection.addSectionBuffersToUberBuffer`, on that worker thread), Brimstone takes the
-   solid and cutout layers and transcodes them into its own vertex (`CompactVertex`): 16 bytes instead of vanilla's 28
-   (`DefaultVertexFormat.BLOCK`: position 3xf32, colour RGBA8, UV0 2xf32, UV2 2xi16, checked at start-up). Layout:
-   position u16x3 at 1/2048 block from -8 (section origin + -8..24), region slot u8, block light u8, colour RGB8, sky
-   light u8, UV u16x2 at 1/65536 (65535 = 1.0). Light is clamped to 0..240, which the terrain shader clamps to anyway.
-   Positions on the 1/2048 grid and UVs on the 1/65536 grid come back bit-exact (every block face of a model on
-   vanilla's 1/16-pixel grid; every 1/16 texel of atlases up to 4096, CI's are 2048 and 4096). Off-grid values (plant
-   offsets, fluid heights, rotated parts) are rounded to at most 1/4096 block; CI reports the share (positions
-   9-22% of vertices, UVs under 1%). Translucent stays with vanilla (package 3), as does any layer that doesn't fit
-   at all (alpha not 255, out of range; none in CI).
-2. **Large region buffers, uploads as small copies.** Meshes live in a few 64 MiB GPU buffers ("arenas", made when
-   needed, never resized or re-made) sub-allocated with the game's own TLSF allocator (`TerrainStore`). Sections are
-   grouped in regions of 8x4x8; a region keeps its sections in one arena where it can, so it draws with one call.
-   Each layer goes in as one `writeToBuffer` of its bytes at the end of the frame, where vanilla uploads its own;
-   then vanilla's own upload callback swaps the mesh in, so fade-in, visibility graph and block entities work as in
-   vanilla.
-3. **Few draw calls, through renderpearl only (both backends).** `TerrainRenderer` builds one draw list per layer
-   (solid, cutout) from the sections vanilla found visible, and draws right after vanilla's own part of each layer,
-   inside vanilla's terrain pass with vanilla's uniforms, atlas and lightmap bound (Fabric's terrain events still
-   wrap it). How it draws follows vanilla:
-   - **plain path** (no multi-draw indirect, or Intel where vanilla's `multiDrawIndirectHasKnownIssues` is set; the
-     target laptop): one direct multi-draw per region and layer (`RenderPass.multiDrawIndexed` with base vertices;
-     OpenGL's `glMultiDrawElementsBaseVertex`, core since 3.2; on Vulkan the interleaved form when the device has
-     `multiDrawDirectInterleaved`, else one draw per section). Section origins come from the vertex's region slot and
-     a small uniform block per region (origin + fade-in per section), rewritten only when a fade-in value changes.
-   - **indirect path** (frames where vanilla itself uses multi-draw indirect): one indirect multi-draw per arena and
-     layer; Brimstone's commands and section data go into the same uploads as vanilla's.
-4. **Shaders.** Brimstone's own vertex shader (reads the compact vertex, does the same arithmetic in the same order
-   as the game's terrain vertex stage) and the game's own terrain fragment shader by reference
-   (`minecraft:core/terrain`, not copied), so the pixel stage is vanilla's. Same depth state, culling, cut-off (0.5).
-5. **Crash safety.** The module turns on only after its first frame proves every hook landed, the vanilla vertex
-   format is the one it reads, and its pipelines compiled; the log says `Brimstone terrain: on (...)` with the draw
-   path. Any exception in its code, a pipeline that stops compiling (resource reload) or a missing hook turns it off
-   for the session with one ERROR line, drops its buffers and has vanilla rebuild every section (what F3+A does), so
-   vanilla draws all terrain. Exceptions never escape into vanilla's code. CI fails if the module never turned on, if
-   any fallback line appears, or if any bench reports it not active or a fallback count above zero
-   (`ci/compare.py`). Attempt 1 showed the fallback working: a late-applied hook was missing, the module stayed off,
-   vanilla drew everything, CI failed on it.
-6. **Bench.** `meshing` in the JSON (was null): sections meshed while measuring, vanilla mesher ms avg/p50/p95 and
-   Brimstone's transcode ms per layer, `msPerSection` (both). New `terrain` block: state, fallbacks, draw path,
-   Brimstone's draws and section layers per frame, vertex bytes, arenas and MB used, what vanilla's format would need,
-   layers taken/kept, rounded share. Both are in the latest.log block and in CI's report (reported, not gated).
+   solid and cutout layers and sorts their quads into two vertex formats (`CompactVertex.split`), keeping vanilla's
+   quad order within each:
+   - **compact, 16 bytes** (vanilla's `DefaultVertexFormat.BLOCK` has 28: position 3xf32, colour RGBA8, UV0 2xf32,
+     UV2 2xi16, checked at start-up): position u16x3 at 1/2048 block from -8, region slot u8, block light u8, colour
+     RGB8, sky light u8, UV u16x2 at 1/65536 (65535 = 1.0). A quad goes here only if every one of its 4 vertices
+     round-trips bit for bit: the stored value is decoded with the shader's own float operations and compared with
+     vanilla's float bits (position, UV), and alpha must be 255. Light is stored clamped to 0..240, which lands on the
+     same lightmap texel as vanilla's clamp in the shader.
+   - **wide, 32 bytes** for every other quad (plant offsets, fluid heights, rotated parts, UVs off the 1/65536 grid,
+     e.g. on atlases wider than 4096): vanilla's 28 bytes unchanged plus the u16 region slot and padding.
 
-### Evidence (run 40063424378)
+   Both live in the same arenas; each section layer is up to two allocations. Nothing is rounded any more, so the
+   vertex stage gets vanilla's position, UV, colour and light for every vertex. Translucent stays with vanilla
+   (package 3).
+2. **Large region buffers, uploads as small copies.** Meshes live in a few 64 MiB GPU buffers ("arenas") sub-allocated
+   with the game's own TLSF allocator (`TerrainStore`). Sections are grouped in regions of 8x4x8; a region keeps its
+   sections in one arena where it can. Each part goes in as one `writeToBuffer` at the end of the frame, where vanilla
+   uploads its own; then vanilla's own upload callback swaps the mesh in, so fade-in, visibility graph and block
+   entities work as in vanilla. An arena that empties is closed (except the first), and a region's uniform buffer is
+   closed when its last section goes.
+3. **Few draw calls, through renderpearl only (both backends).** `TerrainRenderer` builds one draw list per layer and
+   format from the sections vanilla found visible, and draws right after vanilla's own part of each layer, inside
+   vanilla's terrain pass with vanilla's uniforms, atlas and lightmap bound. How it draws follows vanilla:
+   - **plain path** (no multi-draw indirect, or Intel where vanilla's `multiDrawIndirectHasKnownIssues` is set; the
+     target laptop): one direct multi-draw per region, layer and format (`RenderPass.multiDrawIndexed`, OpenGL's
+     `glMultiDrawElementsBaseVertex`; on Vulkan the interleaved form when the device has `multiDrawDirectInterleaved`,
+     else one draw per section). Section origins come from the region slot and a small uniform block per region,
+     rewritten only when a fade-in value changes.
+   - **indirect path** (frames where vanilla itself uses multi-draw indirect): one indirect multi-draw per arena,
+     layer and format; Brimstone's commands and section data go into the same uploads as vanilla's.
+4. **Shaders.** Brimstone's own vertex shader, written in its own structure (`terrain.vsh`: one body for both formats
+   and both paths, own names for everything the interface doesn't force; only the shared uniform blocks, sampler and
+   the instance attributes keep the game's names). It does the same float operations in the same order where order
+   changes rounding (marked "order" in the file). The game's terrain fragment shader is used by reference
+   (`minecraft:core/terrain`, not copied), so the pixel stage is vanilla's. Same depth state, culling, cut-off (0.5).
+5. **Crash safety and hand-back.** States STARTING, ACTIVE, DEFERRED, OFF (`Terrain`). It turns on after its first
+   frames prove every hook landed, the vanilla vertex format, that no resource pack replaces the shader code it stands
+   in for, and its pipelines; the log says `Brimstone terrain: on (...)` with the formats, draw path and GPU error
+   check. First-frame setup runs inside its own try/catch. Anything unexpected later (exception, pipeline that stops
+   compiling, GPU error) turns it off for the session with one ERROR line and hands terrain back: staged meshes are
+   dropped, every section it holds is marked dirty (`LevelExtractor.setSectionDirty`, per section, no full reset) so
+   vanilla meshes it again. If the cause was outside drawing (meshing, bookkeeping) Brimstone keeps drawing what it
+   holds until vanilla's new mesh of each section replaces it, so nothing disappears; after an error in drawing or a
+   pack override it stops drawing at once and those sections are missing for the moment vanilla takes to re-mesh
+   them. The log says how many sections were handed back and which of the two.
+6. **Bench.** `meshing` in the JSON: sections meshed while measuring, vanilla mesher ms and Brimstone's transcode ms,
+   `msPerSection`. `terrain` block: state, fallbacks, draw path, Brimstone's draws and section layers per frame,
+   compact/wide bytes, bytes per vertex (live average), live compact/wide vertices and wide %, arenas and MB used,
+   what vanilla's format would need, layers taken/kept, layers with wide quads by reason (position, UV, alpha).
+
+### Review fixes (review of `82ba60c`)
+
+- **M1, exactness.** Rounding is gone; per-quad split into the compact or the wide format as above, verified per
+  vertex at transcode. Chosen by measurement: the alternative, leaving any layer with a misfit quad to vanilla, kept
+  about half the layers with vanilla (attempt 2), while the split keeps every solid/cutout layer (layers kept by
+  vanilla: 0 in every scene). Cost: live wide share 4.4-14.4% of vertices, so 16.7-18.3 bytes per vertex on average
+  instead of 16 (vanilla 28), and one extra draw per layer and arena (indirect) or per region and layer (plain) where a
+  region has wide quads.
+- **M2, large atlases.** UVs are checked per vertex, so a quad off the compact UV grid takes the wide format, never
+  rounded. Log lines: one when the block atlas is wider than 4096 at start-up, one on the first quad with an off-grid
+  UV (seen in CI: some UVs are off the 1/65536 grid even on CI's atlases, 20-108 layers per scene).
+- **M3, resource packs.** `TerrainResources` checks that `minecraft:shaders/core/terrain.vsh` and its includes (fog,
+  globals, projection, sample_lightmap, terrainglobals, chunksection) come from the pack `vanilla`
+  (`Resource.sourcePackId`); otherwise DEFERRED with a WARN line naming file and pack, vanilla draws all terrain.
+  Re-checked after every resource reload (hook on `ShaderManager.apply`); back to STARTING when the override is gone.
+- **M4, GPU errors.** `TerrainGpuErrors` reads renderpearl's `GpuDevice.getLastDebugMessages` before and after each
+  terrain draw and upload; a new message of type ERROR (or a validation error) turns the module off. No raw GL.
+  CI sets `glDebugVerbosity:1` (the game's default) in every run alike; `ci/compare.py` counts OpenGL debug ERROR
+  messages and Vulkan validation lines per client log and fails if a Brimstone run logs more than the vanilla run of
+  its profile. Result: core 0/0 in every profile; SIFTEC full 2/2, old-GPU 18/18 (SIFTEC's own shaders probing GLSL
+  4.50/4.60 on Mesa, in vanilla as well), Vulkan 0/0.
+- **M5, shader.** `terrain.vsh` rewritten as described in 4.
+- **Minors.** First-frame setup outside the draw try/catch now has its own; staged meshes carry a generation and the
+  store refuses meshes from a disposed section dispatcher's late workers (hooks on its constructor and on both ends of
+  `dispose`), so nothing staged in one world reaches the next; a failed upload frees every buffer not yet copied and
+  the allocation it was writing; compare.py fails a scene where Brimstone took no layers or drew no section layers or
+  draw calls; empty arenas and region uniform buffers are released; mid-session hand-back as in 5; debug property
+  `-Dbrimstone.debug.forcePlainTerrain=true` makes Brimstone use its plain path on every frame (WARN line when set).
+- **Property not set in CI:** brimstone-vk is the only Vulkan Brimstone run, and setting it there would remove the
+  only Vulkan coverage of the indirect path. The Vulkan plain path (interleaved multi-draw) stays uncovered in CI.
+- **Core spawn noise (18.56% vanilla a/b in run 40064438473).** Cause: each core run generated its own world, and
+  feature placement at chunk borders depends on chunk generation order, so trees differed between vanilla a and b.
+  Now a `core-world` job generates the world once per CI run (`ci/core-world.sh`: same seed, the scene areas
+  forceloaded, saved; cached on the script and game version) and every core run loads it. Spawn noise is now 0.36%.
+  Limits and baselines untouched.
+
+### Evidence (run 40067617184)
 
 Pixel differences (% of pixels whose largest channel differs by more than 8; limits from `docs/ci-limits.md`,
 unchanged):
 
 | suite / scene | noise (vanilla a/b) | limit | full | old-GPU | Vulkan |
 |---|---|---|---|---|---|
-| core / spawn | 1.02 | 10.05 | 0.74 | 1.18 | 0.23 |
-| core / fly-through | 4.73 | 14.95 | 5.28 | 6.15 | 5.52 |
-| core / water and glass | 0.92 | 6.45 | 1.81 | 1.86 | 1.27 |
-| core / nether | 0.27 | 0.8 | 0.20 | 0.01 | 0.26 |
-| core / mobs | 0.04 | 0.4 | 0.08 | 0.08 | 0.10 |
-| SIFTEC / The Sift | 0.17 | 1.15 | 0.03 | 0.12 | 0.25 |
-| SIFTEC / HUB | 4.19 | 8.75 | 2.42 | 3.30 | 4.33 |
-| SIFTEC / MAM | 4.27 | 9.3 | 2.35 | 3.54 | 4.57 |
+| core / spawn | 0.36 | 10.05 | 0.21 | 0.57 | 0.45 |
+| core / fly-through | 0.03 | 14.95 | 0.05 | 0.02 | 0.01 |
+| core / water and glass | 2.25 | 6.45 | 1.73 | 0.44 | 1.31 |
+| core / nether | 0.07 | 0.8 | 0.01 | 0.01 | 0.34 |
+| core / mobs | 0.13 | 0.4 | 0.14 | 0.12 | 0.14 |
+| SIFTEC / The Sift | 0.33 | 1.15 | 0.18 | 0.03 | 0.11 |
+| SIFTEC / HUB | 4.54 | 8.75 | 4.21 | 0.18 | 2.36 |
+| SIFTEC / MAM | 4.68 | 9.3 | 4.44 | 0.09 | 2.12 |
 
 Draw calls per frame on the **old-GPU profile** (vanilla's Intel flag forced; package 0 baseline is vanilla's
 per-section path):
 
 | scene | baseline (vanilla path) | Brimstone | of which Brimstone's terrain draws, for N section layers |
 |---|---|---|---|
-| core / spawn | 942.31 | 386.90 | 22.1 for 594 |
-| core / fly-through (not gated) | 1146.26 | 431.57 | 34.4 for 714 |
-| core / water and glass | 489.10 | 233.13 | 13.0 for 271 |
-| core / nether | 687.04 | 233.89 | 20.1 for 474 |
-| core / mobs | 434.39 | 248.07 | 11.0 for 201 |
-| SIFTEC / The Sift | 849.48 | 445.77 | 19.1 for 424 |
-| SIFTEC / HUB | 342.20 | 299.21 | 6.0 for 49 |
-| SIFTEC / MAM | 400.79 | 301.86 | 4.0 for 86 |
+| core / spawn | 942.31 | 402.43 | 37.2 for 787 |
+| core / fly-through (not gated) | 1146.26 | 458.55 | 57.6 for 937 |
+| core / water and glass | 489.10 | 243.16 | 23.1 for 454 |
+| core / nether | 687.04 | 244.90 | 31.1 for 626 |
+| core / mobs | 434.39 | 256.02 | 21.1 for 340 |
+| SIFTEC / The Sift | 849.48 | 448.63 | 21.1 for 426 |
+| SIFTEC / HUB | 342.20 | 303.99 | 10.0 for 78 |
+| SIFTEC / MAM | 400.79 | 303.92 | 7.0 for 145 |
 
 On full and Vulkan, vanilla already draws terrain with about one indirect multi-draw per layer; Brimstone draws its
-part with about 2 per frame (one per layer per arena) and the totals stay at the baseline (218-240 core, 295-424
-SIFTEC). Every other count (uploads, upload bytes, heap after GC, direct buffers) is within its baseline in every
-profile.
+part with 3-5 per frame (per layer, arena and format) and the totals stay at the baseline (217-242 core, 297-426
+SIFTEC; SIFTEC Vulkan HUB/MAM 333/377 against 317/353, within the allowance). Every other count (uploads, upload bytes,
+heap after GC, direct buffers) is within its baseline in every profile.
 
-**Vertex size and memory:** 16 bytes a vertex against vanilla's 28 (-43%). Live terrain in CI: spawn 19.2 MB where
-vanilla's format would need 32.2 MB; fly-through 72.6 MB against 121.5 MB; MAM 15.3 MB against 25.6 MB. Arenas are
-reserved in 64 MiB steps (one for 8-chunk scenes, two for the 12-chunk fly-through).
+**Vertex size and memory** (live, core full / SIFTEC full): bytes per vertex 17.2-18.2 / 16.7-18.3 (compact 16, wide
+32, vanilla 28); wide share 7.5-13.9% / 4.4-14.4% of live vertices. Spawn 22.0 MB where vanilla's format would need
+32.4 MB; fly-through 78.2 MB against 121.6 MB; MAM 16.6 MB against 25.6 MB. Arenas are reserved in 64 MiB steps (one
+for 8-chunk scenes, two for the 12-chunk fly-through).
 
-**Meshing time per section** (vanilla mesher + transcode, on the worker threads, while measuring; SIFTEC scenes and
-mobs mesh nothing while measuring, so null there): core full spawn 4.2 ms, fly-through 6.7 ms, nether 3.0 ms; old-GPU
-4.9 / 6.3 / 3.2 ms; Vulkan 3.3 / 5.9 / 2.7 ms (CI's 4-core runners, llvmpipe sharing the CPU).
+**Meshing time per section** (vanilla mesher + split, worker threads, while measuring; null where nothing meshed
+while measuring): core full spawn 4.0 ms, fly-through 6.7 ms, nether 2.6 ms; old-GPU 5.5 / 8.1 / 2.4 ms; Vulkan 2.1 /
+5.1 / 1.0 ms (CI's 4-core runners, llvmpipe sharing the CPU).
 
 ### Deviations from the doc and the plan
 
-- **Meshing is vanilla's, transcoded** (the plan's choice), not a new mesher: vanilla already meshes on worker
-  threads and bakes AO/light/tint/FRAPI; Brimstone transcodes on the same thread. FRAPI models go through Indigo as
-  in vanilla.
+- **Meshing is vanilla's, transcoded** (the plan's choice), not a new mesher.
+- **Two vertex formats** instead of one compact format: the compact format can't hold every vertex exactly, and
+  exactness comes first (review M1).
 - **Region buffers:** a few shared 64 MiB arenas with regions as a grouping inside them, not separate buffers per
-  region. Per-region buffers would mean hundreds of buffers and a buffer bind per region; with arenas a region is
-  still one draw call and the vertex buffer changes only per arena. Arenas are written with copies, not persistently
-  mapped.
-- **Off-grid vertices are rounded** (at most 1/4096 block, 1/131072 of the atlas) instead of keeping those layers
-  with vanilla. Keeping them left about half the layers with vanilla (attempt 2). Block faces on the model grid stay
-  bit-exact; pixel diffs stay within the noise limits.
+  region (one draw per region and format, the vertex buffer changes only per arena). Written with copies, not
+  persistently mapped.
 - **Fragment shader is the game's own,** used by reference; only the vertex shader is Brimstone's.
-- **Draw calls on full/Vulkan don't go down** (vanilla's indirect path already merges them); the gain there is the
-  vertex size and memory. The draw-call gain is on the plain path, as the research predicted.
-- **Plain path on Vulkan:** interleaved multi-draw (VK_EXT_multi_draw through renderpearl's
-  `multiDrawDirectInterleaved`) when the device has it; the log names the path.
-- **CI script change:** `.github/dump-bytecode`/`dump-data` widened and the dump-data step added to `build.yml`
-  (facts only; nothing judged differently). `ci/compare.py` gained the fallback checks and the terrain table.
+- **Draw calls on full/Vulkan don't go down** (vanilla's indirect path already merges them); the gain there is vertex
+  size and memory. The draw-call gain is on the plain path.
+- **CI changes:** `core-world` job and `ci/core-world.sh`; `glDebugVerbosity:1` in the client options; compare.py
+  gained the GPU-error, drew-terrain and fallback checks and the terrain table. No game files are published.
 
 ### Choices Andre should confirm
 
-- Rounding off-grid positions/UVs to the 1/2048-block, 1/65536-UV grid (vs keeping those layers with vanilla).
+- Exact per-quad split (16-byte compact plus 32-byte wide) over rounding.
 - Shared 64 MiB arenas instead of per-region buffers; arena size.
-- Using the game's terrain fragment shader by reference (Brimstone's terrain follows vanilla shader changes and
-  resource packs that replace that shader).
-- Baselines are left as they were. The old-GPU draw-call baselines could come down (e.g. spawn 942 to about 390)
-  once a second green run confirms the new values; not done on one run, as the old-GPU counts spread up to 15%.
+- Using the game's terrain fragment shader by reference; deferring to vanilla when a pack replaces the vertex shader
+  or its includes (a pack replacing only the fragment shader keeps Brimstone on, and Brimstone draws with that shader).
+- Baselines are left as they were. The old-GPU draw-call baselines could come down (e.g. spawn 942 to about 400) once
+  more green runs confirm the new values.
 
-### Open issues
+### Remaining trade-offs and open issues
 
-- The fallback path (module off mid-session, vanilla rebuilds) ran only in its "before the first frame" form in CI
-  (attempt 1). A mid-session fallback is not exercised by CI.
-- SIFTEC Vulkan MAM draw calls came out at 390 against a baseline of 353 in one run (attempt 2) and 377 in attempt 1
-  with the module off, on slower runners (22-23 fps against 29). It is a count-noise effect of frame rate (frames on a
-  game tick draw more), not terrain; it may come back on a slow runner.
-- Meshing time is null for scenes that mesh nothing while measuring; the fly-through, spawn and nether carry it.
+- **GPU error check on Vulkan:** renderpearl's Vulkan backend returns no debug messages to the game
+  (`getLastDebugMessages` is empty), so the runtime check works on OpenGL only; the log line says which. Vulkan
+  validation layers are not enabled in CI (they would slow lavapipe a lot and shift the gated per-frame counts);
+  compare.py still counts any validation lines.
+- A GPU error from other code that lands between Brimstone's mark and check (same render thread, inside the terrain
+  draw or upload) would also turn Brimstone off: safe direction, not seen in CI.
+- Draw order within a layer is compact quads then wide quads (depth test makes this invisible for opaque and cut-out
+  geometry; coplanar quads of one section split across the formats could z-fight differently from vanilla, not seen
+  in any CI scene).
+- The mid-session hand-back is not exercised by CI (only the before-first-frame fallback was, in attempt 1).
+- `brimstone.debug.forcePlainTerrain` is not set in CI (see above); the Vulkan plain path is uncovered.
 - SIFTEC factory and map scenes are still skipped (SIFTEC's selftest jar is not in its release).
 
 ### Laptop bench (Andre, when back)
@@ -284,6 +328,6 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Now:** package 1 on branch `package-1` is implemented and green (report above); a separate reviewer agent checks
-it against the done-when and the rules before the merge. The branch carries a branch-only CI commit (CI on pushes to
+**Now:** package 1 on branch `package-1` is implemented, the first review's findings are fixed and CI is green (report
+above); the reviewer checks it again before the merge. The branch carries a branch-only CI commit (CI on pushes to
 `package-1`) that should not go to main as is.

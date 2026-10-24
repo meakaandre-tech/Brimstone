@@ -48,7 +48,10 @@ Where the noise comes from: animated water and kelp (fly-through, spawn, water a
 differs per run), the HUB and MAM screens (fade-in timing). Clouds are turned off in CI's client options because
 their position follows elapsed game time, which differs between runs. To keep the picture steady CI also: pins time
 and weather in each dimension (The Sift has its own clock and weather), uses mobs without random variants,
-pregenerates the SIFTEC areas the scenes look at, presses F3+A before each world screenshot and waits for two
+pregenerates the SIFTEC areas the scenes look at, loads every core run from one world generated once per CI run
+(`ci/core-world.sh`, job `core-world`; package 1: before that each run generated its own, and feature placement at
+chunk borders depends on generation order, so trees differed between vanilla a and b and spawn noise reached 18.6%;
+with the shared world it is 0.36%; limits unchanged), presses F3+A before each world screenshot and waits for two
 captures 4 s apart to agree, and parks the mouse for screen scenes. All of it is the same in every run.
 
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
