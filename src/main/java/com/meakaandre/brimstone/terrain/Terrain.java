@@ -2,6 +2,7 @@ package com.meakaandre.brimstone.terrain;
 
 import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.mixin.terrain.RenderSectionInvoker;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.client.Minecraft;
@@ -13,21 +14,42 @@ import net.minecraft.core.SectionPos;
 
 /**
  * Brimstone's terrain module (package 1): takes the solid and cutout meshes vanilla builds on its worker threads,
- * transcodes them into a 16-byte vertex, keeps them in large GPU buffers and draws them with few calls. Translucent
- * terrain, and any layer it can't take exactly, stay with vanilla.
+ * sorts their quads into its compact 16-byte vertex or, where that wouldn't hold a vertex exactly, a wide 32-byte one,
+ * keeps them in large GPU buffers and draws them with few calls. Translucent terrain stays with vanilla.
  *
- * <p>State: STARTING until the first frame of a world proves its mixins, the vertex format it reads and its shaders;
- * then ACTIVE. Anything unexpected (an exception in its code, a shader that doesn't compile) turns it OFF for the rest
- * of the session with one log line, drops its buffers and has vanilla rebuild every section, so vanilla draws all
- * terrain again.
+ * <p>States:
+ * <ul>
+ * <li>STARTING until a world's first frames prove its hooks, the vertex format it reads, that no resource pack
+ * replaces the shader code its own vertex shader stands in for, and its pipelines; then ACTIVE.</li>
+ * <li>DEFERRED while a resource pack replaces that shader code: vanilla draws all terrain; checked again on every
+ * resource reload.</li>
+ * <li>OFF for the rest of the session after anything unexpected: an exception in its code, a GPU error reported by the
+ * device's debug output while it drew or uploaded, a pipeline that stops compiling. One ERROR log line.</li>
+ * </ul>
+ *
+ * <p>Handing terrain back to vanilla (OFF or DEFERRED): no new meshes are taken, staged ones are dropped, and every
+ * section Brimstone holds is marked dirty so vanilla meshes it again into its own buffers. When the cause was not in
+ * Brimstone's drawing (meshing, upload bookkeeping), Brimstone keeps drawing what it holds until vanilla's new mesh of
+ * each section replaces it, so nothing disappears; otherwise (an error while drawing, a pack override) it stops
+ * drawing at once and those sections are missing for the moment vanilla takes to mesh them again.
  */
 public final class Terrain {
-    public enum State { STARTING, ACTIVE, OFF }
+    public enum State { STARTING, ACTIVE, DEFERRED, OFF }
 
     private static volatile State state = State.STARTING;
     private static volatile String reason = "waiting for the first frame";
     private static final AtomicInteger FALLBACKS = new AtomicInteger();
     private static int framesWithoutDrawHook;
+
+    /** Set when terrain must go back to vanilla at the next safe point (end of frame). */
+    private static volatile boolean handBack;
+    /** While handing back: whether Brimstone may keep drawing what it holds until vanilla replaced it. */
+    private static volatile boolean keepDrawing;
+    /** Set by a resource reload: check packs again before the next frame. */
+    private static volatile boolean resourcesChanged;
+
+    /** Debug (CI only): Brimstone uses its plain path even on frames where vanilla uses multi-draw indirect. */
+    static final boolean FORCE_PLAIN = Boolean.getBoolean("brimstone.debug.forcePlainTerrain");
 
     private Terrain() {
     }
@@ -48,9 +70,40 @@ public final class Terrain {
         return state == State.ACTIVE;
     }
 
-    /** Render thread, start of a frame's terrain preparation: proves everything once, then turns on. */
-    static void activateIfNeeded() {
-        if (state != State.STARTING) return;
+    /** Whether new meshes go to Brimstone. */
+    static boolean takingMeshes() {
+        return state == State.ACTIVE && !handBack;
+    }
+
+    /** Whether Brimstone draws what it holds this frame. */
+    static boolean drawing() {
+        return state == State.ACTIVE || keepDrawing;
+    }
+
+    /**
+     * Render thread, as a frame's terrain preparation starts: proves everything once, then turns on; re-checks
+     * resource packs after a reload. Never throws: anything unexpected turns the module off.
+     */
+    static void beginFrame() {
+        try {
+            if (resourcesChanged) {
+                resourcesChanged = false;
+                if (state == State.ACTIVE || state == State.DEFERRED) {
+                    String pack = TerrainResources.override();
+                    if (pack != null && state == State.ACTIVE) defer(pack);
+                    else if (pack == null && state == State.DEFERRED) {
+                        state = State.STARTING;
+                        reason = "resource packs changed";
+                    }
+                }
+            }
+            if (state == State.STARTING) activate();
+        } catch (Throwable t) {
+            fail("starting", t, false);
+        }
+    }
+
+    private static void activate() {
         if (!TerrainRenderer.drawHookSeen) {
             // the draw hook runs inside vanilla's terrain pass: wait until it has run once (vanilla draws meanwhile)
             if (++framesWithoutDrawHook < 600) return;
@@ -61,6 +114,13 @@ public final class Terrain {
             why = "the RenderSection invoker did not apply";
         }
         if (why == null) why = CompactVertex.checkVanillaFormat();
+        if (why == null) {
+            String pack = TerrainResources.override();
+            if (pack != null) {
+                defer(pack);
+                return;
+            }
+        }
         if (why == null) why = TerrainPipelines.compileAll();
         if (why != null) {
             state = State.OFF;
@@ -71,50 +131,86 @@ public final class Terrain {
         }
         reason = "on";
         state = State.ACTIVE;
-        // sections vanilla meshed before this frame stay in its buffers until rebuilt: rebuild them all once
-        rebuild = true;
-        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex, vanilla's is {}; solid and cutout layers; plain draw path: {})",
-            CompactVertex.BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName());
+        TerrainResources.logAtlas();
+        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for quads it holds exactly, {}-byte vanilla layout plus section"
+                + " slot for the rest; vanilla's is {}; solid and cutout layers; plain draw path: {}; GPU error check: {})",
+            CompactVertex.BYTES, CompactVertex.WIDE_BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName(),
+            TerrainGpuErrors.describe());
+        if (FORCE_PLAIN) BrimstoneClient.LOG.warn("Brimstone debug: brimstone.debug.forcePlainTerrain is set, Brimstone's terrain uses its plain path on every frame");
+    }
+
+    /** A resource pack replaces shader code Brimstone stands in for: vanilla draws all terrain until packs change. */
+    private static void defer(String pack) {
+        state = State.DEFERRED;
+        reason = pack;
+        BrimstoneClient.LOG.warn("Brimstone terrain: deferring to vanilla, which draws all terrain: {}", pack);
+        startHandBack(false);
+    }
+
+    /** Called by the resource reload (render thread). */
+    public static void resourcesReloaded() {
+        resourcesChanged = true;
     }
 
     /**
-     * Something went wrong: off for good, with one log line; vanilla rebuilds every section so it draws all terrain
-     * again. Any thread.
+     * Something went wrong: off for good, with one log line, and terrain goes back to vanilla. {@code drawingOk}: the
+     * cause was not in drawing, so Brimstone may keep drawing what it holds until vanilla has replaced it. Any thread.
      */
-    static void fail(String where, Throwable t) {
+    static void fail(String where, Throwable t, boolean drawingOk) {
         synchronized (Terrain.class) {
-            if (state == State.OFF) return;
+            if (state == State.OFF) {
+                if (!drawingOk) keepDrawing = false;
+                return;
+            }
             state = State.OFF;
             reason = where + ": " + t;
         }
         FALLBACKS.incrementAndGet();
-        handBack = true;
-        rebuild = true;
         BrimstoneClient.LOG.error("Brimstone terrain: turned off, vanilla draws terrain again (fallback in {})", where, t);
+        startHandBack(drawingOk);
     }
 
-    /** Set when the module turned off: its buffers go. */
-    private static volatile boolean handBack;
-    /** Set when every section must be meshed again (the module turned on, or off). */
-    private static volatile boolean rebuild;
+    private static void startHandBack(boolean drawingOk) {
+        keepDrawing = drawingOk;
+        handBack = true;
+        try {
+            TerrainStore.dropStaged();
+        } catch (Throwable t) {
+            BrimstoneClient.LOG.error("Brimstone terrain: could not drop staged meshes", t);
+        }
+    }
 
     /**
-     * Render thread, at the end of a frame (no render pass open): when the module turned off, drops its buffers;
-     * when it turned on or off, has vanilla rebuild every section (what F3+A does), so each section ends up with
-     * whoever draws terrain now.
+     * Render thread, end of frame (no render pass open): when terrain goes back to vanilla, marks every section
+     * Brimstone holds dirty so vanilla meshes it again, and drops Brimstone's buffers once nothing is left to draw.
      */
-    private static void rebuildIfNeeded() {
-        if (!rebuild) return;
-        rebuild = false;
+    private static void handBackIfNeeded() {
         try {
             if (handBack) {
                 handBack = false;
+                LongOpenHashSet held = TerrainStore.heldSections();
+                if (!keepDrawing) TerrainStore.clear();
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.levelExtractor != null) {
+                    for (long s : held) mc.levelExtractor.setSectionDirty(SectionPos.x(s), SectionPos.y(s), SectionPos.z(s));
+                }
+                BrimstoneClient.LOG.info("Brimstone terrain: {} sections handed back to vanilla ({})", held.size(),
+                    keepDrawing ? "Brimstone draws them until vanilla's new meshes are in" : "missing until vanilla has meshed them");
+            }
+            if (state != State.ACTIVE && keepDrawing && TerrainStore.isEmpty()) {
+                keepDrawing = false;
                 TerrainStore.clear();
             }
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.levelExtractor != null) mc.levelExtractor.allChanged();
         } catch (Throwable t) {
-            BrimstoneClient.LOG.error("Brimstone terrain: could not have vanilla rebuild the terrain", t);
+            keepDrawing = false;
+            BrimstoneClient.LOG.error("Brimstone terrain: could not hand terrain back to vanilla cleanly", t);
+            try {
+                TerrainStore.clear();
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.levelExtractor != null) mc.levelExtractor.allChanged();
+            } catch (Throwable ignored) {
+                // nothing more to try
+            }
         }
     }
 
@@ -124,13 +220,14 @@ public final class Terrain {
      */
     public static boolean take(SectionRenderDispatcher.RenderSection section, ChunkSectionLayer layer, CompiledSectionMesh mesh,
                                ByteBuffer vertices, ByteBuffer indices) {
-        if (state != State.ACTIVE || vertices == null || indices != null) return false;
+        if (!takingMeshes() || vertices == null || indices != null) return false;
         if (TerrainStore.layerIndex(layer) < 0) return false;
         try {
+            int gen = TerrainStore.generation();
             SectionMesh.SectionDraw draw = mesh.getSectionDraw(layer);
             if (draw == null || draw.hasCustomIndexBuffer()) return false;
             int count = vertices.remaining() / CompactVertex.VANILLA_BYTES;
-            if ((long) count * CompactVertex.BYTES > TerrainStore.MAX_LAYER_BYTES || draw.indexCount() != count / 4 * 6) {
+            if ((long) count * CompactVertex.WIDE_BYTES > TerrainStore.MAX_LAYER_BYTES || draw.indexCount() != count / 4 * 6) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;
             }
@@ -139,20 +236,22 @@ public final class Terrain {
             int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
             int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
             int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
-            ByteBuffer compact = CompactVertex.transcode(vertices, CompactVertex.sectionIndex(x, y, z));
-            if (compact == null) {
+            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z));
+            if (split == null) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;
             }
+            TerrainStats.split(split);
             // the index flag first: once staged, the render thread may report the vertices uploaded at any moment,
-            // and vanilla only swaps the mesh in when both flags are set
+            // and vanilla only swaps the mesh in when both flags are set (vanilla sets it too for a layer without
+            // indices, so a mesh handed back to vanilla below is unaffected)
             mesh.setIndexBufferUploaded(layer);
-            TerrainStore.stage(section, mesh, layer, x, y, z, compact, count);
+            if (!TerrainStore.stage(gen, section, mesh, layer, x, y, z, split)) return false;
             TerrainStats.LAYERS_TAKEN.incrementAndGet();
             TerrainStats.transcoded(System.nanoTime() - t0);
             return true;
         } catch (Throwable t) {
-            fail("meshing", t);
+            fail("meshing", t, true);
             return false;
         }
     }
@@ -162,29 +261,41 @@ public final class Terrain {
             try {
                 TerrainStore.release(m);
             } catch (Throwable t) {
-                fail("releasing a mesh", t);
+                fail("releasing a mesh", t, false);
             }
         }
     }
 
     /** Render thread, end of frame, in vanilla's terrain upload. */
     public static void upload() {
-        if (state != State.OFF) {
+        if (takingMeshes()) {
             try {
+                TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
                 TerrainStore.upload();
+                String err = TerrainGpuErrors.since(mark);
+                if (err != null) fail("upload", new IllegalStateException("GPU error: " + err), false);
             } catch (Throwable t) {
-                fail("upload", t);
+                fail("upload", t, false);
             }
         }
-        rebuildIfNeeded();
+        handBackIfNeeded();
+    }
+
+    /** Vanilla made a section dispatcher (entering a world). */
+    public static void dispatcherCreated() {
+        try {
+            TerrainStore.dispatcherCreated();
+        } catch (Throwable t) {
+            fail("dispatcher start", t, false);
+        }
     }
 
     /** Vanilla's section dispatcher is going away (leaving the world, reloading): drop everything. */
     public static void disposed() {
         try {
-            TerrainStore.clear();
+            TerrainStore.dispatcherDisposed();
         } catch (Throwable t) {
-            fail("dispose", t);
+            fail("dispose", t, false);
         }
     }
 }

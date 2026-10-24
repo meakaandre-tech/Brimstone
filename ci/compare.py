@@ -67,6 +67,13 @@ def bench_results(run_dir):
     return out
 
 
+GPU_ERROR = re.compile(r"OpenGL debug message: [^\n]*type=ERROR|Validation Error|VUID-")
+
+
+def gpu_errors(text):
+    return len(GPU_ERROR.findall(text))
+
+
 def drive_skips(run_dir):
     out = {}
     for f in glob.glob(os.path.join(run_dir, "drive-*.json")):
@@ -148,6 +155,8 @@ def main():
                             failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
                         elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
                             failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
+                        elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
+                            failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
                         miss = bj.get("counters", {}).get("missing")
                         if miss is None:
                             failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
@@ -159,6 +168,15 @@ def main():
                     failures.append(f"{name}/{r}: the server did not list Brimstone among its mods")
                 if re.search(r"(ERROR|Exception)[^\n]*[Bb]rimstone|[Bb]rimstone[^\n]*(ERROR|Exception)", st):
                     failures.append(f"{name}/{r}: the server logged a Brimstone error")
+        # GPU errors from the game's debug output (OpenGL debug messages of type ERROR, Vulkan validation errors):
+        # a Brimstone run must not log more than the vanilla run on the same GPU profile
+        lines.append("")
+        lines.append("GPU error messages in the client logs (Brimstone run / vanilla run of the same profile):\n")
+        for prof, (b, v) in PAIRS.items():
+            eb, ev = gpu_errors(logs(runs[b])), gpu_errors(logs(runs[v]))
+            lines.append(f"- {prof}: {eb} / {ev}")
+            if eb > ev:
+                failures.append(f"{name}/{b}: {eb} GPU error messages in the client log, {ev} in {v}")
         lines.append("")
         lines.append("| scene | noise (vanilla a/b) % | limit % | full % | old-GPU % | Vulkan % |")
         lines.append("|---|---|---|---|---|---|")
@@ -231,7 +249,7 @@ def main():
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             lines.append("")
             lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
-            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | vertex bytes | live vertices | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | rounded positions / UVs % | meshing ms/section (vanilla mesher p95) |")
+            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | bytes per vertex (compact/wide; avg) | live vertices | wide % | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
             lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
             for sc in scenes:
                 c = cur.get(sc["id"])
@@ -240,7 +258,7 @@ def main():
                 t = c["terrain"]
                 files = glob.glob(os.path.join(runs[b], "bench", f"*-{sc['id']}.json"))
                 mesh = (json.load(open(files[0])).get("meshing") or {}) if files else {}
-                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {t.get('roundedPositionPct')} / {t.get('roundedUvPct')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
+                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')}/{t.get('wideVertexBytes')}; {t.get('bytesPerVertex')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('widePct')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")

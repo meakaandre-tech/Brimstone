@@ -13,11 +13,13 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class TerrainStats {
     static final AtomicLong LAYERS_TAKEN = new AtomicLong();
     static final AtomicLong LAYERS_KEPT_BY_VANILLA = new AtomicLong();
-    static final AtomicLong VERTICES = new AtomicLong();
-    /** Vertices whose position or UV was off the compact grid and rounded; layers vanilla kept (out of range). */
-    static final AtomicLong ROUNDED_POSITIONS = new AtomicLong();
-    static final AtomicLong ROUNDED_UVS = new AtomicLong();
-    static final AtomicLong KEPT_RANGE = new AtomicLong();
+    /** Vertices meshed into each format, and layers that had wide quads because of position, UV or alpha. */
+    static final AtomicLong COMPACT_VERTICES = new AtomicLong();
+    static final AtomicLong WIDE_VERTICES = new AtomicLong();
+    static final AtomicLong WIDE_FOR_POSITION = new AtomicLong();
+    static final AtomicLong WIDE_FOR_UV = new AtomicLong();
+    static final AtomicLong WIDE_FOR_ALPHA = new AtomicLong();
+    private static volatile boolean uvLogged;
 
     // measuring window
     private static final LongArrayList COMPILE_NANOS = new LongArrayList();
@@ -54,6 +56,22 @@ public final class TerrainStats {
             }
         }
         s[0] = 0;
+    }
+
+    static void split(CompactVertex.Split sp) {
+        COMPACT_VERTICES.addAndGet(sp.compactVertices());
+        WIDE_VERTICES.addAndGet(sp.wideVertices());
+        int why = sp.why();
+        if ((why & CompactVertex.WHY_POSITION) != 0) WIDE_FOR_POSITION.incrementAndGet();
+        if ((why & CompactVertex.WHY_UV) != 0) {
+            WIDE_FOR_UV.incrementAndGet();
+            if (!uvLogged) {
+                uvLogged = true;
+                com.meakaandre.brimstone.BrimstoneClient.LOG.info("Brimstone terrain: first quads with UVs off the compact grid;"
+                    + " they take the wide vertex format (exact), as will any others (counted in the bench's terrain block)");
+            }
+        }
+        if ((why & CompactVertex.WHY_ALPHA) != 0) WIDE_FOR_ALPHA.incrementAndGet();
     }
 
     static void transcoded(long nanos) {
@@ -116,15 +134,22 @@ public final class TerrainStats {
         o.addProperty("arenas", s.arenas());
         o.addProperty("arenaMB", round(s.arenaBytes() / MB));
         o.addProperty("usedMB", round(s.usedBytes() / MB));
-        o.addProperty("liveVertices", s.vertices());
-        o.addProperty("vanillaEquivalentMB", round(s.vertices() * (double) CompactVertex.VANILLA_BYTES / MB));
+        long live = s.compactVertices() + s.wideVertices();
+        o.addProperty("wideVertexBytes", CompactVertex.WIDE_BYTES);
+        o.addProperty("liveVertices", live);
+        o.addProperty("liveCompactVertices", s.compactVertices());
+        o.addProperty("liveWideVertices", s.wideVertices());
+        o.addProperty("widePct", live == 0 ? 0 : round(s.wideVertices() * 100.0 / live));
+        o.addProperty("bytesPerVertex", live == 0 ? 0 : round((s.compactVertices() * (double) CompactVertex.BYTES
+            + s.wideVertices() * (double) CompactVertex.WIDE_BYTES) / live));
+        o.addProperty("vanillaEquivalentMB", round(live * (double) CompactVertex.VANILLA_BYTES / MB));
         o.addProperty("layersTaken", LAYERS_TAKEN.get());
         o.addProperty("layersKeptByVanilla", LAYERS_KEPT_BY_VANILLA.get());
-        long v = VERTICES.get();
-        o.addProperty("verticesTranscoded", v);
-        o.addProperty("roundedPositionPct", v == 0 ? 0 : round(ROUNDED_POSITIONS.get() * 100.0 / v));
-        o.addProperty("roundedUvPct", v == 0 ? 0 : round(ROUNDED_UVS.get() * 100.0 / v));
-        o.addProperty("layersKeptOutOfRange", KEPT_RANGE.get());
+        o.addProperty("verticesMeshedCompact", COMPACT_VERTICES.get());
+        o.addProperty("verticesMeshedWide", WIDE_VERTICES.get());
+        o.addProperty("layersWithWideForPosition", WIDE_FOR_POSITION.get());
+        o.addProperty("layersWithWideForUv", WIDE_FOR_UV.get());
+        o.addProperty("layersWithWideForAlpha", WIDE_FOR_ALPHA.get());
         o.addProperty("drawCallsPerFrame", frames == 0 ? 0 : round((double) windowDraws / frames));
         o.addProperty("sectionLayersPerFrame", frames == 0 ? 0 : round((double) windowSectionLayers / frames));
         return o;

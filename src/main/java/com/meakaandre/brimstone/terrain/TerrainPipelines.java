@@ -17,7 +17,7 @@ import net.minecraft.resources.Identifier;
  * Brimstone's terrain pipelines, built through renderpearl like the game's own: Brimstone's vertex shader
  * ({@code brimstone:core/terrain}, reads the 16-byte vertex) with the game's own terrain fragment shader, so the
  * pixel stage is vanilla's. Same depth test, culling, blending (none) and alpha cut-off as the game's solid and
- * cutout terrain pipelines.
+ * cutout terrain pipelines. One set per vertex format (compact, wide).
  *
  * <p>Two families: PLAIN (per-region uniform block, drawn with direct multi-draws) and INSTANCED (section data from an
  * instance stream, drawn with multi-draw indirect where vanilla itself uses it).
@@ -27,19 +27,31 @@ final class TerrainPipelines {
     /** std140: ivec4 origin, then 64 vec4 of fade-in values (256 sections). */
     static final int REGION_UBO_BYTES = 16 + 64 * 16;
 
-    static final RenderPipeline PLAIN_SOLID = build("plain_solid", true, false, false);
-    static final RenderPipeline PLAIN_CUTOUT = build("plain_cutout", true, true, false);
-    static final RenderPipeline INSTANCED_SOLID = build("instanced_solid", false, false, false);
-    static final RenderPipeline INSTANCED_CUTOUT = build("instanced_cutout", false, true, false);
-    static final RenderPipeline PLAIN_WIREFRAME = build("plain_wireframe", true, false, true);
-    static final RenderPipeline INSTANCED_WIREFRAME = build("instanced_wireframe", false, false, true);
+    /** [format][plain ? 1 : 0][cutout ? 1 : 0]; format 0 compact, 1 wide. */
+    private static final RenderPipeline[][][] PIPELINES = new RenderPipeline[2][2][2];
+    /** [format][plain ? 1 : 0]. */
+    private static final RenderPipeline[][] WIREFRAME = new RenderPipeline[2][2];
+
+    static {
+        for (int f = 0; f < 2; f++) {
+            for (int p = 0; p < 2; p++) {
+                for (int c = 0; c < 2; c++) PIPELINES[f][p][c] = build(f == 1, p == 1, c == 1, false);
+                WIREFRAME[f][p] = build(f == 1, p == 1, false, true);
+            }
+        }
+    }
+
+    static RenderPipeline pipeline(int format, boolean plain, boolean cutout) {
+        return PIPELINES[format][plain ? 1 : 0][cutout ? 1 : 0];
+    }
 
     private static boolean wireframeFailed;
 
     private TerrainPipelines() {
     }
 
-    private static RenderPipeline build(String name, boolean plain, boolean cutout, boolean wireframe) {
+    private static RenderPipeline build(boolean wide, boolean plain, boolean cutout, boolean wireframe) {
+        String name = (wide ? "wide" : "compact") + (plain ? "_plain" : "_instanced") + (wireframe ? "_wireframe" : cutout ? "_cutout" : "_solid");
         RenderPipeline.Builder b = RenderPipeline.builder()
             .withLocation(Identifier.fromNamespaceAndPath("brimstone", "pipeline/terrain_" + name))
             .withVertexShader(Identifier.fromNamespaceAndPath("brimstone", "core/terrain"))
@@ -52,7 +64,7 @@ final class TerrainPipelines {
             .withBindGroupLayout(BindGroupLayouts.TERRAIN_INFO)
             .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
             .withBindGroupLayout(BindGroupLayouts.SAMPLER2)
-            .withVertexBinding(0, CompactVertex.FORMAT)
+            .withVertexBinding(0, wide ? CompactVertex.WIDE_FORMAT : CompactVertex.FORMAT)
             .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .withDepthStencilState(DepthStencilState.DEFAULT)
             .withColorTargetState(ColorTargetState.DEFAULT);
@@ -61,6 +73,7 @@ final class TerrainPipelines {
         } else {
             b.withVertexBinding(1, DefaultVertexFormat.CHUNK_DATA_INSTANCED);
         }
+        if (wide) b.withShaderDefine("BRIM_WIDE");
         if (cutout) b.withShaderDefine("ALPHA_CUTOUT", 0.5f);
         if (wireframe) b.withPolygonMode(PolygonMode.WIREFRAME);
         return b.build();
@@ -68,7 +81,7 @@ final class TerrainPipelines {
 
     /** Compiles the pipelines Brimstone always needs. Null if all compiled, else what failed. */
     static String compileAll() {
-        for (RenderPipeline p : new RenderPipeline[] {PLAIN_SOLID, PLAIN_CUTOUT, INSTANCED_SOLID, INSTANCED_CUTOUT}) {
+        for (RenderPipeline p : java.util.Arrays.stream(PIPELINES).flatMap(java.util.Arrays::stream).flatMap(java.util.Arrays::stream).toList()) {
             try {
                 if (RenderSystem.getCompiledPipelineNullable(p) == null) return "pipeline " + p.getLocation() + " did not compile";
             } catch (Throwable t) {
@@ -86,10 +99,10 @@ final class TerrainPipelines {
     }
 
     /** Wireframe (a debug view) is optional: if it doesn't compile Brimstone's terrain is just left out of it. */
-    static CompiledRenderPipeline wireframe(boolean plain) {
+    static CompiledRenderPipeline wireframe(int format, boolean plain) {
         if (wireframeFailed || !RenderSystem.isWireframeAvailable()) return null;
         try {
-            CompiledRenderPipeline c = RenderSystem.getCompiledPipelineNullable(plain ? PLAIN_WIREFRAME : INSTANCED_WIREFRAME);
+            CompiledRenderPipeline c = RenderSystem.getCompiledPipelineNullable(WIREFRAME[format][plain ? 1 : 0]);
             if (c == null) wireframeFailed = true;
             return c;
         } catch (Throwable t) {

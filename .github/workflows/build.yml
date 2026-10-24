@@ -137,8 +137,45 @@ jobs:
           name: siftec-world-logs
           path: /tmp/out
 
+  core-world:
+    # The core suite's server and world, generated once and shared by every core client run (see ci/core-world.sh)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Cache key
+        id: key
+        shell: bash
+        run: echo "key=core-world-$(cat ci/core-world.sh gradle.properties | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: core-server
+          key: ${{ steps.key.outputs.key }}
+      - name: Build the core server and world
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: bash ci/core-world.sh
+      - name: Pack the server
+        shell: bash
+        run: tar cf core-server.tar core-server && ls -l core-server.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-server
+          path: core-server.tar
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-world-logs
+          path: /tmp/out
+
   client:
-    needs: [build, siftec-world]
+    needs: [build, siftec-world, core-world]
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -161,6 +198,10 @@ jobs:
         if: matrix.suite == 'siftec'
         with:
           name: siftec-server
+      - uses: actions/download-artifact@v4
+        if: matrix.suite == 'core'
+        with:
+          name: core-server
       - name: Run the client
         shell: bash
         env:
@@ -171,6 +212,7 @@ jobs:
         run: |
           chmod +x gradlew
           if [ -f siftec-server.tar ]; then tar xf siftec-server.tar; fi
+          if [ -f core-server.tar ]; then tar xf core-server.tar; fi
           bash ci/client-run.sh
       - uses: actions/upload-artifact@v4
         if: always()

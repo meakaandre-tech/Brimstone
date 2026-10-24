@@ -25,7 +25,8 @@ public final class TerrainMixins implements IMixinConfigPlugin {
         EXPECTED.put("net.minecraft.client.renderer.chunk.SectionRenderDispatcher$RenderSection",
             List.of("brimstone$take", "brimstone$release"));
         EXPECTED.put("net.minecraft.client.renderer.chunk.SectionRenderDispatcher",
-            List.of("brimstone$upload", "brimstone$dispose"));
+            List.of("brimstone$upload", "brimstone$created", "brimstone$dispose", "brimstone$disposeEnd"));
+        EXPECTED.put("net.minecraft.client.renderer.ShaderManager", List.of("brimstone$reloaded"));
         EXPECTED.put("net.minecraft.client.renderer.chunk.SectionCompiler",
             List.of("brimstone$compileStart", "brimstone$compileEnd"));
         EXPECTED.put("net.minecraft.client.renderer.LevelRenderer",

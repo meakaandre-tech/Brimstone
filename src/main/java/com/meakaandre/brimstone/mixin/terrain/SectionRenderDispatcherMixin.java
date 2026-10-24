@@ -15,8 +15,19 @@ public abstract class SectionRenderDispatcherMixin {
         Terrain.upload();
     }
 
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void brimstone$created(CallbackInfo ci) {
+        Terrain.dispatcherCreated();
+    }
+
     @Inject(method = "dispose", at = @At("HEAD"))
     private void brimstone$dispose(CallbackInfo ci) {
+        Terrain.disposed();
+    }
+
+    /** Again once vanilla has cleared its queue: a worker task that was still running may have staged meanwhile. */
+    @Inject(method = "dispose", at = @At("TAIL"))
+    private void brimstone$disposeEnd(CallbackInfo ci) {
         Terrain.disposed();
     }
 }

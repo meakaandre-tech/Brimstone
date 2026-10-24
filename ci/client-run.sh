@@ -35,6 +35,10 @@ case "$RUN" in brimstone-old) client_jvm="-Dbrimstone.debug.forceIntelMdiIssue=t
 # ---- server
 if [ "$SUITE" = siftec ]; then
   cp -r siftec-server server
+elif [ -d core-server ]; then
+  # the core world, generated once per CI run by ci/core-world.sh, so every run loads the same chunks
+  cp -r core-server server
+  echo "core server and world: from the core-world job"
 else
   mkdir -p server/mods
   inst=$(curl -fsSL https://meta.fabricmc.net/v2/versions/installer | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['version'])")
@@ -93,7 +97,9 @@ for g in $groups; do
   rd=${g%%:*}; ids=$(echo "${g#*:}" | tr ',' ' ')
   # clouds off: their position follows elapsed game time, which differs between runs, so they would only add noise
   # no version line: the file is datafixed from the oldest layout, where key codes are LWJGL2 numbers (22 = U)
-  printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nkey_key.use:22\n' "$rd" > run/options.txt
+  # glDebugVerbosity 1 (the game's default, set explicitly): the GPU's high-severity debug messages, errors among them,
+  # go to the log in every run alike; ci/compare.py compares their counts between Brimstone and vanilla
+  printf 'pauseOnLostFocus:false\nglDebugVerbosity:1\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nkey_key.use:22\n' "$rd" > run/options.txt
   rm -f run/logs/latest.log
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)

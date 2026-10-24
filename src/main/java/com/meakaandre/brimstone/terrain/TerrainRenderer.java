@@ -91,7 +91,9 @@ public final class TerrainRenderer {
     private static Path path;
     private static boolean prepared;
     @SuppressWarnings("unchecked")
-    private static final List<ArenaDraws>[] FRAME = new List[] {new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
+    /** Draw lists, index layer * 2 + format (format 0 compact, 1 wide). */
+    private static final List<ArenaDraws>[] FRAME = new List[] {new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>(),
+        new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
     private static final List<DynamicGpuData.ChunkSectionInfo> INSTANCES = new ArrayList<>();
     private static GpuBufferSlice instanceSlice;
     private static int vanillaCommandLists;
@@ -146,13 +148,13 @@ public final class TerrainRenderer {
      */
     public static void prepare(List<SectionRenderDispatcher.RenderSection> visible, double fadeSeconds, boolean indirect) {
         prepared = false;
-        Terrain.activateIfNeeded();
-        if (!Terrain.active()) return;
+        Terrain.beginFrame();
+        if (!Terrain.drawing()) return;
         try {
-            prepareFrame(visible, fadeSeconds, indirect);
+            prepareFrame(visible, fadeSeconds, indirect && !Terrain.FORCE_PLAIN);
             prepared = true;
         } catch (Throwable t) {
-            Terrain.fail("preparing terrain draws", t);
+            Terrain.fail("preparing terrain draws", t, false);
         }
     }
 
@@ -163,8 +165,7 @@ public final class TerrainRenderer {
         GpuDevice device = RenderSystem.getDevice();
         path = indirect ? Path.INDIRECT : plainPath(device.getDeviceInfo());
         boolean plain = path != Path.INDIRECT;
-        FRAME[0].clear();
-        FRAME[1].clear();
+        for (List<ArenaDraws> l : FRAME) l.clear();
         INSTANCES.clear();
         instanceSlice = null;
         vanillaCommandLists = -1;
@@ -195,19 +196,23 @@ public final class TerrainRenderer {
                 for (int li = 0; li < 2; li++) {
                     TerrainStore.Entry e = es[li];
                     if (e == null) continue;
-                    ArenaDraws ad = arenaDraws(li, e.arena);
-                    int count = e.indexCount();
-                    maxIndexCount = Math.max(maxIndexCount, count);
-                    if (plain) {
-                        RegionDraw rd = ad.byRegion.get(e.region);
-                        if (rd == null) {
-                            rd = new RegionDraw(e.region);
-                            ad.byRegion.put(e.region, rd);
-                            ad.regions.add(rd);
+                    for (int f = 0; f < 2; f++) {
+                        TerrainStore.Part part = e.parts[f];
+                        if (part == null) continue;
+                        ArenaDraws ad = arenaDraws(li * 2 + f, part.arena);
+                        int count = part.indexCount();
+                        maxIndexCount = Math.max(maxIndexCount, count);
+                        if (plain) {
+                            RegionDraw rd = ad.byRegion.get(e.region);
+                            if (rd == null) {
+                                rd = new RegionDraw(e.region);
+                                ad.byRegion.put(e.region, rd);
+                                ad.regions.add(rd);
+                            }
+                            rd.add(count, part.baseVertex);
+                        } else {
+                            ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, part.baseVertex, instance));
                         }
-                        rd.add(count, e.baseVertex);
-                    } else {
-                        ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, e.baseVertex, instance));
                     }
                 }
             }
@@ -221,10 +226,10 @@ public final class TerrainRenderer {
         if (maxIndexCount > 0) RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS).requestIndexCount(maxIndexCount);
     }
 
-    private static ArenaDraws arenaDraws(int li, TerrainStore.Arena arena) {
-        for (ArenaDraws ad : FRAME[li]) if (ad.arena == arena) return ad;
+    private static ArenaDraws arenaDraws(int list, TerrainStore.Arena arena) {
+        for (ArenaDraws ad : FRAME[list]) if (ad.arena == arena) return ad;
         ArenaDraws ad = new ArenaDraws(arena);
-        FRAME[li].add(ad);
+        FRAME[list].add(ad);
         return ad;
     }
 
@@ -268,7 +273,7 @@ public final class TerrainRenderer {
             return addCommands(vanilla);
         } catch (Throwable t) {
             prepared = false;
-            Terrain.fail("preparing indirect terrain draws", t);
+            Terrain.fail("preparing indirect terrain draws", t, false);
             return vanilla;
         }
     }
@@ -307,7 +312,7 @@ public final class TerrainRenderer {
         if (vanillaCommandLists < 0 || vanilla.size() != vanillaInstances) {
             prepared = false;
             Terrain.fail("preparing indirect terrain draws", new IllegalStateException(
-                "vanilla wrote " + vanilla.size() + " section instances, its commands use " + vanillaInstances));
+                "vanilla wrote " + vanilla.size() + " section instances, its commands use " + vanillaInstances), false);
             return vanilla;
         }
         List<DynamicGpuData.ChunkSectionInfo> all = new ArrayList<>(vanilla.size() + INSTANCES.size());
@@ -326,38 +331,45 @@ public final class TerrainRenderer {
      */
     public static void draw(ChunkSectionLayer layer, RenderPass pass, boolean wireframe) {
         drawHookSeen = true;
-        if (!prepared || !Terrain.active()) return;
+        if (!prepared || !Terrain.drawing()) return;
         int li = TerrainStore.layerIndex(layer);
         if (li < 0) return;
-        List<ArenaDraws> list = FRAME[li];
-        if (list.isEmpty()) return;
+        if (FRAME[li * 2].isEmpty() && FRAME[li * 2 + 1].isEmpty()) return;
         try {
+            TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
             boolean plain = path != Path.INDIRECT;
-            CompiledRenderPipeline pipeline;
-            if (wireframe) {
-                pipeline = TerrainPipelines.wireframe(plain);
-                if (pipeline == null) return;
-            } else {
-                pipeline = TerrainPipelines.compiled(plain
-                    ? (li == 0 ? TerrainPipelines.PLAIN_SOLID : TerrainPipelines.PLAIN_CUTOUT)
-                    : (li == 0 ? TerrainPipelines.INSTANCED_SOLID : TerrainPipelines.INSTANCED_CUTOUT));
-            }
             RenderSystem.AutoStorageIndexBuffer quads = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
             GpuBuffer indexBuffer = quads.getBuffer();
             if (indexBuffer == null || !quads.hasStorage(maxIndexCount)) throw new IllegalStateException("the shared quad index buffer is too small");
-            pass.setPipeline(pipeline);
-            pass.setIndexBuffer(indexBuffer, quads.type());
-            int draws = plain ? drawPlain(pass, list) : drawIndirect(pass, list);
-            lastPath = path;
-            int sectionLayers = 0;
-            for (ArenaDraws ad : list) {
-                sectionLayers += ad.commands.size();
-                for (RegionDraw rd : ad.regions) sectionLayers += rd.n;
+            int draws = 0, sectionLayers = 0;
+            for (int f = 0; f < 2; f++) {
+                List<ArenaDraws> list = FRAME[li * 2 + f];
+                if (list.isEmpty()) continue;
+                CompiledRenderPipeline pipeline;
+                if (wireframe) {
+                    pipeline = TerrainPipelines.wireframe(f, plain);
+                    if (pipeline == null) continue;
+                } else {
+                    pipeline = TerrainPipelines.compiled(TerrainPipelines.pipeline(f, plain, li == 1));
+                }
+                pass.setPipeline(pipeline);
+                pass.setIndexBuffer(indexBuffer, quads.type());
+                draws += plain ? drawPlain(pass, list) : drawIndirect(pass, list);
+                for (ArenaDraws ad : list) {
+                    sectionLayers += ad.commands.size();
+                    for (RegionDraw rd : ad.regions) sectionLayers += rd.n;
+                }
             }
+            lastPath = path;
             TerrainStats.drew(draws, sectionLayers);
+            String err = TerrainGpuErrors.since(mark);
+            if (err != null) {
+                prepared = false;
+                Terrain.fail("drawing terrain", new IllegalStateException("GPU error: " + err), false);
+            }
         } catch (Throwable t) {
             prepared = false;
-            Terrain.fail("drawing terrain", t);
+            Terrain.fail("drawing terrain", t, false);
         }
     }
 

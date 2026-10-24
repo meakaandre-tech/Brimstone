@@ -7,21 +7,25 @@ import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
+import net.minecraft.core.SectionPos;
 import org.lwjgl.system.MemoryUtil;
 
 /**
- * Where Brimstone keeps terrain: a few large GPU buffers ("arenas", {@link #ARENA_BYTES} each, created when needed
- * and kept), sub-allocated with the game's own TLSF allocator. A section's solid and cutout meshes go into an arena
- * as one small copy each; they never move and arenas are never re-allocated. Sections are grouped into regions of
- * 8x4x8; a region keeps its sections in one arena where it can, so the plain path draws a region with one call.
+ * Where Brimstone keeps terrain: a few large GPU buffers ("arenas", {@link #ARENA_BYTES} each), sub-allocated with
+ * the game's own TLSF allocator. Each layer of a section is up to two small copies (its compact and its wide quads);
+ * allocations never move and arenas are never resized. An arena that empties is closed (except the first), so memory
+ * follows what is loaded. Sections are grouped into regions of 8x4x8; a region keeps its sections in one arena where
+ * it can, so the plain path draws a region with one call per format.
  *
  * <p>Meshes are staged from the worker threads ({@link #stage}) and copied in on the render thread at the end of the
  * frame ({@link #upload}), where vanilla uploads its own. Everything here is guarded by one lock.
@@ -33,17 +37,19 @@ public final class TerrainStore {
 
     static final Object LOCK = new Object();
 
+    /** The two vertex formats. */
+    static final int COMPACT = 0, WIDE = 1;
+
     static final class Arena {
         final GpuBuffer buffer;
         final TlsfAllocator allocator;
-        final TlsfAllocator.Heap heap;
         long used;
+        boolean closed;
 
         Arena(GpuDevice device, int index) {
             this.buffer = device.createBuffer(() -> "Brimstone terrain " + index,
                 GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, ARENA_BYTES);
-            this.heap = new TlsfAllocator.Heap(ARENA_BYTES);
-            this.allocator = new TlsfAllocator(heap);
+            this.allocator = new TlsfAllocator(new TlsfAllocator.Heap(ARENA_BYTES));
         }
     }
 
@@ -65,31 +71,23 @@ public final class TerrainStore {
             this.originX = x;
             this.originY = y;
             this.originZ = z;
-            java.util.Arrays.fill(written, Float.NaN);
-            java.util.Arrays.fill(pending, Float.NaN);
+            Arrays.fill(written, Float.NaN);
+            Arrays.fill(pending, Float.NaN);
         }
     }
 
-    /** One layer of one section, in an arena. */
-    static final class Entry {
+    /** One format's part of one layer of one section, in an arena. */
+    static final class Part {
         final Arena arena;
         final TlsfAllocator.Allocation allocation;
         final int baseVertex;
         final int vertices;
-        final Region region;
-        final int slot;
-        final int originX, originY, originZ;
 
-        Entry(Arena arena, TlsfAllocator.Allocation allocation, int vertices, Region region, int slot, int x, int y, int z) {
+        Part(Arena arena, TlsfAllocator.Allocation allocation, int stride, int vertices) {
             this.arena = arena;
             this.allocation = allocation;
-            this.baseVertex = (int) (allocation.getOffsetFromHeap() / CompactVertex.BYTES);
+            this.baseVertex = (int) (allocation.getOffsetFromHeap() / stride);
             this.vertices = vertices;
-            this.region = region;
-            this.slot = slot;
-            this.originX = x;
-            this.originY = y;
-            this.originZ = z;
         }
 
         int indexCount() {
@@ -97,11 +95,27 @@ public final class TerrainStore {
         }
     }
 
-    private record Staged(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer,
-                          int x, int y, int z, ByteBuffer data, int vertices) {
+    /** One layer of one section: its compact and wide parts (either may be null). */
+    static final class Entry {
+        final Part[] parts = new Part[2];
+        final Region region;
+        final int slot;
+        final int originX, originY, originZ;
+
+        Entry(Region region, int slot, int x, int y, int z) {
+            this.region = region;
+            this.slot = slot;
+            this.originX = x;
+            this.originY = y;
+            this.originZ = z;
+        }
     }
 
-    public record Snapshot(int regions, int arenas, long arenaBytes, long usedBytes, long vertices) {
+    private record Staged(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer,
+                          int x, int y, int z, CompactVertex.Split split) {
+    }
+
+    public record Snapshot(int regions, int arenas, long arenaBytes, long usedBytes, long compactVertices, long wideVertices) {
     }
 
     private static final List<Arena> ARENAS = new ArrayList<>();
@@ -109,13 +123,27 @@ public final class TerrainStore {
     /** Live meshes: index 0 solid, 1 cutout. */
     static final Map<CompiledSectionMesh, Entry[]> ENTRIES = new IdentityHashMap<>();
     private static final List<Staged> STAGED = new ArrayList<>();
-    private static long liveVertices;
+    private static final long[] LIVE_VERTICES = new long[2];
     private static final List<GpuBuffer> PENDING_CLOSE = new ArrayList<>();
+    /** Bumped whenever the store is emptied or a section dispatcher comes or goes: older staged meshes are dropped. */
+    private static int generation;
+    /** Whether a live section dispatcher exists (meshes from a disposed one's late worker tasks are refused). */
+    private static boolean accepting;
 
-    /** Render thread, under the lock: closes buffers of regions that emptied since the last frame. */
-    static void closePending() {
-        for (GpuBuffer b : PENDING_CLOSE) b.close();
-        PENDING_CLOSE.clear();
+    /** A new section dispatcher (a world was entered, or the renderer reset). */
+    static void dispatcherCreated() {
+        synchronized (LOCK) {
+            generation++;
+            accepting = true;
+        }
+    }
+
+    /** The section dispatcher is going away: nothing staged now or later by its workers may survive into the next. */
+    static void dispatcherDisposed() {
+        synchronized (LOCK) {
+            accepting = false;
+        }
+        clear();
     }
 
     private TerrainStore() {
@@ -125,60 +153,103 @@ public final class TerrainStore {
         return layer == ChunkSectionLayer.SOLID ? 0 : layer == ChunkSectionLayer.CUTOUT ? 1 : -1;
     }
 
-    /** Worker thread (or render thread for nearby sections): takes ownership of {@code data}. */
-    static void stage(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer,
-                      int x, int y, int z, ByteBuffer data, int vertices) {
+    static int generation() {
         synchronized (LOCK) {
-            STAGED.add(new Staged(section, mesh, layer, x, y, z, data, vertices));
+            return generation;
         }
+    }
+
+    /**
+     * Worker thread (or render thread for nearby sections): takes ownership of {@code split}. False (and the split
+     * freed) if the store was emptied since {@code gen} or the module no longer takes meshes.
+     */
+    static boolean stage(int gen, SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer,
+                         int x, int y, int z, CompactVertex.Split split) {
+        synchronized (LOCK) {
+            if (gen != generation || !accepting || !Terrain.takingMeshes()) {
+                split.free();
+                return false;
+            }
+            STAGED.add(new Staged(section, mesh, layer, x, y, z, split));
+            return true;
+        }
+    }
+
+    /** Render thread, under the lock: closes buffers let go of since the last frame. */
+    static void closePending() {
+        for (GpuBuffer b : PENDING_CLOSE) b.close();
+        PENDING_CLOSE.clear();
+    }
+
+    private static Part allocate(GpuDevice device, CommandEncoder encoder, Region region, ByteBuffer data, int stride, int vertices) {
+        int bytes = data.remaining();
+        Arena arena = null;
+        TlsfAllocator.Allocation a = null;
+        if (region.preferred != null && !region.preferred.closed) {
+            a = region.preferred.allocator.allocate(bytes, stride);
+            if (a != null) arena = region.preferred;
+        }
+        for (int i = 0; a == null && i < ARENAS.size(); i++) {
+            Arena c = ARENAS.get(i);
+            if (c == region.preferred) continue;
+            a = c.allocator.allocate(bytes, stride);
+            if (a != null) arena = c;
+        }
+        if (a == null) {
+            arena = new Arena(device, ARENAS.size());
+            ARENAS.add(arena);
+            a = arena.allocator.allocate(bytes, stride);
+            if (a == null) throw new IllegalStateException("a fresh terrain arena refused " + bytes + " bytes");
+        }
+        if (region.preferred == null || region.preferred.closed || region.live == 0) region.preferred = arena;
+        try {
+            encoder.writeToBuffer(arena.buffer.slice(a.getOffsetFromHeap(), bytes), data);
+        } catch (Throwable t) {
+            arena.allocator.free(a);
+            throw t;
+        }
+        arena.used += a.getSize();
+        return new Part(arena, a, stride, vertices);
     }
 
     /** Render thread, end of frame (inside vanilla's terrain upload): copies staged meshes into the arenas. */
     static void upload() {
         synchronized (LOCK) {
-            List<Staged> done;
             if (STAGED.isEmpty()) return;
-            GpuDevice device = RenderSystem.getDevice();
-            CommandEncoder encoder = device.createCommandEncoder();
-            done = new ArrayList<>(STAGED);
+            List<Staged> done = new ArrayList<>(STAGED);
             STAGED.clear();
-            for (Staged s : done) {
-                int bytes = s.data.remaining();
-                long key = regionKey(s.x, s.y, s.z);
-                Region region = REGIONS.get(key);
-                if (region == null) {
-                    region = new Region(key, s.x & ~127, s.y & ~63, s.z & ~127);
-                    REGIONS.put(key, region);
+            int next = 0;
+            try {
+                GpuDevice device = RenderSystem.getDevice();
+                CommandEncoder encoder = device.createCommandEncoder();
+                for (; next < done.size(); next++) {
+                    Staged s = done.get(next);
+                    long key = regionKey(s.x, s.y, s.z);
+                    Region region = REGIONS.get(key);
+                    if (region == null) {
+                        region = new Region(key, s.x & ~127, s.y & ~63, s.z & ~127);
+                        REGIONS.put(key, region);
+                    }
+                    Entry e = new Entry(region, CompactVertex.sectionIndex(s.x, s.y, s.z), s.x, s.y, s.z);
+                    region.live++;
+                    Entry[] es = ENTRIES.computeIfAbsent(s.mesh, k -> new Entry[2]);
+                    int li = layerIndex(s.layer);
+                    if (es[li] != null) free(es[li]);
+                    es[li] = e;
+                    CompactVertex.Split sp = s.split;
+                    if (sp.compact() != null) {
+                        e.parts[COMPACT] = allocate(device, encoder, region, sp.compact(), CompactVertex.BYTES, sp.compactVertices());
+                        LIVE_VERTICES[COMPACT] += sp.compactVertices();
+                    }
+                    if (sp.wide() != null) {
+                        e.parts[WIDE] = allocate(device, encoder, region, sp.wide(), CompactVertex.WIDE_BYTES, sp.wideVertices());
+                        LIVE_VERTICES[WIDE] += sp.wideVertices();
+                    }
+                    sp.free();
                 }
-                Arena arena = null;
-                TlsfAllocator.Allocation a = null;
-                if (region.preferred != null) {
-                    a = region.preferred.allocator.allocate(bytes, CompactVertex.BYTES);
-                    if (a != null) arena = region.preferred;
-                }
-                for (int i = 0; a == null && i < ARENAS.size(); i++) {
-                    Arena c = ARENAS.get(i);
-                    if (c == region.preferred) continue;
-                    a = c.allocator.allocate(bytes, CompactVertex.BYTES);
-                    if (a != null) arena = c;
-                }
-                if (a == null) {
-                    arena = new Arena(device, ARENAS.size());
-                    ARENAS.add(arena);
-                    a = arena.allocator.allocate(bytes, CompactVertex.BYTES);
-                    if (a == null) throw new IllegalStateException("a fresh terrain arena refused " + bytes + " bytes");
-                }
-                if (region.preferred == null || region.live == 0) region.preferred = arena;
-                encoder.writeToBuffer(arena.buffer.slice(a.getOffsetFromHeap(), bytes), s.data);
-                MemoryUtil.memFree(s.data);
-                arena.used += a.getSize();
-                Entry e = new Entry(arena, a, s.vertices, region, CompactVertex.sectionIndex(s.x, s.y, s.z), s.x, s.y, s.z);
-                Entry[] es = ENTRIES.computeIfAbsent(s.mesh, k -> new Entry[2]);
-                int li = layerIndex(s.layer);
-                if (es[li] != null) free(es[li]);
-                es[li] = e;
-                region.live++;
-                liveVertices += s.vertices;
+            } finally {
+                // whatever wasn't copied (an exception part-way) is freed, never leaked
+                for (int i = next; i < done.size(); i++) done.get(i).split.free();
             }
             // vanilla's own "uploaded" callback, which swaps the section's new mesh in once all its layers are there
             // and releases the old one (that re-enters this lock on this thread). A mesh vanilla let go of meanwhile
@@ -207,7 +278,7 @@ public final class TerrainStore {
             if (!STAGED.isEmpty()) {
                 STAGED.removeIf(s -> {
                     if (s.mesh != mesh) return false;
-                    MemoryUtil.memFree(s.data);
+                    s.split.free();
                     return true;
                 });
             }
@@ -215,30 +286,72 @@ public final class TerrainStore {
     }
 
     private static void free(Entry e) {
-        e.arena.used -= e.allocation.getSize();
-        e.arena.allocator.free(e.allocation);
-        liveVertices -= e.vertices;
+        for (int f = 0; f < 2; f++) {
+            Part p = e.parts[f];
+            if (p == null) continue;
+            p.arena.used -= p.allocation.getSize();
+            p.arena.allocator.free(p.allocation);
+            LIVE_VERTICES[f] -= p.vertices;
+            Arena a = p.arena;
+            if (!a.closed && ARENAS.indexOf(a) > 0 && a.allocator.isCompletelyFree()) {
+                // an empty arena goes (closed on the render thread before the next frame's draws)
+                a.closed = true;
+                ARENAS.remove(a);
+                PENDING_CLOSE.add(a.buffer);
+            }
+        }
         Region r = e.region;
         if (--r.live <= 0) {
             REGIONS.remove(r.key);
-            // may run on a worker thread: GPU buffers are closed on the render thread, at the next frame
             if (r.ubo != null) PENDING_CLOSE.add(r.ubo);
             r.ubo = null;
         }
     }
 
-    /** Render thread: drops everything (the dispatcher is going away, or the module turned off). */
+    /** Drops every staged mesh (they will not be copied in). */
+    static void dropStaged() {
+        synchronized (LOCK) {
+            for (Staged s : STAGED) s.split.free();
+            STAGED.clear();
+            generation++;
+        }
+    }
+
+    /** The sections Brimstone holds, as SectionPos longs (for handing them back to vanilla). */
+    static LongOpenHashSet heldSections() {
+        LongOpenHashSet out = new LongOpenHashSet();
+        synchronized (LOCK) {
+            for (Entry[] es : ENTRIES.values()) {
+                for (Entry e : es) {
+                    if (e != null) out.add(SectionPos.asLong(e.originX >> 4, e.originY >> 4, e.originZ >> 4));
+                }
+            }
+        }
+        return out;
+    }
+
+    static boolean isEmpty() {
+        synchronized (LOCK) {
+            return ENTRIES.isEmpty() && STAGED.isEmpty();
+        }
+    }
+
+    /** Render thread: drops everything (the dispatcher is going away, or the module stopped drawing). */
     static void clear() {
         synchronized (LOCK) {
-            for (Staged s : STAGED) MemoryUtil.memFree(s.data);
+            for (Staged s : STAGED) s.split.free();
             STAGED.clear();
             ENTRIES.clear();
             for (Region r : REGIONS.values()) if (r.ubo != null) PENDING_CLOSE.add(r.ubo);
             REGIONS.clear();
-            closePending();
-            for (Arena a : ARENAS) a.buffer.close();
+            for (Arena a : ARENAS) {
+                a.closed = true;
+                PENDING_CLOSE.add(a.buffer);
+            }
             ARENAS.clear();
-            liveVertices = 0;
+            closePending();
+            Arrays.fill(LIVE_VERTICES, 0);
+            generation++;
         }
     }
 
@@ -250,7 +363,7 @@ public final class TerrainStore {
         synchronized (LOCK) {
             long used = 0;
             for (Arena a : ARENAS) used += a.used;
-            return new Snapshot(REGIONS.size(), ARENAS.size(), ARENAS.size() * ARENA_BYTES, used, liveVertices);
+            return new Snapshot(REGIONS.size(), ARENAS.size(), ARENAS.size() * ARENA_BYTES, used, LIVE_VERTICES[COMPACT], LIVE_VERTICES[WIDE]);
         }
     }
 }

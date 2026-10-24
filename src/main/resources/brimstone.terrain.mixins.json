@@ -10,7 +10,8 @@
     "RenderSectionInvoker",
     "RenderSectionMixin",
     "SectionCompilerMixin",
-    "SectionRenderDispatcherMixin"
+    "SectionRenderDispatcherMixin",
+    "ShaderManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 0
