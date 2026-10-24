@@ -239,3 +239,8 @@ up; other counts are unchanged.
 | siftec-vulkan | hub | 316.68 | 179.7 | 136.98 |
 | siftec-vulkan | mam | 352.85 | 181.32 | 171.53 |
 | siftec-vulkan | sift | 424.25 | 273.94 | 150.31 |
+
+Scene clean-up (since the fix on main after package 2): scenes that clear an area move the entities there out of the
+world (`tp` to y=-200) instead of killing them, so no death animation or dropped loot is left to bob in view at a
+time that depends on how fast the runner is. The object-free `occlusion_move.bare_x2297` shot reached 72 strict
+pixels against 70 in the Vulkan run on a dropped item from the clean-up; the limit was not raised.
