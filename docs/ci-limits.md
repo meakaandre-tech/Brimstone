@@ -53,6 +53,20 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | core/occlusion_move.bare_x2309 (package 2) | 40091787069 | 4 | 0.0 | 0.25 |
 | core/occlusion_move.bare_open (package 2) | 40091787069 | 4 | 0.0133 | 0.3 |
 
+Package 3's scenes (`translucent_move` and `translucent_move_oit`, each with six fixed-point shots, and
+`water_glass_oit`) were sampled in the marked collection run 40115084815, with Brimstone's translucency in dry run
+(translucent terrain left with vanilla; solid and cutout still Brimstone's), so all four samples per shot are noise.
+Every sample was at most 0.001%, so the rule's floor applies (0.3). See the table below for the strict gate.
+
+| scene / shot (package 3) | samples (vanilla a/b, full, old-GPU, Vulkan; %) | limit % |
+|---|---|---|
+| core/translucent_move | 0.0001, 0.0001, 0.0001, 0.0002 | 0.3 |
+| core/translucent_move.x2404 / .x2414 / .x2424 | at most 0.0003 | 0.3 |
+| core/translucent_move.low | 0.0004, 0.0004, 0.0004, 0.0009 | 0.3 |
+| core/translucent_move.back / .bare_back | at most 0.0002 | 0.3 |
+| core/translucent_move_oit (all seven shots) | at most 0.001 | 0.3 |
+| core/water_glass_oit | 0.0037, 0.003, 0.0033, 0.0035 | 0.3 |
+
 The occlusion_move shots (package 2) were sampled in the collection run 40091787069, also in dry run. The happy
 ghast, whose tentacles animate, appears only in the last shot (`ghast`), so its animation adds noise to no other
 shot.
@@ -112,9 +126,22 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/occlusion_move.bare_x2305 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.bare_x2309 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.bare_open (package 2) | 0/0 (run 40091787069) | 69 (dry run) | 110 |
+| core/translucent_move (package 3) | 0/1 (run 40115084815) | 2 (dry run) | 10 |
+| core/translucent_move.x2404 / .x2414 / .x2424 (package 3) | at most 3 | at most 3 (dry run) | 10 |
+| core/translucent_move.low (package 3) | 2/4 | 11 (dry run, Vulkan) | 20 |
+| core/translucent_move.back / .bare_back (package 3) | at most 3 | at most 4 (dry run) | 10 |
+| core/translucent_move_oit, .x2404, .x2414, .x2424, .back, .bare_back (package 3) | at most 6 | at most 5 (dry run) | 10 |
+| core/translucent_move_oit.low (package 3) | 7/4 | 7 (dry run) | 20 |
+| core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
+
+Package 3's shots use package 2's finer rule (largest sample x 1.5, rounded up to 10 pixels, at least 10). The
+smallest translucent element tested there, the single ice block in front of the stained-glass stripes, covers
+8,148-8,157 pixels on screen in every vanilla run (3,429-3,433 differ by more than 8/255), measured between the
+`back` and `bare_back` shots (the same view without that block): far above the strict limit of 10. Every other
+element (the stripes, the tank, the panes, the ice inside the water) is larger.
 
 Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
 fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
@@ -180,6 +207,23 @@ how fast CI's server generates the new terrain. The Vulkan baselines come from t
 
 The occlusion scene's baselines (package 2) come from one run with Brimstone's visibility module in dry run, i.e. with
 Brimstone drawing exactly vanilla's entities and block entities.
+
+Package 3's scenes (`translucent_move`, `water_glass_oit`, `translucent_move_oit`) got their baselines from the
+collection run 40115084815, with Brimstone's translucency in dry run (vanilla drawing all translucent terrain, as
+before package 3). `translucent_move` and `translucent_move_oit` are gated on memory only (`ciGatedCounts`): the
+moving camera makes vanilla sort again and upload new index lists at times that depend on the runner's speed.
+
+| suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
+|---|---|---|---|---|---|---|
+| core-full | translucent_move (memory gated only) | 122.86 | 15 | 10108 | 267.48 | 5.48 |
+| core-full | water_glass_oit | 131.0 | 15 | 14688 | 245.02 | 3.73 |
+| core-full | translucent_move_oit (memory gated only) | 131.0 | 15 | 10108 | 247.19 | 3.73 |
+| core-old-gpu | translucent_move (memory gated only) | 141.14 | 14 | 3060 | 268.19 | 3.73 |
+| core-old-gpu | water_glass_oit | 154.0 | 14 | 7604 | 245.78 | 3.73 |
+| core-old-gpu | translucent_move_oit (memory gated only) | 161.0 | 14 | 2948 | 248.15 | 3.73 |
+| core-vulkan | translucent_move (memory gated only) | 126.0 | 15 | 10220 | 268.35 | 5.46 |
+| core-vulkan | water_glass_oit | 131.0 | 15 | 15024 | 245.99 | 3.46 |
+| core-vulkan | translucent_move_oit (memory gated only) | 131.0 | 15 | 10332 | 248.38 | 3.46 |
 
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.

@@ -109,30 +109,32 @@
     },
     {
       "id": "hologram",
-      "title": "SIFTEC Build Gun hologram (green where the building fits, red where blocked) over a water pool with stained glass, high above the terrain (package 3)",
+      "title": "SIFTEC Build Gun hologram (green where the building fits) in front of a water pool, high above the terrain (package 3)",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
         "gamemode creative @a",
         "item replace entity @a weapon.mainhand with minecraft:air",
-        "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1981.5 180 30",
         "#wait 5",
-        "fill 2148 285 -2014 2174 305 -1978 minecraft:air",
-        "tp @e[type=!minecraft:player,x=2148,y=285,z=-2014,dx=26,dy=20,dz=36] 2160.5 -200 -1995.5",
-        "fill 2148 289 -2014 2174 289 -1978 minecraft:smooth_stone",
-        "fill 2152 289 -2008 2168 292 -1992 minecraft:glass hollow",
-        "fill 2153 292 -2007 2167 292 -1993 minecraft:air",
-        "fill 2153 290 -2007 2167 291 -1993 minecraft:water",
-        "fill 2156 290 -1999 2157 293 -1997 minecraft:light_blue_stained_glass",
-        "fill 2163 290 -2003 2164 293 -2001 minecraft:red_stained_glass",
+        "fill 2148 285 -2014 2174 305 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2148,y=285,z=-2014,dx=26,dy=20,dz=38] 2160.5 -200 -1995.5",
+        "fill 2148 288 -2014 2174 288 -1976 minecraft:stone",
+        "fill 2148 289 -2014 2174 289 -1976 minecraft:smooth_stone",
+        "fill 2151 289 -2010 2169 289 -1992 minecraft:water",
         "item replace entity @a weapon.mainhand with siftec:build_gun",
         "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30"
       ],
       "ciRequiresTranslucent": true,
-      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla over Brimstone's translucent water and glass. CI presses Tab once after the setup (the Build Gun's next-tab key: selects the first Power building; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. An earlier version held the Wormhole Gateway, whose outline (a 48x54 structure) stalled the Vulkan runs, vanilla's too.",
+      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla in front of Brimstone's translucent water. CI presses Tab once after the setup (the Build Gun's next-tab key: picks the first Power building, the Power Pole Mk.1; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. The last setup step moves the camera three blocks, so vanilla sorts the water again from where the picture is taken. Not run on Vulkan: lavapipe segfaults (libvulkan_lvp.so) as soon as the outliner draws, in vanilla's run too (runs 40115084815 and 40119107821).",
       "ciKeys": [
         "Tab"
-      ]
+      ],
+      "ciSkipRuns": [
+        "vanilla-vk",
+        "brimstone-vk"
+      ],
+      "ciSkipReason": "Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
     }
   ],
   "prepare": [

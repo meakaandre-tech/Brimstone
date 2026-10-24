@@ -62,9 +62,10 @@ def load(path):
     return np.asarray(Image.open(path).convert("RGB"), dtype=np.int16) if os.path.exists(path) else None
 
 
-def strict(shot, out_prefix):
-    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs at all."""
-    v = {r: load(shot(r)) for r in ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk")}
+def strict(shot, out_prefix, skip_runs=()):
+    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs at all. Runs a
+    scene skips ("ciSkipRuns", package 3) are left out of both the agreement and the counts."""
+    v = {r: load(shot(r)) for r in ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk") if r not in skip_runs}
     if any(x is None for x in v.values()) or len({x.shape for x in v.values()}) != 1:
         return None, {}
     agree = np.ones(v["vanilla-a"].shape[:2], bool)
@@ -72,6 +73,8 @@ def strict(shot, out_prefix):
         agree &= (x == v["vanilla-a"]).all(axis=2)
     out = {}
     for prof, (b, vr) in PAIRS.items():
+        if b in skip_runs or vr in skip_runs:
+            continue
         bs = load(shot(b))
         if bs is None or bs.shape != v[vr].shape:
             out[prof] = None
@@ -281,7 +284,10 @@ def main():
         skips = [drive_skips(d) for d in runs.values() if os.path.isdir(d)]
         for sc in scenes:
             sid = sc["id"]
-            reasons = {s.get(sid) for s in skips}
+            # runs a scene cannot run in (package 3, "ciSkipRuns": a driver crash that hits vanilla too) are expected to skip it
+            skip_runs = set(sc.get("ciSkipRuns", []))
+            sd.setdefault("skippedRuns", {})[sid] = sorted(skip_runs) if skip_runs else None
+            reasons = {s.get(sid) for r, s in zip([r for r, d in runs.items() if os.path.isdir(d)], skips) if r not in skip_runs}
             if not sc.get("skip") and reasons and None not in reasons:
                 sc["skip"] = sorted(reasons)[0]
             elif not sc.get("skip") and len(reasons) > 1:
@@ -296,25 +302,30 @@ def main():
                 noise = diff(shot("vanilla-a"), shot("vanilla-b"), os.path.join(rep, "diff", f"{name}-{sid}-noise.png"))
                 sd["noise"][sid] = noise
                 row = {}
+                skipped_profiles = {prof for prof, (b, v) in PAIRS.items() if b in skip_runs or v in skip_runs}
                 for prof, (b, v) in PAIRS.items():
-                    row[prof] = diff(shot(b), shot(v), os.path.join(rep, "diff", f"{name}-{sid}-{prof}.png"))
+                    row[prof] = None if prof in skipped_profiles else diff(shot(b), shot(v), os.path.join(rep, "diff", f"{name}-{sid}-{prof}.png"))
                 sd["picture"][sid] = row
                 limit = limits.get(name, {}).get(sid)
                 for prof, dv in row.items():
+                    if prof in skipped_profiles:
+                        continue
                     if dv is None:
                         failures.append(f"{name}/{sid}: no {prof} screenshot pair")
                     elif limit is None:
                         failures.append(f"{name}/{sid}: no pixel limit in ci/pixel-limits.json")
                     elif dv["pct"] > limit:
                         failures.append(f"{name}/{sid}: {prof} differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
-                fmt = lambda d: "missing" if d is None else f"{d['pct']}"
-                lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'])} | {fmt(row['old-gpu'])} | {fmt(row['vulkan'])} |")
-                agree, counts = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"))
+                fmt = lambda d, p=None: f"skipped ({sc.get('ciSkipReason', 'ciSkipRuns')})" if p in skipped_profiles else ("missing" if d is None else f"{d['pct']}")
+                lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'], 'full')} | {fmt(row['old-gpu'], 'old-gpu')} | {fmt(row['vulkan'], 'vulkan')} |")
+                agree, counts = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"), skip_runs)
                 sd["strict"][sid] = {"vanillaAgreePct": agree, "pixels": counts}
                 slimit = None if strict_limits is None else strict_limits.get(name, {}).get(sid)
                 if agree is None:
                     failures.append(f"{name}/{sid}: strict picture check is missing a vanilla screenshot")
                 for prof in PAIRS:
+                    if prof in skipped_profiles:
+                        continue
                     c = counts.get(prof)
                     if agree is not None and c is None:
                         failures.append(f"{name}/{sid}: strict picture check is missing the {prof} screenshot")
@@ -344,6 +355,9 @@ def main():
             for sc in scenes:
                 sid = sc["id"]
                 if sc.get("skip"):
+                    continue
+                if b in set(sc.get("ciSkipRuns", [])):
+                    lines.append(f"| {sid} | skipped ({sc.get('ciSkipReason', 'ciSkipRuns')}) | | | | |")
                     continue
                 c = cur.get(sid)
                 if c is None:
