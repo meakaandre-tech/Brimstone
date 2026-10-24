@@ -62,5 +62,15 @@
     ],
     "uploadBytesPerFrame": 126356,
     "uploadsPerFrame": 15
+  },
+  "occlusion_move": {
+    "directBuffersMB": 4.23,
+    "drawCallsPerFrame": 160.14,
+    "heapUsedAfterGcMB": 265.16,
+    "runs": [
+      "40091787069 (dry run; memory gated only)"
+    ],
+    "uploadBytesPerFrame": 104756,
+    "uploadsPerFrame": 15
   }
 }
