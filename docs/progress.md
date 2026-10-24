@@ -351,7 +351,7 @@ screenshots against the doc's done-when and the rules). Reviews kept in the sess
     the frame on spawn and water and glass, 17% on MAM, could hide; MAM's limit comes from one fade outlier).
   - m3: no runtime GPU-error detection on Vulkan; Vulkan plain path not in CI; the transient hand-back gap.
 
-**Merged** to main as `7534f16` (main run: see package 2's section). The package 0 merge had accidentally kept
+**Merged** to main as `7534f16` (main run https://github.com/meakaandre-tech/Brimstone/actions/runs/40075302839, green, `latest` published). The package 0 merge had accidentally kept
 `package-0` in main's CI trigger list (harmless; removed in this merge).
 
 
