@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class TerrainStats {
     static final AtomicLong LAYERS_TAKEN = new AtomicLong();
     static final AtomicLong LAYERS_KEPT_BY_VANILLA = new AtomicLong();
-    /** Vertices meshed into each format, and layers that had wide quads because of position, UV or alpha. */
+    /** Vertices meshed into each format, and layers that went wide because of position, UV or alpha. */
     static final AtomicLong COMPACT_VERTICES = new AtomicLong();
     static final AtomicLong WIDE_VERTICES = new AtomicLong();
     static final AtomicLong WIDE_FOR_POSITION = new AtomicLong();
@@ -67,8 +67,8 @@ public final class TerrainStats {
             WIDE_FOR_UV.incrementAndGet();
             if (!uvLogged) {
                 uvLogged = true;
-                com.meakaandre.brimstone.BrimstoneClient.LOG.info("Brimstone terrain: first quads with UVs off the compact grid;"
-                    + " they take the wide vertex format (exact), as will any others (counted in the bench's terrain block)");
+                com.meakaandre.brimstone.BrimstoneClient.LOG.info("Brimstone terrain: first layer with UVs off the compact grid;"
+                    + " it takes the wide vertex format (exact), as will any others (counted in the bench's terrain block)");
             }
         }
         if ((why & CompactVertex.WHY_ALPHA) != 0) WIDE_FOR_ALPHA.incrementAndGet();

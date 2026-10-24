@@ -22,7 +22,7 @@ import org.lwjgl.system.MemoryUtil;
 
 /**
  * Where Brimstone keeps terrain: a few large GPU buffers ("arenas", {@link #ARENA_BYTES} each), sub-allocated with
- * the game's own TLSF allocator. Each layer of a section is up to two small copies (its compact and its wide quads);
+ * the game's own TLSF allocator. Each layer of a section is one small copy (compact or wide);
  * allocations never move and arenas are never resized. An arena that empties is closed (except the first), so memory
  * follows what is loaded. Sections are grouped into regions of 8x4x8; a region keeps its sections in one arena where
  * it can, so the plain path draws a region with one call per format.
@@ -282,6 +282,7 @@ public final class TerrainStore {
                     return true;
                 });
             }
+            if (!DROPPED.isEmpty()) DROPPED.removeIf(s -> s.mesh == mesh);
         }
     }
 
@@ -308,13 +309,51 @@ public final class TerrainStore {
         }
     }
 
-    /** Drops every staged mesh (they will not be copied in). */
+    /**
+     * Staged meshes dropped by a hand-back: vanilla already counts their layer as taken (it will not upload it), so on
+     * the render thread each is either completed through vanilla's own callback (its section then shows nothing in
+     * that layer until vanilla has meshed it again; the section is marked dirty) or, if a newer mesh of the section is
+     * already in, released. Never left half-uploaded.
+     */
+    private static final List<Staged> DROPPED = new ArrayList<>();
+    private static int droppedGeneration;
+
+    /** Drops every staged mesh (they will not be copied in); {@link #finishDropped} hands them back to vanilla. */
     static void dropStaged() {
         synchronized (LOCK) {
-            for (Staged s : STAGED) s.split.free();
+            for (Staged s : STAGED) {
+                s.split.free();
+                DROPPED.add(s);
+            }
             STAGED.clear();
             generation++;
+            droppedGeneration = generation;
         }
+    }
+
+    /**
+     * Render thread, end of frame: hands meshes dropped by {@link #dropStaged} back to vanilla, and returns their
+     * sections (SectionPos longs) to be marked dirty. Nothing if the store was emptied since (the section dispatcher
+     * went away, and vanilla released everything with it).
+     */
+    static LongOpenHashSet finishDropped() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        synchronized (LOCK) {
+            if (DROPPED.isEmpty()) return sections;
+            List<Staged> dropped = new ArrayList<>(DROPPED);
+            DROPPED.clear();
+            if (droppedGeneration != generation) return sections;
+            for (Staged s : dropped) {
+                sections.add(SectionPos.asLong(s.x >> 4, s.y >> 4, s.z >> 4));
+                RenderSectionInvoker section = (RenderSectionInvoker) s.section;
+                if (s.section.getSectionMesh().getCompileTaskStartTime() > s.mesh.getCompileTaskStartTime()) {
+                    section.brimstone$releaseSectionMesh(s.mesh);
+                } else {
+                    section.brimstone$vertexBufferUploaded(s.mesh, s.layer);
+                }
+            }
+        }
+        return sections;
     }
 
     /** The sections Brimstone holds, as SectionPos longs (for handing them back to vanilla). */
@@ -332,7 +371,7 @@ public final class TerrainStore {
 
     static boolean isEmpty() {
         synchronized (LOCK) {
-            return ENTRIES.isEmpty() && STAGED.isEmpty();
+            return ENTRIES.isEmpty() && STAGED.isEmpty() && DROPPED.isEmpty();
         }
     }
 
@@ -341,6 +380,7 @@ public final class TerrainStore {
         synchronized (LOCK) {
             for (Staged s : STAGED) s.split.free();
             STAGED.clear();
+            DROPPED.clear();
             ENTRIES.clear();
             for (Region r : REGIONS.values()) if (r.ubo != null) PENDING_CLOSE.add(r.ubo);
             REGIONS.clear();

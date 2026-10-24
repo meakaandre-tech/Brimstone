@@ -14,7 +14,7 @@ import net.minecraft.core.SectionPos;
 
 /**
  * Brimstone's terrain module (package 1): takes the solid and cutout meshes vanilla builds on its worker threads,
- * sorts their quads into its compact 16-byte vertex or, where that wouldn't hold a vertex exactly, a wide 32-byte one,
+ * converts each layer into its compact 16-byte vertex or, where that wouldn't hold every vertex exactly, a wide 32-byte one,
  * keeps them in large GPU buffers and draws them with few calls. Translucent terrain stays with vanilla.
  *
  * <p>States:
@@ -132,7 +132,7 @@ public final class Terrain {
         reason = "on";
         state = State.ACTIVE;
         TerrainResources.logAtlas();
-        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for quads it holds exactly, {}-byte vanilla layout plus section"
+        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for layers it holds exactly, {}-byte vanilla layout plus section"
                 + " slot for the rest; vanilla's is {}; solid and cutout layers; plain draw path: {}; GPU error check: {})",
             CompactVertex.BYTES, CompactVertex.WIDE_BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName(),
             TerrainGpuErrors.describe());
@@ -182,24 +182,33 @@ public final class Terrain {
 
     /**
      * Render thread, end of frame (no render pass open): when terrain goes back to vanilla, marks every section
-     * Brimstone holds dirty so vanilla meshes it again, and drops Brimstone's buffers once nothing is left to draw.
+     * Brimstone holds or had staged dirty so vanilla meshes it again, hands staged meshes back to vanilla, and drops
+     * Brimstone's buffers once nothing is left to draw (at once if Brimstone may not keep drawing).
      */
     private static void handBackIfNeeded() {
         try {
             if (handBack) {
                 handBack = false;
                 LongOpenHashSet held = TerrainStore.heldSections();
+                LongOpenHashSet staged = TerrainStore.finishDropped();
                 if (!keepDrawing) TerrainStore.clear();
                 Minecraft mc = Minecraft.getInstance();
+                LongOpenHashSet all = new LongOpenHashSet(held);
+                all.addAll(staged);
                 if (mc.levelExtractor != null) {
-                    for (long s : held) mc.levelExtractor.setSectionDirty(SectionPos.x(s), SectionPos.y(s), SectionPos.z(s));
+                    for (long s : all) mc.levelExtractor.setSectionDirty(SectionPos.x(s), SectionPos.y(s), SectionPos.z(s));
                 }
-                BrimstoneClient.LOG.info("Brimstone terrain: {} sections handed back to vanilla ({})", held.size(),
-                    keepDrawing ? "Brimstone draws them until vanilla's new meshes are in" : "missing until vanilla has meshed them");
-            }
-            if (state != State.ACTIVE && keepDrawing && TerrainStore.isEmpty()) {
-                keepDrawing = false;
-                TerrainStore.clear();
+                BrimstoneClient.LOG.info("Brimstone terrain: {} sections handed back to vanilla, {} of them with a mesh still on its"
+                        + " way in ({})", all.size(), staged.size(),
+                    keepDrawing ? "Brimstone draws what it holds until vanilla's new meshes are in" : "missing until vanilla has meshed them");
+            } else if (state == State.OFF || state == State.DEFERRED) {
+                if (!keepDrawing) {
+                    // a draw error during a keep-drawing hand-back: stop drawing and let go of the buffers now
+                    if (!TerrainStore.isEmpty()) TerrainStore.clear();
+                } else if (TerrainStore.isEmpty()) {
+                    keepDrawing = false;
+                    TerrainStore.clear();
+                }
             }
         } catch (Throwable t) {
             keepDrawing = false;

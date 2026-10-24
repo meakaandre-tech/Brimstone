@@ -9,10 +9,10 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import org.lwjgl.system.MemoryUtil;
 
 /**
- * Brimstone's two terrain vertex formats, and the per-quad sorting of vanilla's vertices into them. Every vertex
+ * Brimstone's two terrain vertex formats, and the conversion of vanilla's vertices into one of them per layer. Every vertex
  * Brimstone draws gives the shader exactly the values vanilla's would; nothing is rounded.
  *
- * <p><b>Compact, 16 bytes</b> (vanilla's BLOCK vertex has 28), for quads whose every vertex it holds exactly:
+ * <p><b>Compact, 16 bytes</b> (vanilla's BLOCK vertex has 28), for layers whose every vertex it holds exactly:
  * <pre>
  *  0  u16 x, y, z        position in the section as (p + 8) * 2048, i.e. -8 to 24 blocks in 1/2048 steps
  *  6  u16 slot | bl << 8 slot: which of the region's 8x4x8 sections; bl: block light 0..240
@@ -23,7 +23,7 @@ import org.lwjgl.system.MemoryUtil;
  * operations the shader uses and comparing it with vanilla's float, bit for bit) and its alpha is 255. Light outside
  * 0..240 is stored clamped: the shader's lightmap lookup clamps to the same texel either way.
  *
- * <p><b>Wide, 32 bytes</b>, for every other quad (plant offsets, fluid surfaces, rotated model parts, UVs of atlases
+ * <p><b>Wide, 32 bytes</b>, for every other layer (one with plant offsets, fluid surfaces, rotated model parts, UVs of atlases
  * wider than 4096): vanilla's 28 bytes unchanged, then u16 slot and two bytes of padding.
  */
 public final class CompactVertex {
@@ -45,10 +45,10 @@ public final class CompactVertex {
         .addAttribute("BrimSlot", GpuFormat.RG16_UINT)
         .build();
 
-    /** Why a quad took the wide format (for the bench): position, UV, alpha or range. */
+    /** Why a layer took the wide format (for the bench): position, UV or alpha. */
     static final int WHY_POSITION = 1, WHY_UV = 2, WHY_ALPHA = 4;
 
-    /** The two parts of one layer: compact and wide vertices (either may be null), in memAlloc'd buffers. */
+    /** One layer, converted: either compact or wide vertices (the other null), in a memAlloc'd buffer. */
     record Split(ByteBuffer compact, int compactVertices, ByteBuffer wide, int wideVertices, int why) {
         void free() {
             if (compact != null) MemoryUtil.memFree(compact);
@@ -89,42 +89,31 @@ public final class CompactVertex {
     }
 
     /**
-     * Sorts a layer's quads (vanilla's BLOCK vertices, position to limit of {@code src}) into compact and wide
-     * vertices, keeping vanilla's quad order within each. Null if the layer isn't whole quads.
+     * Converts a layer (vanilla's BLOCK vertices, position to limit of {@code src}): into the compact format if every
+     * vertex of it round-trips exactly, otherwise all of it into the wide format. One format per layer keeps vanilla's
+     * quad order, which coplanar quads at equal depth rely on. Null if the layer isn't whole quads.
      */
     static Split split(ByteBuffer src, int slot) {
         int bytes = src.remaining();
         if (bytes == 0 || bytes % (4 * VANILLA_BYTES) != 0) return null;
-        int quads = bytes / (4 * VANILLA_BYTES);
+        int vertices = bytes / VANILLA_BYTES;
         long in = MemoryUtil.memAddress(src);
-        // first pass: which quads fit the compact format
-        boolean[] fits = new boolean[quads];
-        int compactQuads = 0, why = 0;
-        for (int q = 0; q < quads; q++) {
-            int w = 0;
-            for (int v = 0; v < 4; v++) w |= misfit(in + (long) (q * 4 + v) * VANILLA_BYTES);
-            fits[q] = w == 0;
-            if (w == 0) compactQuads++;
-            why |= w;
+        int why = 0;
+        for (int v = 0; v < vertices && why != (WHY_POSITION | WHY_UV | WHY_ALPHA); v++) why |= misfit(in + (long) v * VANILLA_BYTES);
+        if (why == 0) {
+            ByteBuffer compact = MemoryUtil.memAlloc(vertices * BYTES);
+            long c = MemoryUtil.memAddress(compact);
+            for (int v = 0; v < vertices; v++) packCompact(in + (long) v * VANILLA_BYTES, c + (long) v * BYTES, slot);
+            return new Split(compact, vertices, null, 0, 0);
         }
-        int wideQuads = quads - compactQuads;
-        ByteBuffer compact = compactQuads == 0 ? null : MemoryUtil.memAlloc(compactQuads * 4 * BYTES);
-        ByteBuffer wide = wideQuads == 0 ? null : MemoryUtil.memAlloc(wideQuads * 4 * WIDE_BYTES);
-        long c = compact == null ? 0 : MemoryUtil.memAddress(compact);
-        long w = wide == null ? 0 : MemoryUtil.memAddress(wide);
-        for (int q = 0; q < quads; q++) {
-            long quad = in + (long) q * 4 * VANILLA_BYTES;
-            if (fits[q]) {
-                for (int v = 0; v < 4; v++, c += BYTES) packCompact(quad + (long) v * VANILLA_BYTES, c, slot);
-            } else {
-                for (int v = 0; v < 4; v++, w += WIDE_BYTES) {
-                    MemoryUtil.memCopy(quad + (long) v * VANILLA_BYTES, w, VANILLA_BYTES);
-                    MemoryUtil.memPutShort(w + 28, (short) slot);
-                    MemoryUtil.memPutShort(w + 30, (short) 0);
-                }
-            }
+        ByteBuffer wide = MemoryUtil.memAlloc(vertices * WIDE_BYTES);
+        long w = MemoryUtil.memAddress(wide);
+        for (int v = 0; v < vertices; v++, w += WIDE_BYTES) {
+            MemoryUtil.memCopy(in + (long) v * VANILLA_BYTES, w, VANILLA_BYTES);
+            MemoryUtil.memPutShort(w + 28, (short) slot);
+            MemoryUtil.memPutShort(w + 30, (short) 0);
         }
-        return new Split(compact, compactQuads * 4, wide, wideQuads * 4, why);
+        return new Split(null, 0, wide, vertices, why);
     }
 
     /** 0 if the vertex at {@code a} round-trips exactly through the compact format; else the WHY_ bits. */

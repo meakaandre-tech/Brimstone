@@ -49,7 +49,7 @@ final class TerrainResources {
             int w = view.getWidth(0), h = view.getHeight(0);
             if (w > 4096 || h > 4096) {
                 BrimstoneClient.LOG.info("Brimstone terrain: the block atlas is {}x{}, wider than the 4096 compact UVs hold exactly;"
-                    + " quads whose UVs aren't on their grid take the wide vertex format", w, h);
+                    + " layers with UVs off their grid take the wide vertex format", w, h);
             }
         } catch (Throwable t) {
             BrimstoneClient.LOG.warn("Brimstone terrain: could not read the block atlas size (UVs are checked per vertex anyway)", t);

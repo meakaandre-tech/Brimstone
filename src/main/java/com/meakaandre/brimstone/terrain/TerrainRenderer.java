@@ -80,7 +80,8 @@ public final class TerrainRenderer {
         final List<RegionDraw> regions = new ArrayList<>();
         final Map<TerrainStore.Region, RegionDraw> byRegion = new IdentityHashMap<>();
         final List<DynamicGpuData.IndexedDraw> commands = new ArrayList<>();
-        GpuBufferSlice commandSlice;
+        /** Where this list's commands start in the frame's one Brimstone command list. */
+        int commandStart;
 
         ArenaDraws(TerrainStore.Arena arena) {
             this.arena = arena;
@@ -96,6 +97,9 @@ public final class TerrainRenderer {
         new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
     private static final List<DynamicGpuData.ChunkSectionInfo> INSTANCES = new ArrayList<>();
     private static GpuBufferSlice instanceSlice;
+    /** This frame's one Brimstone command list (indirect path), all layers and arenas back to back, and its slice. */
+    private static final List<DynamicGpuData.IndexedDraw> COMMANDS = new ArrayList<>();
+    private static GpuBufferSlice commandSlice;
     private static int vanillaCommandLists;
     private static int vanillaInstances;
     private static int maxIndexCount;
@@ -168,6 +172,8 @@ public final class TerrainRenderer {
         for (List<ArenaDraws> l : FRAME) l.clear();
         INSTANCES.clear();
         instanceSlice = null;
+        COMMANDS.clear();
+        commandSlice = null;
         vanillaCommandLists = -1;
         maxIndexCount = 0;
         long now = Util.getMillis();
@@ -283,27 +289,29 @@ public final class TerrainRenderer {
         for (List<DynamicGpuData.IndexedDraw> l : vanilla) for (DynamicGpuData.IndexedDraw d : l) shift = Math.max(shift, d.baseInstance() + 1);
         vanillaInstances = shift;
         vanillaCommandLists = vanilla.size();
-        List<List<DynamicGpuData.IndexedDraw>> all = new ArrayList<>(vanilla);
+        // one list for all of Brimstone's draws this frame (one slice, no per-list padding); each layer and arena
+        // draws its own range of it
+        COMMANDS.clear();
         for (List<ArenaDraws> l : FRAME) {
             for (ArenaDraws ad : l) {
-                if (shift != 0) {
-                    for (int i = 0; i < ad.commands.size(); i++) {
-                        DynamicGpuData.IndexedDraw d = ad.commands.get(i);
-                        ad.commands.set(i, new DynamicGpuData.IndexedDraw(d.indexCount(), 1, 0, d.baseVertex(), d.baseInstance() + shift));
-                    }
+                ad.commandStart = COMMANDS.size();
+                for (DynamicGpuData.IndexedDraw d : ad.commands) {
+                    COMMANDS.add(shift == 0 ? d : new DynamicGpuData.IndexedDraw(d.indexCount(), 1, 0, d.baseVertex(), d.baseInstance() + shift));
                 }
-                all.add(ad.commands);
             }
         }
+        if (COMMANDS.isEmpty()) return vanilla;
+        List<List<DynamicGpuData.IndexedDraw>> all = new ArrayList<>(vanilla.size() + 1);
+        all.addAll(vanilla);
+        all.add(COMMANDS);
         return all;
     }
 
-    /** Takes the slices of Brimstone's command lists; hands vanilla back the slices of its own. */
+    /** Takes the slice of Brimstone's command list; hands vanilla back the slices of its own. */
     public static GpuBufferSlice[] commandsWritten(GpuBufferSlice[] all, int vanillaLists) {
-        if (!prepared || path != Path.INDIRECT || vanillaCommandLists != vanillaLists) return all;
-        int k = vanillaCommandLists;
-        for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) ad.commandSlice = all[k++];
-        return Arrays.copyOf(all, vanillaCommandLists);
+        if (!prepared || path != Path.INDIRECT || vanillaCommandLists != vanillaLists || all.length != vanillaLists + 1) return all;
+        commandSlice = all[vanillaLists];
+        return Arrays.copyOf(all, vanillaLists);
     }
 
     /** Vanilla writes its section instance data: Brimstone's goes into the same upload, after vanilla's. */
@@ -425,10 +433,10 @@ public final class TerrainRenderer {
         for (ArenaDraws ad : list) {
             int count = ad.commands.size();
             if (count == 0) continue;
-            if (ad.commandSlice == null) throw new IllegalStateException("no indirect commands this frame");
+            if (commandSlice == null) throw new IllegalStateException("no indirect commands this frame");
             pass.setVertexBuffer(0, ad.arena.buffer.slice());
-            GpuBuffer buffer = ad.commandSlice.buffer();
-            long offset = ad.commandSlice.offset();
+            GpuBuffer buffer = commandSlice.buffer();
+            long offset = commandSlice.offset() + (long) ad.commandStart * RenderPass.INDIRECT_INDEXED_DRAW_SIZE;
             for (int done = 0; done < count; ) {
                 int n = Math.min(max, count - done);
                 pass.drawIndexedIndirect(buffer.slice(offset + (long) done * RenderPass.INDIRECT_INDEXED_DRAW_SIZE,

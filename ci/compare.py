@@ -14,6 +14,9 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
+  - strict picture: on the pixels where all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly, the
+    number of pixels where a Brimstone run differs from its own profile's vanilla run at all (threshold 0); over
+    ci/strict-pixel-limits.json fails (see docs/ci-limits.md).
 """
 import glob
 import json
@@ -45,6 +48,31 @@ def diff(a, b, out=None):
     if out is not None:
         Image.fromarray(np.clip(d * 8, 0, 255).astype(np.uint8)).save(out)
     return {"pct": round(float((d > THRESHOLD).mean() * 100), 4), "mean": round(float(np.abs(x - y).mean()), 4)}
+
+
+def load(path):
+    return np.asarray(Image.open(path).convert("RGB"), dtype=np.int16) if os.path.exists(path) else None
+
+
+def strict(shot, out_prefix):
+    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs at all."""
+    v = {r: load(shot(r)) for r in ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk")}
+    if any(x is None for x in v.values()) or len({x.shape for x in v.values()}) != 1:
+        return None, {}
+    agree = np.ones(v["vanilla-a"].shape[:2], bool)
+    for x in v.values():
+        agree &= (x == v["vanilla-a"]).all(axis=2)
+    out = {}
+    for prof, (b, vr) in PAIRS.items():
+        bs = load(shot(b))
+        if bs is None or bs.shape != v[vr].shape:
+            out[prof] = None
+            continue
+        bad = agree & (bs != v[vr]).any(axis=2)
+        out[prof] = int(bad.sum())
+        if out[prof]:
+            Image.fromarray((bad * 255).astype(np.uint8)).save(f"{out_prefix}-{prof}-strict.png")
+    return round(float(agree.mean() * 100), 2), out
 
 
 def bench_results(run_dir):
@@ -95,12 +123,14 @@ def main():
     os.makedirs(os.path.join(rep, "diff"), exist_ok=True)
     os.makedirs(os.path.join(rep, "baselines"), exist_ok=True)
     limits = json.load(open("ci/pixel-limits.json")) if os.path.exists("ci/pixel-limits.json") else {}
+    strict_limits = json.load(open("ci/strict-pixel-limits.json")) if os.path.exists("ci/strict-pixel-limits.json") else None
     failures, lines, data = [], [], {}
     for sfile in sorted(glob.glob("src/main/resources/brimstone/scenes/*.json")):
         suite = json.load(open(sfile))
         name = suite["suite"]
         scenes = [s for s in suite["scenes"]]
-        sd = data.setdefault(name, {"noise": {}, "picture": {}, "counts": {}, "skipped": {}})
+        sd = data.setdefault(name, {"noise": {}, "picture": {}, "strict": {}, "counts": {}, "skipped": {}})
+        strict_lines = []
         lines.append(f"## Suite {name}\n")
         runs = {r: os.path.join(res, f"{name}-{r}") for r in RUNS}
         for r, d in runs.items():
@@ -109,6 +139,8 @@ def main():
         # vanilla's own profile line, and Brimstone's probe line
         for r, d in runs.items():
             t = logs(d)
+            if os.path.isdir(d) and "brimstone_ci_pin" not in t:
+                failures.append(f"{name}/{r}: CI's lightmap pin (ci/pin-mod) is not among the loaded mods")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
             probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)
@@ -209,6 +241,28 @@ def main():
                     failures.append(f"{name}/{sid}: {prof} differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
             fmt = lambda d: "missing" if d is None else f"{d['pct']}"
             lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'])} | {fmt(row['old-gpu'])} | {fmt(row['vulkan'])} |")
+            agree, counts = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"))
+            sd["strict"][sid] = {"vanillaAgreePct": agree, "pixels": counts}
+            slimit = None if strict_limits is None else strict_limits.get(name, {}).get(sid)
+            if agree is None:
+                failures.append(f"{name}/{sid}: strict picture check is missing a vanilla screenshot")
+            for prof in PAIRS:
+                c = counts.get(prof)
+                if agree is not None and c is None:
+                    failures.append(f"{name}/{sid}: strict picture check is missing the {prof} screenshot")
+                elif c is not None and strict_limits is not None:
+                    if slimit is None:
+                        failures.append(f"{name}/{sid}: no strict pixel limit in ci/strict-pixel-limits.json")
+                    elif c > slimit:
+                        failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
+                                        f" agrees exactly (strict limit {slimit})")
+            strict_lines.append(f"| {sid} | {agree} | {slimit if strict_limits is not None else 'not set yet'} | "
+                                + " | ".join(str(counts.get(p)) for p in PAIRS) + " |")
+        lines.append("")
+        lines.append("Strict picture: pixels where all four vanilla runs agree exactly but the Brimstone run differs at all:\n")
+        lines.append("| scene | vanilla runs agree on % of pixels | strict limit (pixels) | full | old-GPU | Vulkan |")
+        lines.append("|---|---|---|---|---|---|")
+        lines.extend(strict_lines)
         lines.append("")
         for prof, (b, _) in PAIRS.items():
             cur = bench_results(runs[b])

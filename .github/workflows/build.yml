@@ -66,17 +66,6 @@ jobs:
             cp /tmp/bc-classes.txt /tmp/ci/bytecode-classes.txt
             (xargs -a /tmp/bc-classes.txt -n 300 javap -p -s -c -constants -cp "$cp" 2>/dev/null || true) | gzip -9 > /tmp/ci/bytecode.txt.gz
           fi
-          # .github/dump-data: jar entry patterns (one per line) extracted from the game jars into data.tar.gz
-          if [ -f .github/dump-data ]; then
-            mkdir -p /tmp/ci-data
-            for j in $mcjars; do
-              while read -r pattern; do
-                [ -z "$pattern" ] && continue
-                unzip -o -q "$j" "$pattern" -d /tmp/ci-data 2>/dev/null || true
-              done < .github/dump-data
-            done
-            (cd /tmp/ci-data && tar czf /tmp/ci/data.tar.gz .) || true
-          fi
           cp build.log /tmp/ci/build.log 2>/dev/null
           sed -i "s#${GITHUB_WORKSPACE}/##g" /tmp/ci/build.log
           ls -l build/libs > /tmp/ci/jars.txt 2>&1
@@ -89,6 +78,25 @@ jobs:
         with:
           name: brimstone-jar
           path: dist/brimstone.jar
+      - name: Build the CI-only lightmap pin mod
+        shell: bash
+        run: |
+          # ci/pin-mod: loaded in every client run, vanilla and Brimstone alike (see its mixin); compiled against the
+          # Mixin jar from the game's compile classpath, never published beyond this run's artifacts
+          set -e
+          mixin=$(grep -E '/sponge-mixin[^/]*\.jar$' /tmp/compile-cp.txt 2>/dev/null | grep -v sources | head -1 || true)
+          [ -n "$mixin" ] || mixin=$(find ~/.gradle/caches -name 'sponge-mixin*.jar' 2>/dev/null | grep -v sources | head -1 || true)
+          echo "Mixin jar: $mixin"
+          test -n "$mixin"
+          mkdir -p /tmp/pin/classes /tmp/pin-out
+          javac --release 21 -cp "$mixin" -d /tmp/pin/classes $(find ci/pin-mod/src -name '*.java')
+          cp ci/pin-mod/fabric.mod.json ci/pin-mod/brimstone_ci_pin.mixins.json /tmp/pin/classes/
+          (cd /tmp/pin/classes && jar cf /tmp/pin-out/ci-pin.jar .)
+          unzip -l /tmp/pin-out/ci-pin.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-pin-jar
+          path: /tmp/pin-out/ci-pin.jar
 
   siftec-world:
     # SIFTEC's server and CI world, built once per SIFTEC build and smoke-file change and shared by the SIFTEC runs
@@ -194,6 +202,10 @@ jobs:
         with:
           name: brimstone-jar
           path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-pin-jar
+          path: ci-pin
       - uses: actions/download-artifact@v4
         if: matrix.suite == 'siftec'
         with:
