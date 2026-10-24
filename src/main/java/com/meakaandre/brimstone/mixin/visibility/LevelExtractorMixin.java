@@ -64,6 +64,12 @@ public abstract class LevelExtractorMixin {
         Visibility.reset();
     }
 
+    /** Resource packs changed: the module checks again whether vanilla's block resources are vanilla's. */
+    @Inject(method = "onResourceManagerReload", at = @At("HEAD"))
+    private void brimstone$reloaded(net.minecraft.server.packs.resources.ResourceManager manager, CallbackInfo ci) {
+        Visibility.resourcesReloaded();
+    }
+
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void brimstone$setLevel(ClientLevel level, CallbackInfo ci) {
         Visibility.reset();

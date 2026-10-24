@@ -28,6 +28,7 @@ public final class BenchRun {
     private long waitUntil;
     private int previousRenderDistance = -1;
     private long measureStart;
+    private int nextStep;
     private double px, py, pz;
     private float yaw, pitch;
     private final BenchReport.Memory memory = new BenchReport.Memory();
@@ -104,6 +105,7 @@ public final class BenchRun {
             }
             case MEASURE -> {
                 pin(player, now);
+                runSteps(player, now);
                 memory.sample();
                 if (now - measureStart >= seconds * 1_000_000_000L) finish(mc);
             }
@@ -125,8 +127,20 @@ public final class BenchRun {
         pitch = player.getXRot();
         stage = Stage.MEASURE;
         measureStart = now;
+        nextStep = 0;
         FrameRecorder.start();
         BrimstoneClient.LOG.info("BRIMSTONE BENCH MEASURING scene={}", sceneId);
+    }
+
+    /** Sends the scene's measure-time commands whose time has come (one per tick at most, in order). */
+    private void runSteps(LocalPlayer player, long now) {
+        if (scene == null || scene.measureSteps == null || nextStep >= scene.measureSteps.size()) return;
+        Scenes.Step s = scene.measureSteps.get(nextStep);
+        if ((now - measureStart) / 1e9 >= s.at) {
+            nextStep++;
+            BrimstoneClient.LOG.info("BRIMSTONE BENCH STEP scene={} t={} command={}", sceneId, s.at, s.command);
+            player.connection.sendCommand(s.command);
+        }
     }
 
     /** Keeps the camera where the scene put it, or moves it along the scripted path. */

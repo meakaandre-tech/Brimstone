@@ -147,7 +147,7 @@
     },
     {
       "id": "occlusion",
-      "title": "Mobs, chests, a banner and signs behind a stone wall and under a stone floor, some seen through a glass window, a doorway and a glass floor (package 2)",
+      "title": "Mobs, chests, a banner and a sign behind a stone wall and under a stone floor; some seen through a glass window, a doorway and a glass floor; a happy ghast whose body the wall hides while its tentacles hang in the window (package 2)",
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
@@ -157,33 +157,186 @@
         "kill @e[type=!minecraft:player,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32]",
         "fill 2283 199 -2012 2317 199 -1980 minecraft:smooth_stone",
         "fill 2302 199 -1995 2308 199 -1989 minecraft:glass",
-        "fill 2290 200 -1997 2310 208 -1996 minecraft:stone",
+        "fill 2286 200 -1997 2314 209 -1996 minecraft:stone",
         "fill 2297 201 -1997 2299 203 -1996 minecraft:glass",
-        "fill 2305 200 -1997 2305 202 -1996 minecraft:air",
-        "setblock 2293 200 -2002 minecraft:chest[facing=south]",
-        "setblock 2298 200 -2002 minecraft:chest[facing=south]",
-        "setblock 2302 200 -2002 minecraft:chest[facing=south]",
-        "setblock 2308 200 -2002 minecraft:chest[facing=south]",
-        "setblock 2304 200 -2002 minecraft:white_banner",
-        "setblock 2290 200 -2002 minecraft:oak_sign",
-        "setblock 2297 200 -2001 minecraft:oak_sign",
+        "fill 2309 200 -1997 2310 202 -1996 minecraft:air",
+        "setblock 2290 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2298 200 -1999 minecraft:chest[facing=south]",
+        "setblock 2303 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2292 200 -2002 minecraft:white_banner",
+        "setblock 2297 200 -1998 minecraft:oak_sign",
         "setblock 2295 197 -1990 minecraft:chest[facing=south]",
         "setblock 2305 197 -1992 minecraft:chest[facing=south]",
-        "summon minecraft:cow 2286.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:villager 2294.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:pig 2296.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:sheep 2298.5 200 -2003.5 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:cow 2302.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:villager 2305.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:iron_golem 2308.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
-        "summon minecraft:pig 2314.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2289.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2297.5 200 -2000.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2299.0 200 -2000.5 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2303.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2309.9 200 -2001.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2312.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
         "summon minecraft:cow 2294.5 195 -1991.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
         "summon minecraft:sheep 2305.5 195 -1991.5 {Color:0b,NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
         "summon minecraft:pig 2290.5 195 -1987.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:happy_ghast 2298.0 205 -2002.0 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2306.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f],Tags:[\"brim_mover\"]}",
         "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
       ],
       "ciRequiresCulling": true,
-      "ciNote": "Brimstone must hide some entities and block entities here (the ones the wall and the floor cover); the pixel gates catch any it hides wrongly (the ones seen through glass and the doorway)."
+      "ciNote": "Brimstone must hide some entities and block entities here (those the wall and the floor cover); both pixel gates catch any it hides wrongly (those seen through glass, the doorway, and the happy ghast's tentacles, which is never hidden: not on the allow-list)."
+    },
+    {
+      "id": "occlusion_move",
+      "title": "The occlusion scene with the camera sliding along the wall at 0.8 blocks/s while a pig is moved in and out of view and part of the wall is opened and closed again (package 2)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20",
+        "#wait 6",
+        "fill 2283 190 -2012 2317 212 -1980 minecraft:air",
+        "kill @e[type=!minecraft:player,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32]",
+        "fill 2283 199 -2012 2317 199 -1980 minecraft:smooth_stone",
+        "fill 2302 199 -1995 2308 199 -1989 minecraft:glass",
+        "fill 2286 200 -1997 2314 209 -1996 minecraft:stone",
+        "fill 2297 201 -1997 2299 203 -1996 minecraft:glass",
+        "fill 2309 200 -1997 2310 202 -1996 minecraft:air",
+        "setblock 2290 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2298 200 -1999 minecraft:chest[facing=south]",
+        "setblock 2303 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2292 200 -2002 minecraft:white_banner",
+        "setblock 2297 200 -1998 minecraft:oak_sign",
+        "setblock 2295 197 -1990 minecraft:chest[facing=south]",
+        "setblock 2305 197 -1992 minecraft:chest[facing=south]",
+        "summon minecraft:cow 2289.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2297.5 200 -2000.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2299.0 200 -2000.5 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2303.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2309.9 200 -2001.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2312.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2294.5 195 -1991.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2305.5 195 -1991.5 {Color:0b,NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2290.5 195 -1987.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:happy_ghast 2298.0 205 -2002.0 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2306.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f],Tags:[\"brim_mover\"]}",
+        "execute in minecraft:overworld run tp @a 2293.5 203 -1984.5 180 20"
+      ],
+      "velocity": [
+        0.8,
+        0.0,
+        0.0
+      ],
+      "measureSteps": [
+        {
+          "at": 2.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5"
+        },
+        {
+          "at": 4.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5"
+        },
+        {
+          "at": 6.0,
+          "command": "fill 2301 200 -1997 2305 204 -1996 minecraft:air"
+        },
+        {
+          "at": 9.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5"
+        },
+        {
+          "at": 11.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2304.5 200 -2003.5"
+        },
+        {
+          "at": 13.0,
+          "command": "fill 2301 200 -1997 2305 204 -1996 minecraft:stone"
+        },
+        {
+          "at": 15.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5"
+        },
+        {
+          "at": 17.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5"
+        }
+      ],
+      "ciShots": [
+        {
+          "name": "x2297",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2297.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "x2305",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2305.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "x2309",
+          "commands": [
+            "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5",
+            "execute in minecraft:overworld run tp @a 2309.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "open",
+          "commands": [
+            "fill 2301 200 -1997 2305 204 -1996 minecraft:air",
+            "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2304.5 200 -2003.5",
+            "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "closed",
+          "commands": [
+            "fill 2301 200 -1997 2305 204 -1996 minecraft:stone",
+            "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5"
+          ]
+        },
+        {
+          "name": "bare_x2300",
+          "commands": [
+            "kill @e[type=!minecraft:player,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32]",
+            "setblock 2290 200 -2002 minecraft:air",
+            "setblock 2298 200 -1999 minecraft:air",
+            "setblock 2303 200 -2002 minecraft:air",
+            "setblock 2292 200 -2002 minecraft:air",
+            "setblock 2297 200 -1998 minecraft:air",
+            "setblock 2295 197 -1990 minecraft:air",
+            "setblock 2305 197 -1992 minecraft:air"
+          ]
+        },
+        {
+          "name": "bare_x2297",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2297.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "bare_x2305",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2305.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "bare_x2309",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2309.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "bare_open",
+          "commands": [
+            "fill 2301 200 -1997 2305 204 -1996 minecraft:air",
+            "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
+          ]
+        }
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciRequiresCulling": true,
+      "ciNote": "Moving pass: objects are hidden and come into view as the camera passes the window and doorway, as a pig is moved and as the wall opens. The per-frame ray check covers every frame of the bench; ciShots compare fixed points with vanilla under both gates (the bare_* shots, with every object removed, measure each object's on-screen area). Counts: memory only (the mid-bench commands upload new meshes)."
     }
   ]
 }

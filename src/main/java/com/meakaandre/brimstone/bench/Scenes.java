@@ -41,6 +41,11 @@ public final class Scenes {
         public List<String> setup = new ArrayList<>();
         /** Blocks per second for a scripted fly-through from where setup leaves the camera; null to stand still. */
         public double[] velocity;
+        /**
+         * Commands sent as the player while measuring, each at its time (seconds after measuring starts), e.g. to open
+         * a wall or move an entity during the bench (package 2's moving occlusion pass). Null for none.
+         */
+        public List<Step> measureSteps;
         /** A screen the scene measures, opened by using the block in front of the camera, or by a setup command. */
         public Screen screen;
         transient Suite owner;
@@ -48,6 +53,11 @@ public final class Scenes {
         public List<String> preamble() {
             return owner.preamble;
         }
+    }
+
+    public static final class Step {
+        public double at;
+        public String command;
     }
 
     public static final class Screen {

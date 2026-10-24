@@ -12,7 +12,7 @@ import com.meakaandre.brimstone.bench.GpuCounters;
 public final class VisibilityStats {
     private static long frames, sectionsVisible;
     private static long entities, entitiesTested, entitiesCulled;
-    private static long blockEntities, blockEntitiesTested, blockEntitiesCulled, blockEntitiesOutsideFrustum;
+    private static long blockEntities, blockEntitiesTested, blockEntitiesCulled;
     private static long nanos, maxNanos, overBudgetFrames;
     private static boolean overBudgetThisFrame;
     private static long terrainFrames, sectionLayersChecked, sectionLayersMissing;
@@ -25,7 +25,7 @@ public final class VisibilityStats {
     public static void startWindow() {
         frames = sectionsVisible = 0;
         entities = entitiesTested = entitiesCulled = 0;
-        blockEntities = blockEntitiesTested = blockEntitiesCulled = blockEntitiesOutsideFrustum = 0;
+        blockEntities = blockEntitiesTested = blockEntitiesCulled = 0;
         nanos = maxNanos = overBudgetFrames = 0;
         overBudgetThisFrame = false;
         terrainFrames = sectionLayersChecked = sectionLayersMissing = 0;
@@ -69,10 +69,8 @@ public final class VisibilityStats {
         if (GpuCounters.enabled) blockEntitiesTested++;
     }
 
-    static void blockEntityCulled(boolean outsideFrustum) {
-        if (!GpuCounters.enabled) return;
-        blockEntitiesCulled++;
-        if (outsideFrustum) blockEntitiesOutsideFrustum++;
+    static void blockEntityCulled() {
+        if (GpuCounters.enabled) blockEntitiesCulled++;
     }
 
     static void overBudget() {
@@ -97,6 +95,8 @@ public final class VisibilityStats {
         o.addProperty("fallbacks", Visibility.fallbacks());
         o.addProperty("dryRun", Visibility.DRY_RUN);
         o.addProperty("sections", "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged");
+        o.addProperty("entityTypesAllowed", Visibility.ENTITY_MARGIN.size());
+        o.addProperty("blockEntityTypesAllowed", Visibility.BLOCK_ENTITY_TYPES.size());
         o.addProperty("frames", frames);
         o.addProperty("sectionsVisiblePerFrame", per(sectionsVisible, frames));
         o.addProperty("entitiesPerFrame", per(entities, frames));
@@ -106,7 +106,6 @@ public final class VisibilityStats {
         o.addProperty("blockEntitiesPerFrame", per(blockEntities, frames));
         o.addProperty("blockEntitiesTestedPerFrame", per(blockEntitiesTested, frames));
         o.addProperty("blockEntitiesCulledPerFrame", per(blockEntitiesCulled, frames));
-        o.addProperty("blockEntitiesCulledOutsideFrustumPerFrame", per(blockEntitiesOutsideFrustum, frames));
         o.addProperty("blockEntitiesCulled", blockEntitiesCulled);
         o.addProperty("cullMsPerFrame", frames == 0 ? 0 : round(nanos / 1e6 / frames));
         o.addProperty("cullMsMax", round(maxNanos / 1e6));
@@ -120,6 +119,9 @@ public final class VisibilityStats {
         o.addProperty("verifiedRays", verifiedRays);
         o.addProperty("unverifiedObjects", unverifiedObjects);
         o.addProperty("violations", violations);
+        o.addProperty("violationsSinceStart", VisibilityCheck.totalViolations);
+        o.addProperty("unverifiedSinceStart", VisibilityCheck.totalUnverified);
+        o.addProperty("trackedSectionChanges", SectionChanges.size());
         o.addProperty("entityHookSeen", Visibility.entityHookSeen);
         o.addProperty("blockEntityHookSeen", Visibility.blockEntityHookSeen);
         return o;
@@ -130,8 +132,7 @@ public final class VisibilityStats {
             + (v.get("dryRun").getAsBoolean() ? ", DRY RUN" : "") + ", sections visible/frame " + v.get("sectionsVisiblePerFrame")
             + ", entities/frame " + v.get("entitiesPerFrame") + " (tested " + v.get("entitiesTestedPerFrame") + ", hidden "
             + v.get("entitiesCulledPerFrame") + "), block entities/frame " + v.get("blockEntitiesPerFrame") + " (tested "
-            + v.get("blockEntitiesTestedPerFrame") + ", hidden " + v.get("blockEntitiesCulledPerFrame") + ", of them outside the frustum "
-            + v.get("blockEntitiesCulledOutsideFrustumPerFrame") + "), ms/frame " + v.get("cullMsPerFrame") + " (max " + v.get("cullMsMax")
+            + v.get("blockEntitiesTestedPerFrame") + ", hidden " + v.get("blockEntitiesCulledPerFrame") + "), ms/frame " + v.get("cullMsPerFrame") + " (max " + v.get("cullMsMax")
             + ", frames over budget " + v.get("framesOverBudget") + "), section layers missing " + v.get("sectionLayersMissing")
             + (v.get("verify").getAsBoolean() ? ", ray check: " + v.get("verifiedObjects") + " objects, " + v.get("verifiedRays") + " rays, "
             + v.get("violations") + " violations, " + v.get("unverifiedObjects") + " unchecked" : "");

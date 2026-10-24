@@ -107,6 +107,14 @@ def main():
         shot = os.path.join(out, "shots", sid + ".png")
         entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)
+        # extra fixed points (package 2): commands to the server, then a screenshot named <scene>.<name>, the same in
+        # every run; the Brimstone bench afterwards sets the scene up again from scratch
+        for extra in sc.get("ciShots", []):
+            for cmd in extra["commands"]:
+                send(cmd)
+            time.sleep(3)
+            p = os.path.join(out, "shots", sid + "." + extra["name"] + ".png")
+            entry.setdefault("extraShots", {})[extra["name"]] = steady_shot(p)
         if screen:
             # every run closes the scene's screen the same way before going on
             xdo("key", "Escape")

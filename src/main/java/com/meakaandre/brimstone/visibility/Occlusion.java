@@ -73,6 +73,14 @@ final class Occlusion implements Ray.Visitor {
     private final int[] near = new int[3];
     int planesTried;
 
+    /** Full rectangle checks per object at most (each is up to {@link #MAX_CELLS} cells); past it, not hidden. */
+    private static final int MAX_PLANES = 32;
+
+    /** Forgets the per-state answers (resource reload). */
+    static void clearCache() {
+        OCCLUDERS.clear();
+    }
+
     /** A block state that is a full opaque cube Brimstone trusts to hide what is behind it. */
     static boolean occluder(BlockState state) {
         byte v = OCCLUDERS.getByte(state);
@@ -111,6 +119,7 @@ final class Occlusion implements Ray.Visitor {
         boxMax[1] = box.maxY;
         boxMax[2] = box.maxZ;
         for (int a = 0; a < 3; a++) if (!Double.isFinite(boxMin[a]) || !Double.isFinite(boxMax[a])) return false;
+        planesTried = 0;
         return Ray.walk(ex, ey, ez, (box.minX + box.maxX) * 0.5, (box.minY + box.maxY) * 0.5, (box.minZ + box.maxZ) * 0.5, this);
     }
 
@@ -130,7 +139,7 @@ final class Occlusion implements Ray.Visitor {
         cell[2] = pz;
         cell[axis] += dir;
         if (!blocks(cell[0], cell[1], cell[2], near[0], near[1], near[2], axis, dir)) return false;
-        planesTried++;
+        if (++planesTried > MAX_PLANES) return false;
         return covered(axis, k, dir);
     }
 

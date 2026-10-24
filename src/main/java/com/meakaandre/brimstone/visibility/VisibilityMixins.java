@@ -24,7 +24,8 @@ public final class VisibilityMixins implements IMixinConfigPlugin {
 
     static {
         EXPECTED.put("net.minecraft.client.renderer.extract.LevelExtractor",
-            List.of("brimstone$entitiesStart", "brimstone$blockDirty", "brimstone$allChanged", "brimstone$setLevel"));
+            List.of("brimstone$entitiesStart", "brimstone$blockDirty", "brimstone$allChanged", "brimstone$setLevel",
+                "brimstone$reloaded"));
         EXPECTED.put("net.minecraft.client.SectionUpdateTracker", List.of("brimstone$dirty"));
         EXPECTED.put("net.minecraft.client.multiplayer.ClientChunkCache", List.of("brimstone$replaced", "brimstone$dropped"));
     }

@@ -4,6 +4,7 @@ import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.mixin.visibility.EntityRendererInvoker;
 import com.meakaandre.brimstone.terrain.Terrain;
 import it.unimi.dsi.fastutil.objects.Reference2ByteOpenHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -16,19 +17,12 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Util;
-import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Leashable;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.frog.Frog;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.decoration.HangingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -40,37 +34,62 @@ import net.minecraft.world.phys.AABB;
  *
  * <p>Entities and block entities: vanilla draws every entity in the frustum whose section is meshed, and every block
  * entity of a visible section, even behind walls. Brimstone hides one only when its occlusion test proves that nothing
- * of it can be seen ({@link Occlusion}), and block entities also when their box is outside the same frustum vanilla
- * tests entities with. Only kinds Brimstone recognises are ever hidden: vanilla's own entity and block entity types
- * drawn by vanilla's own renderers, without name tags, outlines, leashes, beams or riders; everything else is left to
- * vanilla. The test is skipped for the rest of a frame once it has used {@link #BUDGET_NANOS} (what is left is drawn).
+ * of it can be seen ({@link Occlusion}), and only for the kinds on its allow-lists ({@link #ENTITY_MARGIN},
+ * {@link #BLOCK_ENTITY_TYPES}): vanilla types whose drawn extent was checked against the box Brimstone tests (the
+ * reasoning per type is in docs/visibility-allowlist.md). Everything else is left to vanilla. The tests are skipped for
+ * the rest of a frame once they have used {@link #BUDGET_NANOS} (what is left is drawn). No frustum test of Brimstone's
+ * own: the frame is drawn with view bobbing and the damage tilt on top of the frustum vanilla culls with.
  *
  * <p>Crash safety: anything unexpected turns the module off for the session with one ERROR line, and vanilla decides
- * alone again.
+ * alone again. A resource pack that supplies a block texture, model or blockstate in the {@code minecraft} namespace
+ * defers it (nothing hidden; {@link VisibilityResources}).
  */
 public final class Visibility {
-    public enum State { STARTING, ON, OFF }
+    public enum State { STARTING, ON, DEFERRED, OFF }
 
-    /** Render-thread time the occlusion tests may use per frame; past it, the rest of the frame's objects are drawn. */
+    /** Render-thread time the visibility work may use per frame; past it, the rest of the frame's objects are drawn. */
     static final long BUDGET_NANOS = 2_000_000L;
-    /** Debug (CI): decide and count, but hide nothing. */
+    /** Debug (CI noise collection only): decide and count, but hide nothing. CI fails any run that has it set. */
     static final boolean DRY_RUN = Boolean.getBoolean("brimstone.debug.visibilityDryRun");
     /** Debug (CI): check every hidden object with rays from the camera ({@link VisibilityCheck}). */
     static final boolean VERIFY = Boolean.getBoolean("brimstone.debug.verifyVisibility");
 
+    /**
+     * Entity allow-list: type -> blocks added on every side of vanilla's own culling box (times the entity's scale).
+     * Each type's drawn extent (model and animations, held items, fire, shadow) was checked to fit; see
+     * docs/visibility-allowlist.md. Name tags, outlines, leashes, riders, sleeping and dying poses are excluded below.
+     */
+    static final Map<EntityType<?>, Double> ENTITY_MARGIN = Map.ofEntries(
+        Map.entry(EntityType.COW, 2.0), Map.entry(EntityType.MOOSHROOM, 2.0), Map.entry(EntityType.PIG, 2.0),
+        Map.entry(EntityType.SHEEP, 2.0), Map.entry(EntityType.CHICKEN, 2.0), Map.entry(EntityType.VILLAGER, 2.0),
+        Map.entry(EntityType.IRON_GOLEM, 2.0), Map.entry(EntityType.SNOW_GOLEM, 2.0), Map.entry(EntityType.ZOMBIE, 2.0),
+        Map.entry(EntityType.SKELETON, 2.0), Map.entry(EntityType.CREEPER, 2.0), Map.entry(EntityType.SPIDER, 2.0),
+        Map.entry(EntityType.ITEM, 2.0));
+
+    /**
+     * Block entity allow-list: each type's renderer draws inside its block grown by one block on every side (lids,
+     * double chests, standing and wall banners, hanging signs, bell, books, held items); see
+     * docs/visibility-allowlist.md. Not end gateways (beams), beacons, spawners, conduits or anything else.
+     */
+    static final java.util.Set<BlockEntityType<?>> BLOCK_ENTITY_TYPES = java.util.Set.of(
+        BlockEntityType.CHEST, BlockEntityType.TRAPPED_CHEST, BlockEntityType.ENDER_CHEST, BlockEntityType.SIGN,
+        BlockEntityType.HANGING_SIGN, BlockEntityType.BANNER, BlockEntityType.BELL, BlockEntityType.SHULKER_BOX,
+        BlockEntityType.DECORATED_POT, BlockEntityType.CAMPFIRE, BlockEntityType.LECTERN, BlockEntityType.ENCHANTING_TABLE);
+    static final double BLOCK_ENTITY_MARGIN = 1.0;
+
     private static volatile State state = State.STARTING;
     private static volatile String reason = "waiting for the first frame";
     private static final AtomicInteger FALLBACKS = new AtomicInteger();
+    private static volatile boolean resourcesChanged = true;
 
     private static final Occlusion OCCLUSION = new Occlusion();
     private static int frame;
     private static boolean ready;
     private static Camera camera;
-    private static Frustum frustum;
     private static long spent;
     static volatile boolean entityHookSeen, blockEntityHookSeen;
 
-    /** Per entity or block entity class (and renderer class): 1 a kind Brimstone recognises, 2 not. */
+    /** Per renderer class: 1 vanilla's own, 2 not. */
     private static final Reference2ByteOpenHashMap<Class<?>> KNOWN = new Reference2ByteOpenHashMap<>();
 
     private Visibility() {
@@ -97,11 +116,13 @@ public final class Visibility {
         if (state == State.OFF) return;
         try {
             if (state == State.STARTING && !start()) return;
+            if (resourcesChanged) checkResources();
             Minecraft mc = Minecraft.getInstance();
             ClientLevel level = mc.level;
-            if (level == null || cam == null || cullFrustum == null) return;
+            if (level == null || cam == null) return;
             var visible = mc.levelRenderer.visibleSections();
             VisibilityStats.frame(visible.size());
+            if (state != State.ON) return;
             // the sections Brimstone's terrain holds must be drawn (not mid hand-back) for their faces to hide anything
             if (!Terrain.drawsAllItHolds()) return;
             var viewArea = mc.levelRenderer.viewArea();
@@ -110,7 +131,6 @@ public final class Visibility {
             long fadeMs = Util.toMillis(mc.options.chunkSectionFadeInTime().get());
             OCCLUSION.beginFrame(level, viewArea, visible, frame, fadeMs);
             camera = cam;
-            frustum = cullFrustum;
             ready = true;
         } catch (Throwable t) {
             fail("starting a frame", t);
@@ -132,10 +152,32 @@ public final class Visibility {
         }
         state = State.ON;
         reason = "on";
-        BrimstoneClient.LOG.info("Brimstone visibility: on (sections: vanilla's frustum and cave graph, unchanged; entities and block entities"
-            + " of vanilla's own kinds hidden only when an opaque slab proves them unseen; block entities also outside the frustum;"
-            + " budget {} ms per frame{}{})", BUDGET_NANOS / 1e6, DRY_RUN ? "; DRY RUN, nothing hidden" : "", VERIFY ? "; every hidden object checked with rays" : "");
+        BrimstoneClient.LOG.info("Brimstone visibility: on (sections: vanilla's frustum and cave graph, unchanged; allow-listed vanilla entities"
+            + " ({} types) and block entities ({} types) hidden only when an opaque slab proves them unseen; budget {} ms per frame{}{})",
+            ENTITY_MARGIN.size(), BLOCK_ENTITY_TYPES.size(), BUDGET_NANOS / 1e6, DRY_RUN ? "; DRY RUN (noise collection), nothing hidden" : "",
+            VERIFY ? "; every hidden object checked with rays" : "");
         return true;
+    }
+
+    /** Resource packs changed (or first frame): defer while one supplies minecraft block textures, models or blockstates. */
+    private static void checkResources() {
+        resourcesChanged = false;
+        Occlusion.clearCache();
+        String pack = VisibilityResources.override();
+        if (pack != null && state == State.ON) {
+            state = State.DEFERRED;
+            reason = pack;
+            BrimstoneClient.LOG.warn("Brimstone visibility: deferring to vanilla, nothing is hidden while {}", pack);
+        } else if (pack == null && state == State.DEFERRED) {
+            state = State.ON;
+            reason = "on";
+            BrimstoneClient.LOG.info("Brimstone visibility: resource packs no longer replace vanilla block resources, hiding again");
+        }
+    }
+
+    /** Called by the resource reload (render thread). */
+    public static void resourcesReloaded() {
+        resourcesChanged = true;
     }
 
     static void fail(String where, Throwable t) {
@@ -155,36 +197,37 @@ public final class Visibility {
         if (!vanilla) return false;
         VisibilityStats.entityConsidered();
         if (!ready) return true;
+        if (spent >= BUDGET_NANOS) {
+            VisibilityStats.overBudget();
+            return true;
+        }
+        long t0 = System.nanoTime();
         try {
+            Double margin = ENTITY_MARGIN.get(entity.getType());
+            if (margin == null || !recognised(entity)) return true;
             Minecraft mc = Minecraft.getInstance();
             EntityRenderer<?, ?> renderer = mc.levelRenderer.entityRenderDispatcher().getRenderer(entity);
-            if (renderer == null || !recognised(entity, renderer)) return true;
-            if (spent >= BUDGET_NANOS) {
-                VisibilityStats.overBudget();
-                return true;
-            }
-            long t0 = System.nanoTime();
+            if (renderer == null || !vanilla(renderer.getClass())) return true;
             EntityRendererInvoker inv = (EntityRendererInvoker) renderer;
-            boolean hide = false;
-            AABB box = null;
-            if (inv.brimstone$affectedByCulling(entity)) {
-                AABB cull = inv.brimstone$cullingBox(entity, partialTick);
-                VisibilityStats.entityTested();
-                if (cull != null) {
-                    float size = Math.max(entity.getBbWidth(), entity.getBbHeight());
-                    // model parts, held items and the shadow reach past the box vanilla's frustum test uses
-                    box = cull.inflate(1.0 + 0.25 * size);
-                    hide = OCCLUSION.hidden(camX, camY, camZ, box);
-                }
-            }
-            spent += System.nanoTime() - t0;
-            if (!hide) return true;
+            if (!inv.brimstone$affectedByCulling(entity)) return true;
+            AABB cull = inv.brimstone$cullingBox(entity, partialTick);
+            if (cull == null) return true;
+            VisibilityStats.entityTested();
+            double scale = entity instanceof LivingEntity l ? Math.max(1.0, l.getScale()) : 1.0;
+            AABB box = cull.inflate(margin * scale);
+            if (!OCCLUSION.hidden(camX, camY, camZ, box)) return true;
             VisibilityStats.entityCulled();
-            if (VERIFY) VisibilityCheck.check("entity " + entity.getType() + " at " + entity.blockPosition(), box, camX, camY, camZ, frustum, mc.level);
+            if (VERIFY) {
+                spent += System.nanoTime() - t0;
+                VisibilityCheck.check("entity " + entity.getType() + " at " + entity.blockPosition(), box, camX, camY, camZ, mc.level);
+                t0 = System.nanoTime(); // the CI check's own time is not the module's cost
+            }
             return DRY_RUN;
         } catch (Throwable t) {
             fail("entity occlusion", t);
             return true;
+        } finally {
+            spent += System.nanoTime() - t0;
         }
     }
 
@@ -193,60 +236,48 @@ public final class Visibility {
         blockEntityHookSeen = true;
         VisibilityStats.blockEntityConsidered();
         if (!ready) return true;
+        if (spent >= BUDGET_NANOS) {
+            VisibilityStats.overBudget();
+            return true;
+        }
+        long t0 = System.nanoTime();
         try {
+            if (!BLOCK_ENTITY_TYPES.contains(be.getType()) || !vanilla(be.getClass())) return true;
             BlockEntityRenderer<BlockEntity, ?> renderer = dispatcher.getRenderer(be);
-            if (renderer == null || renderer.shouldRenderOffScreen() || !recognised(be, renderer)) return true;
-            if (spent >= BUDGET_NANOS) {
-                VisibilityStats.overBudget();
-                return true;
-            }
-            long t0 = System.nanoTime();
+            if (renderer == null || renderer.shouldRenderOffScreen() || !vanilla(renderer.getClass())) return true;
             VisibilityStats.blockEntityTested();
             BlockPos p = be.getBlockPos();
-            // beds, double chests, banners, bells and the things block entities hold reach about a block past their own
-            AABB box = new AABB(p).inflate(1.0);
+            AABB box = new AABB(p).inflate(BLOCK_ENTITY_MARGIN);
             var eye = camera.position();
-            boolean outside = !frustum.isVisible(box);
-            boolean hide = outside || OCCLUSION.hidden(eye.x, eye.y, eye.z, box);
-            spent += System.nanoTime() - t0;
-            if (!hide) return true;
-            VisibilityStats.blockEntityCulled(outside);
-            if (VERIFY) VisibilityCheck.check("block entity " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType()) + " at " + p, box,
-                eye.x, eye.y, eye.z, frustum, Minecraft.getInstance().level);
+            if (!OCCLUSION.hidden(eye.x, eye.y, eye.z, box)) return true;
+            VisibilityStats.blockEntityCulled();
+            if (VERIFY) {
+                spent += System.nanoTime() - t0;
+                VisibilityCheck.check("block entity " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType()) + " at " + p, box,
+                    eye.x, eye.y, eye.z, Minecraft.getInstance().level);
+                t0 = System.nanoTime();
+            }
             return DRY_RUN;
         } catch (Throwable t) {
             fail("block entity occlusion", t);
             return true;
+        } finally {
+            spent += System.nanoTime() - t0;
         }
     }
 
     /**
-     * Kinds Brimstone may hide: vanilla's own entity kinds (mobs other than the ender dragon, guardians and frogs, whose
-     * beams or tongues reach far outside them; items, experience orbs, armour stands, minecarts, item frames and
-     * paintings) that are not a player, carry no name, outline, leash or rider, are not too large, and are drawn by
-     * vanilla's own renderer. Anything else is drawn as vanilla decides.
+     * Per-entity exclusions on top of the allow-list: anything drawn outside the entity's own model (name tags, which
+     * draw through walls; outlines; leashes; riders and what they ride), the camera entity, and poses whose extent the
+     * allow-list margins were not checked for (sleeping, dying).
      */
-    private static boolean recognised(Entity e, EntityRenderer<?, ?> renderer) {
-        if (!knownClass(e.getClass(), renderer.getClass())) return false;
-        if (e instanceof Avatar || e instanceof EnderDragon || e instanceof Guardian || e instanceof Frog) return false;
-        if (!(e instanceof Mob || e instanceof ItemEntity || e instanceof ExperienceOrb || e instanceof ArmorStand
-            || e instanceof AbstractMinecart || e instanceof HangingEntity)) return false;
-        if (!"minecraft".equals(BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getNamespace())) return false;
+    private static boolean recognised(Entity e) {
+        if (!vanilla(e.getClass())) return false;
         if (e.isPassenger() || e.isVehicle() || e.hasCustomName() || e.isCurrentlyGlowing()) return false;
         if (e instanceof Leashable l && l.isLeashed()) return false;
+        if (e instanceof LivingEntity l && (l.isSleeping() || l.isDeadOrDying())) return false;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.shouldEntityAppearGlowing(e) || (camera != null && camera.entity() == e)) return false;
-        return Math.max(e.getBbWidth(), e.getBbHeight()) <= 6.0f;
-    }
-
-    private static boolean recognised(BlockEntity be, BlockEntityRenderer<?, ?> renderer) {
-        if (!knownClass(be.getClass(), renderer.getClass())) return false;
-        return "minecraft".equals(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType()).getNamespace());
-    }
-
-    /** Both classes are vanilla's own. */
-    private static boolean knownClass(Class<?> object, Class<?> renderer) {
-        return vanilla(object) && vanilla(renderer);
+        return !mc.shouldEntityAppearGlowing(e) && (camera == null || camera.entity() != e);
     }
 
     private static boolean vanilla(Class<?> c) {
