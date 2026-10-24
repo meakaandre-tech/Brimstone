@@ -241,6 +241,12 @@ moving camera makes vanilla sort again and upload new index lists at times that 
 | siftec-full | hologram (run 40123696828, SIFTEC dry run) | 119.16 | 24 | 70368 | 453.57 | 4.24 |
 | siftec-old-gpu | hologram (run 40123696828, SIFTEC dry run) | 155.07 | 23 | 70624 | 452.39 | 3.73 |
 
+Caveat (open, for Andre): the hologram scene runs below CI's 30 fps cap on slower runners (22-30 fps seen), and its
+per-frame draw-call average follows the frame rate (frames that line up with a game tick draw about 50 more there):
+about 119 at 30 fps, 144-155 at 22-24 fps, median 166-170 in every run. The full-profile baseline (119.16) is from a
+30 fps sample, so that gate failed once on a slow runner with Brimstone's own draws unchanged (run 40128444322,
+144.24 at 23.6 fps). Not raised; see docs/progress.md, package 3, "Open issues".
+
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
 

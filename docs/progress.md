@@ -3,7 +3,8 @@
 ## Where things stand
 
 - **Now:** packages 0 (repo, CI, bench harness), 1 (terrain meshing and region buffers) and 2 (visibility) done and
-  merged; package 3 (translucency) on branch `package-3`, green, awaiting review. See "Hand-off" at the bottom.
+  merged; package 3 (translucency) on branch `package-3`, awaiting review: its last code change is green (run
+  40126212181); a docs-only rerun failed one runner-speed-dependent count (package 3, "Open issues"). See "Hand-off".
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
@@ -319,6 +320,12 @@ CPU.
 
 ### Remaining trade-offs and open issues
 
+- **The SIFTEC hologram scene's draw-call baseline on full (119.16) came from one sample at 30 fps, and the scene's
+  average follows the runner's frame rate** (run 6 above: 144.24 at 23.6 fps, over the 10% gate, with Brimstone's own
+  draws unchanged). On a slow runner that gate can fail without any change in Brimstone. Raising the baseline or
+  changing what is gated is Andre's call (rules); options: take the baseline from the slow mode (about 155, as on
+  old-GPU), gate this scene's draw calls on the median (166-170 in every run), or report them only, like the
+  fly-through's.
 - GPU error check: OpenGL only, and it misses an exact repeat of a message already in the list (m1).
 - The mid-session hand-back is not exercised by CI.
 - The Vulkan plain path is not run in CI (m4).
@@ -717,6 +724,12 @@ Counts against baseline: every gated count is within its baseline in every profi
 
 ### Remaining trade-offs and open issues
 
+- **The SIFTEC hologram scene's draw-call baseline on full (119.16) came from one sample at 30 fps, and the scene's
+  average follows the runner's frame rate** (run 6 above: 144.24 at 23.6 fps, over the 10% gate, with Brimstone's own
+  draws unchanged). On a slow runner that gate can fail without any change in Brimstone. Raising the baseline or
+  changing what is gated is Andre's call (rules); options: take the baseline from the slow mode (about 155, as on
+  old-GPU), gate this scene's draw calls on the median (166-170 in every run), or report them only, like the
+  fly-through's.
 - The fly-through has nothing to hide, so hiding while moving is proved in `occlusion_move`, not in the fly-through.
 - The frames between a wall being built and its new mesh arriving are guarded by the freshness rule, but not measured
   against vanilla (see "What can't be measured").
@@ -779,7 +792,8 @@ Note its `ms/frame` and `max` (the culling cost on the laptop's CPU) next to FPS
 ## Package 3: translucency
 
 **Branch** `package-3` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40126212181 on `6d48fc7` (every profile, both suites, compare
-passed). **ci-logs** (overwritten by later runs): `compare/report.md` has every table below plus a "Translucency" table
+passed), the last code change. A docs-only rerun (run 40128444322) failed one runner-speed-dependent count; see
+"Runs" and "Open issues". **ci-logs** (overwritten by later runs): `compare/report.md` has every table below plus a "Translucency" table
 per suite and profile; `runs/<suite>-brimstone-*/bench/*.json` have the `translucency` block;
 `runs/core-*/shots/translucent_move*.png` and `water_glass_oit.png` are the new fixed-point shots,
 `runs/siftec-*/shots/hologram.png` the Build Gun hologram.
@@ -975,9 +989,14 @@ live terrain 23.4-23.6 bytes per vertex against vanilla's 28); arenas are now ve
 4. `4cb5419` run 40123696828: core real (passed again), SIFTEC collection for the lit pool: clean, apart from the
    outline's brightness flip (noise).
 5. `6d48fc7` run 40126212181: everything real, every profile and both suites: **green**.
-6. This docs commit (evidence above): its own run, see the hand-off.
-
-Five CI runs of real attempts so far (1-4 failed by design as marked collection runs, as the brief counts them).
+6. `0db931b` run 40128444322 (the docs-only write-up, same code as run 5): **failed one count**: SIFTEC hologram draw
+   calls on full, 144.24 against the baseline of 119.16 (a single dry-run sample, run 4). The runner ran that scene at
+   23.6 fps instead of 30, and the scene's per-frame average follows the frame rate: frames that line up with a game
+   tick draw about 50 more there (average about 119 at 30 fps, 144-155 at 22-24 fps; median 166-170 in every run,
+   old-GPU likewise: 155.07 at 22 fps in run 4, 124.18 at 28.6 fps in run 5). Brimstone's own draws were identical in
+   every run (terrain 2, translucent 1 per frame on full). The baseline was not raised and the gate not changed (see
+   "Open issues").
+7. This commit (docs only): its own run, see the hand-off.
 
 ### Deviations from the doc and the plan
 
@@ -1023,6 +1042,12 @@ Five CI runs of real attempts so far (1-4 failed by design as marked collection 
 
 ### Remaining trade-offs and open issues
 
+- **The SIFTEC hologram scene's draw-call baseline on full (119.16) came from one sample at 30 fps, and the scene's
+  average follows the runner's frame rate** (run 6 above: 144.24 at 23.6 fps, over the 10% gate, with Brimstone's own
+  draws unchanged). On a slow runner that gate can fail without any change in Brimstone. Raising the baseline or
+  changing what is gated is Andre's call (rules); options: take the baseline from the slow mode (about 155, as on
+  old-GPU), gate this scene's draw calls on the median (166-170 in every run), or report them only, like the
+  fly-through's.
 - Right after the module turns on (and while terrain is handed back), sections vanilla still holds are drawn by
   vanilla before Brimstone's, so for those few frames the order between the two sets may not be vanilla's (counted as
   mixed frames; CI requires none in measured frames).
@@ -1065,8 +1090,10 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Now:** package 3 (translucency) on branch `package-3`, implemented and green (run 40126212181 on `6d48fc7`, then this
-docs commit's own run); next: review rounds, then merge. The branch still carries the branch-only CI trigger commit
+**Now:** package 3 (translucency) on branch `package-3`, implemented; the last code change (`6d48fc7`) is green in run
+40126212181. The docs-only rerun 40128444322 failed one count, the SIFTEC hologram scene's draw calls on full, which
+follow the runner's frame rate (package 3, "Open issues": a decision for Andre; nothing raised or ungated). Next:
+review rounds, then merge. The branch still carries the branch-only CI trigger commit
 (`package-3` in `build.yml`), to be stripped at merge. Scratch tools from this package (not in the repo): a compile
 check against stubs generated from the javap dump (`scratchpad/p3/stubgen/check.sh`), the shader harness with OIT
 defines (`scratchpad/p3/harness3.py`), limit and evidence scripts (`scratchpad/p3/newlimits.py`, `tables.py`).
