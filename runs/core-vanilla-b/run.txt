@@ -1,0 +1,50 @@
+suite=core run=vanilla-b
+core server and world: from the core-world job
+total 2560
+-rw-r--r-- 1 runner runner 2620967 Oct 24 13:47 fabric-api.jar
+total 4
+-rw-r--r-- 1 runner runner 2185 Oct 24 13:48 ci-pin.jar
+sessions: 8:spawn,water_glass,nether,mobs,occlusion,occlusion_move 12:flythrough
+scene spawn: setting up
+scene water_glass: setting up
+scene nether: setting up
+scene mobs: setting up
+scene occlusion: setting up
+scene occlusion_move: setting up
+scene flythrough: setting up
+/tmp/out/core-vanilla-b:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-flythrough.json
+drive-spawn-water_glass-nether-mobs-occlusion-occlusion_move.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-vanilla-b/bench:
+
+/tmp/out/core-vanilla-b/shots:
+flythrough.png
+mobs.png
+nether.png
+occlusion.png
+occlusion_move.bare_open.png
+occlusion_move.bare_x2297.png
+occlusion_move.bare_x2300.png
+occlusion_move.bare_x2305.png
+occlusion_move.bare_x2309.png
+occlusion_move.closed.png
+occlusion_move.open.png
+occlusion_move.png
+occlusion_move.x2297.png
+occlusion_move.x2305.png
+occlusion_move.x2309.png
+spawn.png
+water_glass.png

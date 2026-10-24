@@ -1,0 +1,28 @@
+[
+  {
+    "scene": "factory",
+    "skipped": "needs the mod siftec_selftest (Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.)"
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "map",
+    "skipped": "needs the mod siftec_selftest (SIFTEC's map unlocks through progression; its test command (siftec worldtest map) opens it, and that lives in SIFTEC's CI-only selftest mod, not in its release.)"
+  }
+]

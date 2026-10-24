@@ -1,0 +1,50 @@
+[
+  {
+    "scene": "spawn",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "water_glass",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "nether",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "mobs",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "occlusion",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "occlusion_move",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "x2297": 1,
+      "x2305": 1,
+      "x2309": 1,
+      "open": 1,
+      "closed": 1,
+      "bare_x2300": 1,
+      "bare_x2297": 1,
+      "bare_x2305": 1,
+      "bare_x2309": 1,
+      "bare_open": 1
+    },
+    "bench": "done"
+  }
+]

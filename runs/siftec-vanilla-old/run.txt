@@ -1,0 +1,52 @@
+suite=siftec run=vanilla-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+total 61996
+-rw-r--r-- 1 runner runner  3486296 Oct 24 13:47 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 24 13:47 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 24 13:47 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 24 13:47 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 24 13:47 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 24 13:47 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 24 13:47 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 24 13:47 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 24 13:47 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 24 13:47 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147430 Oct 24 13:47 siftec-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 24 13:47 travelersbackpack.jar
+total 59440
+-rw-r--r-- 1 runner runner  3486296 Oct 24 13:48 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 24 13:48 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner     2185 Oct 24 13:48 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 24 13:48 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 24 13:48 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 24 13:48 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 24 13:48 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 24 13:48 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 24 13:48 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 24 13:48 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147430 Oct 24 13:48 siftec-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 24 13:48 travelersbackpack.jar
+sessions: 8:factory,sift,hub,mam,map
+scene factory: skipped (needs the mod siftec_selftest (Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.))
+scene sift: setting up
+scene hub: setting up
+scene mam: setting up
+scene map: skipped (needs the mod siftec_selftest (SIFTEC's map unlocks through progression; its test command (siftec worldtest map) opens it, and that lives in SIFTEC's CI-only selftest mod, not in its release.))
+/tmp/out/siftec-vanilla-old:
+bench
+client-1.log
+client-gradle-1.log
+drive-factory-sift-hub-mam-map.json
+gfx.txt
+joined-1.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-vanilla-old/bench:
+
+/tmp/out/siftec-vanilla-old/shots:
+hub.png
+mam.png
+sift.png

@@ -1,0 +1,69 @@
+suite=core run=brimstone-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+old-GPU Brimstone run: -Dbrimstone.debug.forceIntelMdiIssue=true
+Brimstone run JVM properties:-Dbrimstone.debug.forceIntelMdiIssue=true -Dbrimstone.debug.verifyVisibility=true
+core server and world: from the core-world job
+total 2732
+-rw-r--r-- 1 runner runner  173911 Oct 24 13:47 brimstone.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 24 13:47 fabric-api.jar
+total 176
+-rw-r--r-- 1 runner runner 173911 Oct 24 13:48 brimstone.jar
+-rw-r--r-- 1 runner runner   2185 Oct 24 13:48 ci-pin.jar
+sessions: 8:spawn,water_glass,nether,mobs,occlusion,occlusion_move 12:flythrough
+scene spawn: setting up
+scene spawn: bench done
+scene water_glass: setting up
+scene water_glass: bench done
+scene nether: setting up
+scene nether: bench done
+scene mobs: setting up
+scene mobs: bench done
+scene occlusion: setting up
+scene occlusion: bench done
+scene occlusion_move: setting up
+scene occlusion_move: bench done
+scene flythrough: setting up
+scene flythrough: bench done
+/tmp/out/core-brimstone-old:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-flythrough.json
+drive-spawn-water_glass-nether-mobs-occlusion-occlusion_move.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-brimstone-old/bench:
+20261024-135040-spawn.json
+20261024-135214-water_glass.json
+20261024-135334-nether.json
+20261024-135528-mobs.json
+20261024-135710-occlusion.json
+20261024-140013-occlusion_move.json
+20261024-140244-flythrough.json
+
+/tmp/out/core-brimstone-old/shots:
+flythrough.png
+mobs.png
+nether.png
+occlusion.png
+occlusion_move.bare_open.png
+occlusion_move.bare_x2297.png
+occlusion_move.bare_x2300.png
+occlusion_move.bare_x2305.png
+occlusion_move.bare_x2309.png
+occlusion_move.closed.png
+occlusion_move.open.png
+occlusion_move.png
+occlusion_move.x2297.png
+occlusion_move.x2305.png
+occlusion_move.x2309.png
+spawn.png
+water_glass.png
