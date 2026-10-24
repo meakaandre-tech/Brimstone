@@ -97,6 +97,13 @@ def main():
             xdo("key", "a")
             xdo("keyup", "F3")
             time.sleep(3)
+            # F3+D: vanilla's "clear chat", so F3+A's "Reloading all chunks" line (whose fade-out depends on how long the
+            # steady-shot wait takes) is in no screenshot; the same in every run (package 2: a vanilla run once caught
+            # it faded and the others not)
+            xdo("keydown", "F3")
+            xdo("key", "d")
+            xdo("keyup", "F3")
+            time.sleep(1)
         shot = os.path.join(out, "shots", sid + ".png")
         entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)
