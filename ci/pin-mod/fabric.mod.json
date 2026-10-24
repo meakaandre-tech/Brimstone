@@ -6,6 +6,12 @@
   "description": "CI only, loaded in every client run (vanilla and Brimstone alike): holds the lightmap's block-light flicker at its resting value so screenshots don't depend on the moment they are taken.",
   "license": "LGPL-3.0-only",
   "environment": "client",
-  "mixins": ["brimstone_ci_pin.mixins.json"],
-  "depends": {"fabricloader": "*", "minecraft": "*"}
+  "mixins": [
+    "brimstone_ci_pin.mixins.json",
+    "brimstone_ci_pin.diag.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": "*"
+  }
 }

@@ -243,8 +243,55 @@ jobs:
           name: res-${{ matrix.suite }}-${{ matrix.run }}
           path: /tmp/out
 
+  # DIAGNOSTIC (branch only, removed before merge): the hologram scene benched for 15 minutes with LWJGL's
+  # DebugAllocator and Brimstone's memory log, to check direct and native memory for a leak over a long run
+  diag-longrun:
+    needs: [build, siftec-world]
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [brimstone-full, brimstone-old]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: brimstone-jar
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-pin-jar
+          path: ci-pin
+      - uses: actions/download-artifact@v4
+        with:
+          name: siftec-server
+      - name: Run the client (long hologram bench)
+        shell: bash
+        env:
+          SUITE: siftec
+          RUN: ${{ matrix.run }}
+          OUT: /tmp/out/diag-siftec-${{ matrix.run }}
+          BENCH_SECONDS: "900"
+          SCENES: hologram
+          EXTRA_JVM: "-Dorg.lwjgl.util.DebugAllocator=true -XX:MaxJavaStackTraceDepth=16 -Dbrimstone.debug.memoryLog=15"
+        run: |
+          chmod +x gradlew
+          tar xf siftec-server.tar
+          bash ci/client-run.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: res-diag-siftec-${{ matrix.run }}
+          path: /tmp/out
+
   compare:
-    needs: [build, client]
+    needs: [build, client, diag-longrun]
     # also after a failed build, so its log (build/build.log) reaches ci-logs; compare then fails on the missing runs
     if: always()
     runs-on: ubuntu-latest
