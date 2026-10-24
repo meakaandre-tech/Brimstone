@@ -30,6 +30,20 @@ public final class CiDiag {
         System.out.println("BRIMSTONE CIDIAG " + key + (state.equals(prev) ? " (same)" : " CHANGED") + " frame=" + frame + " " + state);
     }
 
+    private static final StringBuilder DRAWS = new StringBuilder();
+
+    /** Render thread: one feature draw (or phase marker) of this frame. */
+    public static void draw(String what) {
+        if (DRAWS.length() < 20000) DRAWS.append(what).append(' ');
+    }
+
+    /** Render thread, frame start: logs the last frame's draw order when it drew Create's outline. */
+    public static void frameStart() {
+        String s = DRAWS.toString();
+        DRAWS.setLength(0);
+        if (s.contains("outline")) log("draworder", s);
+    }
+
     public static Object field(Object o, String name) {
         for (Class<?> c = o.getClass(); c != null; c = c.getSuperclass()) {
             try {

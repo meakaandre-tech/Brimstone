@@ -14,6 +14,7 @@ public abstract class DiagLightmapMixin {
     @Inject(method = "extract", at = @At("TAIL"))
     private void brimstoneCi$diagExtract(LightmapRenderState s, float partialTick, CallbackInfo ci) {
         CiDiag.frame++;
+        CiDiag.frameStart();
         CiDiag.log("lightmap", "needsUpdate=" + s.needsUpdate + " blockFactor=" + CiDiag.r(s.blockFactor) + " blockTint=" + s.blockLightTint
             + " skyFactor=" + CiDiag.r(s.skyFactor) + " skyColor=" + s.skyLightColor + " ambient=" + s.ambientColor
             + " brightness=" + CiDiag.r(s.brightness) + " darkness=" + CiDiag.r(s.darknessEffectScale)
