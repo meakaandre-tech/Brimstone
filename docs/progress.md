@@ -354,6 +354,22 @@ screenshots against the doc's done-when and the rules). Reviews kept in the sess
 **Merged** to main as `7534f16` (main run: see package 2's section). The package 0 merge had accidentally kept
 `package-0` in main's CI trigger list (harmless; removed in this merge).
 
+
+### Second review (of `39ea855`) and merge
+
+No findings that break the doc or the rules. M-A (the `ghast` shot could fail on vanilla noise alone and proved
+nothing) was handled by the coordinator: the shot and its limits removed (none raised). Left for Andre (MINOR):
+- the resource-pack check looks at `textures/block`, `models/block` and `blockstates` only; packs using
+  `atlases/blocks.json` sprite remaps, connected-texture mods (Continuity, `optifine/` properties) or mods changing
+  block models in code are not covered; a stricter check would test each occluder's baked model and sprite
+  transparency;
+- the `x2309` gate only just covers its smallest object (a 20-35 px chest sliver against 30 px); the main
+  `occlusion_move` shot has no object-free twin, so its smallest object wasn't measured;
+- the static `occlusion` scene's strict limit is 20 px where package 2's finer rule gives 10 (kept at 20, the value
+  the green runs were judged against; 20 is still a tenth of the smallest visible object there, the 200 px golem);
+- the bench setups for `occlusion` and `occlusion_move` clear blocks and kill entities in a fixed area: run them in a
+  copy of the world.
+
 ### Laptop bench (Andre, when back)
 
 Same instances and steps as `docs/laptop-bench.md`, with the Brimstone jar from this branch (after the merge, the
@@ -531,8 +547,7 @@ them. No pop-in in the benchmark fly-through."
   | `x2309` | the moved pig in the doorway |
   | `open` | after the wall opening |
   | `closed` | after it was closed again |
-  | `ghast` | a happy ghast behind the wall, its tentacles hanging in the window |
-  | `bare_*` | the same views with every object removed, to measure each object's on-screen area |
+    | `bare_*` | the same views with every object removed, to measure each object's on-screen area |
 - **What can't be measured:**
   - Vanilla runs don't bench, so there is no per-frame comparison with vanilla's own picture while moving. The
     per-frame proof is the ray check, and the screenshots compare fixed points.
@@ -552,7 +567,9 @@ them. No pop-in in the benchmark fly-through."
   listed are never tested.
 - **M2 (ghast tentacles outside the margin):** entities are an allow-list with a margin of 2 blocks times scale, and
   extents were checked per type (`docs/visibility-allowlist.md`). Ghast, happy ghast, ghastling and squid are not on
-  it. The `occlusion_move.ghast` shot shows a happy ghast whose body the wall hides while its tentacles hang in the
+  it. The `occlusion_move.ghast` shot was removed before the merge (second review, M-A): its vanilla noise from the happy
+  ghast's tentacle animation came within 1 px of its limit, and it proved nothing about hiding (a happy ghast is never
+  hidden, and with the 2-block margin its box's view of the wall reaches the window). Earlier text: it showed a happy ghast whose body the wall hides while its tentacles hang in the
   window (about 365 visible pixels). It is identical to vanilla under both gates.
 - **M1 (block-entity frustum test against the cull frustum):** removed. The ray check is now view-independent, which
   is stronger than testing against the drawn view: it checks every point regardless of the camera transform.
@@ -608,7 +625,6 @@ new shots.
 | core / occlusion | 0.00 | 0.25 | 0.00 | 0.00 | 0.00 |
 | core / occlusion_move (10 shots) | 0.00 | 0.25 | 0.00 | 0.00 | 0.00 |
 | core / occlusion_move.x2309 | 0.00 | 0.3 | 0.0065 | 0.0067 | 0.0065 |
-| core / occlusion_move.ghast | 0.02 | 0.3 | 0.0046 | 0.0118 | 0.0071 |
 | SIFTEC / The Sift | 0.05 | 1.15 | 0.16 | 0.16 | 0.17 |
 | SIFTEC / HUB | 0.01 | 8.75 | 3.30 | 4.20 | 4.03 |
 | SIFTEC / MAM | 0.05 | 9.3 | 3.53 | 4.43 | 4.29 |
@@ -625,7 +641,6 @@ Strict gate (pixels where all four vanilla runs agree exactly and Brimstone diff
 | core/occlusion | 20 | 0 | 0 | 0 |
 | core/occlusion_move, x2297, x2305, open, closed, bare_* | 10-110 | 0 | 0 | 0 |
 | core/occlusion_move.x2309 | 30 | 0 | 1 | 0 |
-| core/occlusion_move.ghast | 240 | 2 | 0 | 1 |
 | SIFTEC/The Sift | 4900 | 1071 | 703 | 947 |
 | SIFTEC/HUB | 12500 | 0 | 28 | 833 |
 | SIFTEC/MAM | 155100 | 0 | 28 | 833 |

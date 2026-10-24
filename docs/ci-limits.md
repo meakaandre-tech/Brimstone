@@ -52,7 +52,6 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | core/occlusion_move.bare_x2305 (package 2) | 40091787069 | 4 | 0.0 | 0.25 |
 | core/occlusion_move.bare_x2309 (package 2) | 40091787069 | 4 | 0.0 | 0.25 |
 | core/occlusion_move.bare_open (package 2) | 40091787069 | 4 | 0.0133 | 0.3 |
-| core/occlusion_move.ghast (package 2) | 40091787069 | 4 | 0.0292 | 0.3 |
 
 The occlusion_move shots (package 2) were sampled in the collection run 40091787069, also in dry run. The happy
 ghast, whose tentacles animate, appears only in the last shot (`ghast`), so its animation adds noise to no other
@@ -113,7 +112,6 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/occlusion_move.bare_x2305 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.bare_x2309 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.bare_open (package 2) | 0/0 (run 40091787069) | 69 (dry run) | 110 |
-| core/occlusion_move.ghast (package 2) | 0/160 (run 40091787069) | 52 (dry run) | 240 |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
@@ -187,3 +185,7 @@ The counting mixins have their own config (not required, `defaultRequire: 0`), s
 game is skipped instead of crashing it. The config's plugin records which counting handlers each loaded class
 received; every bench report lists missing ones (and classes not loaded because their backend isn't in use), and CI
 fails if any is missing.
+
+The `occlusion_move.ghast` shot (package 2) was removed before package 2 merged: the happy ghast's tentacle animation
+made vanilla's own noise reach 239 strict pixels against its 240 limit, and the shot tested nothing Brimstone hides.
+Removed rather than raised; no limit was raised.

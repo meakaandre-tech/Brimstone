@@ -187,7 +187,7 @@
     },
     {
       "id": "occlusion_move",
-      "title": "The occlusion layout with the camera sliding along the wall at 0.8 blocks/s while a pig is moved in and out of view and part of the wall is opened and closed again; a final shot shows a happy ghast behind the wall with its tentacles hanging in the window (package 2)",
+      "title": "The occlusion layout with the camera sliding along the wall at 0.8 blocks/s while a pig is moved in and out of view and part of the wall is opened and closed again (package 2)",
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
@@ -326,13 +326,6 @@
           "name": "bare_open",
           "commands": [
             "fill 2301 200 -1997 2305 204 -1996 minecraft:air",
-            "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
-          ]
-        },
-        {
-          "name": "ghast",
-          "commands": [
-            "summon minecraft:happy_ghast 2298.0 205 -2002.0 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
             "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
           ]
         }
