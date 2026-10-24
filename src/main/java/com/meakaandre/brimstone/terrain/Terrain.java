@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 
 /**
  * Brimstone's terrain module (package 1): takes the solid and cutout meshes vanilla builds on its worker threads,
@@ -27,6 +27,7 @@ public final class Terrain {
     private static volatile State state = State.STARTING;
     private static volatile String reason = "waiting for the first frame";
     private static final AtomicInteger FALLBACKS = new AtomicInteger();
+    private static int framesWithoutDrawHook;
 
     private Terrain() {
     }
@@ -50,7 +51,12 @@ public final class Terrain {
     /** Render thread, start of a frame's terrain preparation: proves everything once, then turns on. */
     static void activateIfNeeded() {
         if (state != State.STARTING) return;
-        String why = TerrainMixins.loadTargetsAndCheck();
+        if (!TerrainRenderer.drawHookSeen) {
+            // the draw hook runs inside vanilla's terrain pass: wait until it has run once (vanilla draws meanwhile)
+            if (++framesWithoutDrawHook < 600) return;
+        }
+        String why = TerrainRenderer.drawHookSeen ? TerrainMixins.loadTargetsAndCheck()
+            : "hooks that did not apply: ChunkSectionsToRender#brimstone$drawLayer (did not run in 600 frames)";
         if (why == null && !RenderSectionInvoker.class.isAssignableFrom(SectionRenderDispatcher.RenderSection.class)) {
             why = "the RenderSection invoker did not apply";
         }
@@ -129,8 +135,10 @@ public final class Terrain {
                 return false;
             }
             long t0 = System.nanoTime();
-            BlockPos o = section.getRenderOrigin();
-            int x = o.getX(), y = o.getY(), z = o.getZ();
+            long node = section.getSectionNode();
+            int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
+            int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
+            int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
             ByteBuffer compact = CompactVertex.transcode(vertices, CompactVertex.sectionIndex(x, y, z));
             if (compact == null) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();

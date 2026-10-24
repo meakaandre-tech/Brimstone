@@ -29,8 +29,11 @@ public final class TerrainMixins implements IMixinConfigPlugin {
         EXPECTED.put("net.minecraft.client.renderer.chunk.SectionCompiler",
             List.of("brimstone$compileStart", "brimstone$compileEnd"));
         EXPECTED.put("net.minecraft.client.renderer.LevelRenderer",
-            List.of("brimstone$preparePlain", "brimstone$prepareIndirect", "brimstone$commands", "brimstone$instances"));
-        EXPECTED.put("net.minecraft.client.renderer.chunk.ChunkSectionsToRender", List.of("brimstone$drawLayer"));
+            List.of("brimstone$preparePlain", "brimstone$prepareIndirect"));
+        // The @WrapOperation hooks (LevelRenderer#brimstone$commands and #brimstone$instances,
+        // ChunkSectionsToRender#brimstone$drawLayer) are applied by MixinExtras after this plugin's postApply, so
+        // they are checked when they run instead: the module only turns on once the draw hook has run, and an
+        // indirect frame whose upload hooks didn't run turns it off (TerrainRenderer).
     }
 
     private static final Map<String, Set<String>> APPLIED = new ConcurrentHashMap<>();

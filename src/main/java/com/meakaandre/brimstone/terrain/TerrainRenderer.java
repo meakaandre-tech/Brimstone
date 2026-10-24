@@ -98,6 +98,8 @@ public final class TerrainRenderer {
     private static int vanillaInstances;
     private static int maxIndexCount;
     private static Path lastPath;
+    /** Set the first time the draw hook (a MixinExtras wrap, applied late) runs. */
+    static volatile boolean drawHookSeen;
 
     // reused CPU-side arrays for direct multi-draws (render thread only)
     private static IntBuffer counts = MemoryUtil.memAllocInt(1024);
@@ -323,6 +325,7 @@ public final class TerrainRenderer {
      * bound the terrain uniforms, the block atlas and the lightmap.
      */
     public static void draw(ChunkSectionLayer layer, RenderPass pass, boolean wireframe) {
+        drawHookSeen = true;
         if (!prepared || !Terrain.active()) return;
         int li = TerrainStore.layerIndex(layer);
         if (li < 0) return;
@@ -402,7 +405,8 @@ public final class TerrainRenderer {
     }
 
     private static int drawIndirect(RenderPass pass, List<ArenaDraws> list) {
-        if (instanceSlice == null) throw new IllegalStateException("no section instance data this frame");
+        if (vanillaCommandLists < 0) throw new IllegalStateException("hook that did not apply: LevelRenderer#brimstone$commands");
+        if (instanceSlice == null) throw new IllegalStateException("hook that did not apply: LevelRenderer#brimstone$instances");
         int draws = 0;
         pass.setVertexBuffer(1, instanceSlice);
         int max = Math.max(1, RenderSystem.getDevice().getDeviceInfo().limits().maxDrawIndirectDrawCount());
