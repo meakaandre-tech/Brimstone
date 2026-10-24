@@ -18,7 +18,13 @@ an independent review of package 3 are in `docs/progress.md` on branch `package-
   determinism fix (`ced21b3`) pinned texture animation in every run, lowered the draw-call baselines by exactly the
   effect of that pin, and made scenes clear areas without killing entities. Main is green
   (https://github.com/meakaandre-tech/Brimstone/actions/runs/40108769128) and the `latest` release is built from it.
-- **Decide first:** the package 3 hologram draw-call gate (see above), then merge package 3 or tell the next chat how.
+- **Decide first** (package 3, from its independent review, `docs/review-package-3.md` on `package-3`):
+  1. the hologram draw-call gate: rule-compatible options are capping that scene at 20 fps and re-collecting,
+     recording tick/no-tick frames separately, or also gating Brimstone's own draws; raising the baseline, gating on
+     the median or reporting only need your OK;
+  2. B1: package 3 makes translucent draw calls rise above vanilla on full and Vulkan (e.g. fly-through 157 vs 123),
+     against the doc's "draw calls go down": accept, switch translucent layers to the wide vertex format, or gate it.
+  Then package 3 can be finished (also fix the review's M1: hologram outline mostly over water) and merged.
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
