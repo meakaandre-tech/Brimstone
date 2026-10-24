@@ -2,23 +2,32 @@
 
 ## Where things stand
 
-- **Now:** package 0 (repo, CI, bench harness) done and merged; package 1 (terrain meshing and region buffers) done
-  on branch `package-1`, re-review fixes in, green, awaiting review. See "Hand-off" at the bottom for the exact state.
+- **Now:** packages 0 (repo, CI, bench harness) and 1 (terrain meshing and region buffers) done and merged; next is
+  package 2 (visibility). See "Hand-off" at the bottom for the exact state.
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
     `latest` release brings them back; Brimstone's CI already fetches it from there.
   - Laptop benches: package 0's vanilla baselines (steps in `docs/laptop-bench.md`), then after packages 1 (commands
     in the package 1 section), 2, 5 and 10.
-- **To decide:** the "Choices to confirm" lists under each package.
+- **To decide:**
+  - CI publishes javap dumps of the game's classes (signatures, and bytecode of the graphics and renderer classes) on
+    the public `ci-logs` branch, as SIFTEC's CI does (Brimstone's dump was modelled on it, as asked). Package 1's CI
+    briefly also published the game's shader sources there; that was removed and `ci-logs` republished without
+    them on 2026-10-24, but GitHub may keep old force-pushed commits fetchable by ID for a while. Decide whether
+    the class dumps may stay public, or whether CI should keep them private (agents can't download Actions
+    artifacts from the workspace, so later packages would then work only from what was dumped before).
+  - Package 1's compact vertex format now covers only about half the terrain (see package 1, "Review"): accept it,
+    or pick one of the options listed there.
+  - The "Choices to confirm" lists under each package.
 
 ---
 
 ## Package 0: repo, CI, benchmark harness
 
-**Branch** `package-0`, squash-merged to main as `MERGE_SHA` (filled in after the merge).
-**CI:** final branch run https://github.com/meakaandre-tech/Brimstone/actions/runs/39955089989 (green); main run:
-MAIN_RUN. **ci-logs** (branch `ci-logs`, overwritten by every run): `compare/report.md` (all tables),
+**Branch** `package-0`, squash-merged to main as `3394905`.
+**CI:** final branch run https://github.com/meakaandre-tech/Brimstone/actions/runs/39955089989 (green); main run
+https://github.com/meakaandre-tech/Brimstone/actions/runs/39962885289 (green, `latest` release published). **ci-logs** (branch `ci-logs`, overwritten by every run): `compare/report.md` (all tables),
 `compare/diff/<suite>-<scene>-<profile>.png`, `runs/<suite>-<run>/` with `shots/*.png`, `bench/*.json`,
 `client-<n>.log`, `server.log`, `drive-*.json`, `gfx.txt`; `build/` holds the game class dumps.
 
@@ -106,7 +115,7 @@ median, plus memory; fly-through gated on memory only. Frozen from here on.
 
 ---
 
-## Package 1: terrain meshing and region buffers (done on the branch, re-review fixes in, awaiting review)
+## Package 1: terrain meshing and region buffers
 
 **Branch** `package-1` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40072856079
 on `159a0ac` (every profile, both suites, compare passed, including the new strict picture gate). **ci-logs**
@@ -317,6 +326,33 @@ CPU.
   again; they are marked dirty, so this looks like F3+A.
 - SIFTEC factory and map scenes are still skipped (SIFTEC's selftest jar is not in its release).
 
+### Review
+
+Three rounds by a separate reviewer agent that hadn't seen the work (reading the code, the CI logs and the
+screenshots against the doc's done-when and the rules). Reviews kept in the session scratchpad; summary:
+
+- **Round 1 (of `82ba60c`): blocking.** B1: the CI's new data-dump step published the game's shader sources on the
+  public ci-logs branch (removed by the coordinator; ci-logs republished). M1 off-grid geometry rounded (now exact);
+  M2 no atlas-size check (now per-vertex); M3 resource-pack terrain shaders ignored (now defers to vanilla); M4 GL
+  errors not detected (now on OpenGL through renderpearl's debug messages, and compared in CI); M5 shader too close to
+  vanilla's text (rewritten). Minors: first-frame crash path, staged meshes leaking into the next world, upload leak,
+  no "did Brimstone draw" check, buffers never released, untested Vulkan plain path: all fixed or documented.
+- **Round 2 (of `ae203ca`): blocking.** N-B1 nether one level darker on stable pixels (later shown to be the game's
+  block-light flicker, not Brimstone; CI now pins it and a strict exact-pixel gate was added); N-M1 dropped staged
+  meshes not marked dirty on hand-back (fixed); m5 quad order changed by splitting a layer across formats (now one
+  format per layer); m3 upload bytes up (one command list per frame); m6, m2 fixed.
+- **Round 3 (of `2f64f93`): no findings that break the doc or the rules.** Open for Andre:
+  - **N-M2 (major, design):** the compact 16-byte format now holds only about half the terrain (21.7-26.6 bytes per
+    vertex in core, 17.8-25.0 in SIFTEC, against vanilla's 28 and the doc's target of 16): one plant with a random
+    offset sends its whole cutout layer to the 28-byte exact format. Options: (1) accept and update the doc;
+    (2) store compact and wide runs in vanilla's quad order (more draw ranges); (3) a compact variant that holds plant
+    offsets; (4) at least accept -0.0 positions and report the wide share per layer.
+  - m1: the strict-gate limits are sound but loose where vanilla is noisy (worst case a local error of up to 2-3% of
+    the frame on spawn and water and glass, 17% on MAM, could hide; MAM's limit comes from one fade outlier).
+  - m3: no runtime GPU-error detection on Vulkan; Vulkan plain path not in CI; the transient hand-back gap.
+
+**Merged** to main as `MERGE1_SHA`; main run MAIN1_RUN.
+
 ### Laptop bench (Andre, when back)
 
 Same instances and steps as `docs/laptop-bench.md`, with the Brimstone jar from this branch (after the merge, the
@@ -356,6 +392,5 @@ Working notes for a new chat picking this up: read this file, then `docs/backend
 the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
 about 25 minutes (45 when the SIFTEC world cache is rebuilt).
 
-**Now:** package 1 on branch `package-1` is implemented, the findings of both reviews are addressed and CI is green
-(report above); the reviewer checks it again before the merge. The branch carries a branch-only CI commit (CI on pushes to
-`package-1`) that should not go to main as is.
+**Now:** package 2 (visibility) on branch `package-2`: plan in its section above, implementation by a fresh agent,
+then review rounds, then merge.
