@@ -23,7 +23,8 @@ public final class TerrainMixins implements IMixinConfigPlugin {
 
     static {
         EXPECTED.put("net.minecraft.client.renderer.chunk.SectionRenderDispatcher$RenderSection",
-            List.of("brimstone$take", "brimstone$release"));
+            List.of("brimstone$take", "brimstone$release", "brimstone$sortCamera"));
+        EXPECTED.put("com.mojang.blaze3d.vertex.MeshData$SortState", List.of("brimstone$sortStart", "brimstone$sortEnd"));
         EXPECTED.put("net.minecraft.client.renderer.chunk.SectionRenderDispatcher",
             List.of("brimstone$upload", "brimstone$created", "brimstone$dispose", "brimstone$disposeEnd"));
         EXPECTED.put("net.minecraft.client.renderer.ShaderManager", List.of("brimstone$reloaded"));

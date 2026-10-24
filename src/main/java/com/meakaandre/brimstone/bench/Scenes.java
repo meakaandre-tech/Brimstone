@@ -48,6 +48,11 @@ public final class Scenes {
         public List<Step> measureSteps;
         /** A screen the scene measures, opened by using the block in front of the camera, or by a setup command. */
         public Screen screen;
+        /**
+         * Client options the scene needs (package 3: {@code improvedTransparency}). CI writes them into options.txt for
+         * the scene's session; the bench sets them for the run and puts them back afterwards. Null for none.
+         */
+        public java.util.Map<String, String> clientOptions;
         transient Suite owner;
 
         public List<String> preamble() {

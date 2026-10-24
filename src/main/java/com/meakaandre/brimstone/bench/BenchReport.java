@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.probe.Capabilities;
 import com.meakaandre.brimstone.terrain.TerrainStats;
+import com.meakaandre.brimstone.terrain.TranslucencyStats;
 import com.meakaandre.brimstone.visibility.VisibilityStats;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.lang.management.BufferPoolMXBean;
@@ -90,6 +91,7 @@ final class BenchReport {
         out.add("meshing", TerrainStats.meshingJson());
         out.add("terrain", TerrainStats.terrainJson(n));
         out.add("visibility", VisibilityStats.json());
+        out.add("translucency", TranslucencyStats.json());
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
         CounterAudit.missing().forEach(missing::add);
@@ -173,6 +175,7 @@ final class BenchReport {
             + " regions in " + ter.get("arenas") + " arenas (" + ter.get("usedMB") + " of " + ter.get("arenaMB") + " MB used; vanilla's format would need "
             + ter.get("vanillaEquivalentMB") + " MB), layers taken " + ter.get("layersTaken") + ", kept by vanilla " + ter.get("layersKeptByVanilla"));
         line(b, "visibility", VisibilityStats.line(o.getAsJsonObject("visibility")));
+        line(b, "translucency", TranslucencyStats.line(o.getAsJsonObject("translucency")));
         JsonObject cnt = o.getAsJsonObject("counters");
         line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")
             + ", not loaded (backend not in use) " + cnt.get("notLoaded"));

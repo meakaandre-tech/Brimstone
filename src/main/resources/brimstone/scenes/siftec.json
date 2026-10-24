@@ -106,6 +106,30 @@
       },
       "requiresMod": "siftec_selftest",
       "requiresNote": "SIFTEC's map unlocks through progression; its test command (siftec worldtest map) opens it, and that lives in SIFTEC's CI-only selftest mod, not in its release."
+    },
+    {
+      "id": "hologram",
+      "title": "SIFTEC Build Gun hologram: the Wormhole Gateway's placement outline (green where it fits, red where blocked) over a water pool with stained glass (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 15,
+      "setup": [
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2160.5 200 -1984.5 180 35",
+        "#wait 5",
+        "fill 2150 190 -2012 2172 212 -1978 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2150,y=190,z=-2012,dx=22,dy=22,dz=34] 2160.5 -200 -1995.5",
+        "fill 2150 199 -2012 2172 199 -1978 minecraft:smooth_stone",
+        "fill 2152 200 -2006 2168 202 -1989 minecraft:glass hollow",
+        "fill 2153 202 -2005 2167 202 -1990 minecraft:air",
+        "fill 2153 200 -2005 2167 201 -1990 minecraft:water",
+        "fill 2154 200 -1996 2155 203 -1994 minecraft:light_blue_stained_glass",
+        "fill 2165 200 -2000 2166 203 -1998 minecraft:red_stained_glass",
+        "item replace entity @a weapon.mainhand with siftec:wormhole_gateway",
+        "execute in minecraft:overworld run tp @a 2160.5 200 -1984.5 180 35"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "The hologram is drawn by Create's outliner (SIFTEC's PrefabPreview / BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla over Brimstone's translucent water and glass."
     }
   ],
   "prepare": [

@@ -3,6 +3,7 @@ package com.meakaandre.brimstone.terrain;
 import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.mixin.terrain.RenderSectionInvoker;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import com.mojang.renderpearl.api.pipeline.IndexType;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.client.Minecraft;
@@ -11,11 +12,14 @@ import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.core.SectionPos;
+import org.lwjgl.system.MemoryUtil;
 
 /**
- * Brimstone's terrain module (package 1): takes the solid and cutout meshes vanilla builds on its worker threads,
- * converts each layer into its compact 16-byte vertex or, where that wouldn't hold every vertex exactly, a wide 28-byte one,
- * keeps them in large GPU buffers and draws them with few calls. Translucent terrain stays with vanilla.
+ * Brimstone's terrain module (package 1): takes the meshes vanilla builds on its worker threads, converts each layer
+ * into its compact 16-byte vertex or, where that wouldn't hold every vertex exactly, a wide 28-byte one, keeps them in
+ * large GPU buffers and draws them with few calls. Since package 3 that includes translucent layers: Brimstone keeps
+ * vanilla's sorted index list with each, takes every new list vanilla's own sorting makes for it (on vanilla's worker
+ * threads, when vanilla decides to sort) and draws translucent sections in vanilla's order.
  *
  * <p>States:
  * <ul>
@@ -50,6 +54,11 @@ public final class Terrain {
 
     /** Debug (CI only): Brimstone uses its plain path even on frames where vanilla uses multi-draw indirect. */
     static final boolean FORCE_PLAIN = Boolean.getBoolean("brimstone.debug.forcePlainTerrain");
+    /**
+     * Debug (CI noise collection only, package 3): translucent layers stay with vanilla, so a Brimstone run differs
+     * from vanilla only by noise. CI fails any run with it set.
+     */
+    static final boolean TRANSLUCENT_DRY_RUN = Boolean.getBoolean("brimstone.debug.translucencyDryRun");
 
     private Terrain() {
     }
@@ -84,6 +93,11 @@ public final class Terrain {
     /** Whether new meshes go to Brimstone. */
     static boolean takingMeshes() {
         return state == State.ACTIVE && !handBack;
+    }
+
+    /** Whether new translucent layers go to Brimstone. */
+    static boolean takingTranslucent() {
+        return takingMeshes() && !TRANSLUCENT_DRY_RUN;
     }
 
     /** Whether Brimstone draws what it holds this frame. */
@@ -144,10 +158,13 @@ public final class Terrain {
         state = State.ACTIVE;
         TerrainResources.logAtlas();
         BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for layers it holds exactly, {}-byte one (vanilla's floats, packed light and section"
-                + " slot) for the rest; vanilla's is {}; solid and cutout layers; plain draw path: {}; GPU error check: {})",
+                + " slot) for the rest; vanilla's is {}; solid, cutout and translucent layers (translucent with vanilla's own sorted index lists,"
+                + " drawn in vanilla's order); plain draw path: {}; GPU error check: {})",
             CompactVertex.BYTES, CompactVertex.WIDE_BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName(),
             TerrainGpuErrors.describe());
         if (FORCE_PLAIN) BrimstoneClient.LOG.warn("Brimstone debug: brimstone.debug.forcePlainTerrain is set, Brimstone's terrain uses its plain path on every frame");
+        if (TRANSLUCENT_DRY_RUN) BrimstoneClient.LOG.warn("Brimstone translucency: DRY RUN (noise collection): translucent layers stay with vanilla");
+        if (TranslucencyCheck.ENABLED) BrimstoneClient.LOG.info("Brimstone translucency: per-frame check on (debug; every frame Brimstone's translucent draws are checked against vanilla's order and latest sort)");
     }
 
     /** A resource pack replaces shader code Brimstone stands in for: vanilla draws all terrain until packs change. */
@@ -235,13 +252,16 @@ public final class Terrain {
     }
 
     /**
-     * A worker thread (or the render thread for a nearby section) is about to put one layer of a freshly built mesh
-     * into vanilla's buffers. True if Brimstone took it instead.
+     * A worker thread (or the render thread for a nearby section) is about to put one layer of a freshly built mesh,
+     * or a translucent layer's new index list ({@code vertices} null: vanilla sorted it again), into vanilla's buffers.
+     * True if Brimstone took it instead.
      */
     public static boolean take(SectionRenderDispatcher.RenderSection section, ChunkSectionLayer layer, CompiledSectionMesh mesh,
                                ByteBuffer vertices, ByteBuffer indices) {
-        if (!takingMeshes() || vertices == null || indices != null) return false;
-        if (TerrainStore.layerIndex(layer) < 0) return false;
+        int li = TerrainStore.layerIndex(layer);
+        if (li < 0 || !takingMeshes()) return false;
+        if (li == TerrainStore.TRANSLUCENT) return takeTranslucent(section, mesh, vertices, indices);
+        if (vertices == null || indices != null) return false;
         try {
             int gen = TerrainStore.generation();
             SectionMesh.SectionDraw draw = mesh.getSectionDraw(layer);
@@ -266,12 +286,71 @@ public final class Terrain {
             // and vanilla only swaps the mesh in when both flags are set (vanilla sets it too for a layer without
             // indices, so a mesh handed back to vanilla below is unaffected)
             mesh.setIndexBufferUploaded(layer);
-            if (!TerrainStore.stage(gen, section, mesh, layer, x, y, z, split)) return false;
+            if (!TerrainStore.stage(gen, section, mesh, layer, x, y, z, split, null, null, 0, null)) return false;
             TerrainStats.LAYERS_TAKEN.incrementAndGet();
             TerrainStats.transcoded(System.nanoTime() - t0);
             return true;
         } catch (Throwable t) {
             fail("meshing", t, true);
+            return false;
+        }
+    }
+
+    /**
+     * A translucent layer: with its vertices (a fresh mesh, sorted by vanilla as it was built) or only a new index list
+     * (vanilla's resort task, on its worker thread, re-sorted the layer for a new camera position). Brimstone keeps
+     * vanilla's index bytes as they are, so the quad order is exactly vanilla's, ties included. A layer Brimstone
+     * can't hold makes the whole module hand terrain back (a translucent layer must never be split between vanilla's
+     * draws and Brimstone's, or the order between sections would no longer be vanilla's).
+     */
+    private static boolean takeTranslucent(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ByteBuffer vertices,
+                                           ByteBuffer indices) {
+        if (TRANSLUCENT_DRY_RUN) return false;
+        try {
+            int gen = TerrainStore.generation();
+            SectionMesh.SectionDraw draw = mesh.getSectionDraw(ChunkSectionLayer.TRANSLUCENT);
+            if (draw == null) return false;
+            if (indices == null || !draw.hasCustomIndexBuffer()) {
+                // vanilla always sorts translucent layers into an index list of their own; one without it is not what
+                // Brimstone was built for, and it must not stay with vanilla next to Brimstone's (see above)
+                throw new IllegalStateException("a translucent layer without its own sorted index list");
+            }
+            IndexType type = draw.indexType();
+            int indexCount = draw.indexCount();
+            if ((long) indexCount * type.bytes != indices.remaining()) {
+                throw new IllegalStateException("a translucent index list has " + indices.remaining() + " bytes for " + indexCount + " " + type + " indices");
+            }
+            TranslucencyCheck.Sorted sorted = TranslucencyCheck.sortedFor(section, vertices, indices, type);
+            if (vertices == null) {
+                TerrainStore.Resort r = TerrainStore.stageIndices(gen, mesh, indices, type, indexCount, sorted);
+                if (r == TerrainStore.Resort.NOT_OURS) return false;
+                TranslucencyStats.resortTaken(r == TerrainStore.Resort.STAGED);
+                return true;
+            }
+            int count = vertices.remaining() / CompactVertex.VANILLA_BYTES;
+            if ((long) count * CompactVertex.WIDE_BYTES > TerrainStore.MAX_LAYER_BYTES || indexCount != count / 4 * 6) {
+                throw new IllegalStateException("a translucent layer Brimstone cannot hold (" + count + " vertices, " + indexCount + " indices)");
+            }
+            long t0 = System.nanoTime();
+            long node = section.getSectionNode();
+            int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
+            int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
+            int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
+            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z));
+            if (split == null) throw new IllegalStateException("a translucent layer that is not whole quads (" + count + " vertices)");
+            ByteBuffer copy = MemoryUtil.memAlloc(indices.remaining());
+            MemoryUtil.memCopy(indices, copy);
+            TerrainStats.split(split);
+            // as for solid and cutout: both flags must be set before vanilla can swap the mesh in, and Brimstone
+            // copies both the vertices and the index list in one go at the end of the frame
+            mesh.setIndexBufferUploaded(ChunkSectionLayer.TRANSLUCENT);
+            if (!TerrainStore.stage(gen, section, mesh, ChunkSectionLayer.TRANSLUCENT, x, y, z, split, copy, type, indexCount, sorted)) return false;
+            TerrainStats.LAYERS_TAKEN.incrementAndGet();
+            TranslucencyStats.layerTaken();
+            TerrainStats.transcoded(System.nanoTime() - t0);
+            return true;
+        } catch (Throwable t) {
+            fail("translucent meshing", t, true);
             return false;
         }
     }

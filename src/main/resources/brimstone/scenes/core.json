@@ -56,7 +56,8 @@
         "fill 1994 206 -1996 2006 206 -1996 minecraft:red_stained_glass_pane",
         "fill 1990 200 -1990 2010 203 -1990 minecraft:white_stained_glass_pane",
         "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35"
-      ]
+      ],
+      "ciRequiresTranslucent": true
     },
     {
       "id": "nether",
@@ -336,6 +337,212 @@
       ],
       "ciRequiresCulling": true,
       "ciNote": "Moving pass: objects are hidden and come into view as the camera passes the window and doorway, as a pig is moved and as the wall opens. The per-frame ray check covers every frame of the bench; ciShots compare fixed points with vanilla under both gates (the bare_* shots, with every object removed, measure each object's on-screen area). Counts: memory only (the mid-bench commands upload new meshes)."
+    },
+    {
+      "id": "translucent_move",
+      "title": "Water in a glass tank, a wall of stained glass in stripes of six colours, ice and glass panes, with the camera sliding past at 1.5 blocks/s (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25",
+        "#wait 6",
+        "fill 2384 190 -2022 2436 202 -1976 minecraft:air",
+        "fill 2384 203 -2022 2436 215 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2384,y=190,z=-2022,dx=52,dy=25,dz=46] 2410.5 -200 -2000.5",
+        "fill 2384 199 -2022 2436 199 -1976 minecraft:smooth_stone",
+        "fill 2390 200 -2016 2430 205 -2000 minecraft:glass hollow",
+        "fill 2391 201 -2015 2429 204 -2001 minecraft:water",
+        "fill 2396 201 -2012 2398 203 -2010 minecraft:ice",
+        "fill 2412 201 -2008 2414 204 -2006 minecraft:blue_stained_glass",
+        "fill 2421 202 -2013 2424 204 -2011 minecraft:ice",
+        "fill 2392 200 -1995 2393 207 -1995 minecraft:red_stained_glass",
+        "fill 2394 200 -1995 2395 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2396 200 -1995 2397 207 -1995 minecraft:lime_stained_glass",
+        "fill 2398 200 -1995 2399 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2400 200 -1995 2401 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2402 200 -1995 2403 207 -1995 minecraft:orange_stained_glass",
+        "fill 2404 200 -1995 2405 207 -1995 minecraft:red_stained_glass",
+        "fill 2406 200 -1995 2407 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2408 200 -1995 2409 207 -1995 minecraft:lime_stained_glass",
+        "fill 2410 200 -1995 2411 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2412 200 -1995 2413 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2414 200 -1995 2415 207 -1995 minecraft:orange_stained_glass",
+        "fill 2416 200 -1995 2417 207 -1995 minecraft:red_stained_glass",
+        "fill 2418 200 -1995 2419 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2420 200 -1995 2421 207 -1995 minecraft:lime_stained_glass",
+        "fill 2422 200 -1995 2423 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2424 200 -1995 2425 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2426 200 -1995 2427 207 -1995 minecraft:orange_stained_glass",
+        "fill 2390 200 -1988 2430 202 -1988 minecraft:white_stained_glass_pane",
+        "setblock 2410 201 -1992 minecraft:ice",
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+      ],
+      "velocity": [
+        1.5,
+        0.0,
+        0.0
+      ],
+      "ciShots": [
+        {
+          "name": "x2404",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2404.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2414",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2414.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2424",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2424.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "low",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2418.5 203 -1984.5 160 8"
+          ]
+        },
+        {
+          "name": "back",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "bare_back",
+          "commands": [
+            "setblock 2410 201 -1992 minecraft:air"
+          ]
+        }
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "Moving pass: vanilla re-sorts the translucent sections as the camera crosses blocks; Brimstone must draw every one of them in vanilla's order with vanilla's latest sort (checked every frame of the bench). ciShots compare fixed points with vanilla under both gates, taken after the camera has moved there; 'back' returns to the start after the other points, and 'bare_back' (the single ice block in front of the stripes removed) measures the smallest translucent element's area on screen. Counts: memory only (the moving camera makes vanilla re-sort and upload new index lists)."
+    },
+    {
+      "id": "water_glass_oit",
+      "title": "Water, ice and stained glass in a glass tank, with Improved Transparency (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35",
+        "#wait 6",
+        "fill 1990 199 -2010 2010 199 -1990 minecraft:smooth_stone",
+        "fill 1990 200 -2010 2010 208 -1990 minecraft:air",
+        "fill 1992 200 -2008 2008 205 -1992 minecraft:glass hollow",
+        "fill 1993 201 -2007 2007 204 -1993 minecraft:water",
+        "fill 1995 201 -2005 1997 203 -2003 minecraft:ice",
+        "fill 2002 201 -2005 2004 204 -2003 minecraft:light_blue_stained_glass",
+        "fill 1994 206 -1996 2006 206 -1996 minecraft:red_stained_glass_pane",
+        "fill 1990 200 -1990 2010 203 -1990 minecraft:white_stained_glass_pane",
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35"
+      ],
+      "ciRequiresTranslucent": true,
+      "clientOptions": {
+        "improvedTransparency": "true"
+      },
+      "ciRequiresOit": true
+    },
+    {
+      "id": "translucent_move_oit",
+      "title": "Water in a glass tank, a wall of stained glass in stripes of six colours, ice and glass panes, with the camera sliding past at 1.5 blocks/s with Improved Transparency (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25",
+        "#wait 6",
+        "fill 2384 190 -2022 2436 202 -1976 minecraft:air",
+        "fill 2384 203 -2022 2436 215 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2384,y=190,z=-2022,dx=52,dy=25,dz=46] 2410.5 -200 -2000.5",
+        "fill 2384 199 -2022 2436 199 -1976 minecraft:smooth_stone",
+        "fill 2390 200 -2016 2430 205 -2000 minecraft:glass hollow",
+        "fill 2391 201 -2015 2429 204 -2001 minecraft:water",
+        "fill 2396 201 -2012 2398 203 -2010 minecraft:ice",
+        "fill 2412 201 -2008 2414 204 -2006 minecraft:blue_stained_glass",
+        "fill 2421 202 -2013 2424 204 -2011 minecraft:ice",
+        "fill 2392 200 -1995 2393 207 -1995 minecraft:red_stained_glass",
+        "fill 2394 200 -1995 2395 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2396 200 -1995 2397 207 -1995 minecraft:lime_stained_glass",
+        "fill 2398 200 -1995 2399 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2400 200 -1995 2401 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2402 200 -1995 2403 207 -1995 minecraft:orange_stained_glass",
+        "fill 2404 200 -1995 2405 207 -1995 minecraft:red_stained_glass",
+        "fill 2406 200 -1995 2407 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2408 200 -1995 2409 207 -1995 minecraft:lime_stained_glass",
+        "fill 2410 200 -1995 2411 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2412 200 -1995 2413 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2414 200 -1995 2415 207 -1995 minecraft:orange_stained_glass",
+        "fill 2416 200 -1995 2417 207 -1995 minecraft:red_stained_glass",
+        "fill 2418 200 -1995 2419 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2420 200 -1995 2421 207 -1995 minecraft:lime_stained_glass",
+        "fill 2422 200 -1995 2423 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2424 200 -1995 2425 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2426 200 -1995 2427 207 -1995 minecraft:orange_stained_glass",
+        "fill 2390 200 -1988 2430 202 -1988 minecraft:white_stained_glass_pane",
+        "setblock 2410 201 -1992 minecraft:ice",
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+      ],
+      "velocity": [
+        1.5,
+        0.0,
+        0.0
+      ],
+      "ciShots": [
+        {
+          "name": "x2404",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2404.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2414",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2414.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2424",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2424.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "low",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2418.5 203 -1984.5 160 8"
+          ]
+        },
+        {
+          "name": "back",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "bare_back",
+          "commands": [
+            "setblock 2410 201 -1992 minecraft:air"
+          ]
+        }
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "The translucent_move scene with Improved Transparency: vanilla does not sort translucent terrain then (its order-independent passes need no order), so neither does Brimstone; it draws each stage with the pipeline made from vanilla's for that stage.",
+      "clientOptions": {
+        "improvedTransparency": "true"
+      },
+      "ciRequiresOit": true
     }
   ]
 }

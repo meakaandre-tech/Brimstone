@@ -68,7 +68,7 @@ public final class CompactVertex {
         if (bad == null) bad = element(f, "UV0", 16, GpuFormat.RG32_FLOAT);
         if (bad == null) bad = element(f, "UV2", 24, GpuFormat.RG16_SINT);
         if (bad != null) return bad;
-        for (ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT}) {
+        for (ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT, ChunkSectionLayer.TRANSLUCENT}) {
             if (!f.equals(layer.vertexFormat())) return layer + " does not use the BLOCK vertex format";
         }
         if (FORMAT.getVertexSize() != BYTES) return "compact format is " + FORMAT.getVertexSize() + " bytes";

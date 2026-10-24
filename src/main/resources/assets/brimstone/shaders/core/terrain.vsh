@@ -15,7 +15,10 @@
 #include <minecraft:sample_lightmap.glsl>
 #include <minecraft:terrainglobals.glsl>
 
+// the game's Improved Transparency stages that only need coverage (OIT_ALPHA_ONLY) have no lightmap bound
+#ifndef OIT_ALPHA_ONLY
 uniform sampler2D Sampler2;
+#endif
 
 #ifdef BRIM_WIDE
 layout(location = 0) in vec3 BrimCorner;
@@ -89,7 +92,11 @@ void main() {
 
     brimEyeDistance = fog_spherical_distance(eye);
     brimColumnDistance = fog_cylindrical_distance(eye);
+#ifdef OIT_ALPHA_ONLY
+    brimLitTint = tint;
+#else
     brimLitTint = tint * sample_lightmap(Sampler2, lightPair);
+#endif
     brimTexel = texel;
     // sections fade in from the fog colour, except within 16 blocks of the camera (full at 32); order: the game's
     const float fullyVisibleWithin = 16.0;
