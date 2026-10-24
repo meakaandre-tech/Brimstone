@@ -14,6 +14,9 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
+  - strict picture: on the pixels where all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly, the
+    number of pixels where a Brimstone run differs from its own profile's vanilla run at all (threshold 0); over
+    ci/strict-pixel-limits.json fails (see docs/ci-limits.md).
 """
 import glob
 import json
@@ -47,6 +50,31 @@ def diff(a, b, out=None):
     return {"pct": round(float((d > THRESHOLD).mean() * 100), 4), "mean": round(float(np.abs(x - y).mean()), 4)}
 
 
+def load(path):
+    return np.asarray(Image.open(path).convert("RGB"), dtype=np.int16) if os.path.exists(path) else None
+
+
+def strict(shot, out_prefix):
+    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs at all."""
+    v = {r: load(shot(r)) for r in ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk")}
+    if any(x is None for x in v.values()) or len({x.shape for x in v.values()}) != 1:
+        return None, {}
+    agree = np.ones(v["vanilla-a"].shape[:2], bool)
+    for x in v.values():
+        agree &= (x == v["vanilla-a"]).all(axis=2)
+    out = {}
+    for prof, (b, vr) in PAIRS.items():
+        bs = load(shot(b))
+        if bs is None or bs.shape != v[vr].shape:
+            out[prof] = None
+            continue
+        bad = agree & (bs != v[vr]).any(axis=2)
+        out[prof] = int(bad.sum())
+        if out[prof]:
+            Image.fromarray((bad * 255).astype(np.uint8)).save(f"{out_prefix}-{prof}-strict.png")
+    return round(float(agree.mean() * 100), 2), out
+
+
 def bench_results(run_dir):
     out = {}
     for f in sorted(glob.glob(os.path.join(run_dir, "bench", "*.json"))):
@@ -60,10 +88,18 @@ def bench_results(run_dir):
             "uploadBytesPerFrameAvg": g["uploadBytesPerFrame"]["avg"],
             "heapUsedAfterGcMB": m["heapUsedAfterGcMB"],
             "directBuffersMB": m.get("directBuffersMB", 0),
-            "meshingMsPerSection": None,
+            "meshingMsPerSection": (j.get("meshing") or {}).get("msPerSection"),
+            "terrain": j.get("terrain"),
             "frames": j["fps"]["frames"],
         }
     return out
+
+
+GPU_ERROR = re.compile(r"OpenGL debug message: [^\n]*type=ERROR|Validation Error|VUID-")
+
+
+def gpu_errors(text):
+    return len(GPU_ERROR.findall(text))
 
 
 def drive_skips(run_dir):
@@ -87,12 +123,14 @@ def main():
     os.makedirs(os.path.join(rep, "diff"), exist_ok=True)
     os.makedirs(os.path.join(rep, "baselines"), exist_ok=True)
     limits = json.load(open("ci/pixel-limits.json")) if os.path.exists("ci/pixel-limits.json") else {}
+    strict_limits = json.load(open("ci/strict-pixel-limits.json")) if os.path.exists("ci/strict-pixel-limits.json") else None
     failures, lines, data = [], [], {}
     for sfile in sorted(glob.glob("src/main/resources/brimstone/scenes/*.json")):
         suite = json.load(open(sfile))
         name = suite["suite"]
         scenes = [s for s in suite["scenes"]]
-        sd = data.setdefault(name, {"noise": {}, "picture": {}, "counts": {}, "skipped": {}})
+        sd = data.setdefault(name, {"noise": {}, "picture": {}, "strict": {}, "counts": {}, "skipped": {}})
+        strict_lines = []
         lines.append(f"## Suite {name}\n")
         runs = {r: os.path.join(res, f"{name}-{r}") for r in RUNS}
         for r, d in runs.items():
@@ -101,6 +139,8 @@ def main():
         # vanilla's own profile line, and Brimstone's probe line
         for r, d in runs.items():
             t = logs(d)
+            if os.path.isdir(d) and "brimstone_ci_pin" not in t:
+                failures.append(f"{name}/{r}: CI's lightmap pin (ci/pin-mod) is not among the loaded mods")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
             probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)
@@ -135,8 +175,20 @@ def main():
                             failures.append(f"{name}/{r}: probe does not show gl=3.3")
                         if old and "vanilla.mdiKnownIssues=yes" not in p:
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
+                    # the terrain module must be on in every Brimstone run and must never have fallen back to vanilla
+                    if re.search(r"Brimstone terrain: (turned off|not used)", t):
+                        failures.append(f"{name}/{r}: the terrain module fell back to vanilla (see client log)")
+                    if "Brimstone terrain: on " not in t:
+                        failures.append(f"{name}/{r}: the terrain module never turned on")
                     for f in glob.glob(os.path.join(d, "bench", "*.json")):
                         bj = json.load(open(f))
+                        ter = bj.get("terrain")
+                        if ter is None:
+                            failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
+                        elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
+                            failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
+                        elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
+                            failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
                         miss = bj.get("counters", {}).get("missing")
                         if miss is None:
                             failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
@@ -148,6 +200,15 @@ def main():
                     failures.append(f"{name}/{r}: the server did not list Brimstone among its mods")
                 if re.search(r"(ERROR|Exception)[^\n]*[Bb]rimstone|[Bb]rimstone[^\n]*(ERROR|Exception)", st):
                     failures.append(f"{name}/{r}: the server logged a Brimstone error")
+        # GPU errors from the game's debug output (OpenGL debug messages of type ERROR, Vulkan validation errors):
+        # a Brimstone run must not log more than the vanilla run on the same GPU profile
+        lines.append("")
+        lines.append("GPU error messages in the client logs (Brimstone run / vanilla run of the same profile):\n")
+        for prof, (b, v) in PAIRS.items():
+            eb, ev = gpu_errors(logs(runs[b])), gpu_errors(logs(runs[v]))
+            lines.append(f"- {prof}: {eb} / {ev}")
+            if eb > ev:
+                failures.append(f"{name}/{b}: {eb} GPU error messages in the client log, {ev} in {v}")
         lines.append("")
         lines.append("| scene | noise (vanilla a/b) % | limit % | full % | old-GPU % | Vulkan % |")
         lines.append("|---|---|---|---|---|---|")
@@ -180,6 +241,28 @@ def main():
                     failures.append(f"{name}/{sid}: {prof} differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
             fmt = lambda d: "missing" if d is None else f"{d['pct']}"
             lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'])} | {fmt(row['old-gpu'])} | {fmt(row['vulkan'])} |")
+            agree, counts = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"))
+            sd["strict"][sid] = {"vanillaAgreePct": agree, "pixels": counts}
+            slimit = None if strict_limits is None else strict_limits.get(name, {}).get(sid)
+            if agree is None:
+                failures.append(f"{name}/{sid}: strict picture check is missing a vanilla screenshot")
+            for prof in PAIRS:
+                c = counts.get(prof)
+                if agree is not None and c is None:
+                    failures.append(f"{name}/{sid}: strict picture check is missing the {prof} screenshot")
+                elif c is not None and strict_limits is not None:
+                    if slimit is None:
+                        failures.append(f"{name}/{sid}: no strict pixel limit in ci/strict-pixel-limits.json")
+                    elif c > slimit:
+                        failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
+                                        f" agrees exactly (strict limit {slimit})")
+            strict_lines.append(f"| {sid} | {agree} | {slimit if strict_limits is not None else 'not set yet'} | "
+                                + " | ".join(str(counts.get(p)) for p in PAIRS) + " |")
+        lines.append("")
+        lines.append("Strict picture: pixels where all four vanilla runs agree exactly but the Brimstone run differs at all:\n")
+        lines.append("| scene | vanilla runs agree on % of pixels | strict limit (pixels) | full | old-GPU | Vulkan |")
+        lines.append("|---|---|---|---|---|---|")
+        lines.extend(strict_lines)
         lines.append("")
         for prof, (b, _) in PAIRS.items():
             cur = bench_results(runs[b])
@@ -218,6 +301,18 @@ def main():
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
+            lines.append("")
+            lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
+            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | bytes per vertex (compact/wide; avg) | live vertices | wide % | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
+            lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None or not c.get("terrain"):
+                    continue
+                t = c["terrain"]
+                files = glob.glob(os.path.join(runs[b], "bench", f"*-{sc['id']}.json"))
+                mesh = (json.load(open(files[0])).get("meshing") or {}) if files else {}
+                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')}/{t.get('wideVertexBytes')}; {t.get('bytesPerVertex')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('widePct')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")

@@ -1,0 +1,19 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.brimstone.mixin.terrain",
+  "plugin": "com.meakaandre.brimstone.terrain.TerrainMixins",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ChunkSectionsToRenderMixin",
+    "LevelRendererMixin",
+    "RenderSectionInvoker",
+    "RenderSectionMixin",
+    "SectionCompilerMixin",
+    "SectionRenderDispatcherMixin",
+    "ShaderManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

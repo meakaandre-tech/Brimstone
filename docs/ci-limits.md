@@ -48,8 +48,45 @@ Where the noise comes from: animated water and kelp (fly-through, spawn, water a
 differs per run), the HUB and MAM screens (fade-in timing). Clouds are turned off in CI's client options because
 their position follows elapsed game time, which differs between runs. To keep the picture steady CI also: pins time
 and weather in each dimension (The Sift has its own clock and weather), uses mobs without random variants,
-pregenerates the SIFTEC areas the scenes look at, presses F3+A before each world screenshot and waits for two
+pregenerates the SIFTEC areas the scenes look at, loads every core run from one world generated once per CI run
+(`ci/core-world.sh`, job `core-world`; package 1: before that each run generated its own, and feature placement at
+chunk borders depends on generation order, so trees differed between vanilla a and b and spawn noise reached 18.6%;
+with the shared world it is 0.36%; limits unchanged), presses F3+A before each world screenshot and waits for two
 captures 4 s apart to agree, and parks the mouse for screen scenes. All of it is the same in every run.
+
+## Strict pixel limits (`ci/strict-pixel-limits.json`, package 1)
+
+The 8/255 threshold above ignores small shifts. The strict check doesn't: per scene and Brimstone profile it counts
+the pixels where **all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly** but the Brimstone run
+differs from its own profile's vanilla run **at all** (threshold 0). Over the limit fails. Like the other limits these
+may only go down, never up.
+
+**Noise samples.** The same count for vanilla against itself: vanilla b against a (and a against b) on the pixels
+where the other three vanilla runs agree, plus the counts of Brimstone builds that hold every vertex exactly
+(a7aff90, ae203ca, 14479f5). Core scenes count from the shared core world on (a7aff90; before it, spawn noise was
+129,368 pixels); SIFTEC scenes from every run with screenshots (82ba60c onwards).
+
+**Limit = the largest sample x 1.5, rounded up to 100 pixels.**
+
+| scene | vanilla b/a samples (pixels) | Brimstone samples, max | limit |
+|---|---|---|---|
+| core/spawn | 2842/3674, 12000/1090, 811/5490 | 3338 | 18000 |
+| core/flythrough | 1487/492, 672/3877, 342/1100 | 906 | 5900 |
+| core/water_glass | 2566/16964, 12740/1330, 4798/1040 | 1336 | 25500 |
+| core/nether | after the lightmap pin: 230/80; before it, on the side where the flicker matched: 216, 27, 96, 339, 26, 549, 36, 250 | 4 | 900 |
+| core/mobs | 304/268, 382/126, 30/104 | 105 | 600 |
+| SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
+| SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
+| SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
+
+Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
+fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
+package 1, the lightmap's block-light flicker. The flicker is random per tick and shifts every block-lit pixel by one
+colour level, and lava lights most of the nether scene: vanilla runs disagreed with each other on up to 349,419 of
+those pixels (vanilla b against a). Since package 1, CI's lightmap pin (`ci/pin-mod`, a CI-only mod loaded in every
+client run, vanilla and Brimstone alike) holds the flicker at zero, its resting value. With it the four vanilla runs
+agree on 98.7% of the nether frame, against 22-71% before. The one-level nether shift the package 1 re-review saw
+(248,492 pixels) was this flicker; vanilla b against a shows the same one-sided one-level shift in earlier runs.
 
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 
@@ -93,8 +130,8 @@ how fast CI's server generates the new terrain. The Vulkan baselines come from t
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
 
-Meshing time per section is not measured yet: there is no Brimstone mesher. The bench's JSON has a `meshing` field
-for it.
+Meshing time per section is measured since package 1 (the bench's `meshing` block: vanilla's mesher plus Brimstone's
+transcode, sections meshed while measuring) and shown in CI's report; it is not gated (it follows CI's CPU load).
 
 ## Counter audit
 
