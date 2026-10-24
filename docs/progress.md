@@ -2,24 +2,39 @@
 
 ## Where things stand
 
-- **Now:** packages 0 (repo, CI, bench harness), 1 (terrain meshing and region buffers) and 2 (visibility) done and
-  merged; package 3 (translucency) on branch `package-3`, awaiting review: its last code change is green (run
-  40126212181); a docs-only rerun failed one runner-speed-dependent count (package 3, "Open issues"). See "Hand-off".
+**STOPPED (2026-10-25) at package 3, on a decision only Andre can make.** Package 3 (translucency) is built on branch
+`package-3` and its last code commit (`6d48fc7`) is green in every profile and both suites
+(https://github.com/meakaandre-tech/Brimstone/actions/runs/40126212181). But the runs after it (docs only, same code)
+fail one count: the new SIFTEC `hologram` scene's draw calls on the full profile (about 142-144 against a 119
+baseline that came from one sample at 30 fps; the scene's average follows the runner's frame rate, Brimstone's own
+draws are constant). Getting it green means either raising that baseline (from more clean runs it would be about
+155), gating this scene on the median, or reporting its draw calls only: each raises a number or changes a check,
+which the rules forbid doing to get green, and the agent's attempt to make it reported-only was blocked by the
+permission system as a CI bypass. So package 3 is not merged and package 4 is not started. Details, the options and
+an independent review of package 3 are in `docs/progress.md` on branch `package-3` (Package 3 section).
+
+- **Done and merged:** packages 0 (repo, CI, bench harness), 1 (terrain meshing and region buffers) and 2
+  (visibility). After the package 2 merge, main's CI failed on water-animation noise (not Brimstone); a CI
+  determinism fix (`ced21b3`) pinned texture animation in every run, lowered the draw-call baselines by exactly the
+  effect of that pin, and made scenes clear areas without killing entities. Main is green
+  (https://github.com/meakaandre-tech/Brimstone/actions/runs/40108769128) and the `latest` release is built from it.
+- **Decide first:** the package 3 hologram draw-call gate (see above), then merge package 3 or tell the next chat how.
 - **Pending on Andre:**
   - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
     mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
     `latest` release brings them back; Brimstone's CI already fetches it from there.
-  - Laptop benches: package 0's vanilla baselines (steps in `docs/laptop-bench.md`), then after packages 1 (commands
-    in the package 1 section), 2, 5 and 10.
+  - Laptop benches: package 0's vanilla baselines (steps in `docs/laptop-bench.md`), then after packages 1 and 2
+    (commands in their sections), 5 and 10.
 - **To decide:**
-  - CI publishes javap dumps of the game's classes (signatures, and bytecode of the graphics and renderer classes) on
-    the public `ci-logs` branch, as SIFTEC's CI does (Brimstone's dump was modelled on it, as asked). Package 1's CI
-    briefly also published the game's shader sources there; that was removed and `ci-logs` republished without
-    them on 2026-10-24, but GitHub may keep old force-pushed commits fetchable by ID for a while. Decide whether
-    the class dumps may stay public, or whether CI should keep them private (agents can't download Actions
-    artifacts from the workspace, so later packages would then work only from what was dumped before).
-  - Package 1's compact vertex format now covers only about half the terrain (see package 1, "Review"): accept it,
-    or pick one of the options listed there.
+  - CI publishes javap dumps of the game's classes (signatures, and bytecode of the graphics, renderer and
+    visibility classes) on the public `ci-logs` branch, as SIFTEC's CI does (Brimstone's dump was modelled on it, as
+    asked). Package 1's CI briefly also published the game's shader sources there; that was removed and `ci-logs`
+    republished without them on 2026-10-24, but GitHub may keep old force-pushed commits fetchable by ID for a
+    while. Decide whether the class dumps may stay public.
+  - Package 1's compact vertex format now covers only about half the terrain (package 1, "Review"): accept it, or
+    pick one of the options listed there.
+  - CI-only pins (`ci/pin-mod`): the lightmap flicker and texture animation are held still in every CI run, vanilla
+    and Brimstone alike. Package 8 (animated textures) will need its own check with animation running.
   - The "Choices to confirm" lists under each package.
 
 ---
@@ -1054,6 +1069,35 @@ live terrain 23.4-23.6 bytes per vertex against vanilla's 28); arenas are now ve
 - The per-frame check reads Brimstone's own copy of each index list (what it wrote), not the GPU buffer.
 - The hologram is not checked on Vulkan; Build Gun buildings other than the Power Pole Mk.1 are not in CI.
 - SIFTEC factory and map scenes are still skipped (SIFTEC's selftest jar is not in its release).
+
+### Independent review and stop
+
+Reviewed by a separate agent that had not seen the work (full text: `docs/review-package-3.md`). Verdict: the code
+meets the done-when (sort order matches vanilla byte for byte, sorting stays on vanilla's workers, 0 per-frame check
+misses, translucent shots within 7 strict pixels against limits of 10/20, no limit/baseline/check changed, trailers
+on every commit, no raw GL/Vulkan, every new path falls back with a log line). Findings, not fixed because package 3
+stopped on a decision only Andre can make:
+- **B1 (blocker until accepted):** translucent draw calls go *up* against vanilla on full and Vulkan (batches break
+  where the vertex format changes): `translucent_move` 129 vs 122.86, its Improved Transparency version 140 vs 131,
+  fly-through on full 157 vs 123. Ungated, so CI doesn't see it. The doc says draw calls go down. Options: accept
+  as a deviation; store translucent layers in the wide format (+12 bytes per vertex where compact today); or gate
+  translucent draw calls (which then need one of the other two).
+- **M1:** the hologram scene can't catch an error only where the outline overlaps water (about 3,900 px of a
+  14,360 px outline; strict limit 21,840 is larger than the outline). Fix: move most of the outline over water, pin
+  the outliner's two-state brightness in the CI pin mod, re-collect and set limits by the documented rule.
+- **M2 (the stop):** the hologram draw-call average follows the runner's frame rate
+  (avg ≈ 27.6 + 137.2 × min(1, 20/fps) across six runs); Brimstone's own draws are constant.
+- Minor: move scenes' draw calls ungated (gating them would make B1 visible); the Improved Transparency check counts
+  stage draws, not frames; `ciSkipRuns` accepts any run names; what `TranslucencyCheck` can't see. Note: the
+  hologram's direct-buffer gate is one 2 MB step from failing (same single-sample problem).
+
+**Decision for Andre (hologram gate).** Within the rules as written: (4) cap that scene at 20 fps through per-scene
+client options and re-collect, so every frame carries a tick; (5) record draw calls separately for frames with and
+without a tick, for every scene; (6) additionally gate Brimstone's own draw calls, which don't depend on frame rate.
+Only Andre can choose: (1) baseline from more clean runs (144.24, still fails at 20 fps or below); (2) gate this
+scene on the median (166 in all six runs); (3) report only. Option 4 changes the scene and re-collects its baseline
+from scratch; I didn't take it unattended because B1 also needs Andre's call before merging (doc vs code on draw
+calls, which affects later packages).
 
 ### Laptop bench (Andre, when back)
 
