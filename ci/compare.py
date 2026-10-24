@@ -14,6 +14,10 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
+  - visibility (package 2): every Brimstone bench must show the visibility module on with no fallback, no section
+    layer of vanilla's visible list left undrawn in any measured frame (terrain pop-in), and no hidden entity or block
+    entity that a ray from the camera still reaches on screen (entity pop-in; every hidden object is checked);
+    scenes with "ciRequiresCulling" must hide some entities and block entities;
   - strict picture: on the pixels where all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly, the
     number of pixels where a Brimstone run differs from its own profile's vanilla run at all (threshold 0); over
     ci/strict-pixel-limits.json fails (see docs/ci-limits.md).
@@ -90,6 +94,7 @@ def bench_results(run_dir):
             "directBuffersMB": m.get("directBuffersMB", 0),
             "meshingMsPerSection": (j.get("meshing") or {}).get("msPerSection"),
             "terrain": j.get("terrain"),
+            "visibility": j.get("visibility"),
             "frames": j["fps"]["frames"],
         }
     return out
@@ -180,8 +185,31 @@ def main():
                         failures.append(f"{name}/{r}: the terrain module fell back to vanilla (see client log)")
                     if "Brimstone terrain: on " not in t:
                         failures.append(f"{name}/{r}: the terrain module never turned on")
+                    if re.search(r"Brimstone visibility: turned off", t):
+                        failures.append(f"{name}/{r}: the visibility module fell back to vanilla (see client log)")
+                    if "Brimstone visibility: on " not in t:
+                        failures.append(f"{name}/{r}: the visibility module never turned on")
                     for f in glob.glob(os.path.join(d, "bench", "*.json")):
                         bj = json.load(open(f))
+                        vis = bj.get("visibility")
+                        scene_def = next((x for x in scenes if x["id"] == bj["scene"]), {})
+                        if vis is None:
+                            failures.append(f"{name}/{r}: bench {bj['scene']} has no visibility report")
+                        else:
+                            if vis.get("state") != "on" or vis.get("fallbacks", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: visibility module {vis.get('state')}, fallbacks {vis.get('fallbacks')} ({vis.get('reason')})")
+                            if not vis.get("terrainFrames"):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: the terrain pop-in check did not run")
+                            if vis.get("sectionLayersMissing", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: pop-in: {vis.get('sectionLayersMissing')} section layers of vanilla's visible list were not drawn")
+                            if not vis.get("verify"):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: the ray check of hidden objects was not on")
+                            if vis.get("violations", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: pop-in: {vis.get('violations')} hidden entities or block entities were on screen and unoccluded (see client log)")
+                            if vis.get("unverifiedObjects", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: {vis.get('unverifiedObjects')} hidden objects were not ray-checked (check budget)")
+                            if scene_def.get("ciRequiresCulling") and not (vis.get("entitiesCulled", 0) > 0 and vis.get("blockEntitiesCulled", 0) > 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
                         ter = bj.get("terrain")
                         if ter is None:
                             failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
@@ -313,6 +341,16 @@ def main():
                 files = glob.glob(os.path.join(runs[b], "bench", f"*-{sc['id']}.json"))
                 mesh = (json.load(open(files[0])).get("meshing") or {}) if files else {}
                 lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')}/{t.get('wideVertexBytes')}; {t.get('bytesPerVertex')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('widePct')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
+            lines.append("")
+            lines.append(f"Visibility, {name} {prof} (reported; pop-in and fallbacks gated above):\n")
+            lines.append("| scene | sections visible/frame | entities/frame (tested, hidden) | block entities/frame (tested, hidden, of them outside frustum) | cull ms/frame (max; frames over budget) | section layers missing | ray check: objects / rays / violations / unchecked |")
+            lines.append("|---|---|---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None or not c.get("visibility"):
+                    continue
+                v = c["visibility"]
+                lines.append(f"| {sc['id']}{' (dry run)' if v.get('dryRun') else ''} | {v.get('sectionsVisiblePerFrame')} | {v.get('entitiesPerFrame')} ({v.get('entitiesTestedPerFrame')}, {v.get('entitiesCulledPerFrame')}) | {v.get('blockEntitiesPerFrame')} ({v.get('blockEntitiesTestedPerFrame')}, {v.get('blockEntitiesCulledPerFrame')}, {v.get('blockEntitiesCulledOutsideFrustumPerFrame')}) | {v.get('cullMsPerFrame')} ({v.get('cullMsMax')}; {v.get('framesOverBudget')}) | {v.get('sectionLayersMissing')} | {v.get('verifiedObjects')} / {v.get('verifiedRays')} / {v.get('violations')} / {v.get('unverifiedObjects')} |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")

@@ -70,6 +70,17 @@ public final class Terrain {
         return state == State.ACTIVE;
     }
 
+    /**
+     * Whether every visible section's solid and cutout layers are drawn this frame, by vanilla or by Brimstone (so the
+     * visibility module may trust the faces in them). False only while terrain is being handed back and Brimstone has
+     * stopped drawing what it still holds.
+     */
+    public static boolean drawsAllItHolds() {
+        State s = state;
+        if (s == State.ACTIVE || s == State.STARTING) return !handBack || keepDrawing;
+        return keepDrawing || TerrainStore.isEmpty();
+    }
+
     /** Whether new meshes go to Brimstone. */
     static boolean takingMeshes() {
         return state == State.ACTIVE && !handBack;

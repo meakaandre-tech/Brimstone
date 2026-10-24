@@ -12,3 +12,11 @@
 ^net\.minecraft\.client\.renderer\.block\.(ModelBlockRenderer.*|BlockModelLighter.*)$
 ^net\.minecraft\.client\.renderer\.texture\.(TextureAtlas|TextureAtlasSprite)$
 ^com\.mojang\.blaze3d\.vertex\.
+^net\.minecraft\.client\.renderer\.(SectionOcclusionGraph.*|Octree.*|ViewArea)$
+^net\.minecraft\.client\.SectionUpdateTracker.*$
+^net\.minecraft\.client\.renderer\.chunk\.(VisGraph|VisibilitySet)$
+^net\.minecraft\.client\.renderer\.entity\.(EntityRenderer|EntityRenderDispatcher|LivingEntityRenderer|MobRenderer)$
+^net\.minecraft\.client\.renderer\.blockentity\.(BlockEntityRenderDispatcher|BlockEntityRenderer)$
+^net\.minecraft\.client\.renderer\.culling\.Frustum$
+^net\.minecraft\.client\.Camera$
+^net\.minecraft\.client\.multiplayer\.ClientChunkCache.*$

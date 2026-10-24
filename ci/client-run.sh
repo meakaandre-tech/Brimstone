@@ -31,6 +31,14 @@ extra_args=""
 client_jvm=""
 case "$RUN" in *-vk) extra_args="--graphicsBackend vulkan"; echo "Vulkan profile: --graphicsBackend vulkan on lavapipe";; esac
 case "$RUN" in brimstone-old) client_jvm="-Dbrimstone.debug.forceIntelMdiIssue=true"; echo "old-GPU Brimstone run: $client_jvm";; esac
+# every Brimstone run: the visibility module checks each entity and block entity it hides with rays from the camera
+# (package 2's pop-in check; ci/compare.py fails on any violation). VISIBILITY_DRY_RUN=1 makes it decide and count but hide
+# nothing (used once to sample the new occlusion scene's noise with Brimstone drawing exactly vanilla's set).
+if [ $brim = 1 ]; then
+  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true"
+  if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
+  echo "Brimstone run JVM properties:$client_jvm"
+fi
 
 # ---- server
 if [ "$SUITE" = siftec ]; then
@@ -105,7 +113,7 @@ for g in $groups; do
   rm -f run/logs/latest.log
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)
-  (env -u CI JAVA_TOOL_OPTIONS="$client_jvm" timeout 2400 ./gradlew runClient --no-daemon -Dorg.gradle.console=plain -x compileJava -x processResources -x classes \
+  (env -u CI JAVA_TOOL_OPTIONS="${client_jvm# }" timeout 2400 ./gradlew runClient --no-daemon -Dorg.gradle.console=plain -x compileJava -x processResources -x classes \
      --args="--quickPlayMultiplayer localhost --width 1280 --height 720 $extra_args" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
   for i in $(seq 1 150); do
     now=$(grep -c 'joined the game' server/server.log)
