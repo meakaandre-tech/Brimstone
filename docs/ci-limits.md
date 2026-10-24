@@ -197,3 +197,45 @@ fails if any is missing.
 The `occlusion_move.ghast` shot (package 2) was removed before package 2 merged: the happy ghast's tentacle animation
 made vanilla's own noise reach 239 strict pixels against its 240 limit, and the shot tested nothing Brimstone hides.
 Removed rather than raised; no limit was raised.
+
+### Draw-call baselines after the texture-animation pin
+
+Holding animated textures still also stops the game redrawing them into the block atlas every frame, so every run
+(vanilla and Brimstone) makes fewer draw calls. Left alone, the draw-call baselines would have had that much extra
+room and the 10% gate would have missed a regression of the same size. Each draw-call baseline was lowered by
+exactly the drop measured for the same scene and profile between two runs of the same Brimstone code without and
+with the pin (package 2 run 40094673590 against run 40104120800), so each keeps the margin it had. No baseline went
+up; other counts are unchanged.
+
+| suite-profile | scene | before | drop | after |
+|---|---|---|---|---|
+| core-full | flythrough | 218.16 | 95.08 | 123.08 |
+| core-full | mobs | 240.07 | 23.85 | 216.22 |
+| core-full | nether | 215.94 | 39.38 | 176.56 |
+| core-full | occlusion | 159.53 | 63.1 | 96.43 |
+| core-full | occlusion_move | 159.53 | 63.02 | 96.51 |
+| core-full | spawn | 218.25 | 95.16 | 123.09 |
+| core-full | water_glass | 219.1 | 36.63 | 182.47 |
+| core-old-gpu | flythrough | 1146.26 | 104.63 | 1041.63 |
+| core-old-gpu | mobs | 434.39 | 24.2 | 410.19 |
+| core-old-gpu | nether | 687.04 | 46.27 | 640.77 |
+| core-old-gpu | occlusion | 169.7 | 63.08 | 106.62 |
+| core-old-gpu | occlusion_move | 169.58 | 63.02 | 106.56 |
+| core-old-gpu | spawn | 942.31 | 98.11 | 844.2 |
+| core-old-gpu | water_glass | 489.1 | 31.3 | 457.8 |
+| core-vulkan | flythrough | 218.25 | 95.28 | 122.97 |
+| core-vulkan | mobs | 240.09 | 31.49 | 208.6 |
+| core-vulkan | nether | 216.09 | 74.07 | 142.02 |
+| core-vulkan | occlusion | 161.13 | 63.18 | 97.95 |
+| core-vulkan | occlusion_move | 160.14 | 62.89 | 97.25 |
+| core-vulkan | spawn | 218.94 | 94.1 | 124.84 |
+| core-vulkan | water_glass | 219.09 | 65.81 | 153.28 |
+| siftec-full | hub | 295.96 | 179.37 | 116.59 |
+| siftec-full | mam | 340.12 | 182.09 | 158.03 |
+| siftec-full | sift | 424.41 | 268.59 | 155.82 |
+| siftec-old-gpu | hub | 342.2 | 179.26 | 162.94 |
+| siftec-old-gpu | mam | 400.79 | 178.41 | 222.38 |
+| siftec-old-gpu | sift | 849.48 | 179.21 | 670.27 |
+| siftec-vulkan | hub | 316.68 | 179.7 | 136.98 |
+| siftec-vulkan | mam | 352.85 | 181.32 | 171.53 |
+| siftec-vulkan | sift | 424.25 | 273.94 | 150.31 |

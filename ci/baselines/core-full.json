@@ -1,7 +1,7 @@
 {
   "flythrough": {
     "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 218.16,
+    "drawCallsPerFrame": 123.08,
     "heapUsedAfterGcMB": 324.25,
     "runs": [
       4,
@@ -17,7 +17,7 @@
   },
   "mobs": {
     "directBuffersMB": 6.99,
-    "drawCallsPerFrame": 240.07,
+    "drawCallsPerFrame": 216.22,
     "heapUsedAfterGcMB": 268.37,
     "runs": [
       4,
@@ -33,7 +33,7 @@
   },
   "nether": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 215.94,
+    "drawCallsPerFrame": 176.56,
     "heapUsedAfterGcMB": 273.53,
     "runs": [
       4,
@@ -47,9 +47,29 @@
     "uploadBytesPerFrame": 19648,
     "uploadsPerFrame": 12
   },
+  "occlusion": {
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 96.43,
+    "heapUsedAfterGcMB": 265.1,
+    "runs": [
+      "40079570978 (dry run)"
+    ],
+    "uploadBytesPerFrame": 126320,
+    "uploadsPerFrame": 15
+  },
+  "occlusion_move": {
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 96.51,
+    "heapUsedAfterGcMB": 265.74,
+    "runs": [
+      "40091787069 (dry run; memory gated only)"
+    ],
+    "uploadBytesPerFrame": 104812,
+    "uploadsPerFrame": 15
+  },
   "spawn": {
     "directBuffersMB": 3.99,
-    "drawCallsPerFrame": 218.25,
+    "drawCallsPerFrame": 123.09,
     "heapUsedAfterGcMB": 259.07,
     "runs": [
       12
@@ -59,7 +79,7 @@
   },
   "water_glass": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 219.1,
+    "drawCallsPerFrame": 182.47,
     "heapUsedAfterGcMB": 250.02,
     "runs": [
       4,
@@ -71,26 +91,6 @@
       11
     ],
     "uploadBytesPerFrame": 15576,
-    "uploadsPerFrame": 15
-  },
-  "occlusion": {
-    "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 159.53,
-    "heapUsedAfterGcMB": 265.1,
-    "runs": [
-      "40079570978 (dry run)"
-    ],
-    "uploadBytesPerFrame": 126320,
-    "uploadsPerFrame": 15
-  },
-  "occlusion_move": {
-    "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 159.53,
-    "heapUsedAfterGcMB": 265.74,
-    "runs": [
-      "40091787069 (dry run; memory gated only)"
-    ],
-    "uploadBytesPerFrame": 104812,
     "uploadsPerFrame": 15
   }
 }

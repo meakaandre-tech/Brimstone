@@ -1,7 +1,7 @@
 {
   "hub": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 342.2,
+    "drawCallsPerFrame": 162.94,
     "heapUsedAfterGcMB": 451.46,
     "runs": [
       10,
@@ -12,7 +12,7 @@
   },
   "mam": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 400.79,
+    "drawCallsPerFrame": 222.38,
     "heapUsedAfterGcMB": 472.87,
     "runs": [
       4,
@@ -27,7 +27,7 @@
   },
   "sift": {
     "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 849.48,
+    "drawCallsPerFrame": 670.27,
     "heapUsedAfterGcMB": 441.24,
     "runs": [
       7,
