@@ -1,0 +1,14 @@
+{
+  "core": {
+    "flythrough": 5900,
+    "mobs": 600,
+    "nether": 900,
+    "spawn": 18000,
+    "water_glass": 25500
+  },
+  "siftec": {
+    "hub": 12500,
+    "mam": 155100,
+    "sift": 4900
+  }
+}

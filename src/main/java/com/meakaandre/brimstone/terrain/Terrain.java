@@ -14,7 +14,7 @@ import net.minecraft.core.SectionPos;
 
 /**
  * Brimstone's terrain module (package 1): takes the solid and cutout meshes vanilla builds on its worker threads,
- * converts each layer into its compact 16-byte vertex or, where that wouldn't hold every vertex exactly, a wide 32-byte one,
+ * converts each layer into its compact 16-byte vertex or, where that wouldn't hold every vertex exactly, a wide 28-byte one,
  * keeps them in large GPU buffers and draws them with few calls. Translucent terrain stays with vanilla.
  *
  * <p>States:
@@ -132,8 +132,8 @@ public final class Terrain {
         reason = "on";
         state = State.ACTIVE;
         TerrainResources.logAtlas();
-        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for layers it holds exactly, {}-byte vanilla layout plus section"
-                + " slot for the rest; vanilla's is {}; solid and cutout layers; plain draw path: {}; GPU error check: {})",
+        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for layers it holds exactly, {}-byte one (vanilla's floats, packed light and section"
+                + " slot) for the rest; vanilla's is {}; solid and cutout layers; plain draw path: {}; GPU error check: {})",
             CompactVertex.BYTES, CompactVertex.WIDE_BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName(),
             TerrainGpuErrors.describe());
         if (FORCE_PLAIN) BrimstoneClient.LOG.warn("Brimstone debug: brimstone.debug.forcePlainTerrain is set, Brimstone's terrain uses its plain path on every frame");

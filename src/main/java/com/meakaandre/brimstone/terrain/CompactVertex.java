@@ -23,12 +23,13 @@ import org.lwjgl.system.MemoryUtil;
  * operations the shader uses and comparing it with vanilla's float, bit for bit) and its alpha is 255. Light outside
  * 0..240 is stored clamped: the shader's lightmap lookup clamps to the same texel either way.
  *
- * <p><b>Wide, 32 bytes</b>, for every other layer (one with plant offsets, fluid surfaces, rotated model parts, UVs of atlases
- * wider than 4096): vanilla's 28 bytes unchanged, then u16 slot and two bytes of padding.
+ * <p><b>Wide, 28 bytes</b> (vanilla's size), for every other layer (one with plant offsets, fluid surfaces, rotated model
+ * parts, UVs of atlases wider than 4096): vanilla's position, colour and UV floats unchanged (bytes 0-23), then
+ * u16 block light | sky light << 8 (each clamped to 0..240, as in the compact format) and u16 slot.
  */
 public final class CompactVertex {
     public static final int BYTES = 16;
-    public static final int WIDE_BYTES = 32;
+    public static final int WIDE_BYTES = 28;
     public static final int VANILLA_BYTES = 28;
 
     static final VertexFormat FORMAT = VertexFormat.builder(0)
@@ -41,8 +42,7 @@ public final class CompactVertex {
         .addAttribute("BrimCorner", GpuFormat.RGB32_FLOAT)
         .addAttribute("BrimShade", GpuFormat.RGBA8_UNORM)
         .addAttribute("BrimAtlasUv", GpuFormat.RG32_FLOAT)
-        .addAttribute("BrimLight", GpuFormat.RG16_SINT)
-        .addAttribute("BrimSlot", GpuFormat.RG16_UINT)
+        .addAttribute("BrimLightSlot", GpuFormat.RG16_UINT)
         .build();
 
     /** Why a layer took the wide format (for the bench): position, UV or alpha. */
@@ -109,9 +109,10 @@ public final class CompactVertex {
         ByteBuffer wide = MemoryUtil.memAlloc(vertices * WIDE_BYTES);
         long w = MemoryUtil.memAddress(wide);
         for (int v = 0; v < vertices; v++, w += WIDE_BYTES) {
-            MemoryUtil.memCopy(in + (long) v * VANILLA_BYTES, w, VANILLA_BYTES);
-            MemoryUtil.memPutShort(w + 28, (short) slot);
-            MemoryUtil.memPutShort(w + 30, (short) 0);
+            long a = in + (long) v * VANILLA_BYTES;
+            MemoryUtil.memCopy(a, w, 24);
+            MemoryUtil.memPutShort(w + 24, (short) (light(MemoryUtil.memGetShort(a + 24)) | light(MemoryUtil.memGetShort(a + 26)) << 8));
+            MemoryUtil.memPutShort(w + 26, (short) slot);
         }
         return new Split(null, 0, wide, vertices, why);
     }
