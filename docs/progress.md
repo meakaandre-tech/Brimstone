@@ -351,7 +351,8 @@ screenshots against the doc's done-when and the rules). Reviews kept in the sess
     the frame on spawn and water and glass, 17% on MAM, could hide; MAM's limit comes from one fade outlier).
   - m3: no runtime GPU-error detection on Vulkan; Vulkan plain path not in CI; the transient hand-back gap.
 
-**Merged** to main as `MERGE1_SHA`; main run MAIN1_RUN.
+**Merged** to main as `7534f16` (main run: see package 2's section). The package 0 merge had accidentally kept
+`package-0` in main's CI trigger list (harmless; removed in this merge).
 
 ### Laptop bench (Andre, when back)
 
@@ -382,6 +383,31 @@ SIFTEC instance:
 Then paste the latest.log blocks (or the JSON files from `brimstone/bench/`). The `terrain` line should say `active`
 with `plain, one multi-draw per region and layer` (Intel integrated: vanilla's flag sends it down the plain path) and
 `fallbacks 0`; compare FPS and frame times with package 0's vanilla numbers.
+
+---
+
+## Package 2: visibility (in progress)
+
+**Goal (doc):** frustum test plus a cave graph walked from the camera's section (which faces of a section connect),
+then occlusion for entities and block entities. Only visible sections enter the draw list.
+
+**Done when (doc):** "Frustum plus cave culling over sections; block entities and entities hidden when nothing can see
+them. No pop-in in the benchmark fly-through."
+
+**Approach:**
+1. Research (in the implementation agent): how 26.3 culls today. Vanilla already has `SectionOcclusionGraph` (cave
+   graph from section face connectivity) and an octree frustum test feeding `visibleSections`; entities and block
+   entities are frustum-tested only (to confirm from the dump). Find where Brimstone's draw list (package 1) takes
+   vanilla's visible list, and whether vanilla's graph is already exact.
+2. Sections: Brimstone's draw lists use exactly vanilla's visible set (or a stricter set only if provably
+   conservative); no section that vanilla would draw may be left out (that is pop-in). If vanilla's graph is already
+   the doc's "cave graph", Brimstone keeps it and makes it cheaper only where it can prove the result is identical.
+3. Entities and block entities: hide one only when nothing can see it, using the section visibility and an
+   occlusion test that is conservative (never hides something visible). The test must not change the picture: the
+   CI pixel diffs (8/255 and the strict gate) catch any wrongly hidden entity in the mob crowd and the SIFTEC scenes.
+4. Pop-in: a CI check on the fly-through (screenshots taken during the scripted flight compared with vanilla's at the
+   same positions, or a per-frame count of sections vanilla draws that Brimstone doesn't).
+5. Proof: draw calls and uploads not up; counts of culled entities and block entities in the bench; all pixel gates.
 
 ---
 
