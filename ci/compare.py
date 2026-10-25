@@ -13,8 +13,10 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
     runner's frame rate (design doc, Testing: "Counts that follow the runner's speed"); uploads and bytes: per-frame
     median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results
     against ci/baselines/<suite>-<profile>.json; a rise over 10% fails. The current numbers are written to
-    REPORT_DIR/baselines/ for committing; in the translucent scenes listed in ci/vanilla-draw-calls.json, Brimstone's
-    draw calls per frame must also be at or under vanilla's (package 3);
+    REPORT_DIR/baselines/ for committing; against vanilla measured in the same run (the measure-* runs: Brimstone
+    loaded with every module off), Brimstone's median draw calls per frame must be at or under vanilla's median in the
+    translucent scenes listed in ci/vanilla-draw-calls.json, and the terrain GPU memory reserved in a Brimstone run at
+    or under vanilla's in every scene (package 3);
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
@@ -52,7 +54,10 @@ GATED = list(SLACK)
 PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "vanilla-old"), "vulkan": ("brimstone-vk", "vanilla-vk")}
 # scenes allowed to opt out of the strict gate ("ciNoStrict"), each by a decision recorded in docs/ci-limits.md
 NO_STRICT_ALLOWED = {"siftec/map"}
-RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "brimstone-full", "brimstone-old", "brimstone-vk"]
+RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "brimstone-full", "brimstone-old", "brimstone-vk",
+        "measure-full", "measure-old", "measure-vk"]
+# per profile, the run that measures vanilla's own counts (Brimstone loaded, every module off; package 3)
+MEASURE = {"full": "measure-full", "old-gpu": "measure-old", "vulkan": "measure-vk"}
 
 
 def diff(a, b, out=None):
@@ -412,21 +417,26 @@ def main():
                             failures.append(f"{name}/{prof}/{sid}: {k}{' (median)' if k == 'drawCallsPerFrame' and sid in median_gated else ''} rose from {bv} to {v} (over 10%)")
                     cells.append(cell)
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
-            # translucent scenes (package 3, Andre 2026-10-25): Brimstone's draw calls per frame at or under vanilla's,
-            # in every profile (ci/vanilla-draw-calls.json)
-            for sid, vdc in vanilla_draws.get(name, {}).get(prof, {}).items():
-                c = cur.get(sid)
+            # package 3 (Andre, 2026-10-25), against vanilla measured in the same run (MEASURE): in the translucent
+            # scenes (ci/vanilla-draw-calls.json) Brimstone's median draw calls per frame at most vanilla's median; in
+            # every scene the terrain GPU memory reserved (Brimstone's arenas and whatever vanilla's own heaps still
+            # hold) at most what vanilla's heaps reserve
+            van = bench_results(runs[MEASURE[prof]])
+            for sid in vanilla_draws.get(name, []):
+                c, vc = cur.get(sid), van.get(sid)
                 if c is None:
                     continue
-                if c["drawCallsPerFrame"] > vdc:
-                    failures.append(f"{name}/{prof}/{sid}: {c['drawCallsPerFrame']} draw calls per frame, more than vanilla's {vdc}")
-                lines.append(f"- {sid}: Brimstone {c['drawCallsPerFrame']} draw calls/frame, vanilla {vdc} (must not be more)")
-            # terrain GPU memory (package 3, Andre 2026-10-25): reserved in a Brimstone run (its arenas and whatever
-            # vanilla's own heaps still hold) at most what vanilla's heaps reserve in vanilla's run of the same profile
-            van = bench_results(runs[PAIRS[prof][1]]) if PAIRS[prof][1] in runs else {}
+                if vc is None or vc.get("drawCallsPerFrameMedian") is None:
+                    failures.append(f"{name}/{prof}/{sid}: no vanilla measurement in {MEASURE[prof]}")
+                    continue
+                bm, vm = c["drawCallsPerFrameMedian"], vc["drawCallsPerFrameMedian"]
+                if bm > vm:
+                    failures.append(f"{name}/{prof}/{sid}: median {bm} draw calls per frame, more than vanilla's {vm} (same run)")
+                lines.append(f"- {sid}: Brimstone median {bm} draw calls/frame (avg {c['drawCallsPerFrameAvg']}), vanilla median {vm}"
+                             f" (avg {vc['drawCallsPerFrameAvg']}), same run; must not be more")
             lines.append("")
-            lines.append(f"Terrain GPU memory, {name} {prof} (MB; Brimstone's reserved must not be more than vanilla's):\n")
-            lines.append("| scene | Brimstone reserved / used | of which Brimstone's arenas | of which vanilla's heaps | vanilla run reserved / used |")
+            lines.append(f"Terrain GPU memory, {name} {prof} (MB; reserved in the Brimstone run must not be more than vanilla's):\n")
+            lines.append("| scene | Brimstone run reserved / used | of which Brimstone's arenas | of which vanilla's heaps | vanilla (measure run) reserved / used |")
             lines.append("|---|---|---|---|---|")
             for sc in scenes:
                 sid = sc["id"]
@@ -435,10 +445,11 @@ def main():
                     continue
                 tg, vg = c.get("terrainGpu") or {}, (vc or {}).get("terrainGpu") or {}
                 if tg.get("reservedMB") is None or vg.get("reservedMB") is None:
-                    failures.append(f"{name}/{prof}/{sid}: terrain GPU memory missing ({tg.get('problem') or vg.get('problem') or 'no terrainGpu in the bench'})")
+                    failures.append(f"{name}/{prof}/{sid}: terrain GPU memory missing ({tg.get('problem') or vg.get('problem') or 'no terrainGpu in a bench'})")
                 elif tg["reservedMB"] > vg["reservedMB"]:
                     failures.append(f"{name}/{prof}/{sid}: {tg['reservedMB']} MB of terrain GPU memory reserved, more than vanilla's {vg['reservedMB']} MB")
                 lines.append(f"| {sid} | {tg.get('reservedMB')} / {tg.get('usedMB')} | {tg.get('brimstoneArenasReservedMB')} / {tg.get('brimstoneArenasUsedMB')} | {tg.get('vanillaHeapsReservedMB')} / {tg.get('vanillaHeapsUsedMB')} | {vg.get('reservedMB')} / {vg.get('usedMB')} |")
+            lines.append("")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             lines.append("")

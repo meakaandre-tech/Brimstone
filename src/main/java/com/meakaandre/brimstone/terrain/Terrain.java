@@ -142,6 +142,13 @@ public final class Terrain {
     }
 
     private static void activate() {
+        if (Boolean.getBoolean("brimstone.ci.measureOnly")) {
+            // CI's measure runs (package 3): vanilla draws all terrain, the bench measures vanilla's own counts
+            state = State.OFF;
+            reason = "measure only (CI)";
+            BrimstoneClient.LOG.warn("Brimstone terrain: off, brimstone.ci.measureOnly is set (vanilla draws all terrain)");
+            return;
+        }
         if (!TerrainRenderer.drawHookSeen) {
             // the draw hook runs inside vanilla's terrain pass: wait until it has run once (vanilla draws meanwhile)
             if (++framesWithoutDrawHook < 600) return;

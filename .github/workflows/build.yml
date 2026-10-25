@@ -201,7 +201,9 @@ jobs:
       fail-fast: false
       matrix:
         suite: [core, siftec]
-        run: [vanilla-a, vanilla-b, vanilla-old, vanilla-vk, brimstone-full, brimstone-old, brimstone-vk]
+        # measure-*: Brimstone loaded with every module off, so its bench measures vanilla's own draw calls and terrain
+        # GPU memory in the same run (package 3's at-or-under-vanilla gates)
+        run: [vanilla-a, vanilla-b, vanilla-old, vanilla-vk, brimstone-full, brimstone-old, brimstone-vk, measure-full, measure-old, measure-vk]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
