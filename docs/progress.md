@@ -346,7 +346,7 @@ CPU.
 - The Vulkan plain path is not run in CI (m4).
 - After a hand-back caused by a draw error or a pack override, sections are missing until vanilla has meshed them
   again; they are marked dirty, so this looks like F3+A.
-- SIFTEC factory and map scenes are still skipped (SIFTEC's selftest jar is not in its release).
+- SIFTEC factory and map run again since 2026-10-25 (map without a strict gate; see "Finishing package 3").
 
 ### Review
 
@@ -1027,13 +1027,8 @@ live terrain 23.4-23.6 bytes per vertex against vanilla's 28); arenas are now ve
   translucent_move (12 with Improved Transparency). Totals stay within the baselines there.
 - **Improved Transparency order matches vanilla when vanilla's translucent geometry fits in one of its 128 MiB heaps**
   (then vanilla draws in list order); with more, vanilla groups by heap, which Brimstone does not imitate.
-- **The hologram scene's strict gate cannot resolve the outline.** Create's outliner draws it in one of two
-  brightness states (every outline pixel 6% brighter or not), independent of Brimstone (vanilla's GL 3.3 run had the
-  bright state in run 40121527770, vanilla a and b the dim one in every run). By the documented rule that flip sets the
-  strict limit (21,840 pixels) above the outline's own size (about 14,500), against the brief's "smallest visible thing
-  larger than the strict limit". The 8/255 gate (0.55%) still catches a missing or recoloured outline (about 1.6% of
-  the frame); every translucent element in the core scenes is far above its strict limit (smallest: 8,151 pixels
-  against 10).
+- **The hologram scene's strict gate could not resolve the outline** until 2026-10-25 (limit 21,840 above the
+  outline's size); fixed by the feature batch order pin, limit now 360 (see "Finishing package 3").
 - **The hologram is not checked on Vulkan** (lavapipe segfaults drawing it, vanilla too).
 - **CI:** new scenes and limits; per-session client options; per-scene `ciKeys` and `ciSkipRuns`; the translucency
   dry-run switch (marked collection runs only); compare.py's translucency gates and table.
@@ -1057,18 +1052,14 @@ live terrain 23.4-23.6 bytes per vertex against vanilla's 28); arenas are now ve
 
 ### Remaining trade-offs and open issues
 
-- **The SIFTEC hologram scene's draw-call baseline on full (119.16) came from one sample at 30 fps, and the scene's
-  average follows the runner's frame rate** (run 6 above: 144.24 at 23.6 fps, over the 10% gate, with Brimstone's own
-  draws unchanged). On a slow runner that gate can fail without any change in Brimstone. Raising the baseline or
-  changing what is gated is Andre's call (rules); options: take the baseline from the slow mode (about 155, as on
-  old-GPU), gate this scene's draw calls on the median (166-170 in every run), or report them only, like the
-  fly-through's.
+- The SIFTEC hologram scene's draw-call average follows the runner's frame rate; since 2026-10-25 that scene is
+  gated on the median (Andre's decision; see "Finishing package 3").
 - Right after the module turns on (and while terrain is handed back), sections vanilla still holds are drawn by
   vanilla before Brimstone's, so for those few frames the order between the two sets may not be vanilla's (counted as
   mixed frames; CI requires none in measured frames).
 - The per-frame check reads Brimstone's own copy of each index list (what it wrote), not the GPU buffer.
 - The hologram is not checked on Vulkan; Build Gun buildings other than the Power Pole Mk.1 are not in CI.
-- SIFTEC factory and map scenes are still skipped (SIFTEC's selftest jar is not in its release).
+- SIFTEC factory and map run again since 2026-10-25 (map without a strict gate; see "Finishing package 3").
 
 ### Independent review and stop
 
@@ -1098,6 +1089,123 @@ Only Andre can choose: (1) baseline from more clean runs (144.24, still fails at
 scene on the median (166 in all six runs); (3) report only. Option 4 changes the scene and re-collects its baseline
 from scratch; I didn't take it unattended because B1 also needs Andre's call before merging (doc vs code on draw
 calls, which affects later packages).
+
+### Finishing package 3 (2026-10-25, after Andre's decisions)
+
+Andre's decisions on the stop (2026-10-25): (1) gate the hologram scene's draw calls on the median, baseline = the
+highest clean median from the runs on `4cb5419`, `6d48fc7` and later; (2) find why Create's outliner flips between
+two brightness states, pin it in `ci/pin-mod` and re-collect the hologram's strict limit (must come out below the
+outline's own size); (3) game class dumps to a 1-day Actions artifact, never `ci-logs`; (4) check the hologram's
+direct buffers for a leak over a long run; (5) independent review, fix, merge. The design doc now records (1) and the
+CI pins (Testing) and (3) (Rules, Mojang code).
+
+**1. Hologram draw calls on the median.** `"ciDrawCallGate": "median"` on the scene; `compare.py` gates and records
+that scene's per-frame median instead of its average (the report shows both). Every other gate is unchanged.
+
+| run | commit | full: median (avg) | old-GPU: median (avg) | used |
+|---|---|---|---|---|
+| 40123696828 | `4cb5419` | 166 (119.16) | 170 (155.07) | no: a dry run (Brimstone drew vanilla's set and vanilla drew the translucent terrain, so the count isn't Brimstone's) |
+| 40126212181 | `6d48fc7` | 166 (118.92) | 167 (124.18) | yes |
+| 40128444322 | `0db931b` | 166 (144.24) | 167 (148.72) | yes (failed only on the average) |
+| 40130610610 | `13f56fb` | 166 (142.45) | 167 (146.9) | yes (failed only on the average) |
+
+Baselines: **full 166, old-GPU 167** (not run on Vulkan). Later runs: 166/167 up to run 40139975085; 173/174 in every run since SIFTEC's 2026-10-25 release (runs 40156711337 attempts 1-3 and 40164365265; averages 127-165), within the gate (x1.10 + 2: 184.6 / 185.7). The baseline was not raised.
+
+**2. The outliner's two brightness states.** Two probe runs (branch-only diagnostics, since removed):
+- run 40135570271 logged the outliner's entries and params (colour `ff5cd65c`, light `f000f0`, alpha 1, line width,
+  removal countdown), the edge draws' pose and normal matrices, and the lightmap's inputs. All identical in the bright
+  and the dim runs. The difference map showed that only the hologram's **far** edges change: the ones seen through its
+  translucent checkered faces.
+- run 40138168127 logged each frame's feature draws. Both of the outliner's render types are drawn in the game's
+  outline feature phase, and their order differed by run: `ponder:outline_solid` (edges) then
+  `ponder:outline_translucent_cull` (faces) in the dim runs, faces then edges in the bright ones. The phase groups
+  submits into batches by render type in a map whose iteration order follows identity hash codes, so the order is
+  fixed for a game start and differs between starts. Edges first: the faces are blended over the far edges (3.6%
+  darker). Faces first: the edges overwrite the faces there.
+
+The pin (`ci/pin-mod`, `FeatureBatchOrderMixin`): that batch map keeps insertion order (a `LinkedHashMap`), so batches
+are drawn in the order they were first submitted, in every client run, vanilla and Brimstone alike. Run 40139105024
+(SIFTEC noise collection, dry run): every run drew faces then edges; the vanilla runs agree on 100% of the hologram
+frame. The pin holds the order of vanilla's own feature batches in every scene; Brimstone draws no features yet
+(package 6 batches entities and block entities and must keep the vanilla order its own batching replaces).
+
+**New strict limit.** The first re-collection (run 40139105024: vanilla b/a 7/4, Brimstone dry run 15/18, limit
+30) had too few samples: the next full run (40139975085) failed old-GPU at 232 pixels. Two things were behind it:
+
+- *The crosshair's block outline* moved by one pixel row from one frame to the next in the old-GPU profile (GL 3.3),
+  in vanilla's own runs too. Probes: run 40143410574 (camera and the hologram's pose identical in every frame),
+  run 40146057417 (three more shots 8 s apart: Brimstone's old-GPU run flipped within the run), run 40152673881
+  (ten quick shots and every frame's draws and crosshair target logged: vanilla's old-GPU run flipped in 2 of 11
+  shots, Brimstone's in 5 of 11, with the same draws and the same target block in every frame). Andre's decision:
+  a CI-only pin (`BlockOutlineMixin`) leaves that outline out of every client run, vanilla and Brimstone alike;
+  with it all eleven shots agreed in every profile (run 40154022133). **The block outline is therefore untested in
+  CI: package 6 or 7 must add a scene that checks it with the outline drawn.**
+- *Frame-to-frame noise in vanilla's own water* (15-27 pixels between shots of the same run) and *SIFTEC's minimap*
+  (differs between runs). With Andre's OK the limit was re-collected over eleven shots per run (run 40155387068, dry
+  run): vanilla b/a 221-234 and 9-22, Brimstone dry run up to 63 (full), 24 (old-GPU): 234 x 1.5 = 351, rounded up
+  to 10: **360** (was 21,840; the outline covers about 14,500 pixels, about 3,900 of them over Brimstone's water).
+
+The review's M1 (an error only where the outline overlaps the water would pass both gates) is answered by this:
+such an error now has to stay under 360 pixels. The scene was not recomposed.
+
+**SIFTEC's selftest jar is back in its release (2026-10-25)**, so the factory and map scenes run again. They had no
+strict limits and no count baselines:
+- factory: strict limit 100 by the rule (samples 0/0, dry run 2; run 40155387068); count baselines from run
+  40156711337 attempts 1-3.
+- map: the first strict limit (13,100, one run) was under-sampled (vanilla b/a up to 22,532 in later runs: SIFTEC's
+  map shows whichever tiles it has scanned when it opens). Andre's time box: two client-side attempts to make it
+  steady (wait until two captures 5 s apart are identical, run 40161774743; stand 60 s in the area first, run
+  40162905190); vanilla runs stayed 35-58k pixels apart, so per his fallback the map has **no strict gate**
+  (`"ciNoStrict"`, reported by compare.py), its 8/255 limit stays, and **package 7 (GUI) must give it real strict
+  coverage**. Count baselines from attempts 1 and 3.
+- `sift` upload bytes: vanilla's own counts, measured in the same runs by branch-only jobs with every Brimstone
+  module off, jump in the same ~12.9 KB steps (43,120 / 68,936 / 47,504 / 55,980, then 43,120 / 55,972 / 34,316 /
+  55,764, then 55,980 / 56,304 / 60,252 / 43,128 for vanilla a / b / old-GPU / Vulkan), so per Andre's rule it was
+  re-baselined from the three runs: full 68,940, old-GPU 43,376, Vulkan 56,084.
+- hologram direct buffers re-baselined to 8.24 MB (full and old-GPU), Andre's OK: map now runs right before it in
+  the same session and the JVM's direct pool keeps the size it reaches there (see 4).
+
+**3. Dumps.** The build job writes `javap-all.txt.gz`, `bytecode.txt.gz` and the class lists to the `game-dumps`
+artifact (`retention-days: 1`); `ci-logs` carries only Brimstone's `build.log` (plus the client runs and the compare
+report). `ci-logs` was republished without `build/` on 2026-10-25. `docs/backend.md` says where dumps are now.
+Consequence: the agent workspace cannot download Actions artifacts (their storage host isn't reachable), so a future
+chat that needs a dump must ask Andre to download `game-dumps` and attach it.
+
+SIFTEC (not touched, read only): its CI can produce the same javap dumps (`.github/dump-signatures`,
+`.github/dump-bytecode`, `.github/dump-bytecode-old`), published to its `ci-logs`; neither trigger file is present
+now, so its current `ci-logs` has no class dumps. But its `.github/dump-data` is present, so its current `ci-logs`
+carries `data.tar.gz`: game data files extracted from the Minecraft jar (worldgen and structure JSON matching
+`*sulfur*`, `*spring*`, `structure/spring/*`, `tags/worldgen/*`). Its `ci-logs` also lists other mods' files,
+lang and recipes (`pack/*`). Older force-pushed `ci-logs` commits may still hold earlier dumps.
+
+**4. Direct buffers on the hologram scene.** A branch-only job (run 40135570271) benched the hologram scene for 900 s
+in the full and old-GPU profiles with LWJGL's DebugAllocator and a memory line every 15 s:
+
+| profile | java.nio direct MB (count) at 90 s / 450 s / 990 s | live LWJGL allocations from Brimstone's code | all live LWJGL allocations | heap after GC (bench end) |
+|---|---|---|---|---|
+| full | 4.24 (34) / 4.06 (31) / 4.06 (31) | 36,864 bytes in 5 allocations, unchanged from 90 s to the end | 145.38 MB, 30,789, unchanged | 468.26 MB |
+| old-GPU | 3.73 (33) / 3.54 (30) / 3.54 (30) | 37,904 bytes in 6 allocations, unchanged | 144.98 MB, 30,784, unchanged | 467.88 MB |
+
+No leak: nothing grows over 15 minutes. Brimstone allocates no java.nio direct buffers at all (its vertices and
+translucent index lists are LWJGL `memAlloc`, invisible to the JVM's direct-buffer count; the arena copies are GPU
+memory), and its live native memory at rest is its fixed draw scratch buffers. Translucent index lists:
+`TerrainStore.stageIndices` copies each new list, `upload()` writes it over the old one in the arena
+(`rewriteIndices`) and frees the copy, also when the write throws (the `finally`), and `release`/`dropStaged` free
+queued copies. The regular runs' 5.48 to 8.24 MB on this scene: the SIFTEC scenes run in one client session (sift,
+hub, mam, hologram), and the JVM's direct pool (vanilla's and its libraries', e.g. network buffers) grows in 2 MB
+steps at some point in it and keeps that size; the step lands in mam or in hologram depending on the run (run
+40130610610 full: 3.48, 3.48, 5.48, 5.48; old-GPU 4.24, 4.24, 4.24, 6.24; run 40135570271 full: 3.73 in all four).
+
+**5. Review.** REVIEW_ROUNDS
+
+**Runs (2026-10-25):** 40135570271 (permanent changes + first probes + the 15-minute memory job: green),
+40138168127 (draw-order probe), 40139105024 (batch order pin, SIFTEC collection), 40139975085 (full run: failed the
+first hologram limit on old-GPU), 40143410574, 40146057417 (attempts 1-3 failed on SIFTEC's missing release, not
+counted; attempt 4 the repeated-shot probe), 40152673881 (per-frame probe), 40154022133 (crosshair outline pin test),
+40155387068 (SIFTEC collection, eleven hologram shots), 40156711337 attempts 1-3 (full runs with vanilla's own sift
+counts: green, red on the map's first strict limit and the hologram's old direct baseline, green), 40161774743 and
+40162905190 (map steadiness attempts, collection), **40164365265 (final code, every profile and both suites:
+green)**.
 
 ### Laptop bench (Andre, when back)
 
