@@ -34,9 +34,11 @@
     "water_glass_oit": 40
   },
   "siftec": {
-    "hologram": 30,
+    "factory": 100,
+    "hologram": 360,
     "hub": 12500,
     "mam": 155100,
+    "map": 13100,
     "sift": 4900
   }
 }

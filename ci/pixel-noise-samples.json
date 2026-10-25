@@ -787,7 +787,21 @@
       6,
       7
     ],
-    "samples": 9
+    "samples": 9,
+    "strictVanillaBA": [
+      0,
+      0
+    ],
+    "strictDryRun": [
+      2,
+      0,
+      0
+    ],
+    "strictLimit": 100,
+    "strictRuns": [
+      40155387068
+    ],
+    "strictNote": "strict limit set when the scene ran again (SIFTEC's latest release carries its selftest jar since 2026-10-25): run 40155387068, SIFTEC noise collection (dry run); rule: largest sample x 1.5, rounded up to 100"
   },
   "siftec/hologram": {
     "all": [
@@ -797,20 +811,61 @@
     ],
     "limit": 0.55,
     "max": 0.2629,
-    "note": "package 3 collection run (SIFTEC suite in translucency dry run); not run on Vulkan (lavapipe crash, vanilla too). Strict samples re-collected in run 40139105024 (SIFTEC noise collection, visibility and translucency in dry run) after CI's feature batch order pin held Create's outliner in one brightness state; before it the samples were the two brightness states (14560, 14324; limit 21840)",
+    "note": "package 3 collection run (SIFTEC suite in translucency dry run); not run on Vulkan (lavapipe crash, vanilla too). Strict samples re-collected over eleven shots of the scene in run 40155387068 (SIFTEC noise collection, visibility and translucency in dry run, with the feature batch order and crosshair outline pins); the first re-collection (run 40139105024: vanilla 7/4, dry run 15/18, limit 30) had too few samples. Before the batch order pin the samples were the outliner's two brightness states (14560, 14324; limit 21840)",
     "runs": [
       40123696828,
-      40139105024
+      40139105024,
+      40155387068
     ],
     "samples": 3,
     "strictDryRun": [
+      54,
+      14,
+      50,
+      24,
+      63,
+      12,
+      49,
+      12,
+      49,
       15,
-      18
+      54,
+      21,
+      53,
+      13,
+      50,
+      9,
+      48,
+      12,
+      48,
+      20,
+      55,
+      14
     ],
-    "strictLimit": 30,
+    "strictLimit": 360,
     "strictVanillaBA": [
-      7,
-      4
+      234,
+      22,
+      234,
+      10,
+      224,
+      13,
+      227,
+      11,
+      221,
+      12,
+      233,
+      10,
+      227,
+      15,
+      227,
+      21,
+      229,
+      13,
+      224,
+      9,
+      223,
+      18
     ]
   },
   "siftec/hub": {
@@ -872,7 +927,21 @@
       6,
       7
     ],
-    "samples": 6
+    "samples": 6,
+    "strictVanillaBA": [
+      6960,
+      8712
+    ],
+    "strictDryRun": [
+      1220,
+      3168,
+      1624
+    ],
+    "strictLimit": 13100,
+    "strictRuns": [
+      40155387068
+    ],
+    "strictNote": "strict limit set when the scene ran again (SIFTEC's latest release carries its selftest jar since 2026-10-25): run 40155387068, SIFTEC noise collection (dry run); rule: largest sample x 1.5, rounded up to 100"
   },
   "siftec/sift": {
     "all": [

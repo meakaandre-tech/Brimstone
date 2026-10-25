@@ -139,7 +139,9 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/translucent_move_oit, .x2404, .x2414, .x2424, .back, .bare_back (package 3) | at most 6 | at most 5 (dry run) | 10 |
 | core/translucent_move_oit.low (package 3) | 7/4 | 7 (dry run) | 20 |
 | core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
-| SIFTEC/hologram (package 3) | 7/4 (run 40139105024, with the batch order pin; 15/10 before it, run 40123696828) | 18 (dry run, run 40139105024) | 30 (was 21840 before the pin) |
+| SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
+| SIFTEC/factory (strict limit from 2026-10-25) | 0/0 (run 40155387068) | 2 (dry run) | 100 |
+| SIFTEC/map (strict limit from 2026-10-25) | 6960/8712 (run 40155387068) | 3168 (dry run) | 13100 |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
@@ -161,8 +163,24 @@ identical in both states. Since then the CI pin mod (`FeatureBatchOrderMixin`) k
 were first submitted, in every client run, vanilla and Brimstone alike: all vanilla runs now draw the outline the
 same way (they agree on 100% of the hologram frame), and the strict limit was re-collected by the rule above in a
 SIFTEC noise collection run (40139105024): vanilla b/a 7/4, Brimstone dry run 15 (full) and 18 (old-GPU), so
-18 x 1.5 = 27, rounded up to **30**. About 3,900 pixels of the outline lie over Brimstone's water, so an error there
-alone now fails the strict gate.
+18 x 1.5 = 27, rounded up to 30. That came from one shot per run and was too few samples: vanilla's own water
+changes by 15-27 pixels from one shot to the next in the same run, and SIFTEC's minimap differs between runs. So the
+limit was re-collected (with Andre's OK, 2026-10-25) over eleven shots of the scene per run, 0.5 s plus a steady-shot
+wait apart, in run 40155387068 (dry run): vanilla b/a 221-234 and 9-22 (the 234 is mostly the minimap's tiles plus
+scattered water pixels), Brimstone dry run up to 63 (full) and 24 (old-GPU): 234 x 1.5 = 351, rounded up to 10:
+**360**. The outline covers about 14,500 pixels, about 3,900 of them over Brimstone's water.
+
+The crosshair outline: the outline the game draws around the block under the crosshair moved by one pixel row from
+one frame to the next in the old-GPU profile (GL 3.3), in vanilla's own runs too (run 40152673881: 2 of 11 hologram
+shots in vanilla's old-GPU run, 5 of 11 in Brimstone's, with the same draws and the same target block in every frame),
+so the shot decided about 100-230 pixels along the hologram's bottom edge. Since 2026-10-25 the CI pin mod
+(`BlockOutlineMixin`) leaves that outline out of every client run, vanilla and Brimstone alike (with it, all eleven
+shots in every profile agreed there, run 40154022133). **The block outline is therefore untested in CI**; package 6
+or 7 must add a scene that checks it with the outline drawn.
+
+The SIFTEC factory and map scenes run again since SIFTEC's latest release carries its selftest jar (2026-10-25); they
+had no strict limits (skipped since package 1), so these were set by the rule (largest sample x 1.5, rounded up to
+100) from run 40155387068.
 
 Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
 fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
