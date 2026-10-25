@@ -9,27 +9,29 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import org.lwjgl.system.MemoryUtil;
 
 /**
- * Brimstone's two terrain vertex formats, and the conversion of vanilla's vertices into one of them per layer. Every vertex
- * Brimstone draws gives the shader exactly the values vanilla's would; nothing is rounded.
+ * Brimstone's terrain vertex format, and the conversion of vanilla's vertices into it. One 16-byte format for every
+ * terrain layer, solid, cutout and translucent (design doc, Terrain mesher, decided 2026-10-25; it replaces package 1's
+ * per-layer choice between this and a 28-byte copy of vanilla's floats).
  *
- * <p><b>Compact, 16 bytes</b> (vanilla's BLOCK vertex has 28), for layers whose every vertex it holds exactly:
+ * <p><b>16 bytes</b> (vanilla's BLOCK vertex has 28):
  * <pre>
  *  0  u16 x, y, z        position in the section as (p + 8) * 2048, i.e. -8 to 24 blocks in 1/2048 steps
  *  6  u16 slot | bl << 8 slot: which of the region's 8x4x8 sections; bl: block light 0..240
- *  8  u8  r, g, b, sky   vanilla's baked colour (alpha must be 255) and sky light 0..240
+ *  8  u8  r, g, b, sky   vanilla's baked colour (its alpha must be 255) and sky light 0..240
  * 12  u16 u, v           atlas UV in 1/65536 steps; 65535 stands for exactly 1.0
  * </pre>
- * A vertex fits when its position and UV are on those grids (checked by decoding the stored value with the same float
- * operations the shader uses and comparing it with vanilla's float, bit for bit) and its alpha is 255. Light outside
- * 0..240 is stored clamped: the shader's lightmap lookup clamps to the same texel either way.
- *
- * <p><b>Wide, 28 bytes</b> (vanilla's size), for every other layer (one with plant offsets, fluid surfaces, rotated model
- * parts, UVs of atlases wider than 4096): vanilla's position, colour and UV floats unchanged (bytes 0-23), then
- * u16 block light | sky light << 8 (each clamped to 0..240, as in the compact format) and u16 slot.
+ * Positions and UVs on those grids (every plain solid block) are stored exactly: decoding the stored value with the
+ * shader's float operations gives vanilla's float bit for bit. Values off the grid (plant offsets, fluid heights, some
+ * model and UV values) are rounded to the nearest step: half a step of position (1/4096 block, plus float rounding:
+ * 0.000245 block measured) and of UV (1/131072; up to 1/65536 between the last step and 1.0). Light outside 0..240
+ * is stored clamped: the shader's lightmap lookup clamps to the same texel either way. A layer with a position or UV
+ * outside those ranges, or a colour alpha other than 255, can't be stored ({@link #convert} returns null). There is no
+ * alpha byte (vanilla's terrain colours always have alpha 255; the slot keeps the plain path's merged draws on GL 3.3):
+ * an opaque layer with alpha below 255 stays with vanilla, and a translucent one sends all translucent terrain back to
+ * vanilla for the session ({@link Terrain}, Andre's decision 2026-10-25).
  */
 public final class CompactVertex {
     public static final int BYTES = 16;
-    public static final int WIDE_BYTES = 28;
     public static final int VANILLA_BYTES = 28;
 
     static final VertexFormat FORMAT = VertexFormat.builder(0)
@@ -38,21 +40,10 @@ public final class CompactVertex {
         .addAttribute("BrimTexel", GpuFormat.RG16_UINT)
         .build();
 
-    static final VertexFormat WIDE_FORMAT = VertexFormat.builder(0)
-        .addAttribute("BrimCorner", GpuFormat.RGB32_FLOAT)
-        .addAttribute("BrimShade", GpuFormat.RGBA8_UNORM)
-        .addAttribute("BrimAtlasUv", GpuFormat.RG32_FLOAT)
-        .addAttribute("BrimLightSlot", GpuFormat.RG16_UINT)
-        .build();
-
-    /** Why a layer took the wide format (for the bench): position, UV or alpha. */
-    static final int WHY_POSITION = 1, WHY_UV = 2, WHY_ALPHA = 4;
-
-    /** One layer, converted: either compact or wide vertices (the other null), in a memAlloc'd buffer. */
-    record Split(ByteBuffer compact, int compactVertices, ByteBuffer wide, int wideVertices, int why) {
+    /** One layer, converted, in a memAlloc'd buffer; how many of its vertices had a position or UV rounded. */
+    record Converted(ByteBuffer data, int vertices, int positionsRounded, int uvsRounded) {
         void free() {
-            if (compact != null) MemoryUtil.memFree(compact);
-            if (wide != null) MemoryUtil.memFree(wide);
+            MemoryUtil.memFree(data);
         }
     }
 
@@ -71,8 +62,7 @@ public final class CompactVertex {
         for (ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT, ChunkSectionLayer.TRANSLUCENT}) {
             if (!f.equals(layer.vertexFormat())) return layer + " does not use the BLOCK vertex format";
         }
-        if (FORMAT.getVertexSize() != BYTES) return "compact format is " + FORMAT.getVertexSize() + " bytes";
-        if (WIDE_FORMAT.getVertexSize() != WIDE_BYTES) return "wide format is " + WIDE_FORMAT.getVertexSize() + " bytes";
+        if (FORMAT.getVertexSize() != BYTES) return "Brimstone's format is " + FORMAT.getVertexSize() + " bytes";
         return null;
     }
 
@@ -89,65 +79,64 @@ public final class CompactVertex {
     }
 
     /**
-     * Converts a layer (vanilla's BLOCK vertices, position to limit of {@code src}): into the compact format if every
-     * vertex of it round-trips exactly, otherwise all of it into the wide format. One format per layer keeps vanilla's
-     * quad order, which coplanar quads at equal depth rely on. Null if the layer isn't whole quads. {@code wideOnly}
-     * (translucent layers, package 3): always the wide format, so consecutive translucent sections share a format and
-     * draw together; whether the layer would have fit the compact format is still reported (for the bench).
+     * Converts a layer (vanilla's BLOCK vertices, position to limit of {@code src}) into the 16-byte format, rounding
+     * off-grid positions and UVs to the nearest step and keeping vanilla's vertex order (so its quad order and, for
+     * translucent layers, its index lists stay valid). Null if the layer isn't whole quads or a vertex can't be stored
+     * (position or UV out of range, alpha other than 255).
      */
-    static Split split(ByteBuffer src, int slot, boolean wideOnly) {
+    static Converted convert(ByteBuffer src, int slot) {
         int bytes = src.remaining();
         if (bytes == 0 || bytes % (4 * VANILLA_BYTES) != 0) return null;
         int vertices = bytes / VANILLA_BYTES;
         long in = MemoryUtil.memAddress(src);
-        int why = 0;
-        for (int v = 0; v < vertices && why != (WHY_POSITION | WHY_UV | WHY_ALPHA); v++) why |= misfit(in + (long) v * VANILLA_BYTES);
-        if (wideOnly) TerrainStats.translucentSplit(vertices, why == 0);
-        if (why == 0 && !wideOnly) {
-            ByteBuffer compact = MemoryUtil.memAlloc(vertices * BYTES);
-            long c = MemoryUtil.memAddress(compact);
-            for (int v = 0; v < vertices; v++) packCompact(in + (long) v * VANILLA_BYTES, c + (long) v * BYTES, slot);
-            return new Split(compact, vertices, null, 0, 0);
+        for (int v = 0; v < vertices; v++) if (!storable(in + (long) v * VANILLA_BYTES)) return null;
+        ByteBuffer out = MemoryUtil.memAlloc(vertices * BYTES);
+        long o = MemoryUtil.memAddress(out);
+        int positions = 0, uvs = 0;
+        for (int v = 0; v < vertices; v++) {
+            int r = pack(in + (long) v * VANILLA_BYTES, o + (long) v * BYTES, slot);
+            if ((r & 1) != 0) positions++;
+            if ((r & 2) != 0) uvs++;
         }
-        ByteBuffer wide = MemoryUtil.memAlloc(vertices * WIDE_BYTES);
-        long w = MemoryUtil.memAddress(wide);
-        for (int v = 0; v < vertices; v++, w += WIDE_BYTES) {
-            long a = in + (long) v * VANILLA_BYTES;
-            MemoryUtil.memCopy(a, w, 24);
-            MemoryUtil.memPutShort(w + 24, (short) (light(MemoryUtil.memGetShort(a + 24)) | light(MemoryUtil.memGetShort(a + 26)) << 8));
-            MemoryUtil.memPutShort(w + 26, (short) slot);
-        }
-        return new Split(null, 0, wide, vertices, why);
+        return new Converted(out, vertices, positions, uvs);
     }
 
-    /** 0 if the vertex at {@code a} round-trips exactly through the compact format; else the WHY_ bits. */
-    private static int misfit(long a) {
-        int why = 0;
+    /** Whether any vertex of a layer has a colour alpha other than 255 (Brimstone's vertex has no alpha byte). */
+    static boolean hasAlpha(ByteBuffer src) {
+        long in = MemoryUtil.memAddress(src);
+        int vertices = src.remaining() / VANILLA_BYTES;
+        for (int v = 0; v < vertices; v++) if (MemoryUtil.memGetByte(in + (long) v * VANILLA_BYTES + 15) != (byte) 0xFF) return true;
+        return false;
+    }
+
+    /** Whether a vertex fits the format at all: position in -8..24, UV in 0..1, alpha 255. */
+    private static boolean storable(long a) {
+        for (int k = 0; k < 3; k++) if (positionStep(MemoryUtil.memGetFloat(a + 4L * k)) < 0) return false;
+        for (int k = 0; k < 2; k++) if (uvStep(MemoryUtil.memGetFloat(a + 16 + 4L * k)) < 0) return false;
+        return MemoryUtil.memGetByte(a + 15) == (byte) 0xFF;
+    }
+
+    /** Packs one vertex; bit 0 set if a position component was rounded, bit 1 if a UV component was. */
+    private static int pack(long a, long o, int slot) {
+        int rounded = 0;
         for (int k = 0; k < 3; k++) {
             float p = MemoryUtil.memGetFloat(a + 4L * k);
             int s = positionStep(p);
-            if (s < 0 || decodePosition(s) != p || Float.floatToRawIntBits(decodePosition(s)) != Float.floatToRawIntBits(p)) why |= WHY_POSITION;
+            if (Float.floatToRawIntBits(decodePosition(s)) != Float.floatToRawIntBits(p)) rounded |= 1;
+            MemoryUtil.memPutShort(o + 2L * k, (short) s);
         }
-        for (int k = 0; k < 2; k++) {
-            float t = MemoryUtil.memGetFloat(a + 16 + 4L * k);
-            int s = uvStep(t);
-            if (s < 0 || Float.floatToRawIntBits(decodeUv(s)) != Float.floatToRawIntBits(t)) why |= WHY_UV;
-        }
-        if (MemoryUtil.memGetByte(a + 15) != (byte) 0xFF) why |= WHY_ALPHA;
-        return why;
-    }
-
-    private static void packCompact(long a, long o, int slot) {
-        MemoryUtil.memPutShort(o, (short) positionStep(MemoryUtil.memGetFloat(a)));
-        MemoryUtil.memPutShort(o + 2, (short) positionStep(MemoryUtil.memGetFloat(a + 4)));
-        MemoryUtil.memPutShort(o + 4, (short) positionStep(MemoryUtil.memGetFloat(a + 8)));
         MemoryUtil.memPutShort(o + 6, (short) (slot | light(MemoryUtil.memGetShort(a + 24)) << 8));
         MemoryUtil.memPutByte(o + 8, MemoryUtil.memGetByte(a + 12));
         MemoryUtil.memPutByte(o + 9, MemoryUtil.memGetByte(a + 13));
         MemoryUtil.memPutByte(o + 10, MemoryUtil.memGetByte(a + 14));
         MemoryUtil.memPutByte(o + 11, (byte) light(MemoryUtil.memGetShort(a + 26)));
-        MemoryUtil.memPutShort(o + 12, (short) uvStep(MemoryUtil.memGetFloat(a + 16)));
-        MemoryUtil.memPutShort(o + 14, (short) uvStep(MemoryUtil.memGetFloat(a + 20)));
+        for (int k = 0; k < 2; k++) {
+            float t = MemoryUtil.memGetFloat(a + 16 + 4L * k);
+            int s = uvStep(t);
+            if (Float.floatToRawIntBits(decodeUv(s)) != Float.floatToRawIntBits(t)) rounded |= 2;
+            MemoryUtil.memPutShort(o + 12 + 2L * k, (short) s);
+        }
+        return rounded;
     }
 
     /** Nearest 1/2048 step from -8, or -1 outside -8..24. */
@@ -161,11 +150,16 @@ public final class CompactVertex {
         return step * (1f / 2048f) - 8f;
     }
 
-    /** Nearest 1/65536 step (65535 only for exactly 1.0), or -1 outside 0..1. */
+    /**
+     * Nearest UV step, or -1 outside 0..1. Steps 0..65534 decode to step / 65536 and 65535 to exactly 1.0, so a UV
+     * between 65534/65536 and 1.0 goes to whichever of the two is nearer.
+     */
     static int uvStep(float t) {
         if (t == 1.0f) return 65535;
         if (!(t >= 0f && t < 1f)) return -1;
-        return Math.min(65534, Math.round(t * 65536f));
+        int s = Math.round(t * 65536f);
+        if (s >= 65535) s = t >= 65535f / 65536f ? 65535 : 65534;
+        return s;
     }
 
     /** What the shader computes from a stored UV step. */

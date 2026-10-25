@@ -16,7 +16,7 @@ import org.lwjgl.system.MemoryUtil;
 
 /**
  * Brimstone's terrain module (package 1): takes the meshes vanilla builds on its worker threads, converts each layer
- * into its compact 16-byte vertex or, where that wouldn't hold every vertex exactly, a wide 28-byte one, keeps them in
+ * into its 16-byte vertex (off-grid positions and UVs rounded to its grid, see {@link CompactVertex}), keeps them in
  * large GPU buffers and draws them with few calls. Since package 3 that includes translucent layers: Brimstone keeps
  * vanilla's sorted index list with each, takes every new list vanilla's own sorting makes for it (on vanilla's worker
  * threads, when vanilla decides to sort) and draws translucent sections in vanilla's order.
@@ -49,6 +49,14 @@ public final class Terrain {
     private static volatile boolean handBack;
     /** While handing back: whether Brimstone may keep drawing what it holds until vanilla replaced it. */
     private static volatile boolean keepDrawing;
+    /**
+     * Set when a translucent layer had a vertex colour alpha other than 255 (Brimstone's vertex has no alpha byte):
+     * translucent terrain goes back to vanilla for the rest of the session, solid and cutout stay with Brimstone.
+     */
+    private static volatile boolean translucentToVanilla;
+    private static volatile boolean translucentReleasePending;
+    static final java.util.concurrent.atomic.AtomicInteger ALPHA_LAYERS_KEPT_BY_VANILLA = new java.util.concurrent.atomic.AtomicInteger();
+    private static volatile boolean alphaWarned;
     /** Set by a resource reload: check packs again before the next frame. */
     private static volatile boolean resourcesChanged;
 
@@ -97,7 +105,12 @@ public final class Terrain {
 
     /** Whether new translucent layers go to Brimstone. */
     static boolean takingTranslucent() {
-        return takingMeshes() && !TRANSLUCENT_DRY_RUN;
+        return takingMeshes() && !TRANSLUCENT_DRY_RUN && !translucentToVanilla;
+    }
+
+    /** Whether translucent terrain went back to vanilla for the session because of a vertex alpha (bench and CI). */
+    public static boolean translucentHandedBackForAlpha() {
+        return translucentToVanilla;
     }
 
     /** Whether Brimstone draws what it holds this frame. */
@@ -164,10 +177,10 @@ public final class Terrain {
         reason = "on";
         state = State.ACTIVE;
         TerrainResources.logAtlas();
-        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for layers it holds exactly, {}-byte one (vanilla's floats, packed light and section"
-                + " slot) for the rest; vanilla's is {}; solid, cutout and translucent layers (translucent with vanilla's own sorted index lists,"
+        BrimstoneClient.LOG.info("Brimstone terrain: on ({}-byte vertex for every layer, off-grid positions and UVs rounded to its grid"
+                + " (at most 1/4096 block); vanilla's is {}; solid, cutout and translucent layers (translucent with vanilla's own sorted index lists,"
                 + " drawn in vanilla's order); plain draw path: {}; GPU error check: {})",
-            CompactVertex.BYTES, CompactVertex.WIDE_BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName(),
+            CompactVertex.BYTES, CompactVertex.VANILLA_BYTES, TerrainRenderer.plainPathName(),
             TerrainGpuErrors.describe());
         if (FORCE_PLAIN) BrimstoneClient.LOG.warn("Brimstone debug: brimstone.debug.forcePlainTerrain is set, Brimstone's terrain uses its plain path on every frame");
         if (TRANSLUCENT_DRY_RUN) BrimstoneClient.LOG.warn("Brimstone translucency: DRY RUN (noise collection): translucent layers stay with vanilla");
@@ -222,6 +235,15 @@ public final class Terrain {
      */
     private static void handBackIfNeeded() {
         try {
+            if (translucentReleasePending) {
+                translucentReleasePending = false;
+                LongOpenHashSet released = TerrainStore.releaseTranslucent();
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.levelExtractor != null) {
+                    for (long s : released) mc.levelExtractor.setSectionDirty(SectionPos.x(s), SectionPos.y(s), SectionPos.z(s));
+                }
+                BrimstoneClient.LOG.info("Brimstone terrain: translucent layers of {} sections handed back to vanilla", released.size());
+            }
             if (handBack) {
                 handBack = false;
                 LongOpenHashSet held = TerrainStore.heldSections();
@@ -274,7 +296,7 @@ public final class Terrain {
             SectionMesh.SectionDraw draw = mesh.getSectionDraw(layer);
             if (draw == null || draw.hasCustomIndexBuffer()) return false;
             int count = vertices.remaining() / CompactVertex.VANILLA_BYTES;
-            if ((long) count * CompactVertex.WIDE_BYTES > TerrainStore.MAX_LAYER_BYTES || draw.indexCount() != count / 4 * 6) {
+            if ((long) count * CompactVertex.BYTES > TerrainStore.MAX_LAYER_BYTES || draw.indexCount() != count / 4 * 6) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;
             }
@@ -283,12 +305,24 @@ public final class Terrain {
             int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
             int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
             int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
-            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z), false);
+            if (CompactVertex.hasAlpha(vertices)) {
+                // no alpha byte in Brimstone's vertex: an opaque layer can stay with vanilla on its own (depth sorts it)
+                ALPHA_LAYERS_KEPT_BY_VANILLA.incrementAndGet();
+                if (!alphaWarned) {
+                    alphaWarned = true;
+                    BrimstoneClient.LOG.warn("Brimstone terrain: a {} layer (section {} {} {}) has vertex colours with alpha below 255, which"
+                        + " Brimstone's vertex does not hold; vanilla keeps such layers (likely a mod's tinted model; counted in the bench)",
+                        layer, x >> 4, y >> 4, z >> 4);
+                }
+                TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
+                return false;
+            }
+            CompactVertex.Converted split = CompactVertex.convert(vertices, CompactVertex.sectionIndex(x, y, z));
             if (split == null) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;
             }
-            TerrainStats.split(split);
+            TerrainStats.converted(split);
             // the index flag first: once staged, the render thread may report the vertices uploaded at any moment,
             // and vanilla only swaps the mesh in when both flags are set (vanilla sets it too for a layer without
             // indices, so a mesh handed back to vanilla below is unaffected)
@@ -312,7 +346,7 @@ public final class Terrain {
      */
     private static boolean takeTranslucent(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ByteBuffer vertices,
                                            ByteBuffer indices) {
-        if (TRANSLUCENT_DRY_RUN) return false;
+        if (TRANSLUCENT_DRY_RUN || translucentToVanilla) return false;
         try {
             int gen = TerrainStore.generation();
             SectionMesh.SectionDraw draw = mesh.getSectionDraw(ChunkSectionLayer.TRANSLUCENT);
@@ -335,7 +369,7 @@ public final class Terrain {
                 return true;
             }
             int count = vertices.remaining() / CompactVertex.VANILLA_BYTES;
-            if ((long) count * CompactVertex.WIDE_BYTES > TerrainStore.MAX_LAYER_BYTES || indexCount != count / 4 * 6) {
+            if ((long) count * CompactVertex.BYTES > TerrainStore.MAX_LAYER_BYTES || indexCount != count / 4 * 6) {
                 throw new IllegalStateException("a translucent layer Brimstone cannot hold (" + count + " vertices, " + indexCount + " indices)");
             }
             long t0 = System.nanoTime();
@@ -343,11 +377,22 @@ public final class Terrain {
             int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
             int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
             int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
-            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z), true);
-            if (split == null) throw new IllegalStateException("a translucent layer that is not whole quads (" + count + " vertices)");
+            if (CompactVertex.hasAlpha(vertices)) {
+                // the order of translucent sections must stay one renderer's: all translucent terrain goes back to vanilla
+                translucentToVanilla = true;
+                translucentReleasePending = true;
+                ALPHA_LAYERS_KEPT_BY_VANILLA.incrementAndGet();
+                BrimstoneClient.LOG.warn("Brimstone terrain: a translucent layer (section {} {} {}) has vertex colours with alpha below 255, which"
+                    + " Brimstone's vertex does not hold; translucent terrain goes back to vanilla for the rest of the session, solid and cutout"
+                    + " stay with Brimstone (likely a mod's tinted model)", x >> 4, y >> 4, z >> 4);
+                return false;
+            }
+            CompactVertex.Converted split = CompactVertex.convert(vertices, CompactVertex.sectionIndex(x, y, z));
+            if (split == null) throw new IllegalStateException("a translucent layer Brimstone's vertex format cannot hold (" + count
+                + " vertices: not whole quads, or a position, UV or alpha out of its range)");
             ByteBuffer copy = MemoryUtil.memAlloc(indices.remaining());
             MemoryUtil.memCopy(indices, copy);
-            TerrainStats.split(split);
+            TerrainStats.converted(split);
             // as for solid and cutout: both flags must be set before vanilla can swap the mesh in, and Brimstone
             // copies both the vertices and the index list in one go at the end of the frame
             mesh.setIndexBufferUploaded(ChunkSectionLayer.TRANSLUCENT);

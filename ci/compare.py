@@ -265,6 +265,8 @@ def main():
                             failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
                         elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
                             failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
+                        elif ter.get("alphaLayersKeptByVanilla", 0) or ter.get("translucentHandedBackForAlpha"):
+                            failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Brimstone's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
                         elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
                             failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
                         miss = bj.get("counters", {}).get("missing")
@@ -415,7 +417,7 @@ def main():
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             lines.append("")
             lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
-            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | bytes per vertex (compact/wide; avg) | live vertices | wide % | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
+            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | bytes per vertex | live vertices | % vertices with a position / UV rounded | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
             lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
             for sc in scenes:
                 c = cur.get(sc["id"])
@@ -424,7 +426,7 @@ def main():
                 t = c["terrain"]
                 files = glob.glob(os.path.join(runs[b], "bench", f"*-{sc['id']}.json"))
                 mesh = (json.load(open(files[0])).get("meshing") or {}) if files else {}
-                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')}/{t.get('wideVertexBytes')}; {t.get('bytesPerVertex')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('widePct')} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
+                lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('positionRoundedPct')} / {round(100.0 * (t.get('verticesWithUvRounded') or 0) / max(1, t.get('verticesConverted') or 0), 3)} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
             lines.append("")
             lines.append(f"Translucency, {name} {prof} (package 3; the check, mixed frames and dry run gated above):\n")
             lines.append("| scene | Brimstone's translucent section layers/frame | its draws/frame | vanilla's own layers/frame | mixed frames | OIT stage draws | sorts (ms avg / p95 / max; on render thread) | new index lists uploaded | check: entries / unchecked / misses |")

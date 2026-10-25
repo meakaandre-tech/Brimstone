@@ -13,16 +13,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class TerrainStats {
     static final AtomicLong LAYERS_TAKEN = new AtomicLong();
     static final AtomicLong LAYERS_KEPT_BY_VANILLA = new AtomicLong();
-    /** Vertices meshed into each format, and layers that went wide because of position, UV or alpha. */
-    static final AtomicLong COMPACT_VERTICES = new AtomicLong();
-    static final AtomicLong WIDE_VERTICES = new AtomicLong();
-    static final AtomicLong WIDE_FOR_POSITION = new AtomicLong();
-    static final AtomicLong WIDE_FOR_UV = new AtomicLong();
-    static final AtomicLong WIDE_FOR_ALPHA = new AtomicLong();
-    /** Translucent vertices meshed (all stored wide since package 3's review) and how many would have fit compact. */
-    static final AtomicLong TRANSLUCENT_VERTICES = new AtomicLong();
-    static final AtomicLong TRANSLUCENT_COMPACT_FIT = new AtomicLong();
-    private static volatile boolean uvLogged;
+    /** Vertices converted, and how many of them had a position or a UV rounded to the 16-byte format's grid. */
+    static final AtomicLong VERTICES = new AtomicLong();
+    static final AtomicLong POSITIONS_ROUNDED = new AtomicLong();
+    static final AtomicLong UVS_ROUNDED = new AtomicLong();
 
     // measuring window
     private static final LongArrayList COMPILE_NANOS = new LongArrayList();
@@ -61,25 +55,10 @@ public final class TerrainStats {
         s[0] = 0;
     }
 
-    static void translucentSplit(int vertices, boolean wouldFitCompact) {
-        TRANSLUCENT_VERTICES.addAndGet(vertices);
-        if (wouldFitCompact) TRANSLUCENT_COMPACT_FIT.addAndGet(vertices);
-    }
-
-    static void split(CompactVertex.Split sp) {
-        COMPACT_VERTICES.addAndGet(sp.compactVertices());
-        WIDE_VERTICES.addAndGet(sp.wideVertices());
-        int why = sp.why();
-        if ((why & CompactVertex.WHY_POSITION) != 0) WIDE_FOR_POSITION.incrementAndGet();
-        if ((why & CompactVertex.WHY_UV) != 0) {
-            WIDE_FOR_UV.incrementAndGet();
-            if (!uvLogged) {
-                uvLogged = true;
-                com.meakaandre.brimstone.BrimstoneClient.LOG.info("Brimstone terrain: first layer with UVs off the compact grid;"
-                    + " it takes the wide vertex format (exact), as will any others (counted in the bench's terrain block)");
-            }
-        }
-        if ((why & CompactVertex.WHY_ALPHA) != 0) WIDE_FOR_ALPHA.incrementAndGet();
+    static void converted(CompactVertex.Converted c) {
+        VERTICES.addAndGet(c.vertices());
+        POSITIONS_ROUNDED.addAndGet(c.positionsRounded());
+        UVS_ROUNDED.addAndGet(c.uvsRounded());
     }
 
     static void transcoded(long nanos) {
@@ -142,28 +121,19 @@ public final class TerrainStats {
         o.addProperty("arenas", s.arenas());
         o.addProperty("arenaMB", round(s.arenaBytes() / MB));
         o.addProperty("usedMB", round(s.usedBytes() / MB));
-        long live = s.compactVertices() + s.wideVertices();
-        o.addProperty("wideVertexBytes", CompactVertex.WIDE_BYTES);
-        o.addProperty("liveVertices", live);
-        o.addProperty("liveCompactVertices", s.compactVertices());
-        o.addProperty("liveWideVertices", s.wideVertices());
-        o.addProperty("widePct", live == 0 ? 0 : round(s.wideVertices() * 100.0 / live));
-        o.addProperty("bytesPerVertex", live == 0 ? 0 : round((s.compactVertices() * (double) CompactVertex.BYTES
-            + s.wideVertices() * (double) CompactVertex.WIDE_BYTES) / live));
-        o.addProperty("vanillaEquivalentMB", round(live * (double) CompactVertex.VANILLA_BYTES / MB));
+        o.addProperty("liveVertices", s.vertices());
+        o.addProperty("vertexMB", round(s.vertices() * (double) CompactVertex.BYTES / MB));
+        o.addProperty("vanillaEquivalentMB", round(s.vertices() * (double) CompactVertex.VANILLA_BYTES / MB));
         o.addProperty("layersTaken", LAYERS_TAKEN.get());
         o.addProperty("layersKeptByVanilla", LAYERS_KEPT_BY_VANILLA.get());
-        o.addProperty("verticesMeshedCompact", COMPACT_VERTICES.get());
-        o.addProperty("verticesMeshedWide", WIDE_VERTICES.get());
-        o.addProperty("layersWithWideForPosition", WIDE_FOR_POSITION.get());
-        o.addProperty("layersWithWideForUv", WIDE_FOR_UV.get());
-        o.addProperty("layersWithWideForAlpha", WIDE_FOR_ALPHA.get());
-        long tv = TRANSLUCENT_VERTICES.get(), tfit = TRANSLUCENT_COMPACT_FIT.get();
-        o.addProperty("translucentVerticesMeshed", tv);
-        o.addProperty("translucentVerticesFitCompact", tfit);
-        // translucent layers are stored wide (28 bytes); with the per-layer choice they would average this many bytes
-        o.addProperty("translucentBytesPerVertexIfPerLayer", tv == 0 ? 0 : round((tfit * (double) CompactVertex.BYTES
-            + (tv - tfit) * (double) CompactVertex.WIDE_BYTES) / tv));
+        // layers with a vertex alpha below 255 (Brimstone's vertex has no alpha byte); CI fails on any
+        o.addProperty("alphaLayersKeptByVanilla", Terrain.ALPHA_LAYERS_KEPT_BY_VANILLA.get());
+        o.addProperty("translucentHandedBackForAlpha", Terrain.translucentHandedBackForAlpha());
+        long v = VERTICES.get();
+        o.addProperty("verticesConverted", v);
+        o.addProperty("verticesWithPositionRounded", POSITIONS_ROUNDED.get());
+        o.addProperty("verticesWithUvRounded", UVS_ROUNDED.get());
+        o.addProperty("positionRoundedPct", v == 0 ? 0 : round(POSITIONS_ROUNDED.get() * 100.0 / v));
         o.addProperty("drawCallsPerFrame", frames == 0 ? 0 : round((double) windowDraws / frames));
         o.addProperty("sectionLayersPerFrame", frames == 0 ? 0 : round((double) windowSectionLayers / frames));
         return o;

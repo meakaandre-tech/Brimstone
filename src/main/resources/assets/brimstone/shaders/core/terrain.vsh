@@ -2,9 +2,9 @@
 #extension GL_ARB_separate_shader_objects : require
 
 // Brimstone terrain, vertex stage. Feeds the game's own terrain fragment stage, so what it hands over (locations
-// 0-4 below) and the uniform blocks both stages share are fixed by that stage. Two vertex layouts are read:
-// BRIM_WIDE (the game's floats with light and section slot packed, 28 bytes) and, by default, Brimstone's 16-byte one. Every value
-// handed on must be bit-identical to what the game computes for the same block: the fog distances and the lightmap
+// 0-4 below) and the uniform blocks both stages share are fixed by that stage. It reads Brimstone's 16-byte vertex
+// (positions and UVs on its grid; off-grid ones were rounded to it when the vertex was made). From the stored values,
+// every value handed on must be bit-identical to what the game computes for the same inputs: the fog distances and the lightmap
 // lookup are the game's own functions (its include files, used by reference), and the remaining operations keep the
 // game's operand order where floating point would otherwise round differently ("order" below). Brimstone's own code
 // is only what its data needs: decoding the 16-byte vertex and finding the section's position.
@@ -20,16 +20,9 @@
 uniform sampler2D Sampler2;
 #endif
 
-#ifdef BRIM_WIDE
-layout(location = 0) in vec3 BrimCorner;
-layout(location = 1) in vec4 BrimShade;
-layout(location = 2) in vec2 BrimAtlasUv;
-layout(location = 3) in uvec2 BrimLightSlot;
-#else
 layout(location = 0) in uvec4 BrimCell;
 layout(location = 1) in vec4 BrimTint;
 layout(location = 2) in uvec2 BrimTexel;
-#endif
 
 #ifdef BRIMSTONE_PLAIN
 layout(std140) uniform BrimRegion {
@@ -38,13 +31,8 @@ layout(std140) uniform BrimRegion {
 };
 #else
 // per-section data from the instance stream (binding 1), whose locations follow the vertex's own attributes
-#ifdef BRIM_WIDE
-layout(location = 4) in ivec3 ChunkPosition;
-layout(location = 5) in float ChunkVisibility;
-#else
 layout(location = 3) in ivec3 ChunkPosition;
 layout(location = 4) in float ChunkVisibility;
-#endif
 #endif
 
 layout(location = 0) out float brimEyeDistance;
@@ -59,20 +47,12 @@ void main() {
     ivec2 lightPair;
     vec2 texel;
     uint slot;
-#ifdef BRIM_WIDE
-    local = BrimCorner;
-    tint = BrimShade;
-    lightPair = ivec2(int(BrimLightSlot.x & 255u), int(BrimLightSlot.x >> 8u));
-    texel = BrimAtlasUv;
-    slot = BrimLightSlot.y;
-#else
     local = vec3(BrimCell.xyz) * (1.0 / 2048.0) - 8.0;
     tint = vec4(BrimTint.rgb, 1.0);
     lightPair = ivec2(int(BrimCell.w >> 8u), int(round(BrimTint.a * 255.0)));
     // 65535 is the atlas edge, exactly 1.0
     texel = mix(vec2(BrimTexel) * (1.0 / 65536.0), vec2(1.0), equal(BrimTexel, uvec2(65535u)));
     slot = BrimCell.w & 255u;
-#endif
 
     ivec3 corner;
     float fade;

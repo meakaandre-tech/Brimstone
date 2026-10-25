@@ -42,14 +42,14 @@ final class TerrainResources {
         return null;
     }
 
-    /** One log line when the block atlas is too large for compact UVs to hold every 1/16 texel. */
+    /** One log line when the block atlas is too large for the vertex's UV steps to hold every 1/16 texel exactly. */
     static void logAtlas() {
         try {
             GpuTextureView view = Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
             int w = view.getWidth(0), h = view.getHeight(0);
             if (w > 4096 || h > 4096) {
-                BrimstoneClient.LOG.info("Brimstone terrain: the block atlas is {}x{}, wider than the 4096 compact UVs hold exactly;"
-                    + " layers with UVs off their grid take the wide vertex format", w, h);
+                BrimstoneClient.LOG.info("Brimstone terrain: the block atlas is {}x{}, wider than the 4096 the vertex's UV steps hold exactly;"
+                    + " UVs off their grid are rounded to the nearest 1/65536", w, h);
             }
         } catch (Throwable t) {
             BrimstoneClient.LOG.warn("Brimstone terrain: could not read the block atlas size (UVs are checked per vertex anyway)", t);

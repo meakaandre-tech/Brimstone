@@ -169,8 +169,8 @@ final class BenchReport {
         line(b, "meshing", mesh.get("sections") + " sections, ms per section avg " + mesh.get("msPerSection") + " (vanilla mesher avg "
             + mesh.get("compileMsAvg") + ", p95 " + mesh.get("compileMsP95") + "; transcode per layer " + mesh.get("transcodeMsPerLayer") + ")");
         line(b, "terrain", ter.get("state").getAsString() + " (" + ter.get("reason").getAsString() + "), fallbacks " + ter.get("fallbacks")
-            + ", " + ter.get("vertexBytes") + "/" + ter.get("wideVertexBytes") + "-byte vertices (vanilla " + ter.get("vanillaVertexBytes")
-            + "; " + ter.get("widePct") + "% wide, " + ter.get("bytesPerVertex") + " bytes per vertex on average), path " + ter.get("lastDrawPath").getAsString()
+            + ", " + ter.get("vertexBytes") + "-byte vertices (vanilla " + ter.get("vanillaVertexBytes")
+            + "; " + ter.get("positionRoundedPct") + "% with a position rounded to the grid), path " + ter.get("lastDrawPath").getAsString()
             + ", draws/frame " + ter.get("drawCallsPerFrame") + " for " + ter.get("sectionLayersPerFrame") + " section layers, " + ter.get("regions")
             + " regions in " + ter.get("arenas") + " arenas (" + ter.get("usedMB") + " of " + ter.get("arenaMB") + " MB used; vanilla's format would need "
             + ter.get("vanillaEquivalentMB") + " MB), layers taken " + ter.get("layersTaken") + ", kept by vanilla " + ter.get("layersKeptByVanilla"));

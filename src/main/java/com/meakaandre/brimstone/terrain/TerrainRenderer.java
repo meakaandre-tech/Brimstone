@@ -46,7 +46,7 @@ import org.lwjgl.system.MemoryUtil;
  * <p>Translucent (package 3) is drawn in exactly vanilla's order: vanilla's visible-section list, reversed (back to
  * front) on frames where vanilla sorts translucent terrain (Improved Transparency off), each section with vanilla's
  * own sorted index list. Brimstone's draw calls cover runs of consecutive sections in that order that share a
- * region (plain path), arena and format, so batching never changes the order.
+ * region (plain path) and arena, so batching never changes the order.
  *
  * How it draws follows what vanilla does on the device:
  * <ul>
@@ -103,7 +103,6 @@ public final class TerrainRenderer {
 
     /** Consecutive translucent section layers (in vanilla's order) that one draw call covers. */
     private static final class TRun {
-        final int format;
         final TerrainStore.Arena arena;
         final IndexType type;
         final TerrainStore.Region region;
@@ -120,15 +119,14 @@ public final class TerrainRenderer {
         final List<CompiledSectionMesh> meshes = new ArrayList<>();
         final List<TerrainStore.Entry> entries = new ArrayList<>();
 
-        TRun(int format, TerrainStore.Arena arena, IndexType type, TerrainStore.Region region) {
-            this.format = format;
+        TRun(TerrainStore.Arena arena, IndexType type, TerrainStore.Region region) {
             this.arena = arena;
             this.type = type;
             this.region = region;
         }
 
-        boolean fits(int format, TerrainStore.Arena arena, IndexType type, TerrainStore.Region region) {
-            return this.format == format && this.arena == arena && this.type == type && this.region == region;
+        boolean fits(TerrainStore.Arena arena, IndexType type, TerrainStore.Region region) {
+            return this.arena == arena && this.type == type && this.region == region;
         }
 
         void add(int count, int base, long offset) {
@@ -159,9 +157,8 @@ public final class TerrainRenderer {
     private static final Long2LongOpenHashMap HANDED_OVER = new Long2LongOpenHashMap();
     private static boolean prepared;
     @SuppressWarnings("unchecked")
-    /** Draw lists, index layer * 2 + format (format 0 compact, 1 wide). */
-    private static final List<ArenaDraws>[] FRAME = new List[] {new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>(),
-        new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
+    /** Draw lists, index layer (0 solid, 1 cutout). */
+    private static final List<ArenaDraws>[] FRAME = new List[] {new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
     private static final List<DynamicGpuData.ChunkSectionInfo> INSTANCES = new ArrayList<>();
     private static GpuBufferSlice instanceSlice;
     /** This frame's one Brimstone command list (indirect path), all layers and arenas back to back, and its slice. */
@@ -285,10 +282,10 @@ public final class TerrainRenderer {
                 for (int li = 0; li < 2; li++) {
                     TerrainStore.Entry e = es[li];
                     if (e == null) continue;
-                    for (int f = 0; f < 2; f++) {
-                        TerrainStore.Part part = e.parts[f];
+                    {
+                        TerrainStore.Part part = e.part;
                         if (part == null) continue;
-                        ArenaDraws ad = arenaDraws(li * 2 + f, part.arena);
+                        ArenaDraws ad = arenaDraws(li, part.arena);
                         int count = part.indexCount();
                         maxIndexCount = Math.max(maxIndexCount, count);
                         if (plain) {
@@ -335,7 +332,7 @@ public final class TerrainRenderer {
 
     /**
      * This frame's translucent runs, in vanilla's order: the visible list as is, or reversed when vanilla sorts. A run
-     * goes on while the next section layer shares its format, arena, index type and (plain path) region.
+     * goes on while the next section layer shares its arena, index type and (plain path) region.
      */
     private static void buildTranslucentRuns(boolean plain) {
         int n = TL_ENTRIES.size();
@@ -343,13 +340,12 @@ public final class TerrainRenderer {
         for (int k = 0; k < n; k++) {
             int i = sortTranslucent ? n - 1 - k : k;
             TerrainStore.Entry e = TL_ENTRIES.get(i);
-            int format = e.parts[TerrainStore.COMPACT] != null ? TerrainStore.COMPACT : TerrainStore.WIDE;
-            TerrainStore.Part part = e.parts[format];
+            TerrainStore.Part part = e.part;
             TerrainStore.IndexPart ip = e.index;
             if (part == null || ip.arena != part.arena) throw new IllegalStateException("a translucent layer's vertices and indices are not in one arena");
             TerrainStore.Region region = plain ? e.region : null;
-            if (run == null || !run.fits(format, part.arena, ip.type, region)) {
-                run = new TRun(format, part.arena, ip.type, region);
+            if (run == null || !run.fits(part.arena, ip.type, region)) {
+                run = new TRun(part.arena, ip.type, region);
                 TRUNS.add(run);
             }
             run.add(ip.count, part.baseVertex, ip.offset());
@@ -415,7 +411,7 @@ public final class TerrainRenderer {
             if (mesh.getSectionDraw(AUDIT_LAYER_ORDER[li]) == null) continue;
             n++;
             TerrainStore.Entry e = es == null ? null : es[li];
-            if (e == null || (e.parts[0] == null && e.parts[1] == null) || (li == TerrainStore.TRANSLUCENT && e.index == null)) {
+            if (e == null || e.part == null || (li == TerrainStore.TRANSLUCENT && e.index == null)) {
                 AUDIT_MESHES.add(mesh);
                 AUDIT_LAYERS.add(AUDIT_LAYER_ORDER[li]);
             }
@@ -563,7 +559,7 @@ public final class TerrainRenderer {
             return;
         }
         boolean wireframe = override != null || overrideMultidraw != null;
-        if (FRAME[li * 2].isEmpty() && FRAME[li * 2 + 1].isEmpty()) return;
+        if (FRAME[li].isEmpty()) return;
         try {
             TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
             boolean plain = path != Path.INDIRECT;
@@ -571,16 +567,15 @@ public final class TerrainRenderer {
             GpuBuffer indexBuffer = quads.getBuffer();
             if (indexBuffer == null || !quads.hasStorage(maxIndexCount)) throw new IllegalStateException("the shared quad index buffer is too small");
             int draws = 0, sectionLayers = 0;
-            for (int f = 0; f < 2; f++) {
-                List<ArenaDraws> list = FRAME[li * 2 + f];
-                if (list.isEmpty()) continue;
+            {
+                List<ArenaDraws> list = FRAME[li];
                 CompiledRenderPipeline pipeline;
                 if (wireframe) {
-                    pipeline = TerrainPipelines.wireframe(f, plain);
-                    if (pipeline == null) continue;
+                    pipeline = TerrainPipelines.wireframe(plain);
                 } else {
-                    pipeline = TerrainPipelines.compiled(TerrainPipelines.pipeline(f, plain, li == 1));
+                    pipeline = TerrainPipelines.compiled(TerrainPipelines.pipeline(plain, li == 1));
                 }
+                if (pipeline == null) return;
                 pass.setPipeline(pipeline);
                 pass.setIndexBuffer(indexBuffer, quads.type());
                 draws += plain ? drawPlain(pass, list) : drawIndirect(pass, list);
@@ -628,10 +623,10 @@ public final class TerrainRenderer {
             for (TRun run : TRUNS) {
                 CompiledRenderPipeline pipeline;
                 if (mode == -1) {
-                    pipeline = TerrainPipelines.wireframe(run.format, plain);
+                    pipeline = TerrainPipelines.wireframe(plain);
                     if (pipeline == null) continue;
                 } else {
-                    RenderPipeline p = TerrainPipelines.translucent(mode, run.format, plain);
+                    RenderPipeline p = TerrainPipelines.translucent(mode, plain);
                     if (p == null) throw new IllegalStateException("no translucent pipeline");
                     pipeline = TerrainPipelines.compiled(p);
                 }
