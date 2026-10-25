@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "com.meakaandre.brimstone.cipin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["LightmapFlickerMixin", "TextureAnimationMixin", "FeatureBatchOrderMixin"],
+  "client": ["LightmapFlickerMixin", "TextureAnimationMixin", "FeatureBatchOrderMixin", "BlockOutlineMixin"],
   "injectors": {"defaultRequire": 1}
 }

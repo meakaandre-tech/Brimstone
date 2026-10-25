@@ -7,8 +7,7 @@
   "license": "LGPL-3.0-only",
   "environment": "client",
   "mixins": [
-    "brimstone_ci_pin.mixins.json",
-    "brimstone_ci_pin.diag.mixins.json"
+    "brimstone_ci_pin.mixins.json"
   ],
   "depends": {
     "fabricloader": "*",
