@@ -930,18 +930,28 @@
     "samples": 6,
     "strictVanillaBA": [
       6960,
-      8712
+      8712,
+      17712,
+      5856,
+      13276,
+      6048,
+      8352,
+      4028,
+      22532,
+      6288
     ],
     "strictDryRun": [
       1220,
       3168,
       1624
     ],
-    "strictLimit": 13100,
     "strictRuns": [
-      40155387068
+      40155387068,
+      40156711337,
+      40161774743,
+      40162905190
     ],
-    "strictNote": "strict limit set when the scene ran again (SIFTEC's latest release carries its selftest jar since 2026-10-25): run 40155387068, SIFTEC noise collection (dry run); rule: largest sample x 1.5, rounded up to 100"
+    "strictNote": "no strict gate (ciNoStrict, Andre's fallback (b), 2026-10-25): SIFTEC's map shows the tiles it has scanned by the time it opens; waiting for a steady picture (run 40161774743) and standing 60 s in the area first (run 40162905190) did not make vanilla runs agree (b/a up to 22,532). The 8/255 limit stays. Package 7 must give it real strict coverage."
   },
   "siftec/sift": {
     "all": [

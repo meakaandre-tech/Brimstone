@@ -42,8 +42,6 @@ if [ $brim = 1 ]; then
   if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
   echo "Brimstone run JVM properties:$client_jvm"
 fi
-# DIAGNOSTIC (branch only, removed before merge): extra JVM options and a scene filter for the measure-only job
-if [ -n "${EXTRA_JVM:-}" ]; then client_jvm="$client_jvm $EXTRA_JVM"; echo "diagnostic JVM options: $EXTRA_JVM"; fi
 
 # ---- server
 if [ "$SUITE" = siftec ]; then
@@ -105,10 +103,7 @@ echo "op @a" >&3
 groups=$(python3 -c "
 import json; s=json.load(open('$suitefile'))
 rd={}
-import os
-only=os.environ.get('SCENES','').split()
 for x in s['scenes']:
-    if only and x['id'] not in only: continue
     opts=','.join(k+'='+str(v) for k,v in sorted((x.get('clientOptions') or {}).items()))
     rd.setdefault((x.get('renderDistance',8), opts),[]).append(x['id'])
 print(' '.join(str(k[0])+'|'+(k[1] or '-')+'|'+','.join(v) for k,v in sorted(rd.items())))")

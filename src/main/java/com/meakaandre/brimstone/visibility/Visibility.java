@@ -140,13 +140,6 @@ public final class Visibility {
     }
 
     private static boolean start() {
-        if (Boolean.getBoolean("brimstone.debug.measureOnly")) {
-            // DIAGNOSTIC (branch only, removed before merge): vanilla decides what to draw, the bench only measures
-            state = State.OFF;
-            reason = "measure only (debug)";
-            BrimstoneClient.LOG.warn("Brimstone visibility: off, brimstone.debug.measureOnly is set");
-            return false;
-        }
         String why = VisibilityMixins.loadTargetsAndCheck();
         if (why == null && !EntityRendererInvoker.class.isAssignableFrom(EntityRenderer.class)) why = "the EntityRenderer invoker did not apply";
         if (why == null && !RenderSectionStamp.class.isAssignableFrom(SectionRenderDispatcher.RenderSection.class)) {

@@ -27,7 +27,8 @@ block or shade, large enough to ignore rounding.
     with "ciRequiresOit" must be drawn with Improved Transparency in every measured frame and the others never;
   - strict picture: on the pixels where all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly, the
     number of pixels where a Brimstone run differs from its own profile's vanilla run at all (threshold 0); over
-    ci/strict-pixel-limits.json fails (see docs/ci-limits.md).
+    ci/strict-pixel-limits.json fails (see docs/ci-limits.md); a scene with "ciNoStrict" (a reason) is reported, not
+    gated, on this check.
 """
 import glob
 import json
@@ -334,12 +335,17 @@ def main():
                     if agree is not None and c is None:
                         failures.append(f"{name}/{sid}: strict picture check is missing the {prof} screenshot")
                     elif c is not None and strict_limits is not None:
+                        if sc.get("ciNoStrict"):
+                            # no strict gate for this scene (its own noise is larger than anything it could show; the
+                            # 8/255 limit above still applies); the counts are reported
+                            continue
                         if slimit is None:
                             failures.append(f"{name}/{sid}: no strict pixel limit in ci/strict-pixel-limits.json")
                         elif c > slimit:
                             failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
                                             f" agrees exactly (strict limit {slimit})")
-                strict_lines.append(f"| {sid} | {agree} | {slimit if strict_limits is not None else 'not set yet'} | "
+                shown = f"not gated ({sc['ciNoStrict']})" if sc.get("ciNoStrict") else (slimit if strict_limits is not None else 'not set yet')
+                strict_lines.append(f"| {sid} | {agree} | {shown} | "
                                     + " | ".join(str(counts.get(p)) for p in PAIRS) + " |")
         lines.append("")
         lines.append("Strict picture: pixels where all four vanilla runs agree exactly but the Brimstone run differs at all:\n")

@@ -1,12 +1,23 @@
 {
+  "factory": {
+    "directBuffersMB": 5.48,
+    "drawCallsPerFrame": 111.52,
+    "heapUsedAfterGcMB": 421.74,
+    "runs": [
+      "40156711337 attempts 1-3"
+    ],
+    "uploadBytesPerFrame": 6488,
+    "uploadsPerFrame": 14
+  },
   "hologram": {
-    "directBuffersMB": 4.24,
+    "directBuffersMB": 8.24,
     "drawCallsPerFrame": 166,
     "heapUsedAfterGcMB": 453.57,
     "runs": [
       40126212181,
       40128444322,
-      40130610610
+      40130610610,
+      "40156711337 attempts 1-3 (direct MB)"
     ],
     "uploadBytesPerFrame": 70368,
     "uploadsPerFrame": 24
@@ -37,6 +48,16 @@
     "uploadBytesPerFrame": 24656,
     "uploadsPerFrame": 21
   },
+  "map": {
+    "directBuffersMB": 8.24,
+    "drawCallsPerFrame": 177.0,
+    "heapUsedAfterGcMB": 504.13,
+    "runs": [
+      "40156711337 attempts 1 and 3"
+    ],
+    "uploadBytesPerFrame": 47032,
+    "uploadsPerFrame": 14
+  },
   "sift": {
     "directBuffersMB": 5.87,
     "drawCallsPerFrame": 155.82,
@@ -45,9 +66,10 @@
       7,
       8,
       10,
-      11
+      11,
+      "40156711337 attempts 1-3 (uploads)"
     ],
-    "uploadBytesPerFrame": 55764,
+    "uploadBytesPerFrame": 68940,
     "uploadsPerFrame": 19
   }
 }

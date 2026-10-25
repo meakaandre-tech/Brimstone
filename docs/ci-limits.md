@@ -141,7 +141,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
 | SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
 | SIFTEC/factory (strict limit from 2026-10-25) | 0/0 (run 40155387068) | 2 (dry run) | 100 |
-| SIFTEC/map (strict limit from 2026-10-25) | 6960/8712 (run 40155387068) | 3168 (dry run) | 13100 |
+| SIFTEC/map | 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190) | 3168 (dry run) | **not gated** (`ciNoStrict`, see below) |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
@@ -179,8 +179,14 @@ shots in every profile agreed there, run 40154022133). **The block outline is th
 or 7 must add a scene that checks it with the outline drawn.
 
 The SIFTEC factory and map scenes run again since SIFTEC's latest release carries its selftest jar (2026-10-25); they
-had no strict limits (skipped since package 1), so these were set by the rule (largest sample x 1.5, rounded up to
-100) from run 40155387068.
+had no strict limits (skipped since package 1). Factory's was set by the rule (largest sample x 1.5, rounded up to
+100) from run 40155387068. The map's first limit (13,100, one run) was under-sampled: vanilla runs differ from each
+other there by up to 22,532 pixels, because SIFTEC's map shows whichever tiles it has scanned by the time it opens.
+Two attempts to make it steady from the client side (Andre's time box) did not: waiting until two captures 5 s apart
+were identical (run 40161774743: every run steady at once, vanilla runs still 37-44k pixels apart) and standing 60 s
+in the area before opening (run 40162905190: 35-58k apart). So, as Andre decided (fallback (b)), the map has **no
+strict gate** (`"ciNoStrict"` on the scene; compare.py reports its counts); its 8/255 limit (11.35%) stays.
+**Package 7 (GUI) must give the map real strict coverage.**
 
 Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
 fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
@@ -284,6 +290,37 @@ runs on `4cb5419`, `6d48fc7` and later. Every other scene and every other count 
 
 Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2). The dry run's 170 is left out: in a dry run Brimstone isn't
 drawing the translucent terrain itself, so its count is not Brimstone's.
+
+### SIFTEC scenes on SIFTEC's 2026-10-25 release (factory and map back, sift uploads, hologram direct buffers)
+
+Baselines from the three runs of commit `41c9e44` (run 40156711337, attempts 1-3; a run counts as clean for a scene
+when that scene passed every check in it, Andre 2026-10-25):
+
+- **`sift` upload bytes re-baselined** (Andre's rule: vanilla jumps the same way, so it is the pack). The per-frame
+  median moves in about 12.9 KB steps (30k, 43k, 56k, 69k, 82k) and since SIFTEC's latest releases reaches 81,788 in
+  some runs (over the old gate, about 77.7k). Vanilla's own counts in the same runs (branch-only jobs that ran the
+  factory and sift scenes with every Brimstone module off, so the bench measured vanilla): vanilla a / b / old-GPU /
+  Vulkan = 43,120 / 68,936 / 47,504 / 55,980, then 43,120 / 55,972 / 34,316 / 55,764, then 55,980 / 56,304 / 60,252 /
+  43,128. Brimstone in the same runs: full 68,940 / 43,128 / 68,940, old-GPU 43,264 / 43,376 / 43,376, Vulkan
+  55,980 / 56,084 / 43,232. New baselines: full **68,940** (was 55,764), old-GPU **43,376** (was 73,228: down),
+  Vulkan **56,084** (was 55,980). Vanilla's factory uploads matched Brimstone's too (6,284-6,488 on full, 49,444-49,604
+  old-GPU, 51,036-51,056 Vulkan).
+- **`hologram` direct buffers re-baselined** (Andre's OK): full **8.24** (was 4.24), old-GPU **8.24** (was 3.73, one
+  dry-run sample from when factory and map were skipped). The map scene now runs just before the hologram in the same
+  client session, and the JVM's direct pool grows to 8.24 MB there and keeps that size (attempt 1, full: mam 7.73, map
+  8.24, hologram 8.24; attempt 2, old-GPU the same). Brimstone allocates no java.nio direct buffers at all, and a
+  15-minute hologram bench showed no growth (docs/progress.md, package 3).
+- **`factory` and `map` count baselines** (they had none, so their counts were not gated): from the same runs (map
+  from attempts 1 and 3; attempt 2 failed the map's then strict limit).
+
+| suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
+|---|---|---|---|---|---|---|
+| siftec-full | factory | 111.52 | 14 | 6488 | 421.74 | 5.48 |
+| siftec-full | map | 177.0 | 14 | 47032 | 504.13 | 8.24 |
+| siftec-old-gpu | factory | 119.43 | 13 | 48604 | 421.54 | 5.48 |
+| siftec-old-gpu | map | 225.0 | 12 | 31404 | 506.16 | 6.31 |
+| siftec-vulkan | factory | 111.25 | 15 | 51148 | 420.23 | 3.71 |
+| siftec-vulkan | map | 177.0 | 14 | 47072 | 504.09 | 8.23 |
 
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
