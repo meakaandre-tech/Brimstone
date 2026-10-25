@@ -1196,6 +1196,10 @@ hub, mam, hologram), and the JVM's direct pool (vanilla's and its libraries', e.
 steps at some point in it and keeps that size; the step lands in mam or in hologram depending on the run (run
 40130610610 full: 3.48, 3.48, 5.48, 5.48; old-GPU 4.24, 4.24, 4.24, 6.24; run 40135570271 full: 3.73 in all four).
 
+**For package 5's plan (Andre, 2026-10-25):** make the SIFTEC factory's Create animation repeatable in CI (vanilla and
+Brimstone alike; a striped part of one machine is in another phase in about one run in four, 315 pixels), then
+re-collect the factory's strict limit (500 now) and lower it.
+
 **5. Review.** Round 2 (fresh agent, `docs/review-package-3b.md`; of commit `a9444ac`, run 40164365265): done-when
 holds (0 check misses, 0 render-thread sorts, translucent shots 0-7 px against 10-40, hologram 19/18 against 360);
 Andre's decisions carried out; nothing else relaxed; diagnostics fully reverted; trailers on every commit. Fixed:

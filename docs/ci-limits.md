@@ -140,7 +140,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/translucent_move_oit.low (package 3) | 7/4 | 7 (dry run) | 20 |
 | core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
 | SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
-| SIFTEC/factory (strict limit from 2026-10-25) | 0/0 (run 40155387068) | 2 (dry run) | 100 |
+| SIFTEC/factory (strict limit from 2026-10-25) | 0/0 in most runs; **315/0** (run 40156711337 attempt 2: a vanilla-only flip, see below) | 2 (dry run); real runs 0 or 313-315 | 500 (100 from the first, single-run collection) |
 | SIFTEC/map | 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190) | 3168 (dry run) | **not gated** (`ciNoStrict`, see below) |
 | SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
@@ -179,8 +179,12 @@ shots in every profile agreed there, run 40154022133). **The block outline is th
 or 7 must add a scene that checks it with the outline drawn.
 
 The SIFTEC factory and map scenes run again since SIFTEC's latest release carries its selftest jar (2026-10-25); they
-had no strict limits (skipped since package 1). Factory's was set by the rule (largest sample x 1.5, rounded up to
-100) from run 40155387068. The map's first limit (13,100, one run) was under-sampled: vanilla runs differ from each
+had no strict limits (skipped since package 1). Factory's first limit (100, run 40155387068 alone) was under-sampled: in about one run in
+four, a yellow-and-black striped part of one Create machine in the factory is in another phase (its angle or
+texture follows time), in vanilla's runs too (vanilla b against a: 315 pixels in run 40156711337 attempt 2;
+Brimstone 313-315 in runs 40162905190 and 40166776073). By the rule, 315 x 1.5 = 472.5, rounded up to 100: **500**
+(Andre's OK, 2026-10-25). Package 5 (Flywheel and Create) makes that animation repeatable in CI, vanilla and Brimstone
+alike, then re-collects and lowers this limit. The map's first limit (13,100, one run) was under-sampled: vanilla runs differ from each
 other there by up to 22,532 pixels, because SIFTEC's map shows whichever tiles it has scanned by the time it opens.
 Two attempts to make it steady from the client side (Andre's time box) did not: waiting until two captures 5 s apart
 were identical (run 40161774743: every run steady at once, vanilla runs still 37-44k pixels apart) and standing 60 s
@@ -303,7 +307,21 @@ when that scene passed every check in it, Andre 2026-10-25):
   Vulkan = 43,120 / 68,936 / 47,504 / 55,980, then 43,120 / 55,972 / 34,316 / 55,764, then 55,980 / 56,304 / 60,252 /
   43,128. Brimstone in the same runs: full 68,940 / 43,128 / 68,940, old-GPU 43,264 / 43,376 / 43,376, Vulkan
   55,980 / 56,084 / 43,232. New baselines: full **68,940** (was 55,764), old-GPU **43,376** (was 73,228: down),
-  Vulkan **56,084** (was 55,980). Vanilla's factory uploads matched Brimstone's too (6,284-6,488 on full, 49,444-49,604
+  Vulkan **56,084** (was 55,980). Then, Andre's one-off exception to "highest clean value" (2026-10-25, other scenes
+  keep the rule): the upload breakdown by kind shows every byte of the jump is in MAP_WRITE (writes into mapped GPU
+  buffers) in vanilla and Brimstone alike; WRITE_TEXTURE is 0 everywhere, WRITE_BUFFER is constant (4,016 B/frame on
+  full and Vulkan, 112 on old-GPU), always 3 + 16 uploads per frame (2 + ~15 on old-GPU). So the `sift` baseline is the
+  highest value seen in any run, vanilla or Brimstone, **81,788** on every profile (gate as usual: x1.10 + 16 KiB).
+
+  | run | vanilla a | vanilla b | vanilla old | vanilla vk | Brimstone full | Brimstone old | Brimstone vk |
+  |---|---|---|---|---|---|---|---|
+  | 40156711337 #1 | 43,120 (39,125) | 68,936 (64,928) | 47,504 (47,359) | 55,980 (54,012) | 68,940 (66,584) | 43,264 (44,452) | 55,980 (54,217) |
+  | #2 | 43,120 (41,420) | 55,972 (51,423) | 34,316 (34,236) | 55,764 (51,497) | 43,128 (44,802) | 43,376 (43,256) | 56,084 (52,072) |
+  | #3 | 55,980 (49,537) | 56,304 (56,785) | 60,252 (59,115) | 43,128 (38,981) | 68,940 (64,885) | 43,376 (43,246) | 43,232 (47,485) |
+  | 40154022133 | - | - | - | - | 55,872 (51,858) | 30,860 (33,856) | 81,788 (77,935) |
+
+  Upload bytes per frame, median; in brackets the MAP_WRITE part (a per-frame average, so it doesn't add up exactly
+  to the median). Vanilla's factory uploads matched Brimstone's too (6,284-6,488 on full, 49,444-49,604
   old-GPU, 51,036-51,056 Vulkan).
 - **`hologram` direct buffers re-baselined** (Andre's OK): full **8.24** (was 4.24), old-GPU **6.31** (was 3.73, one
   dry-run sample from when factory and map were skipped). The map scene now runs just before the hologram in the same

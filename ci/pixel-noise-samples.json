@@ -790,18 +790,46 @@
     "samples": 9,
     "strictVanillaBA": [
       0,
+      0,
+      0,
+      0,
+      315,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
       0
     ],
     "strictDryRun": [
       2,
       0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      313,
+      0,
       0
     ],
-    "strictLimit": 100,
+    "strictLimit": 500,
     "strictRuns": [
-      40155387068
+      40155387068,
+      40156711337,
+      40161774743,
+      40162905190,
+      40164365265,
+      40166776073
     ],
-    "strictNote": "strict limit set when the scene ran again (SIFTEC's latest release carries its selftest jar since 2026-10-25): run 40155387068, SIFTEC noise collection (dry run); rule: largest sample x 1.5, rounded up to 100"
+    "strictNote": "315 x 1.5 = 472.5, rounded up to 100: 500 (Andre's OK, 2026-10-25). The 315 is a vanilla-only flip (vanilla b against a in run 40156711337 attempt 2): a yellow-and-black striped part of one Create machine in another phase, in about one run in four, vanilla and Brimstone alike. The first limit (100, run 40155387068 alone) was under-sampled. Package 5 makes that animation repeatable in CI, then this limit is re-collected and lowered."
   },
   "siftec/hologram": {
     "all": [
