@@ -101,7 +101,7 @@
         "#wait 3",
         "siftec worldtest map open 1.5"
       ],
-      "ciNoStrict": "SIFTEC's map shows whichever tiles it has scanned when it opens, so vanilla runs differ from each other by up to 22,532 pixels there; package 7 (GUI) must give it real strict coverage",
+      "ciNoStrict": "SIFTEC's map shows whichever tiles it has scanned when it opens, so vanilla runs differ from each other by up to 22,532 strict pixels there (35-58k pixels in all after two attempts to wait for a steady map); package 7 (GUI) must give it real strict coverage",
       "screen": {
         "expect": "MapScreen"
       },

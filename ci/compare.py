@@ -46,6 +46,8 @@ SLACK = {"drawCallsPerFrame": 2.0, "uploadsPerFrame": 1.0, "uploadBytesPerFrame"
          "heapUsedAfterGcMB": 16.0, "directBuffersMB": 4.0}
 GATED = list(SLACK)
 PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "vanilla-old"), "vulkan": ("brimstone-vk", "vanilla-vk")}
+# scenes allowed to opt out of the strict gate ("ciNoStrict"), each by a decision recorded in docs/ci-limits.md
+NO_STRICT_ALLOWED = {"siftec/map"}
 RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "brimstone-full", "brimstone-old", "brimstone-vk"]
 
 
@@ -335,7 +337,7 @@ def main():
                     if agree is not None and c is None:
                         failures.append(f"{name}/{sid}: strict picture check is missing the {prof} screenshot")
                     elif c is not None and strict_limits is not None:
-                        if sc.get("ciNoStrict"):
+                        if sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED:
                             # no strict gate for this scene (its own noise is larger than anything it could show; the
                             # 8/255 limit above still applies); the counts are reported
                             continue
@@ -344,7 +346,7 @@ def main():
                         elif c > slimit:
                             failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
                                             f" agrees exactly (strict limit {slimit})")
-                shown = f"not gated ({sc['ciNoStrict']})" if sc.get("ciNoStrict") else (slimit if strict_limits is not None else 'not set yet')
+                shown = f"not gated ({sc['ciNoStrict']})" if sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED else (slimit if strict_limits is not None else 'not set yet')
                 strict_lines.append(f"| {sid} | {agree} | {shown} | "
                                     + " | ".join(str(counts.get(p)) for p in PAIRS) + " |")
         lines.append("")

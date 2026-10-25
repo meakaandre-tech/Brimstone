@@ -1109,7 +1109,7 @@ that scene's per-frame median instead of its average (the report shows both). Ev
 | 40128444322 | `0db931b` | 166 (144.24) | 167 (148.72) | yes (failed only on the average) |
 | 40130610610 | `13f56fb` | 166 (142.45) | 167 (146.9) | yes (failed only on the average) |
 
-Baselines: **full 166, old-GPU 167** (not run on Vulkan). Later runs: 166/167 up to run 40139975085; 173/174 in every run since SIFTEC's 2026-10-25 release (runs 40156711337 attempts 1-3 and 40164365265; averages 127-165), within the gate (x1.10 + 2: 184.6 / 185.7). The baseline was not raised.
+Baselines: **full 166, old-GPU 167** (not run on Vulkan). Later runs: 166/167 up to run 40139975085; 173/174 in every run since SIFTEC's 2026-10-25 release (runs 40156711337 attempts 1-3 and 40164365265; averages 127-165), within the gate. The baseline was not raised; it went down by one draw (to 165 / 166) because the crosshair outline pin removes exactly one draw per frame in this scene (review finding m4).
 
 **2. The outliner's two brightness states.** Two probe runs (branch-only diagnostics, since removed):
 - run 40135570271 logged the outliner's entries and params (colour `ff5cd65c`, light `f000f0`, alpha 1, line width,
@@ -1162,7 +1162,7 @@ strict limits and no count baselines:
   module off, jump in the same ~12.9 KB steps (43,120 / 68,936 / 47,504 / 55,980, then 43,120 / 55,972 / 34,316 /
   55,764, then 55,980 / 56,304 / 60,252 / 43,128 for vanilla a / b / old-GPU / Vulkan), so per Andre's rule it was
   re-baselined from the three runs: full 68,940, old-GPU 43,376, Vulkan 56,084.
-- hologram direct buffers re-baselined to 8.24 MB (full and old-GPU), Andre's OK: map now runs right before it in
+- hologram direct buffers re-baselined to 8.24 MB (full) and 6.31 MB (old-GPU, from the runs clean for it), Andre's OK: map now runs right before it in
   the same session and the JVM's direct pool keeps the size it reaches there (see 4).
 
 **3. Dumps.** The build job writes `javap-all.txt.gz`, `bytecode.txt.gz` and the class lists to the `game-dumps`
@@ -1196,7 +1196,14 @@ hub, mam, hologram), and the JVM's direct pool (vanilla's and its libraries', e.
 steps at some point in it and keeps that size; the step lands in mam or in hologram depending on the run (run
 40130610610 full: 3.48, 3.48, 5.48, 5.48; old-GPU 4.24, 4.24, 4.24, 6.24; run 40135570271 full: 3.73 in all four).
 
-**5. Review.** REVIEW_ROUNDS
+**5. Review.** Round 2 (fresh agent, `docs/review-package-3b.md`; of commit `a9444ac`, run 40164365265): done-when
+holds (0 check misses, 0 render-thread sorts, translucent shots 0-7 px against 10-40, hologram 19/18 against 360);
+Andre's decisions carried out; nothing else relaxed; diagnostics fully reverted; trailers on every commit. Fixed:
+M1 (old-GPU hologram direct baseline from runs clean for it: 6.31, not 8.24), m3 (`ciNoStrict` only for scenes on an
+allow-list in compare.py), m4 (hologram medians down by the one draw the crosshair pin removes: 165/166), m5 (stale
+doc text). Left for Andre: B1 (translucent draw calls above vanilla on full and Vulkan) and M2 (sift upload bytes
+can still step over the new gate); see the top of this file. Not changed: m1 (the move scenes' draw calls stay
+memory-gated only), m2 (the Improved Transparency check counts stage draws, not frames).
 
 **Runs (2026-10-25):** 40135570271 (permanent changes + first probes + the 15-minute memory job: green),
 40138168127 (draw-order probe), 40139105024 (batch order pin, SIFTEC collection), 40139975085 (full run: failed the

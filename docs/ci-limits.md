@@ -269,8 +269,8 @@ moving camera makes vanilla sort again and upload new index lists at times that 
 | core-vulkan | translucent_move (memory gated only) | 126.0 | 15 | 10220 | 268.35 | 5.46 |
 | core-vulkan | water_glass_oit | 131.0 | 15 | 15024 | 245.99 | 3.46 |
 | core-vulkan | translucent_move_oit (memory gated only) | 131.0 | 15 | 10332 | 248.38 | 3.46 |
-| siftec-full | hologram (draw calls: **median**, see below; the rest run 40123696828, SIFTEC dry run) | 166 | 24 | 70368 | 453.57 | 4.24 |
-| siftec-old-gpu | hologram (draw calls: **median**, see below; the rest run 40123696828, SIFTEC dry run) | 167 | 23 | 70624 | 452.39 | 3.73 |
+| siftec-full | hologram (draw calls: **median**, see below; direct MB: see "SIFTEC scenes on SIFTEC's 2026-10-25 release"; the rest run 40123696828, SIFTEC dry run) | 165 | 24 | 70368 | 453.57 | 8.24 |
+| siftec-old-gpu | hologram (draw calls: **median**, see below; direct MB: see "SIFTEC scenes on SIFTEC's 2026-10-25 release"; the rest run 40123696828, SIFTEC dry run) | 166 | 23 | 70624 | 452.39 | 6.31 |
 
 ### Hologram draw calls: gated on the median (decided by Andre, 2026-10-25)
 
@@ -288,7 +288,7 @@ runs on `4cb5419`, `6d48fc7` and later. Every other scene and every other count 
 | 40128444322 | `0db931b` | 166 (144.24) | 167 (148.72) | yes (failed only on this average) |
 | 40130610610 | `13f56fb` | 166 (142.45) | 167 (146.9) | yes (failed only on this average) |
 
-Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2). The dry run's 170 is left out: in a dry run Brimstone isn't
+Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2), then **165 / 166** since the crosshair outline pin: it removed exactly one draw per frame from this scene (median 174 to 173 on full, 175 to 174 on old-GPU between runs 40152673881 and 40154022133), so the baselines went down by that draw, as after the texture-animation pin. The dry run's 170 is left out: in a dry run Brimstone isn't
 drawing the translucent terrain itself, so its count is not Brimstone's.
 
 ### SIFTEC scenes on SIFTEC's 2026-10-25 release (factory and map back, sift uploads, hologram direct buffers)
@@ -305,10 +305,12 @@ when that scene passed every check in it, Andre 2026-10-25):
   55,980 / 56,084 / 43,232. New baselines: full **68,940** (was 55,764), old-GPU **43,376** (was 73,228: down),
   Vulkan **56,084** (was 55,980). Vanilla's factory uploads matched Brimstone's too (6,284-6,488 on full, 49,444-49,604
   old-GPU, 51,036-51,056 Vulkan).
-- **`hologram` direct buffers re-baselined** (Andre's OK): full **8.24** (was 4.24), old-GPU **8.24** (was 3.73, one
+- **`hologram` direct buffers re-baselined** (Andre's OK): full **8.24** (was 4.24), old-GPU **6.31** (was 3.73, one
   dry-run sample from when factory and map were skipped). The map scene now runs just before the hologram in the same
   client session, and the JVM's direct pool grows to 8.24 MB there and keeps that size (attempt 1, full: mam 7.73, map
-  8.24, hologram 8.24; attempt 2, old-GPU the same). Brimstone allocates no java.nio direct buffers at all, and a
+  8.24, hologram 8.24; attempt 2, old-GPU the same). Old-GPU's value comes from attempts 1 and 3 (6.06, 6.31): attempt 2
+  failed this very check (8.24 against the old 3.73), so it was not clean for the hologram (review finding, 2026-10-25);
+  its 8.24 is within the new gate (6.31 x 1.10 + 4 = 10.94). Brimstone allocates no java.nio direct buffers at all, and a
   15-minute hologram bench showed no growth (docs/progress.md, package 3).
 - **`factory` and `map` count baselines** (they had none, so their counts were not gated): from the same runs (map
   from attempts 1 and 3; attempt 2 failed the map's then strict limit).

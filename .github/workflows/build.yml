@@ -48,8 +48,8 @@ jobs:
           # .github/dump-signatures: javap -p of every game and Fabric API class; .github/dump-bytecode: javap -c of the
           # game classes whose names match a regex in that file (one per line). Facts for later packages' mixins.
           # Nothing of Mojang's is published (design doc, Rules: Mojang code): the dumps and the class lists go to
-          # /tmp/dumps, an Actions artifact kept for 1 day, never to the public ci-logs branch. /tmp/ci holds only
-          # Brimstone's own build log and jar list.
+          # /tmp/dumps, an Actions artifact kept for 1 day, never to the public ci-logs branch. /tmp/ci holds Brimstone's
+          # own build log and jar list (only build.log reaches ci-logs).
           set +e +o pipefail
           mkdir -p /tmp/ci /tmp/dumps
           ./gradlew dumpCompileClasspath --no-daemon -q -I /tmp/ci.gradle >/dev/null 2>&1 || true
