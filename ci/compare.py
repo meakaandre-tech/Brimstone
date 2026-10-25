@@ -27,7 +27,9 @@ block or shade, large enough to ignore rounding.
     Brimstone's, no dry run; scenes with "ciRequiresTranslucent" must have Brimstone draw translucent sections, scenes
     with "ciRequiresOit" must be drawn with Improved Transparency in every measured frame and the others never;
   - strict picture: on the pixels where all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly, the
-    number of pixels where a Brimstone run differs from its own profile's vanilla run at all (threshold 0); over
+    number of pixels where a Brimstone run differs from its own profile's vanilla run by more than STRICT_THRESHOLD
+    (2/255 in any channel: Andre's decision, 2026-10-25, as the 16-byte vertex's rounding moves interpolated colours by
+    1-2/255; the count at any difference is reported next to it); over
     ci/strict-pixel-limits.json fails (see docs/ci-limits.md); a scene with "ciNoStrict" (a reason) is reported, not
     gated, on this check.
 """
@@ -41,6 +43,7 @@ import numpy as np
 from PIL import Image
 
 THRESHOLD = 8
+STRICT_THRESHOLD = 2
 RISE = 1.10
 # absolute allowance on top of the 10%, for values that move in steps (see docs/ci-limits.md)
 SLACK = {"drawCallsPerFrame": 2.0, "uploadsPerFrame": 1.0, "uploadBytesPerFrame": 16384.0,
@@ -70,15 +73,16 @@ def load(path):
 
 
 def strict(shot, out_prefix, skip_runs=()):
-    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs at all. Runs a
-    scene skips ("ciSkipRuns", package 3) are left out of both the agreement and the counts."""
+    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs by more than
+    STRICT_THRESHOLD, and (reported only) by anything at all. Runs a scene skips ("ciSkipRuns", package 3) are left out
+    of both the agreement and the counts."""
     v = {r: load(shot(r)) for r in ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk") if r not in skip_runs}
     if any(x is None for x in v.values()) or len({x.shape for x in v.values()}) != 1:
-        return None, {}
+        return None, {}, {}
     agree = np.ones(v["vanilla-a"].shape[:2], bool)
     for x in v.values():
         agree &= (x == v["vanilla-a"]).all(axis=2)
-    out = {}
+    out, anyd = {}, {}
     for prof, (b, vr) in PAIRS.items():
         if b in skip_runs or vr in skip_runs:
             continue
@@ -86,11 +90,13 @@ def strict(shot, out_prefix, skip_runs=()):
         if bs is None or bs.shape != v[vr].shape:
             out[prof] = None
             continue
-        bad = agree & (bs != v[vr]).any(axis=2)
+        d = np.abs(bs - v[vr]).max(axis=2)
+        bad = agree & (d > STRICT_THRESHOLD)
         out[prof] = int(bad.sum())
+        anyd[prof] = int((agree & (d > 0)).sum())
         if out[prof]:
             Image.fromarray((bad * 255).astype(np.uint8)).save(f"{out_prefix}-{prof}-strict.png")
-    return round(float(agree.mean() * 100), 2), out
+    return round(float(agree.mean() * 100), 2), out, anyd
 
 
 def bench_results(run_dir):
@@ -329,8 +335,8 @@ def main():
                         failures.append(f"{name}/{sid}: {prof} differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
                 fmt = lambda d, p=None: f"skipped ({sc.get('ciSkipReason', 'ciSkipRuns')})" if p in skipped_profiles else ("missing" if d is None else f"{d['pct']}")
                 lines.append(f"| {sid} | {fmt(noise)} | {limit} | {fmt(row['full'], 'full')} | {fmt(row['old-gpu'], 'old-gpu')} | {fmt(row['vulkan'], 'vulkan')} |")
-                agree, counts = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"), skip_runs)
-                sd["strict"][sid] = {"vanillaAgreePct": agree, "pixels": counts}
+                agree, counts, counts_any = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"), skip_runs)
+                sd["strict"][sid] = {"vanillaAgreePct": agree, "pixels": counts, "pixelsAnyDifference": counts_any}
                 slimit = None if strict_limits is None else strict_limits.get(name, {}).get(sid)
                 if agree is None:
                     failures.append(f"{name}/{sid}: strict picture check is missing a vanilla screenshot")
@@ -349,12 +355,13 @@ def main():
                             failures.append(f"{name}/{sid}: no strict pixel limit in ci/strict-pixel-limits.json")
                         elif c > slimit:
                             failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
-                                            f" agrees exactly (strict limit {slimit})")
+                                            f" agrees exactly, by more than {STRICT_THRESHOLD}/255 (strict limit {slimit})")
                 shown = f"not gated ({sc['ciNoStrict']})" if sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED else (slimit if strict_limits is not None else 'not set yet')
                 strict_lines.append(f"| {sid} | {agree} | {shown} | "
-                                    + " | ".join(str(counts.get(p)) for p in PAIRS) + " |")
+                                    + " | ".join(f"{counts.get(p)} ({counts_any.get(p)})" for p in PAIRS) + " |")
         lines.append("")
-        lines.append("Strict picture: pixels where all four vanilla runs agree exactly but the Brimstone run differs at all:\n")
+        lines.append(f"Strict picture: pixels where all four vanilla runs agree exactly but the Brimstone run differs by more than"
+                     f" {STRICT_THRESHOLD}/255 (in brackets: differs at all, reported only):\n")
         lines.append("| scene | vanilla runs agree on % of pixels | strict limit (pixels) | full | old-GPU | Vulkan |")
         lines.append("|---|---|---|---|---|---|")
         lines.extend(strict_lines)
