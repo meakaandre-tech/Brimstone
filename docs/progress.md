@@ -2,7 +2,9 @@
 
 ## Where things stand
 
-**For Andre (2026-10-26):** package 3 merged as MERGE_SHA (main CI MAIN_RUN, `latest` rebuilt). PACKAGE4_STATUS
+**For Andre (2026-10-26):** package 3 merged as `143defe` (main CI green: https://github.com/meakaandre-tech/Brimstone/actions/runs/40197881761;
+`latest` rebuilt from it). Package 4 (Fabric Renderer API): in progress on branch `package-4`, not to be merged
+before your review; its status is in its own section on that branch.
 
 Decisions made on your behalf while you were away (each also in its section):
 1. **Strict extras measured on medians:** extra = median of five 16-byte runs minus median of five runs before the
@@ -1330,4 +1332,5 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** HANDOFF_NOW
+**Now:** package 3 merged (`143defe`); package 4 (Fabric Renderer API) on branch `package-4`, not merged (Andre
+reviews it first).
