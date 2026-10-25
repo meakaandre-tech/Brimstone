@@ -37,7 +37,7 @@
         "heapUsedAfterGcMB",
         "directBuffersMB"
       ],
-      "ciNote": "CI gates only memory here: upload volume and draw calls depend on how fast CI's server generates the new terrain."
+      "ciNote": "Against the committed baselines CI gates only memory here: upload volume and draw calls depend on how fast CI's server generates the new terrain. Its draw calls are gated against vanilla measured in the same run (package 3)."
     },
     {
       "id": "water_glass",
@@ -336,7 +336,7 @@
         "directBuffersMB"
       ],
       "ciRequiresCulling": true,
-      "ciNote": "Moving pass: objects are hidden and come into view as the camera passes the window and doorway, as a pig is moved and as the wall opens. The per-frame ray check covers every frame of the bench; ciShots compare fixed points with vanilla under both gates (the bare_* shots, with every object removed, measure each object's on-screen area). Counts: memory only (the mid-bench commands upload new meshes)."
+      "ciNote": "Moving pass: objects are hidden and come into view as the camera passes the window and doorway, as a pig is moved and as the wall opens. The per-frame ray check covers every frame of the bench; ciShots compare fixed points with vanilla under both gates (the bare_* shots, with every object removed, measure each object's on-screen area). Counts against the committed baselines: memory only (the mid-bench commands upload new meshes).; draw calls are gated against vanilla measured in the same run (package 3)."
     },
     {
       "id": "translucent_move",
@@ -425,7 +425,7 @@
         "directBuffersMB"
       ],
       "ciRequiresTranslucent": true,
-      "ciNote": "Moving pass: vanilla re-sorts the translucent sections as the camera crosses blocks; Brimstone must draw every one of them in vanilla's order with vanilla's latest sort (checked every frame of the bench). ciShots compare fixed points with vanilla under both gates, taken after the camera has moved there; 'back' returns to the start after the other points, and 'bare_back' (the single ice block in front of the stripes removed) measures the smallest translucent element's area on screen. Counts: memory only (the moving camera makes vanilla re-sort and upload new index lists)."
+      "ciNote": "Moving pass: vanilla re-sorts the translucent sections as the camera crosses blocks; Brimstone must draw every one of them in vanilla's order with vanilla's latest sort (checked every frame of the bench). ciShots compare fixed points with vanilla under both gates, taken after the camera has moved there; 'back' returns to the start after the other points, and 'bare_back' (the single ice block in front of the stripes removed) measures the smallest translucent element's area on screen. Counts against the committed baselines: memory only (the moving camera makes vanilla re-sort and upload new index lists).; draw calls are gated against vanilla measured in the same run (package 3)."
     },
     {
       "id": "water_glass_oit",

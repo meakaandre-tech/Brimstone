@@ -143,7 +143,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
 | SIFTEC/factory (strict limit from 2026-10-25) | 0/0 in most runs; **315/0** (run 40156711337 attempt 2: a vanilla-only flip, see below) | 2 (dry run); real runs 0 or 313-315 | 500 (100 from the first, single-run collection) |
 | SIFTEC/map | 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190) | 3168 (dry run) | **not gated** (`ciNoStrict`, see below) |
-| SIFTEC/sift | with the Sift particle pin, threshold >2/255: 0/0, 0/0, 0/0 (runs 40185974374, 40187878826, 40189806229); before: 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 (threshold 0) | 61 | 100 (4900 before the pin) |
+| SIFTEC/sift | with the Sift particle pin, threshold >2/255: 0/0, 0/0, 0/0 (runs 40185974374, 40187878826, 40189806229); before: 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 (threshold 0) | 55-61 (16-byte vertex: the rounding extra, not noise) | 100 (4900 before the pin) |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
 
@@ -277,9 +277,10 @@ Scenes not listed kept their limits (extra 0 or below: mobs, factory, every `occ
 **sift** (re-collected, Andre's decision): its strict noise was the Sift dimension's floating note particles
 (`the_sift:sift_note`, random places in every run, vanilla's too); mob spawning off plus sending the mobs away did not
 remove them, the CI pin mod's `SiftParticlesMixin` (no particles in the Sift dimension, every client run) did. Samples
-under >2/255 with the pin, runs 40185974374, 40187878826 and 40189806229: vanilla b/a 0/0 in each; Brimstone 55 / 55 /
-61 (full / old-GPU / Vulkan) in each; measure runs 0. By the rule (largest sample x 1.5, rounded up to 100 pixels):
-61 x 1.5 = 91.5, **100** (was 4,900).
+under >2/255 with the pin, runs 40185974374, 40187878826 and 40189806229: vanilla b/a 0/0 in each and the measure
+runs 0, so vanilla's noise is 0; Brimstone 55 / 55 / 61 (full / old-GPU / Vulkan) in each, the 16-byte vertex's
+rounding (decision 3's extra). Limit = noise + 1.5 x that extra = 91.5, rounded up to 100 pixels as for the other
+SIFTEC scenes: **100** (was 4,900). Samples in `ci/pixel-noise-samples.json`.
 
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 
@@ -291,7 +292,7 @@ runs). **Memory**: heap used after a GC at the end of the bench, and java.nio di
 **Baseline = the highest value across the clean runs listed.** CI fails when a count goes over **baseline x 1.10
 plus a step allowance**: 2 draw calls, 1 upload, 16 KiB, 16 MB heap, 4 MB direct (direct buffers grow in 2 MB steps
 and land on either side between runs). Against these committed baselines the fly-through is gated on memory only (its draw calls are gated against vanilla in the same run since package 3, see "Against vanilla in the same run"): its uploads and draw calls depend on
-how fast CI's server generates the new terrain. The Vulkan baselines come from two runs; the core spawn scene's limit and baselines from one run (its camera moved to a fixed height in the last package-0 run).
+how fast CI's server generates the new terrain. The Vulkan count baselines come from two runs; the core spawn scene's limit and baselines from one run (its camera moved to a fixed height in the last package-0 run).
 
 | suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB | runs |
 |---|---|---|---|---|---|---|---|
@@ -426,7 +427,10 @@ transcode, sections meshed while measuring) and shown in CI's report; it is not 
 Brimstone loaded with every module off (`-Dbrimstone.ci.measureOnly=true`), in the profile of the Brimstone run of the
 same name, so Brimstone's bench measures vanilla's own counts under the same pins and runner. They must look like
 vanilla: their screenshots go through the same 8/255 and strict limits against vanilla's runs as Brimstone's runs
-(compare.py's "Measure runs" table); run 40180107484 attempt 2: every measure run inside every limit.
+(compare.py's "Measure runs" table); run 40180107484 attempt 2: every measure run inside every limit. CI also
+checks that a measure run really is vanilla: both modules' "measureOnly is set" log lines and no "on" line, every
+bench with terrain off ("measure only (CI)") and visibility off, no Brimstone arena and no layer taken, and the same
+profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag).
 
 **Draw calls.** In every scene, Brimstone's draw calls per frame against the measure run of its profile, on the
 per-frame average **and** the median: the translucent scenes (`ci/vanilla-draw-calls.json`: water_glass,
@@ -467,7 +471,7 @@ attempt 1, full profile (MB reserved / used):
 | SIFTEC map | 56 / 31.6 | 416 / 60.2 |
 | SIFTEC hologram | 56 / 0.24 | 288 / 0.39 |
 
-A grown arena keeps its size until it empties (the hologram's 56 MB were grown in the map scene before it): a known
+A grown arena keeps its size until it empties (the hologram's 56-72 MB were grown in the map scene before it): a known
 limit, for package 9.
 
 ## Counter audit

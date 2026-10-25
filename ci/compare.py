@@ -393,7 +393,9 @@ def main():
                     if limit is not None and dv["pct"] > limit:
                         failures.append(f"{name}/{sid}: {MEASURE[prof]} (vanilla stand-in) differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
                     mc = mcounts.get(prof)
-                    if not no_strict and slimit is not None and mc is not None and mc > slimit:
+                    if not no_strict and mc is None:
+                        failures.append(f"{name}/{sid}: strict picture check is missing the {MEASURE[prof]} screenshot (or its size differs)")
+                    elif not no_strict and slimit is not None and mc > slimit:
                         failures.append(f"{name}/{sid}: {MEASURE[prof]} (vanilla stand-in) differs from vanilla on {mc} strict pixels (limit {slimit})")
                 measure_lines.append(f"| {sid} | " + " | ".join("skipped" if p not in mrow else ("missing" if mrow[p] is None else f"{mrow[p]['pct']} / {mcounts.get(p)}") for p in PAIRS) + " |")
                 shown = f"not gated ({sc['ciNoStrict']})" if sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED else (slimit if strict_limits is not None else 'not set yet')

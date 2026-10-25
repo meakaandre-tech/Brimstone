@@ -1001,6 +1001,44 @@
       8,
       10
     ],
-    "samples": 10
+    "samples": 10,
+    "strictThreshold": 2,
+    "strictVanillaBA": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictMeasureRuns": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictBrimstone16Byte": [
+      55,
+      55,
+      61,
+      55,
+      55,
+      61,
+      55,
+      55,
+      61
+    ],
+    "strictLimit": 100,
+    "strictRuns": [
+      40185974374,
+      40187878826,
+      40189806229
+    ],
+    "strictNote": "With the Sift particle pin (SiftParticlesMixin), threshold >2/255: vanilla noise 0 (vanilla b/a 0/0 and the measure runs 0 in all three runs), so limit = noise + 1.5 x the 16-byte vertex's rounding extra (Brimstone 55/55/61, full/old-GPU/Vulkan, the same in every run) = 91.5, rounded up to 100 (was 4900, before the pin)."
   }
 }

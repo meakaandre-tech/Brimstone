@@ -56,7 +56,7 @@ public final class Terrain {
     private static volatile boolean translucentToVanilla;
     private static volatile boolean translucentReleasePending;
     static final java.util.concurrent.atomic.AtomicInteger ALPHA_LAYERS_KEPT_BY_VANILLA = new java.util.concurrent.atomic.AtomicInteger();
-    private static volatile boolean alphaWarned;
+    private static final java.util.concurrent.atomic.AtomicBoolean OPAQUE_ALPHA_WARNED = new java.util.concurrent.atomic.AtomicBoolean();
     private static final java.util.concurrent.atomic.AtomicBoolean TRANSLUCENT_ALPHA_WARNED = new java.util.concurrent.atomic.AtomicBoolean();
     /** Set by a resource reload: check packs again before the next frame. */
     private static volatile boolean resourcesChanged;
@@ -309,8 +309,7 @@ public final class Terrain {
             if (CompactVertex.hasAlpha(vertices)) {
                 // no alpha byte in Brimstone's vertex: an opaque layer can stay with vanilla on its own (depth sorts it)
                 ALPHA_LAYERS_KEPT_BY_VANILLA.incrementAndGet();
-                if (!alphaWarned) {
-                    alphaWarned = true;
+                if (OPAQUE_ALPHA_WARNED.compareAndSet(false, true)) {
                     BrimstoneClient.LOG.warn("Brimstone terrain: a {} layer (section {} {} {}) has vertex colours with alpha below 255, which"
                         + " Brimstone's vertex does not hold; vanilla keeps such layers (likely a mod's tinted model; counted in the bench)",
                         layer, x >> 4, y >> 4, z >> 4);

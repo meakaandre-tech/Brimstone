@@ -15,7 +15,7 @@ Decisions made on your behalf while you were away (each also in its section):
    Brimstone's terrain draws are exactly vanilla's 3, the 0.06 is in other draws.
 4. **sift draw calls on the median** (your rule): its average follows the runner's fps (154.0 at 15.1 fps against
    135.58 at 22.64 fps; medians 154 and 154).
-5. **sift particles:** the CI pin holds off every particle in the Sift dimension (25 `the_sift:sift_note`, one
+5. **sift particles:** the CI pin holds off every particle in the Sift dimension (1-36 `the_sift:sift_note` per run, one
    `minecraft:poof`), not only the notes; sift strict limit re-collected: 4,900 -> 100. Mob spawning is off for the
    sift scene and back on in the next one; the setup sends every non-player entity away.
 6. **Translucent scene list for the at-or-under-vanilla draw gate** stays water_glass, translucent_move,
@@ -130,7 +130,7 @@ median, plus memory; fly-through gated on memory only. Frozen from here on.
 
 ## Package 1: terrain meshing and region buffers
 
-**Branch** `package-1` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40072856079
+**Branch** `package-1` (merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40072856079
 on `159a0ac` (every profile, both suites, compare passed, including the new strict picture gate). **ci-logs**
 (overwritten by later runs): `compare/report.md` has every table below plus a "Terrain module" table per suite and
 profile; `runs/<suite>-brimstone-*/bench/*.json` have the `meshing` and `terrain` blocks.
@@ -408,7 +408,7 @@ with `plain, one multi-draw per region and layer` (Intel integrated: vanilla's f
 
 ## Package 2: visibility
 
-**Branch** `package-2` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40093135028
+**Branch** `package-2` (merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40093135028
 on `a09678d`, after the review fixes (every profile, both suites, compare passed). The first green version, before
 review, was `5d7dc04` (run 40083026856). **ci-logs** (overwritten by later runs): `compare/report.md` has every table
 below plus a "Visibility" table per suite and profile; `runs/<suite>-brimstone-*/bench/*.json` have the `visibility`
@@ -803,8 +803,11 @@ Note its `ms/frame` and `max` (the culling cost on the laptop's CPU) next to FPS
 
 ## Package 3: translucency
 
-**Branch** `package-3` (not merged). **CI:** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40126212181 on `6d48fc7` (every profile, both suites, compare
-passed), the last code change. A docs-only rerun (run 40128444322) failed one runner-speed-dependent count; see
+**Branch** `package-3`, squash-merged to main (see the top of this file). **Superseded in part:** the vertex format
+below (16 or 28 bytes per layer, alpha going wide) and the deviations and choices about it were replaced on 2026-10-25
+by one 16-byte vertex for every layer, see "The 16-byte vertex, arenas per layer and the vanilla-relative gates" at
+the end of this section. **CI (first round):** green run https://github.com/meakaandre-tech/Brimstone/actions/runs/40126212181 on `6d48fc7` (every profile, both suites, compare
+passed). A docs-only rerun (run 40128444322) failed one runner-speed-dependent count; see
 "Runs" and "Open issues". **ci-logs** (overwritten by later runs): `compare/report.md` has every table below plus a "Translucency" table
 per suite and profile; `runs/<suite>-brimstone-*/bench/*.json` have the `translucency` block;
 `runs/core-*/shots/translucent_move*.png` and `water_glass_oit.png` are the new fixed-point shots,
@@ -1245,7 +1248,7 @@ layer's draws break only when that layer alone passes 64 MiB), and an arena's bu
 64 MiB (a one-time GPU copy at the end of the frame where meshes are copied in; offsets never change; the game's TLSF
 allocator splits the blocks it hands out from their front, so a filling arena's buffer stays close to what it holds). Terrain GPU memory reserved is
 now 16-112 MB in the core scenes against vanilla's 256-416 MB (table in `docs/ci-limits.md`), gated in every scene.
-**Known limit, for package 9:** a grown arena does not shrink until it is empty (the hologram scene keeps the 56 MB
+**Known limit, for package 9:** a grown arena does not shrink until it is empty (the hologram scene keeps the 56-72 MB
 grown in the map scene before it).
 
 **Draw calls against vanilla in the same run**: three `measure-*` client runs per suite (Brimstone loaded, every
@@ -1258,7 +1261,7 @@ per frame, as designed).
 **sift**: its strict noise came from small sprites drifting over the canyon in every run, vanilla's too. Mob and
 phantom spawning off for the scene plus sending the mobs away (19 entities) left them in place, so they are not
 entities; the CI pin mod now makes no particles in the Sift dimension (`SiftParticlesMixin`, every client run).
-The kinds held off, from the pin's log: `the_sift:sift_note` (the Sift's floating note particles, 25 in the scene)
+The kinds held off, from the pin's log: `the_sift:sift_note` (the Sift's floating note particles, 1-36 per run)
 and one `minecraft:poof`. With the pin, vanilla b against a is 0/0 and the measure runs 0 in runs 40185974374 and
 40187878826, and the sift strict limit was re-collected by the rule (`docs/ci-limits.md`; runs 40185974374, 40187878826, 40189806229): **100 pixels** (was 4,900; samples 55-61 in all three runs).
 The sift setup's mob spawning goes back on in the next scene (hub).
@@ -1269,7 +1272,10 @@ the measure runs really ran with Brimstone's modules off: now the log lines, the
 required), M2 (the alpha hand-back's races: a translucent layer staged after it is refused under the store's lock,
 later index lists go through `stageIndices`, one WARN), m1 (hologram skips measure-vk), m2 (fly-through allowance on
 full and Vulkan only), m3 (stale text). N1-N3 are decisions 6, 7 and 5 at the top of this file; N4 (a UV of exactly
-65535/65536 stored as 1.0) matters only for a 65536-pixel atlas.
+65535/65536 stored as 1.0) matters only for a 65536-pixel atlas. **Round 4** (fresh agent, of `aadfb35`): round 3's
+fixes hold (it mutation-tested the measure-run checks and recounted sift from the PNGs); fixed: staged translucent
+layers at the alpha hand-back are completed through vanilla's callback (or released) instead of only freed, the
+measure runs' strict check fails on a missing screenshot, both alpha WARNs are guarded, stale scene notes and docs.
 
 **For package 8's plan (Andre, 2026-10-25):** a deterministic particle scene (particles are random per run; CI holds
 them off in the Sift and nowhere else yet).
@@ -1307,7 +1313,7 @@ FPS and frame times.
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
 `docs/laptop-bench.md` and the design doc. CI results are on the `ci-logs` branch (each run overwrites it; extract a
 run as soon as it finishes if another is running). Local builds aren't possible in the agent workspace (no access to
-Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes about 45 minutes (20 client runs).
+Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes about 27 minutes (20 client runs; longer when the SIFTEC world cache is rebuilt).
 Game class dumps are a 1-day Actions artifact (`game-dumps`) the workspace can't download; ask Andre to attach one if
 needed. Scratch tools (not in the repo): a compile check against stubs generated from a javap dump
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),

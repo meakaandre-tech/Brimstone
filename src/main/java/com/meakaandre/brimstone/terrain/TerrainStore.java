@@ -601,12 +601,28 @@ public final class TerrainStore {
                 RELEASED_TRANSLUCENT.add(en.getKey());
                 if (es[0] == null && es[1] == null) it.remove();
             }
+            List<Staged> unfinished = new ArrayList<>();
             STAGED.removeIf(st -> {
                 if (st.layer != ChunkSectionLayer.TRANSLUCENT) return false;
-                if (!st.indicesOnly()) out.add(SectionPos.asLong(st.x >> 4, st.y >> 4, st.z >> 4));
+                if (!st.indicesOnly()) {
+                    out.add(SectionPos.asLong(st.x >> 4, st.y >> 4, st.z >> 4));
+                    unfinished.add(st);
+                }
                 st.free();
                 return true;
             });
+            // vanilla counted those layers as Brimstone's: complete each through vanilla's own callback (its section
+            // shows no translucent layer until vanilla meshes it again, it is marked dirty) or, if a newer mesh of the
+            // section is already in, release it, as for a hand-back (finishDropped). Never left half-uploaded.
+            for (Staged st : unfinished) {
+                RELEASED_TRANSLUCENT.add(st.mesh);
+                RenderSectionInvoker section = (RenderSectionInvoker) st.section;
+                if (st.section.getSectionMesh().getCompileTaskStartTime() > st.mesh.getCompileTaskStartTime()) {
+                    section.brimstone$releaseSectionMesh(st.mesh);
+                } else {
+                    section.brimstone$vertexBufferUploaded(st.mesh, st.layer);
+                }
+            }
         }
         return out;
     }
