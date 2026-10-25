@@ -243,8 +243,59 @@ jobs:
           name: res-${{ matrix.suite }}-${{ matrix.run }}
           path: /tmp/out
 
+  # DIAGNOSTIC (branch only, removed before merge): vanilla's own upload counts in the SIFTEC factory and sift scenes,
+  # measured by Brimstone's bench with every Brimstone module off (vanilla draws everything), in each profile
+  diag-measure:
+    needs: [build, siftec-world]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: vanilla-a, run: brimstone-full}
+          - {name: vanilla-b, run: brimstone-full}
+          - {name: vanilla-old, run: brimstone-old}
+          - {name: vanilla-vk, run: brimstone-vk}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: brimstone-jar
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-pin-jar
+          path: ci-pin
+      - uses: actions/download-artifact@v4
+        with:
+          name: siftec-server
+      - name: Run the client (measure only)
+        shell: bash
+        env:
+          SUITE: siftec
+          RUN: ${{ matrix.run }}
+          OUT: /tmp/out/diag-measure-${{ matrix.name }}
+          BENCH_SECONDS: "20"
+          SCENES: "factory sift"
+          EXTRA_JVM: "-Dbrimstone.debug.measureOnly=true"
+        run: |
+          chmod +x gradlew
+          tar xf siftec-server.tar
+          bash ci/client-run.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: res-diag-measure-${{ matrix.name }}
+          path: /tmp/out
+
   compare:
-    needs: [build, client]
+    needs: [build, client, diag-measure]
     # also after a failed build, so its log (build/build.log) reaches ci-logs; compare then fails on the missing runs
     if: always()
     runs-on: ubuntu-latest
