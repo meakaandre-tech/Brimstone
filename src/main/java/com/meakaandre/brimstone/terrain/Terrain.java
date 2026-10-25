@@ -276,7 +276,7 @@ public final class Terrain {
             int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
             int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
             int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
-            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z));
+            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z), false);
             if (split == null) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;
@@ -336,7 +336,7 @@ public final class Terrain {
             int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
             int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
             int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
-            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z));
+            CompactVertex.Split split = CompactVertex.split(vertices, CompactVertex.sectionIndex(x, y, z), true);
             if (split == null) throw new IllegalStateException("a translucent layer that is not whole quads (" + count + " vertices)");
             ByteBuffer copy = MemoryUtil.memAlloc(indices.remaining());
             MemoryUtil.memCopy(indices, copy);

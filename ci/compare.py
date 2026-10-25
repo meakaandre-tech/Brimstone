@@ -13,7 +13,8 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
     runner's frame rate (design doc, Testing: "Counts that follow the runner's speed"); uploads and bytes: per-frame
     median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results
     against ci/baselines/<suite>-<profile>.json; a rise over 10% fails. The current numbers are written to
-    REPORT_DIR/baselines/ for committing;
+    REPORT_DIR/baselines/ for committing; in the translucent scenes listed in ci/vanilla-draw-calls.json, Brimstone's
+    draw calls per frame must also be at or under vanilla's (package 3);
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
@@ -144,6 +145,7 @@ def main():
     os.makedirs(os.path.join(rep, "baselines"), exist_ok=True)
     limits = json.load(open("ci/pixel-limits.json")) if os.path.exists("ci/pixel-limits.json") else {}
     strict_limits = json.load(open("ci/strict-pixel-limits.json")) if os.path.exists("ci/strict-pixel-limits.json") else None
+    vanilla_draws = json.load(open("ci/vanilla-draw-calls.json")) if os.path.exists("ci/vanilla-draw-calls.json") else {}
     failures, lines, data = [], [], {}
     for sfile in sorted(glob.glob("src/main/resources/brimstone/scenes/*.json")):
         suite = json.load(open(sfile))
@@ -400,6 +402,15 @@ def main():
                             failures.append(f"{name}/{prof}/{sid}: {k}{' (median)' if k == 'drawCallsPerFrame' and sid in median_gated else ''} rose from {bv} to {v} (over 10%)")
                     cells.append(cell)
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
+            # translucent scenes (package 3, Andre 2026-10-25): Brimstone's draw calls per frame at or under vanilla's,
+            # in every profile (ci/vanilla-draw-calls.json)
+            for sid, vdc in vanilla_draws.get(name, {}).get(prof, {}).items():
+                c = cur.get(sid)
+                if c is None:
+                    continue
+                if c["drawCallsPerFrame"] > vdc:
+                    failures.append(f"{name}/{prof}/{sid}: {c['drawCallsPerFrame']} draw calls per frame, more than vanilla's {vdc}")
+                lines.append(f"- {sid}: Brimstone {c['drawCallsPerFrame']} draw calls/frame, vanilla {vdc} (must not be more)")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             lines.append("")

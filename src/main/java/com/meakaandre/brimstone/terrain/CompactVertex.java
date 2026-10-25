@@ -91,16 +91,19 @@ public final class CompactVertex {
     /**
      * Converts a layer (vanilla's BLOCK vertices, position to limit of {@code src}): into the compact format if every
      * vertex of it round-trips exactly, otherwise all of it into the wide format. One format per layer keeps vanilla's
-     * quad order, which coplanar quads at equal depth rely on. Null if the layer isn't whole quads.
+     * quad order, which coplanar quads at equal depth rely on. Null if the layer isn't whole quads. {@code wideOnly}
+     * (translucent layers, package 3): always the wide format, so consecutive translucent sections share a format and
+     * draw together; whether the layer would have fit the compact format is still reported (for the bench).
      */
-    static Split split(ByteBuffer src, int slot) {
+    static Split split(ByteBuffer src, int slot, boolean wideOnly) {
         int bytes = src.remaining();
         if (bytes == 0 || bytes % (4 * VANILLA_BYTES) != 0) return null;
         int vertices = bytes / VANILLA_BYTES;
         long in = MemoryUtil.memAddress(src);
         int why = 0;
         for (int v = 0; v < vertices && why != (WHY_POSITION | WHY_UV | WHY_ALPHA); v++) why |= misfit(in + (long) v * VANILLA_BYTES);
-        if (why == 0) {
+        if (wideOnly) TerrainStats.translucentSplit(vertices, why == 0);
+        if (why == 0 && !wideOnly) {
             ByteBuffer compact = MemoryUtil.memAlloc(vertices * BYTES);
             long c = MemoryUtil.memAddress(compact);
             for (int v = 0; v < vertices; v++) packCompact(in + (long) v * VANILLA_BYTES, c + (long) v * BYTES, slot);

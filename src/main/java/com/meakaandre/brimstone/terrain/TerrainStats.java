@@ -19,6 +19,9 @@ public final class TerrainStats {
     static final AtomicLong WIDE_FOR_POSITION = new AtomicLong();
     static final AtomicLong WIDE_FOR_UV = new AtomicLong();
     static final AtomicLong WIDE_FOR_ALPHA = new AtomicLong();
+    /** Translucent vertices meshed (all stored wide since package 3's review) and how many would have fit compact. */
+    static final AtomicLong TRANSLUCENT_VERTICES = new AtomicLong();
+    static final AtomicLong TRANSLUCENT_COMPACT_FIT = new AtomicLong();
     private static volatile boolean uvLogged;
 
     // measuring window
@@ -56,6 +59,11 @@ public final class TerrainStats {
             }
         }
         s[0] = 0;
+    }
+
+    static void translucentSplit(int vertices, boolean wouldFitCompact) {
+        TRANSLUCENT_VERTICES.addAndGet(vertices);
+        if (wouldFitCompact) TRANSLUCENT_COMPACT_FIT.addAndGet(vertices);
     }
 
     static void split(CompactVertex.Split sp) {
@@ -150,6 +158,12 @@ public final class TerrainStats {
         o.addProperty("layersWithWideForPosition", WIDE_FOR_POSITION.get());
         o.addProperty("layersWithWideForUv", WIDE_FOR_UV.get());
         o.addProperty("layersWithWideForAlpha", WIDE_FOR_ALPHA.get());
+        long tv = TRANSLUCENT_VERTICES.get(), tfit = TRANSLUCENT_COMPACT_FIT.get();
+        o.addProperty("translucentVerticesMeshed", tv);
+        o.addProperty("translucentVerticesFitCompact", tfit);
+        // translucent layers are stored wide (28 bytes); with the per-layer choice they would average this many bytes
+        o.addProperty("translucentBytesPerVertexIfPerLayer", tv == 0 ? 0 : round((tfit * (double) CompactVertex.BYTES
+            + (tv - tfit) * (double) CompactVertex.WIDE_BYTES) / tv));
         o.addProperty("drawCallsPerFrame", frames == 0 ? 0 : round((double) windowDraws / frames));
         o.addProperty("sectionLayersPerFrame", frames == 0 ? 0 : round((double) windowSectionLayers / frames));
         return o;
