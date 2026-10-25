@@ -25,8 +25,11 @@ import net.minecraft.core.SectionPos;
 import org.lwjgl.system.MemoryUtil;
 
 /**
- * Where Brimstone keeps terrain: a few large GPU buffers ("arenas", {@link #ARENA_BYTES} each), sub-allocated with
- * the game's own TLSF allocator. Each layer of a section is one small copy (16-byte vertices); a translucent layer also
+ * Where Brimstone keeps terrain: a few GPU buffers ("arenas", up to {@link #ARENA_BYTES} each), sub-allocated with
+ * the game's own TLSF allocator. An arena's allocator spans the full size from the start, but its buffer starts at
+ * {@link #INITIAL_ARENA_BYTES} and doubles (a one-time GPU copy into the bigger buffer, at the end of the frame where
+ * meshes are copied in) when an allocation reaches past it; the allocator hands out the lowest free space, so the
+ * buffer follows what the arena holds. Each layer of a section is one small copy (16-byte vertices); a translucent layer also
  * keeps vanilla's sorted index list, in the same arena as its vertices (package 3), and only that list is rewritten
  * when vanilla sorts the layer again. Each layer (solid, cutout, translucent) has arenas of its own, so a layer spans a
  * second arena only once that layer alone passes one arena, and the draws of a layer break only there (package 3).
@@ -39,13 +42,19 @@ import org.lwjgl.system.MemoryUtil;
  */
 public final class TerrainStore {
     static final long ARENA_BYTES = 64L << 20;
+    /** An arena's buffer when it is made; it doubles when full, up to {@link #ARENA_BYTES} (package 3). */
+    static final long INITIAL_ARENA_BYTES = 4L << 20;
     /** A layer bigger than this stays with vanilla (it would hog an arena). */
     static final int MAX_LAYER_BYTES = (int) (ARENA_BYTES / 8);
 
     static final Object LOCK = new Object();
 
     static final class Arena {
-        final GpuBuffer buffer;
+        /** The arena's buffer, replaced by a bigger one when it grows (render thread, under the lock). */
+        GpuBuffer buffer;
+        /** Size of {@link #buffer}. */
+        long capacity;
+        final int index;
         final TlsfAllocator allocator;
         /** The layer this arena holds: 0 solid, 1 cutout, 2 translucent. */
         final int layer;
@@ -54,9 +63,37 @@ public final class TerrainStore {
 
         Arena(GpuDevice device, int index, int layer) {
             this.layer = layer;
-            this.buffer = device.createBuffer(() -> "Brimstone terrain " + index + " (" + LAYER_NAMES[layer] + ")",
-                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_INDEX | GpuBuffer.USAGE_COPY_DST, ARENA_BYTES);
+            this.index = index;
+            this.capacity = INITIAL_ARENA_BYTES;
+            this.buffer = create(device, capacity);
             this.allocator = new TlsfAllocator(new TlsfAllocator.Heap(ARENA_BYTES));
+        }
+
+        private GpuBuffer create(GpuDevice device, long size) {
+            return device.createBuffer(() -> "Brimstone terrain " + index + " (" + LAYER_NAMES[layer] + ")",
+                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_INDEX | GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_COPY_SRC, size);
+        }
+
+        /**
+         * Makes the buffer reach {@code end} bytes: doubles it (up to the arena's full size) and copies what it holds
+         * into the bigger one, once; the old buffer is closed before the next frame's draws.
+         */
+        void ensure(CommandEncoder encoder, long end) {
+            if (end <= capacity) return;
+            long size = capacity;
+            while (size < end) size *= 2;
+            size = Math.min(size, ARENA_BYTES);
+            GpuBuffer bigger = create(RenderSystem.getDevice(), size);
+            try {
+                encoder.copyToBuffer(buffer.slice(0, capacity), bigger.slice(0, capacity));
+            } catch (Throwable t) {
+                bigger.close();
+                throw t;
+            }
+            PENDING_CLOSE.add(buffer);
+            buffer = bigger;
+            capacity = size;
+            TerrainStats.ARENA_GROWS.incrementAndGet();
         }
     }
 
@@ -302,6 +339,7 @@ public final class TerrainStore {
 
     private static Part write(CommandEncoder encoder, Arena arena, TlsfAllocator.Allocation a, ByteBuffer data, int vertices) {
         try {
+            arena.ensure(encoder, a.getOffsetFromHeap() + a.getSize());
             encoder.writeToBuffer(arena.buffer.slice(a.getOffsetFromHeap(), data.remaining()), data);
         } catch (Throwable t) {
             arena.allocator.free(a);
@@ -341,6 +379,7 @@ public final class TerrainStore {
                 }
                 e.part = p;
                 try {
+                    arena.ensure(encoder, ia.getOffsetFromHeap() + ia.getSize());
                     encoder.writeToBuffer(arena.buffer.slice(ia.getOffsetFromHeap(), ibytes), indices);
                 } catch (Throwable t) {
                     arena.allocator.free(ia);
@@ -615,7 +654,9 @@ public final class TerrainStore {
         synchronized (LOCK) {
             long used = 0;
             for (Arena a : ARENAS) used += a.used;
-            return new Snapshot(REGIONS.size(), ARENAS.size(), ARENAS.size() * ARENA_BYTES, used, liveVertices);
+            long reserved = 0;
+            for (Arena a : ARENAS) reserved += a.capacity;
+            return new Snapshot(REGIONS.size(), ARENAS.size(), reserved, used, liveVertices);
         }
     }
 }

@@ -17,6 +17,8 @@ public final class TerrainStats {
     static final AtomicLong VERTICES = new AtomicLong();
     static final AtomicLong POSITIONS_ROUNDED = new AtomicLong();
     static final AtomicLong UVS_ROUNDED = new AtomicLong();
+    /** Arena buffers grown into bigger ones since start-up. */
+    static final AtomicLong ARENA_GROWS = new AtomicLong();
 
     // measuring window
     private static final LongArrayList COMPILE_NANOS = new LongArrayList();
@@ -121,6 +123,7 @@ public final class TerrainStats {
         o.addProperty("arenas", s.arenas());
         o.addProperty("arenaMB", round(s.arenaBytes() / MB));
         o.addProperty("usedMB", round(s.usedBytes() / MB));
+        o.addProperty("arenaGrows", ARENA_GROWS.get());
         o.addProperty("liveVertices", s.vertices());
         o.addProperty("vertexMB", round(s.vertices() * (double) CompactVertex.BYTES / MB));
         o.addProperty("vanillaEquivalentMB", round(s.vertices() * (double) CompactVertex.VANILLA_BYTES / MB));

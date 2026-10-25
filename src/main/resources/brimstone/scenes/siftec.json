@@ -34,12 +34,16 @@
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
+        "gamerule spawn_mobs false",
+        "gamerule spawn_phantoms false",
         "execute in the_sift:the_sift run tp @a 0.5 200 0.5 45 20",
         "execute in the_sift:the_sift run time set 6000",
         "execute in the_sift:the_sift run weather clear",
         "#wait 6",
-        "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20"
-      ]
+        "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20",
+        "execute as @a at @s run tp @e[type=!minecraft:player,distance=..400] ~ -200 ~"
+      ],
+      "ciNote": "Mob spawning is off for this scene and the mobs already there are sent away before it settles, in vanilla's runs and Brimstone's alike: the flying mobs over the canyon were somewhere else in every run (package 3, Andre 2026-10-25). The next scene turns spawning back on."
     },
     {
       "id": "hub",
@@ -47,6 +51,8 @@
       "renderDistance": 8,
       "settleSeconds": 8,
       "setup": [
+        "gamerule spawn_mobs true",
+        "gamerule spawn_phantoms true",
         "gamemode creative @a",
         "item replace entity @a weapon.mainhand with minecraft:air",
         "execute in minecraft:overworld run tp @a 2240.5 201 -1996.5 180 21",

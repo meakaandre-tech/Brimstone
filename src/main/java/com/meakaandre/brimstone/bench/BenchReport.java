@@ -92,6 +92,7 @@ final class BenchReport {
         out.add("terrain", TerrainStats.terrainJson(n));
         out.add("visibility", VisibilityStats.json());
         out.add("translucency", TranslucencyStats.json());
+        out.add("terrainGpu", TerrainGpuMemory.json());
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
         CounterAudit.missing().forEach(missing::add);
@@ -161,6 +162,10 @@ final class BenchReport {
             + ", committed " + mem.get("heapCommittedMB") + ", max allowed " + mem.get("heapMaxMB"));
         line(b, "off-heap MB", "direct buffers " + mem.get("directBuffersMB") + " (" + mem.get("directBuffersCount") + "), mapped "
             + mem.get("mappedBuffersMB") + ", non-heap " + mem.get("nonHeapMB"));
+        JsonObject tg = o.getAsJsonObject("terrainGpu");
+        line(b, "terrain GPU MB", "reserved " + tg.get("reservedMB") + ", used " + tg.get("usedMB") + " (vanilla's heaps "
+            + tg.get("vanillaHeapsReservedMB") + " / " + tg.get("vanillaHeapsUsedMB") + ", Brimstone's arenas " + tg.get("brimstoneArenasReservedMB")
+            + " / " + tg.get("brimstoneArenasUsedMB") + ")");
         line(b, "capabilities", caps == null ? "not probed" : caps.describe());
         line(b, "display", disp.get("width") + "x" + disp.get("height") + ", render distance " + disp.get("renderDistance")
             + " (effective " + disp.get("effectiveRenderDistance") + "), max fps " + disp.get("maxFps") + ", vsync " + disp.get("vsync"));

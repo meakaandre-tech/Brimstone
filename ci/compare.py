@@ -117,6 +117,7 @@ def bench_results(run_dir):
             "terrain": j.get("terrain"),
             "visibility": j.get("visibility"),
             "translucency": j.get("translucency"),
+            "terrainGpu": j.get("terrainGpu"),
             "frames": j["fps"]["frames"],
         }
     return out
@@ -420,6 +421,24 @@ def main():
                 if c["drawCallsPerFrame"] > vdc:
                     failures.append(f"{name}/{prof}/{sid}: {c['drawCallsPerFrame']} draw calls per frame, more than vanilla's {vdc}")
                 lines.append(f"- {sid}: Brimstone {c['drawCallsPerFrame']} draw calls/frame, vanilla {vdc} (must not be more)")
+            # terrain GPU memory (package 3, Andre 2026-10-25): reserved in a Brimstone run (its arenas and whatever
+            # vanilla's own heaps still hold) at most what vanilla's heaps reserve in vanilla's run of the same profile
+            van = bench_results(runs[PAIRS[prof][1]]) if PAIRS[prof][1] in runs else {}
+            lines.append("")
+            lines.append(f"Terrain GPU memory, {name} {prof} (MB; Brimstone's reserved must not be more than vanilla's):\n")
+            lines.append("| scene | Brimstone reserved / used | of which Brimstone's arenas | of which vanilla's heaps | vanilla run reserved / used |")
+            lines.append("|---|---|---|---|---|")
+            for sc in scenes:
+                sid = sc["id"]
+                c, vc = cur.get(sid), van.get(sid)
+                if sc.get("skip") or c is None or b in set(sc.get("ciSkipRuns", [])):
+                    continue
+                tg, vg = c.get("terrainGpu") or {}, (vc or {}).get("terrainGpu") or {}
+                if tg.get("reservedMB") is None or vg.get("reservedMB") is None:
+                    failures.append(f"{name}/{prof}/{sid}: terrain GPU memory missing ({tg.get('problem') or vg.get('problem') or 'no terrainGpu in the bench'})")
+                elif tg["reservedMB"] > vg["reservedMB"]:
+                    failures.append(f"{name}/{prof}/{sid}: {tg['reservedMB']} MB of terrain GPU memory reserved, more than vanilla's {vg['reservedMB']} MB")
+                lines.append(f"| {sid} | {tg.get('reservedMB')} / {tg.get('usedMB')} | {tg.get('brimstoneArenasReservedMB')} / {tg.get('brimstoneArenasUsedMB')} | {tg.get('vanillaHeapsReservedMB')} / {tg.get('vanillaHeapsUsedMB')} | {vg.get('reservedMB')} / {vg.get('usedMB')} |")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             lines.append("")
