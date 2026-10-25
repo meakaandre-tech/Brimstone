@@ -43,6 +43,8 @@
         "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20",
         "execute as @a at @s run tp @e[type=!minecraft:player,distance=..400] ~ -200 ~"
       ],
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. Run 40180107484, full: Brimstone 154.0 average / 154 median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps (Vulkan: 153.97 / 154 at 15.8 fps against 153.94 / 154 at 12.37 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "ciNote": "Mob spawning is off for this scene and the mobs already there are sent away before it settles, in vanilla's runs and Brimstone's alike: the flying mobs over the canyon were somewhere else in every run (package 3, Andre 2026-10-25). The next scene turns spawning back on."
     },
     {

@@ -14,9 +14,10 @@ brimstone-old), as written by ci/client-run.sh. Per suite:
     median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results
     against ci/baselines/<suite>-<profile>.json; a rise over 10% fails. The current numbers are written to
     REPORT_DIR/baselines/ for committing; against vanilla measured in the same run (the measure-* runs: Brimstone
-    loaded with every module off), Brimstone's median draw calls per frame must be at or under vanilla's median in the
-    translucent scenes listed in ci/vanilla-draw-calls.json, and the terrain GPU memory reserved in a Brimstone run at
-    or under vanilla's in every scene (package 3);
+    loaded with every module off), Brimstone's draw calls per frame (average and median; the median alone for scenes
+    marked so) must be at or under vanilla's in the translucent scenes listed in ci/vanilla-draw-calls.json and under
+    vanilla's x 1.10 + 2 in the others, and the terrain GPU memory reserved in a Brimstone run at or under vanilla's in
+    every scene (package 3);
   - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
@@ -77,7 +78,7 @@ def load(path):
     return np.asarray(Image.open(path).convert("RGB"), dtype=np.int16) if os.path.exists(path) else None
 
 
-def strict(shot, out_prefix, skip_runs=()):
+def strict(shot, out_prefix, skip_runs=(), pairs=None):
     """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs by more than
     STRICT_THRESHOLD, and (reported only) by anything at all. Runs a scene skips ("ciSkipRuns", package 3) are left out
     of both the agreement and the counts."""
@@ -88,7 +89,7 @@ def strict(shot, out_prefix, skip_runs=()):
     for x in v.values():
         agree &= (x == v["vanilla-a"]).all(axis=2)
     out, anyd = {}, {}
-    for prof, (b, vr) in PAIRS.items():
+    for prof, (b, vr) in (pairs or PAIRS).items():
         if b in skip_runs or vr in skip_runs:
             continue
         bs = load(shot(b))
@@ -124,6 +125,7 @@ def bench_results(run_dir):
             "translucency": j.get("translucency"),
             "terrainGpu": j.get("terrainGpu"),
             "frames": j["fps"]["frames"],
+            "fps": j["fps"].get("average"),
         }
     return out
 
@@ -164,7 +166,7 @@ def main():
         name = suite["suite"]
         scenes = [s for s in suite["scenes"]]
         sd = data.setdefault(name, {"noise": {}, "picture": {}, "strict": {}, "counts": {}, "skipped": {}})
-        strict_lines = []
+        strict_lines, measure_lines = [], []
         lines.append(f"## Suite {name}\n")
         runs = {r: os.path.join(res, f"{name}-{r}") for r in RUNS}
         for r, d in runs.items():
@@ -174,7 +176,7 @@ def main():
         for r, d in runs.items():
             t = logs(d)
             if os.path.isdir(d) and "brimstone_ci_pin" not in t:
-                failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline) is not among the loaded mods")
+                failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift) is not among the loaded mods")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
             probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)
@@ -362,6 +364,23 @@ def main():
                         elif c > slimit:
                             failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
                                             f" agrees exactly, by more than {STRICT_THRESHOLD}/255 (strict limit {slimit})")
+                # the measure runs (Brimstone loaded, every module off) must look like vanilla within vanilla's own
+                # noise, the same 8/255 and strict limits as Brimstone's runs (package 3): they stand in for vanilla
+                # in the draw-call and terrain memory gates
+                mpairs = {prof: (MEASURE[prof], v) for prof, (b, v) in PAIRS.items() if prof not in skipped_profiles}
+                mrow = {prof: diff(shot(mb), shot(v), os.path.join(rep, "diff", f"{name}-{sid}-{prof}-measure.png")) for prof, (mb, v) in mpairs.items()}
+                _, mcounts, _ = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}-measure"), skip_runs, mpairs)
+                no_strict = sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED
+                for prof, dv in mrow.items():
+                    if dv is None:
+                        failures.append(f"{name}/{sid}: no {MEASURE[prof]} screenshot")
+                        continue
+                    if limit is not None and dv["pct"] > limit:
+                        failures.append(f"{name}/{sid}: {MEASURE[prof]} (vanilla stand-in) differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
+                    mc = mcounts.get(prof)
+                    if not no_strict and slimit is not None and mc is not None and mc > slimit:
+                        failures.append(f"{name}/{sid}: {MEASURE[prof]} (vanilla stand-in) differs from vanilla on {mc} strict pixels (limit {slimit})")
+                measure_lines.append(f"| {sid} | " + " | ".join("skipped" if p not in mrow else ("missing" if mrow[p] is None else f"{mrow[p]['pct']} / {mcounts.get(p)}") for p in PAIRS) + " |")
                 shown = f"not gated ({sc['ciNoStrict']})" if sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED else (slimit if strict_limits is not None else 'not set yet')
                 strict_lines.append(f"| {sid} | {agree} | {shown} | "
                                     + " | ".join(f"{counts.get(p)} ({counts_any.get(p)})" for p in PAIRS) + " |")
@@ -371,6 +390,12 @@ def main():
         lines.append("| scene | vanilla runs agree on % of pixels | strict limit (pixels) | full | old-GPU | Vulkan |")
         lines.append("|---|---|---|---|---|---|")
         lines.extend(strict_lines)
+        lines.append("")
+        lines.append("Measure runs (Brimstone loaded, every module off) against vanilla's run of the same profile: % of pixels over"
+                     f" 8/255 / strict pixels over {STRICT_THRESHOLD}/255; the same limits as Brimstone's runs:\n")
+        lines.append("| scene | full | old-GPU | Vulkan |")
+        lines.append("|---|---|---|---|")
+        lines.extend(measure_lines)
         lines.append("")
         for prof, (b, _) in PAIRS.items():
             cur = bench_results(runs[b])
@@ -422,18 +447,34 @@ def main():
             # every scene the terrain GPU memory reserved (Brimstone's arenas and whatever vanilla's own heaps still
             # hold) at most what vanilla's heaps reserve
             van = bench_results(runs[MEASURE[prof]])
-            for sid in vanilla_draws.get(name, []):
+            lines.append("")
+            lines.append(f"Draw calls against vanilla measured in the same run ({MEASURE[prof]}), {name} {prof}: average and median per frame;"
+                         " translucent scenes (ci/vanilla-draw-calls.json) at most vanilla's, the others at most vanilla's x 1.10 + 2:\n")
+            lines.append("| scene | Brimstone avg / median (fps) | vanilla avg / median (fps) | gated on |")
+            lines.append("|---|---|---|---|")
+            translucent = set(vanilla_draws.get(name, []))
+            # a per-scene allowance on top of vanilla's (Andre's decisions only, each explained in the file)
+            allowance = vanilla_draws.get("allowance", {})
+            for sc in scenes:
+                sid = sc["id"]
                 c, vc = cur.get(sid), van.get(sid)
-                if c is None:
+                if sc.get("skip") or c is None or b in set(sc.get("ciSkipRuns", [])):
                     continue
                 if vc is None or vc.get("drawCallsPerFrameMedian") is None:
                     failures.append(f"{name}/{prof}/{sid}: no vanilla measurement in {MEASURE[prof]}")
                     continue
-                bm, vm = c["drawCallsPerFrameMedian"], vc["drawCallsPerFrameMedian"]
-                if bm > vm:
-                    failures.append(f"{name}/{prof}/{sid}: median {bm} draw calls per frame, more than vanilla's {vm} (same run)")
-                lines.append(f"- {sid}: Brimstone median {bm} draw calls/frame (avg {c['drawCallsPerFrameAvg']}), vanilla median {vm}"
-                             f" (avg {vc['drawCallsPerFrameAvg']}), same run; must not be more")
+                # the hologram scene (Andre's decision) and scenes whose average only failed because the runner's speed
+                # differed between the two runs ("ciVanillaDrawGate": "median", with the evidence in docs/ci-limits.md)
+                # are gated on the median alone
+                median_only = sc.get("ciDrawCallGate") == "median" or sc.get("ciVanillaDrawGate") == "median"
+                stats = [("median", "drawCallsPerFrameMedian")] + ([] if median_only else [("average", "drawCallsPerFrameAvg")])
+                for label, k in stats:
+                    lim = vc[k] + allowance.get(f"{name}/{sid}", 0) if sid in translucent else round(vc[k] * RISE + SLACK["drawCallsPerFrame"], 2)
+                    if c[k] > lim:
+                        failures.append(f"{name}/{prof}/{sid}: {label} {c[k]} draw calls per frame, more than {lim} (vanilla's {vc[k]} in the same run"
+                                        f"{(' + ' + str(allowance[name + '/' + sid])) if sid in translucent and name + '/' + sid in allowance else '' if sid in translucent else ' x 1.10 + 2'}; fps {c.get('fps')} against vanilla's {vc.get('fps')})")
+                lines.append(f"| {sid} | {c['drawCallsPerFrameAvg']} / {c['drawCallsPerFrameMedian']} ({c.get('fps')}) | {vc['drawCallsPerFrameAvg']} / {vc['drawCallsPerFrameMedian']} ({vc.get('fps')}) | "
+                             f"{' and '.join(l for l, _ in stats)}{(', at most vanilla + ' + str(allowance[name + '/' + sid])) if sid in translucent and name + '/' + sid in allowance else ', at most vanilla' if sid in translucent else ', x 1.10 + 2'} |")
             lines.append("")
             lines.append(f"Terrain GPU memory, {name} {prof} (MB; reserved in the Brimstone run must not be more than vanilla's):\n")
             lines.append("| scene | Brimstone run reserved / used | of which Brimstone's arenas | of which vanilla's heaps | vanilla (measure run) reserved / used |")

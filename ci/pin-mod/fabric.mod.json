@@ -3,7 +3,7 @@
   "id": "brimstone_ci_pin",
   "version": "1",
   "name": "Brimstone CI: pins",
-  "description": "CI only, loaded in every client run (vanilla and Brimstone alike): holds noise that isn't Brimstone's still (the lightmap's block-light flicker, texture animation, the order of feature batches such as Create's outliner faces and edges) and leaves out the crosshair's block outline (it moves by a pixel row between frames on GL 3.3), so screenshots don't depend on the run or the moment they are taken.",
+  "description": "CI only, loaded in every client run (vanilla and Brimstone alike): holds noise that isn't Brimstone's still (the lightmap's block-light flicker, texture animation, the order of feature batches such as Create's outliner faces and edges) leaves out the crosshair's block outline (it moves by a pixel row between frames on GL 3.3) and makes no particles in the Sift dimension (sprites drifting over the sift scene's canyon), so screenshots don't depend on the run or the moment they are taken.",
   "license": "LGPL-3.0-only",
   "environment": "client",
   "mixins": [
