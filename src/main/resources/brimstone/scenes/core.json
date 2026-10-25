@@ -41,6 +41,8 @@
     },
     {
       "id": "water_glass",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40180107484 attempt 2, Vulkan: Brimstone 124.0 average / 124 median at 18.57 fps, vanilla's measure run 103.78 / 124 at 24.15 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "Water, ice and stained glass in a glass tank",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -61,6 +63,8 @@
     },
     {
       "id": "nether",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40180107484 attempt 2, Vulkan: Brimstone 120.73 / 121 at 18.93 fps, vanilla 102.5 / 121 at 23.63 fps (limit x 1.10 + 2: 114.75). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "The nether",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -70,6 +74,8 @@
     },
     {
       "id": "mobs",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40193520268, Vulkan: Brimstone 134.0 / 134 at 18.81 fps, vanilla 115.65 / 134 at 23.72 fps (limit x 1.10 + 2: 129.22; also run 40180107484 attempt 2: 114.99 / 134 at 23.83 fps against 95.79 / 134 at 29.78 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "A crowd of 64 mobs (no AI, fixed variants, so they hold still and look the same every run)",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -340,6 +346,8 @@
     },
     {
       "id": "translucent_move",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40193520268, Vulkan: Brimstone 124.0 / 124 at 15.57 fps, vanilla 123.4 / 124 at 19.28 fps (also run 40180107484 attempt 2: 123.1 / 124 at 19.31 fps against 98.98 / 124 at 25.53 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "Water in a glass tank, a wall of stained glass in stripes of six colours, ice and glass panes, with the camera sliding past at 1.5 blocks/s (package 3)",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -429,6 +437,8 @@
     },
     {
       "id": "water_glass_oit",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40180107484 attempt 2, Vulkan: Brimstone 129.01 / 129 at 9.86 fps, vanilla 129.0 / 129 at 13.46 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "Water, ice and stained glass in a glass tank, with Improved Transparency (package 3)",
       "renderDistance": 8,
       "settleSeconds": 20,

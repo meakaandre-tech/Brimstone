@@ -442,6 +442,14 @@ Exceptions, each by Andre's rule:
   with a game tick and draws the tick's extra draws). Run 40180107484 attempt 1, full: Brimstone 154.0 average / 154
   median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps; Vulkan 153.97 / 154 at 15.8 fps against
   153.94 / 154 at 12.37 fps. (`"ciVanillaDrawGate": "median"` on the scene, with this reason.)
+- `core/water_glass`, `water_glass_oit`, `nether`, `translucent_move`, `mobs`: median only, by the same rule. Each
+  failed only on the average, in the Vulkan profile (lavapipe runs near 20 fps), where the Brimstone run and the
+  measure run ran at different speeds, with equal medians: water_glass 124.0 / 124 at 18.57 fps against 103.78 / 124
+  at 24.15 fps; water_glass_oit 129.01 / 129 at 9.86 fps against 129.0 / 129 at 13.46 fps; nether 120.73 / 121 at
+  18.93 fps against 102.5 / 121 at 23.63 fps (all three run 40180107484 attempt 2); translucent_move 124.0 / 124 at
+  15.57 fps against 123.4 / 124 at 19.28 fps; mobs 134.0 / 134 at 18.81 fps against 115.65 / 134 at 23.72 fps (both
+  run 40193520268, and attempt 2 above). The reasons are on the scenes. Gated on both average and median: spawn,
+  flythrough, occlusion, occlusion_move, translucent_move_oit, factory, hub, mam, map.
 - `core/flythrough`: vanilla + 2 on full and Vulkan (old-GPU stays at vanilla), Andre's rule for a fly-through excess of 2 draws per frame or fewer. Run
   40180107484 attempt 1, Vulkan: average 123.11 against vanilla's 123.05 (medians 123 and 123; full 123.07 against
   123.07). Brimstone's terrain draws there are exactly vanilla's 3 indirect draws (solid, cutout, translucent: one

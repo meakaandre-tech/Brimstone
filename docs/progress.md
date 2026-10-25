@@ -13,8 +13,10 @@ Decisions made on your behalf while you were away (each also in its section):
    against vanilla's pictures, and that their modules really stayed off (review round 3).
 3. **Fly-through vanilla + 2** (your rule, full and Vulkan only): Vulkan averaged 123.11 against 123.05 in one run;
    Brimstone's terrain draws are exactly vanilla's 3, the 0.06 is in other draws.
-4. **sift draw calls on the median** (your rule): its average follows the runner's fps (154.0 at 15.1 fps against
-   135.58 at 22.64 fps; medians 154 and 154).
+4. **Draw calls on the median for sift, water_glass, water_glass_oit, nether, translucent_move and mobs** (your
+   rule): each failed only on the average with equal medians, the two runs at different speeds near 20 fps (e.g.
+   sift 154.0 at 15.1 fps against 135.58 at 22.64 fps; mobs on Vulkan 134.0 at 18.81 against 115.65 at 23.72). The
+   fly-through, spawn, occlusion scenes, translucent_move_oit and the other SIFTEC scenes stay on both.
 5. **sift particles:** the CI pin holds off every particle in the Sift dimension (1-36 `the_sift:sift_note` per run, one
    `minecraft:poof`), not only the notes; sift strict limit re-collected: 4,900 -> 100. Mob spawning is off for the
    sift scene and back on in the next one; the setup sends every non-player entity away.
