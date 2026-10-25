@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "com.meakaandre.brimstone.cipin.diag",
   "compatibilityLevel": "JAVA_25",
-  "client": ["DiagCameraMixin", "DiagFacesMixin"],
+  "client": ["DiagDrawMixin", "DiagPhaseMixin", "DiagFrameMixin"],
   "injectors": {"defaultRequire": 0}
 }

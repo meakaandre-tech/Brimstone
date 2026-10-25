@@ -129,7 +129,7 @@
       ],
       "ciRequiresTranslucent": true,
       "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla in front of Brimstone's translucent water. CI presses Tab once after the setup (the Build Gun's next-tab key: picks the first Power building, the Power Pole Mk.1; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. The pool's floor is sea lanterns: up there water freezes over at random where block light is low (ice in vanilla's own runs, run 40121527770), and light 14 at the surface stops it. The last setup step moves the camera three blocks, so vanilla sorts the water again from where the picture is taken. Not run on Vulkan: lavapipe segfaults (libvulkan_lvp.so) as soon as the outliner draws, in vanilla's run too (runs 40115084815 and 40119107821).",
-      "ciShots": [{"name": "again1", "commands": ["#wait 8"]}, {"name": "again2", "commands": ["#wait 8"]}, {"name": "again3", "commands": ["#wait 8"]}],
+      "ciShots": [{"name": "again1", "commands": ["#wait 0.5"]}, {"name": "again2", "commands": ["#wait 0.5"]}, {"name": "again3", "commands": ["#wait 0.5"]}, {"name": "again4", "commands": ["#wait 0.5"]}, {"name": "again5", "commands": ["#wait 0.5"]}, {"name": "again6", "commands": ["#wait 0.5"]}, {"name": "again7", "commands": ["#wait 0.5"]}, {"name": "again8", "commands": ["#wait 0.5"]}, {"name": "again9", "commands": ["#wait 0.5"]}, {"name": "again10", "commands": ["#wait 0.5"]}],
       "ciKeys": [
         "Tab"
       ],

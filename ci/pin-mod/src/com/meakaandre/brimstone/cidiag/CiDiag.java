@@ -30,6 +30,29 @@ public final class CiDiag {
         System.out.println("BRIMSTONE CIDIAG " + key + (state.equals(prev) ? " (same)" : " CHANGED") + " frame=" + frame + " " + state);
     }
 
+    private static final StringBuilder DRAWS = new StringBuilder();
+    private static int perFrameLeft = 900;
+    private static long frames;
+
+    /** Render thread: one feature draw (or phase marker) of this frame. */
+    public static void draw(String what) {
+        if (DRAWS.length() < 20000) DRAWS.append(what).append(' ');
+    }
+
+    /** Render thread, frame start: once Create's outline is on screen, logs every frame's draws (900 frames). */
+    public static void frameStart(float partialTick) {
+        frames++;
+        String s = DRAWS.toString();
+        DRAWS.setLength(0);
+        if (perFrameLeft > 0 && s.contains("outline")) {
+            perFrameLeft--;
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            Object hit = mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult b
+                ? b.getBlockPos() + "/" + b.getDirection() + "/" + b.getLocation() : String.valueOf(mc.hitResult);
+            System.out.println("BRIMSTONE CIDIAG frame " + frames + " pt=" + partialTick + " hit=" + hit + " draws=" + s);
+        }
+    }
+
     public static Object field(Object o, String name) {
         for (Class<?> c = o.getClass(); c != null; c = c.getSuperclass()) {
             try {
