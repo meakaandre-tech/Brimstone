@@ -1,0 +1,98 @@
+suite=core run=brimstone-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+old-GPU Brimstone run: -Dbrimstone.debug.forceIntelMdiIssue=true
+Brimstone run JVM properties:-Dbrimstone.debug.forceIntelMdiIssue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true
+core server and world: from the core-world job
+total 2820
+-rw-r--r-- 1 runner runner  265800 Oct 25 21:44 brimstone.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 25 21:44 fabric-api.jar
+total 268
+-rw-r--r-- 1 runner runner 265800 Oct 25 21:45 brimstone.jar
+-rw-r--r-- 1 runner runner   6711 Oct 25 21:45 ci-pin.jar
+sessions: 8|-|spawn,water_glass,nether,mobs,occlusion,occlusion_move,translucent_move 8|improvedTransparency=true|water_glass_oit,translucent_move_oit 12|-|flythrough
+scene spawn: setting up
+scene spawn: bench done
+scene water_glass: setting up
+scene water_glass: bench done
+scene nether: setting up
+scene nether: bench done
+scene mobs: setting up
+scene mobs: bench done
+scene occlusion: setting up
+scene occlusion: bench done
+scene occlusion_move: setting up
+scene occlusion_move: bench done
+scene translucent_move: setting up
+scene translucent_move: bench done
+session 2 client options: improvedTransparency=true
+scene water_glass_oit: setting up
+scene water_glass_oit: bench done
+scene translucent_move_oit: setting up
+scene translucent_move_oit: bench done
+scene flythrough: setting up
+scene flythrough: bench done
+/tmp/out/core-brimstone-old:
+bench
+client-1.log
+client-2.log
+client-3.log
+client-gradle-1.log
+client-gradle-2.log
+client-gradle-3.log
+drive-flythrough.json
+drive-spawn-water_glass-nether-mobs-occlusion-occlusion_move-translucent_move.json
+drive-water_glass_oit-translucent_move_oit.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+joined-3.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-brimstone-old/bench:
+20261025-214739-spawn.json
+20261025-214913-water_glass.json
+20261025-215033-nether.json
+20261025-215227-mobs.json
+20261025-215407-occlusion.json
+20261025-215712-occlusion_move.json
+20261025-215942-translucent_move.json
+20261025-220236-water_glass_oit.json
+20261025-220507-translucent_move_oit.json
+20261025-220744-flythrough.json
+
+/tmp/out/core-brimstone-old/shots:
+flythrough.png
+mobs.png
+nether.png
+occlusion.png
+occlusion_move.bare_open.png
+occlusion_move.bare_x2297.png
+occlusion_move.bare_x2300.png
+occlusion_move.bare_x2305.png
+occlusion_move.bare_x2309.png
+occlusion_move.closed.png
+occlusion_move.open.png
+occlusion_move.png
+occlusion_move.x2297.png
+occlusion_move.x2305.png
+occlusion_move.x2309.png
+spawn.png
+translucent_move.back.png
+translucent_move.bare_back.png
+translucent_move.low.png
+translucent_move.png
+translucent_move.x2404.png
+translucent_move.x2414.png
+translucent_move.x2424.png
+translucent_move_oit.back.png
+translucent_move_oit.bare_back.png
+translucent_move_oit.low.png
+translucent_move_oit.png
+translucent_move_oit.x2404.png
+translucent_move_oit.x2414.png
+translucent_move_oit.x2424.png
+water_glass.png
+water_glass_oit.png

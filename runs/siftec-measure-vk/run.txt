@@ -1,0 +1,71 @@
+suite=siftec run=measure-vk
+Vulkan profile: --graphicsBackend vulkan on lavapipe
+measure run JVM properties: -Dbrimstone.ci.measureOnly=true
+total 62864
+-rw-r--r-- 1 runner runner  3486296 Oct 25 21:44 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   265800 Oct 25 21:44 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 25 21:44 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 25 21:44 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 25 21:44 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 25 21:44 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 25 21:44 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 25 21:44 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 25 21:44 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 25 21:44 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 25 21:44 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 25 21:44 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 25 21:44 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 25 21:44 travelersbackpack.jar
+total 60312
+-rw-r--r-- 1 runner runner  3486296 Oct 25 21:45 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   265800 Oct 25 21:45 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 25 21:45 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner     6711 Oct 25 21:45 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 25 21:45 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 25 21:45 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 25 21:45 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 25 21:45 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 25 21:45 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 25 21:45 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 25 21:45 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 25 21:45 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 25 21:45 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 25 21:45 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,map,hologram
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: skipped (not run in measure-vk: Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too)
+/tmp/out/siftec-measure-vk:
+bench
+client-1.log
+client-gradle-1.log
+drive-factory-sift-hub-mam-map-hologram.json
+gfx.txt
+joined-1.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-measure-vk/bench:
+20261025-215057-factory.json
+20261025-215230-sift.json
+20261025-215342-hub.json
+20261025-215453-mam.json
+20261025-215742-map.json
+
+/tmp/out/siftec-measure-vk/shots:
+factory.png
+hub.png
+mam.png
+map.png
+sift.png

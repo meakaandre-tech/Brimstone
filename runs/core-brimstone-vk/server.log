@@ -1,0 +1,625 @@
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[21:44:29] [main/INFO]: Loading Minecraft 26.3 with Fabric Loader 0.19.5
+[21:44:29] [main/INFO]: Mappings not present!
+[21:44:29] [main/INFO]: Loading 43 mods:
+	- brimstone 0.0.1+26.3
+	- fabric-api 0.161.0+26.3
+	   |-- fabric-advancement-api-v1 1.0.0+38c7a2d55d
+	   |-- fabric-api-base 2.0.6+fcdff87f5d
+	   |-- fabric-api-lookup-api-v1 2.0.24+3434d6d95d
+	   |-- fabric-biome-api-v1 20.0.9+74ed1ea55d
+	   |-- fabric-block-api-v1 3.1.0+0ae6f9115d
+	   |-- fabric-block-getter-api-v2 2.0.9+3434d6d95d
+	   |-- fabric-command-api-v2 3.1.2+fcdff87f5d
+	   |-- fabric-content-registries-v0 15.0.4+74ed1ea55d
+	   |-- fabric-convention-tags-v2 4.10.3+6b5b47fd5d
+	   |-- fabric-crash-report-info-v1 1.0.7+fcdff87f5d
+	   |-- fabric-creative-tab-api-v1 5.0.21+fcdff87f5d
+	   |-- fabric-data-attachment-api-v1 2.2.30+3434d6d95d
+	   |-- fabric-data-generation-api-v1 27.2.4+427eab975d
+	   |-- fabric-debug-api-v1 1.0.4+3434d6d95d
+	   |-- fabric-dimensions-v1 5.1.19+47f74c985d
+	   |-- fabric-entity-events-v1 6.0.4+3434d6d95d
+	   |-- fabric-events-interaction-v0 5.3.6+3434d6d95d
+	   |-- fabric-game-rule-api-v1 4.0.10+3434d6d95d
+	   |-- fabric-item-api-v1 14.7.0+cf6bc2db5d
+	   |-- fabric-lifecycle-events-v1 4.1.9+ffef5f675d
+	   |-- fabric-loot-api-v3 4.0.8+4068fd645d
+	   |-- fabric-menu-api-v1 2.0.27+ed66f0a35d
+	   |-- fabric-message-api-v1 7.0.10+3434d6d95d
+	   |-- fabric-networking-api-v1 6.3.8+fcdff87f5d
+	   |-- fabric-object-builder-api-v1 24.1.9+3434d6d95d
+	   |-- fabric-particles-v1 5.0.24+3434d6d95d
+	   |-- fabric-permission-api-v1 1.0.8+fcdff87f5d
+	   |-- fabric-recipe-api-v1 10.0.8+fcdff87f5d
+	   |-- fabric-registry-sync-v0 8.0.1+fcdff87f5d
+	   |-- fabric-rendering-fluids-v1 6.0.6+3434d6d95d
+	   |-- fabric-resource-conditions-api-v1 6.1.5+3434d6d95d
+	   |-- fabric-resource-loader-v0 3.3.26+4fc5413f5d
+	   |-- fabric-resource-loader-v1 3.0.4+fcdff87f5d
+	   |-- fabric-serialization-api-v1 2.0.7+74ed1ea55d
+	   |-- fabric-tag-api-v1 2.1.10+fcdff87f5d
+	   |-- fabric-transfer-api-v1 8.0.25+fcdff87f5d
+	   \-- fabric-transitive-access-wideners-v1 8.1.16+52268a0e5d
+	- fabricloader 0.19.5
+	   \-- mixinextras 0.5.5
+	- java 25
+	- minecraft 26.3
+[21:44:29] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/home/runner/work/Brimstone/Brimstone/server/libraries/net/fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/sponge-mixin-0.17.4+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[21:44:30] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/home/runner/work/Brimstone/Brimstone/server/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[21:44:38] [main/INFO]: Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[21:44:40] [Worker-Main-2/INFO]: Loaded 1866 advancements
+[21:44:40] [main/INFO]: Applied 0 biome modifications to 0 of 67 new biomes in 1.435 ms
+[21:44:40] [Server thread/INFO]: Starting minecraft server version 26.3
+[21:44:40] [Server thread/INFO]: Loading properties
+[21:44:40] [Server thread/INFO]: Default game type: CREATIVE
+[21:44:40] [Server thread/INFO]: Generating keypair
+[21:44:40] [Server thread/INFO]: Starting Minecraft server on *:25565
+[21:44:40] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[21:44:40] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[21:44:40] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[21:44:40] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[21:44:40] [Server thread/INFO]: Preparing level "world"
+[21:44:41] [Server thread/INFO]: Loading 0 persistent chunks...
+[21:44:41] [Server thread/INFO]: Preparing spawn area: 100%
+[21:44:41] [Server thread/INFO]: Time elapsed: 60 ms
+[21:44:41] [Server thread/INFO]: Done (0.349s)! For help, type "help"
+[21:44:41] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[21:44:41] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[21:44:41] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[21:45:15] [Server thread/INFO]: System chat: No player was found
+[21:45:43] [Server thread/INFO]: Player462[/127.0.0.1:42752] logged in with entity id 14 at (106.5, 141.0, -27.5)
+[21:45:43] [Server thread/INFO]: System chat: Player462 joined the game
+[21:45:45] [Server thread/INFO]: System chat: Made Player462 a server operator
+[21:46:25] [Server thread/INFO]: System chat: Game rule advance_time is now set to false
+[21:46:25] [Server thread/INFO]: System chat: Game rule advance_weather is now set to false
+[21:46:25] [Server thread/INFO]: System chat: Game rule send_command_feedback is now set to false
+[21:46:26] [Server thread/INFO]: System chat: Set Player462's game mode to Spectator Mode
+[21:46:26] [Server thread/INFO]: System chat: Set minecraft:overworld to 6000 tick(s)
+[21:46:26] [Server thread/INFO]: System chat: Set the weather to clear
+[21:46:26] [Server thread/INFO]: System chat: Teleported Player462 to 96.500000, 165.000000, -27.500000
+[21:46:59] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:46:59] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 96.500000, 165.000000, -27.500000]
+[21:47:44] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[21:47:44] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[21:47:44] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[21:47:45] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[21:47:45] [Server thread/INFO]: System chat: Set the weather to clear
+[21:47:45] [Server thread/INFO]: System chat: Teleported Player462 to 2000.500000, 209.000000, -1984.500000
+[21:47:52] [Server thread/INFO]: System chat: Successfully filled 441 block(s)
+[21:47:52] [Server thread/INFO]: System chat: No blocks were filled
+[21:47:52] [Server thread/INFO]: System chat: Successfully filled 834 block(s)
+[21:47:53] [Server thread/INFO]: System chat: Successfully filled 900 block(s)
+[21:47:53] [Server thread/INFO]: System chat: Successfully filled 27 block(s)
+[21:47:53] [Server thread/INFO]: System chat: Successfully filled 36 block(s)
+[21:47:54] [Server thread/INFO]: System chat: Successfully filled 13 block(s)
+[21:47:54] [Server thread/INFO]: System chat: Successfully filled 84 block(s)
+[21:47:54] [Server thread/INFO]: System chat: Teleported Player462 to 2000.500000, 209.000000, -1984.500000
+[21:48:26] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:48:26] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2000.500000, 209.000000, -1984.500000]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 1831 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 834 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 900 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 27 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 36 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 13 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Successfully filled 84 block(s)]
+[21:48:33] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2000.500000, 209.000000, -1984.500000]
+[21:49:17] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[21:49:17] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[21:49:18] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[21:49:18] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[21:49:19] [Server thread/INFO]: System chat: Set the weather to clear
+[21:49:19] [Server thread/INFO]: System chat: Player462 has made the advancement [We Need to Go Deeper]
+[21:49:19] [Server thread/INFO]: System chat: Teleported Player462 to 0.500000, 40.000000, 0.500000
+[21:49:53] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:49:53] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 0.500000, 40.000000, 0.500000]
+[21:50:37] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[21:50:38] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[21:50:38] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[21:50:39] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[21:50:39] [Server thread/INFO]: System chat: Set the weather to clear
+[21:50:39] [Server thread/INFO]: System chat: Teleported Player462 to 2100.500000, 208.000000, -1985.500000
+[21:50:45] [Server thread/INFO]: System chat: Successfully filled 441 block(s)
+[21:50:46] [Server thread/INFO]: System chat: No blocks were filled
+[21:50:46] [Server thread/INFO]: System chat: No entity was found
+[21:50:46] [Server thread/INFO]: System chat: Summoned new Cow
+[21:50:47] [Server thread/INFO]: System chat: Summoned new Pig
+[21:50:47] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:50:47] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:50:48] [Server thread/INFO]: System chat: Summoned new Villager
+[21:50:48] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:50:48] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:50:48] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:50:49] [Server thread/INFO]: System chat: Summoned new Pig
+[21:50:49] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:50:49] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:50:50] [Server thread/INFO]: System chat: Summoned new Villager
+[21:50:50] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:50:50] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:50:51] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:50:51] [Server thread/INFO]: System chat: Summoned new Cow
+[21:50:51] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:50:51] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:50:52] [Server thread/INFO]: System chat: Summoned new Villager
+[21:50:52] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:50:52] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:50:53] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:50:53] [Server thread/INFO]: System chat: Summoned new Cow
+[21:50:53] [Server thread/INFO]: System chat: Summoned new Pig
+[21:50:54] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:50:54] [Server thread/INFO]: System chat: Summoned new Villager
+[21:50:54] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:50:54] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:50:55] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:50:55] [Server thread/INFO]: System chat: Summoned new Cow
+[21:50:55] [Server thread/INFO]: System chat: Summoned new Pig
+[21:50:56] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:50:56] [Server thread/INFO]: System chat: Summoned new Villager
+[21:50:56] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:50:57] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:50:57] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:50:57] [Server thread/INFO]: System chat: Summoned new Cow
+[21:50:57] [Server thread/INFO]: System chat: Summoned new Pig
+[21:50:58] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:50:58] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:50:58] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:50:59] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:50:59] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:50:59] [Server thread/INFO]: System chat: Summoned new Cow
+[21:51:00] [Server thread/INFO]: System chat: Summoned new Pig
+[21:51:00] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:51:00] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:51:00] [Server thread/INFO]: System chat: Summoned new Villager
+[21:51:01] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:51:01] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:51:01] [Server thread/INFO]: System chat: Summoned new Cow
+[21:51:02] [Server thread/INFO]: System chat: Summoned new Pig
+[21:51:02] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:51:02] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:51:03] [Server thread/INFO]: System chat: Summoned new Villager
+[21:51:03] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:51:03] [Server thread/INFO]: System chat: Summoned new Snow Golem
+[21:51:03] [Server thread/INFO]: System chat: Summoned new Cow
+[21:51:04] [Server thread/INFO]: System chat: Summoned new Pig
+[21:51:04] [Server thread/INFO]: System chat: Summoned new Chicken
+[21:51:04] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:51:05] [Server thread/INFO]: System chat: Summoned new Villager
+[21:51:05] [Server thread/INFO]: System chat: Summoned new Mooshroom
+[21:51:05] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:51:06] [Server thread/INFO]: System chat: Teleported Player462 to 2100.500000, 208.000000, -1985.500000
+[21:51:37] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:51:38] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2100.500000, 208.000000, -1985.500000]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Successfully filled 8 block(s)]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Teleported 64 entities to 2100.500000, -200.000000, -2000.500000]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:44] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:45] [Server thread/INFO]: Villager Villager['Villager'/976, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:45] [Server thread/INFO]: Villager Villager['Villager'/990, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:45] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:46] [Server thread/INFO]: Villager Villager['Villager'/983, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:46] [Server thread/INFO]: Villager Villager['Villager'/997, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:46] [Server thread/INFO]: Villager Villager['Villager'/1004, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:46] [Server thread/INFO]: Villager Villager['Villager'/1019, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:46] [Server thread/INFO]: Villager Villager['Villager'/1026, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:46] [Server thread/INFO]: Villager Villager['Villager'/1033, l='ServerLevel[world]', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:46] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Snow Golem]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Chicken]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Mooshroom]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:51:47] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2100.500000, 208.000000, -1985.500000]
+[21:52:32] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[21:52:33] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[21:52:33] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[21:52:33] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[21:52:34] [Server thread/INFO]: System chat: Set the weather to clear
+[21:52:34] [Server thread/INFO]: System chat: Teleported Player462 to 2300.500000, 203.000000, -1984.500000
+[21:52:40] [Server thread/INFO]: System chat: No blocks were filled
+[21:52:41] [Server thread/INFO]: System chat: No entity was found
+[21:52:41] [Server thread/INFO]: System chat: Successfully filled 1155 block(s)
+[21:52:41] [Server thread/INFO]: System chat: Successfully filled 49 block(s)
+[21:52:42] [Server thread/INFO]: System chat: Successfully filled 378 block(s)
+[21:52:42] [Server thread/INFO]: System chat: Successfully filled 18 block(s)
+[21:52:42] [Server thread/INFO]: System chat: Successfully filled 6 block(s)
+[21:52:42] [Server thread/INFO]: System chat: Changed the block at 2293, 200, -2002
+[21:52:43] [Server thread/INFO]: System chat: Changed the block at 2298, 200, -2002
+[21:52:43] [Server thread/INFO]: System chat: Changed the block at 2302, 200, -2002
+[21:52:43] [Server thread/INFO]: System chat: Changed the block at 2308, 200, -2002
+[21:52:44] [Server thread/INFO]: System chat: Changed the block at 2304, 200, -2002
+[21:52:44] [Server thread/INFO]: System chat: Changed the block at 2290, 200, -2002
+[21:52:44] [Server thread/INFO]: System chat: Changed the block at 2297, 200, -2001
+[21:52:45] [Server thread/INFO]: System chat: Changed the block at 2295, 197, -1990
+[21:52:45] [Server thread/INFO]: System chat: Changed the block at 2305, 197, -1992
+[21:52:45] [Server thread/INFO]: System chat: Summoned new Cow
+[21:52:45] [Server thread/INFO]: System chat: Summoned new Villager
+[21:52:46] [Server thread/INFO]: System chat: Summoned new Pig
+[21:52:46] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:52:46] [Server thread/INFO]: System chat: Summoned new Cow
+[21:52:47] [Server thread/INFO]: System chat: Summoned new Villager
+[21:52:47] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:52:47] [Server thread/INFO]: System chat: Summoned new Pig
+[21:52:48] [Server thread/INFO]: System chat: Summoned new Cow
+[21:52:48] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:52:48] [Server thread/INFO]: System chat: Summoned new Pig
+[21:52:48] [Server thread/INFO]: System chat: Teleported Player462 to 2300.500000, 203.000000, -1984.500000
+[21:53:21] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:53:21] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2300.500000, 203.000000, -1984.500000]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Successfully filled 1533 block(s)]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Teleported 14 entities to 2300.500000, -200.000000, -2000.500000]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Successfully filled 1155 block(s)]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Successfully filled 49 block(s)]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Successfully filled 378 block(s)]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Successfully filled 18 block(s)]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Successfully filled 6 block(s)]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Changed the block at 2293, 200, -2002]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Changed the block at 2298, 200, -2002]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Changed the block at 2302, 200, -2002]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Changed the block at 2308, 200, -2002]
+[21:53:27] [Server thread/INFO]: System chat: [Player462: Changed the block at 2304, 200, -2002]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Changed the block at 2290, 200, -2002]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Changed the block at 2297, 200, -2001]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Changed the block at 2295, 197, -1990]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Changed the block at 2305, 197, -1992]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:53:28] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2300.500000, 203.000000, -1984.500000]
+[21:53:29] [Server thread/INFO]: Villager Villager['Villager'/1317, l='ServerLevel[world]', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:53:29] [Server thread/INFO]: Villager Villager['Villager'/1321, l='ServerLevel[world]', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:54:12] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[21:54:12] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[21:54:12] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[21:54:13] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[21:54:13] [Server thread/INFO]: System chat: Set the weather to clear
+[21:54:13] [Server thread/INFO]: System chat: Teleported Player462 to 2300.500000, 203.000000, -1984.500000
+[21:54:20] [Server thread/INFO]: System chat: Successfully filled 1533 block(s)
+[21:54:20] [Server thread/INFO]: System chat: Teleported 14 entities to 2300.500000, -200.000000, -2000.500000
+[21:54:20] [Server thread/INFO]: System chat: Successfully filled 1155 block(s)
+[21:54:21] [Server thread/INFO]: System chat: Successfully filled 49 block(s)
+[21:54:21] [Server thread/INFO]: System chat: Successfully filled 580 block(s)
+[21:54:21] [Server thread/INFO]: System chat: Successfully filled 18 block(s)
+[21:54:21] [Server thread/INFO]: System chat: Successfully filled 12 block(s)
+[21:54:22] [Server thread/INFO]: System chat: Changed the block at 2290, 200, -2002
+[21:54:22] [Server thread/INFO]: Villager Villager['Villager'/1339, l='ServerLevel[world]', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:54:22] [Server thread/INFO]: Villager Villager['Villager'/1343, l='ServerLevel[world]', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:54:22] [Server thread/INFO]: System chat: Changed the block at 2298, 200, -1999
+[21:54:22] [Server thread/INFO]: System chat: Changed the block at 2303, 200, -2002
+[21:54:23] [Server thread/INFO]: System chat: Changed the block at 2292, 200, -2002
+[21:54:23] [Server thread/INFO]: System chat: Changed the block at 2295, 197, -1990
+[21:54:23] [Server thread/INFO]: System chat: Changed the block at 2305, 197, -1992
+[21:54:24] [Server thread/INFO]: System chat: Summoned new Cow
+[21:54:24] [Server thread/INFO]: System chat: Summoned new Pig
+[21:54:24] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:54:24] [Server thread/INFO]: System chat: Summoned new Cow
+[21:54:25] [Server thread/INFO]: System chat: Summoned new Iron Golem
+[21:54:25] [Server thread/INFO]: System chat: Summoned new Villager
+[21:54:25] [Server thread/INFO]: System chat: Summoned new Cow
+[21:54:26] [Server thread/INFO]: System chat: Summoned new Sheep
+[21:54:26] [Server thread/INFO]: System chat: Summoned new Pig
+[21:54:26] [Server thread/INFO]: System chat: Summoned new Pig
+[21:54:27] [Server thread/INFO]: System chat: Teleported Player462 to 2293.500000, 203.000000, -1984.500000
+[21:54:56] [Server thread/INFO]: System chat: Teleported Player462 to 2297.500000, 203.000000, -1984.500000
+[21:55:04] [Server thread/INFO]: System chat: Teleported Player462 to 2305.500000, 203.000000, -1984.500000
+[21:55:12] [Server thread/INFO]: System chat: Teleported Pig to 2309.500000, 200.000000, -2003.500000
+[21:55:12] [Server thread/INFO]: System chat: Teleported Player462 to 2309.500000, 203.000000, -1984.500000
+[21:55:21] [Server thread/INFO]: System chat: Successfully filled 50 block(s)
+[21:55:21] [Server thread/INFO]: System chat: Teleported Pig to 2304.500000, 200.000000, -2003.500000
+[21:55:21] [Server thread/INFO]: System chat: Teleported Player462 to 2300.500000, 203.000000, -1984.500000
+[21:55:29] [Server thread/INFO]: System chat: Successfully filled 50 block(s)
+[21:55:30] [Server thread/INFO]: System chat: Teleported Pig to 2306.500000, 200.000000, -2003.500000
+[21:55:38] [Server thread/INFO]: System chat: Teleported 10 entities to 2300.500000, -200.000000, -2000.500000
+[21:55:38] [Server thread/INFO]: System chat: Changed the block at 2290, 200, -2002
+[21:55:38] [Server thread/INFO]: System chat: Changed the block at 2298, 200, -1999
+[21:55:39] [Server thread/INFO]: System chat: Changed the block at 2303, 200, -2002
+[21:55:39] [Server thread/INFO]: System chat: Changed the block at 2292, 200, -2002
+[21:55:39] [Server thread/INFO]: System chat: Changed the block at 2295, 197, -1990
+[21:55:40] [Server thread/INFO]: System chat: Changed the block at 2305, 197, -1992
+[21:55:40] [Server thread/INFO]: Villager Villager['Villager'/1378, l='ServerLevel[world]', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager fell out of the world'
+[21:55:48] [Server thread/INFO]: System chat: Teleported Player462 to 2297.500000, 203.000000, -1984.500000
+[21:55:56] [Server thread/INFO]: System chat: Teleported Player462 to 2305.500000, 203.000000, -1984.500000
+[21:56:04] [Server thread/INFO]: System chat: Teleported Player462 to 2309.500000, 203.000000, -1984.500000
+[21:56:12] [Server thread/INFO]: System chat: Successfully filled 50 block(s)
+[21:56:13] [Server thread/INFO]: System chat: Teleported Player462 to 2300.500000, 203.000000, -1984.500000
+[21:56:24] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:56:24] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2300.500000, 203.000000, -1984.500000]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Successfully filled 1673 block(s)]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Successfully filled 1155 block(s)]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Successfully filled 49 block(s)]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Successfully filled 580 block(s)]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Successfully filled 18 block(s)]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Successfully filled 12 block(s)]
+[21:56:30] [Server thread/INFO]: System chat: [Player462: Changed the block at 2290, 200, -2002]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Changed the block at 2298, 200, -1999]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Changed the block at 2303, 200, -2002]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Changed the block at 2292, 200, -2002]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Changed the block at 2295, 197, -1990]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Changed the block at 2305, 197, -1992]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Iron Golem]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Villager]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Cow]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Sheep]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Summoned new Pig]
+[21:56:31] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2293.500000, 203.000000, -1984.500000]
+[21:56:53] [Server thread/INFO]: System chat: [Player462: Teleported Pig to 2309.500000, 200.000000, -2003.500000]
+[21:56:55] [Server thread/INFO]: System chat: [Player462: Teleported Pig to 2306.500000, 200.000000, -2003.500000]
+[21:56:57] [Server thread/INFO]: System chat: [Player462: Successfully filled 50 block(s)]
+[21:57:00] [Server thread/INFO]: System chat: [Player462: Teleported Pig to 2309.500000, 200.000000, -2003.500000]
+[21:57:02] [Server thread/INFO]: System chat: [Player462: Teleported Pig to 2304.500000, 200.000000, -2003.500000]
+[21:57:04] [Server thread/INFO]: System chat: [Player462: Successfully filled 50 block(s)]
+[21:57:06] [Server thread/INFO]: System chat: [Player462: Teleported Pig to 2309.500000, 200.000000, -2003.500000]
+[21:57:08] [Server thread/INFO]: System chat: [Player462: Teleported Pig to 2306.500000, 200.000000, -2003.500000]
+[21:57:15] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[21:57:15] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[21:57:15] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[21:57:16] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[21:57:16] [Server thread/INFO]: System chat: Set the weather to clear
+[21:57:17] [Server thread/INFO]: System chat: Teleported Player462 to 2394.500000, 206.000000, -1980.500000
+[21:57:23] [Server thread/INFO]: System chat: No blocks were filled
+[21:57:23] [Server thread/INFO]: System chat: No blocks were filled
+[21:57:23] [Server thread/INFO]: System chat: No entity was found
+[21:57:24] [Server thread/INFO]: System chat: Successfully filled 2491 block(s)
+[21:57:24] [Server thread/INFO]: System chat: Successfully filled 1842 block(s)
+[21:57:24] [Server thread/INFO]: System chat: Successfully filled 2340 block(s)
+[21:57:25] [Server thread/INFO]: System chat: Successfully filled 27 block(s)
+[21:57:25] [Server thread/INFO]: System chat: Successfully filled 36 block(s)
+[21:57:25] [Server thread/INFO]: System chat: Successfully filled 36 block(s)
+[21:57:26] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:26] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:26] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:26] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:27] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:27] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:27] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:28] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:28] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:28] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:29] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:29] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:29] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:29] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:30] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:30] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:30] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:31] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[21:57:31] [Server thread/INFO]: System chat: Successfully filled 123 block(s)
+[21:57:31] [Server thread/INFO]: System chat: Changed the block at 2410, 201, -1992
+[21:57:32] [Server thread/INFO]: System chat: Teleported Player462 to 2394.500000, 206.000000, -1980.500000
+[21:58:01] [Server thread/INFO]: System chat: Teleported Player462 to 2404.500000, 206.000000, -1980.500000
+[21:58:09] [Server thread/INFO]: System chat: Teleported Player462 to 2414.500000, 206.000000, -1980.500000
+[21:58:18] [Server thread/INFO]: System chat: Teleported Player462 to 2424.500000, 206.000000, -1980.500000
+[21:58:26] [Server thread/INFO]: System chat: Teleported Player462 to 2418.500000, 203.000000, -1984.500000
+[21:58:35] [Server thread/INFO]: System chat: Teleported Player462 to 2394.500000, 206.000000, -1980.500000
+[21:58:43] [Server thread/INFO]: System chat: Changed the block at 2410, 201, -1992
+[21:58:54] [Server thread/INFO]: System chat: [Player462: Set the weather to clear]
+[21:58:55] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2394.500000, 206.000000, -1980.500000]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 4813 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 2271 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 2491 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 1842 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 2340 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 27 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 36 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 36 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:01] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 16 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Successfully filled 123 block(s)]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Changed the block at 2410, 201, -1992]
+[21:59:02] [Server thread/INFO]: System chat: [Player462: Teleported Player462 to 2394.500000, 206.000000, -1980.500000]
+[21:59:47] [Server thread/INFO]: Player462 lost connection: Disconnected
+[21:59:47] [Server thread/INFO]: System chat: Player462 left the game
+[22:00:19] [Server thread/INFO]: Player242[/127.0.0.1:33800] logged in with entity id 1495 at (95.5, 144.0, -30.5)
+[22:00:19] [Server thread/INFO]: System chat: Player242 joined the game
+[22:00:20] [Server thread/INFO]: System chat: Made Player242 a server operator
+[22:01:00] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[22:01:01] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[22:01:01] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[22:01:01] [Server thread/INFO]: System chat: Set Player242's game mode to Spectator Mode
+[22:01:02] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[22:01:02] [Server thread/INFO]: System chat: Set the weather to clear
+[22:01:02] [Server thread/INFO]: System chat: Teleported Player242 to 2000.500000, 209.000000, -1984.500000
+[22:01:08] [Server thread/INFO]: System chat: No blocks were filled
+[22:01:09] [Server thread/INFO]: System chat: Successfully filled 1831 block(s)
+[22:01:09] [Server thread/INFO]: System chat: Successfully filled 834 block(s)
+[22:01:09] [Server thread/INFO]: System chat: Successfully filled 900 block(s)
+[22:01:10] [Server thread/INFO]: System chat: Successfully filled 27 block(s)
+[22:01:10] [Server thread/INFO]: System chat: Successfully filled 36 block(s)
+[22:01:10] [Server thread/INFO]: System chat: Successfully filled 13 block(s)
+[22:01:11] [Server thread/INFO]: System chat: Successfully filled 84 block(s)
+[22:01:11] [Server thread/INFO]: System chat: Teleported Player242 to 2000.500000, 209.000000, -1984.500000
+[22:01:43] [Server thread/INFO]: System chat: [Player242: Set the weather to clear]
+[22:01:43] [Server thread/INFO]: System chat: [Player242: Teleported Player242 to 2000.500000, 209.000000, -1984.500000]
+[22:01:49] [Server thread/INFO]: System chat: [Player242: Successfully filled 1831 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Successfully filled 834 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Successfully filled 900 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Successfully filled 27 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Successfully filled 36 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Successfully filled 13 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Successfully filled 84 block(s)]
+[22:01:50] [Server thread/INFO]: System chat: [Player242: Teleported Player242 to 2000.500000, 209.000000, -1984.500000]
+[22:02:34] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[22:02:34] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[22:02:35] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[22:02:35] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[22:02:36] [Server thread/INFO]: System chat: Set the weather to clear
+[22:02:36] [Server thread/INFO]: System chat: Teleported Player242 to 2394.500000, 206.000000, -1980.500000
+[22:02:42] [Server thread/INFO]: System chat: Successfully filled 4814 block(s)
+[22:02:42] [Server thread/INFO]: System chat: Successfully filled 2271 block(s)
+[22:02:43] [Server thread/INFO]: System chat: No entity was found
+[22:02:43] [Server thread/INFO]: System chat: Successfully filled 2491 block(s)
+[22:02:43] [Server thread/INFO]: System chat: Successfully filled 2952 block(s)
+[22:02:44] [Server thread/INFO]: System chat: Successfully filled 2340 block(s)
+[22:02:44] [Server thread/INFO]: System chat: Successfully filled 27 block(s)
+[22:02:44] [Server thread/INFO]: System chat: Successfully filled 36 block(s)
+[22:02:45] [Server thread/INFO]: System chat: Successfully filled 36 block(s)
+[22:02:45] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:45] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:45] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:46] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:46] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:46] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:47] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:47] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:47] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:48] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:48] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:48] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:48] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:49] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:49] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:49] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:50] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:50] [Server thread/INFO]: System chat: Successfully filled 16 block(s)
+[22:02:50] [Server thread/INFO]: System chat: Successfully filled 123 block(s)
+[22:02:51] [Server thread/INFO]: System chat: Changed the block at 2410, 201, -1992
+[22:02:51] [Server thread/INFO]: System chat: Teleported Player242 to 2394.500000, 206.000000, -1980.500000
+[22:03:20] [Server thread/INFO]: System chat: Teleported Player242 to 2404.500000, 206.000000, -1980.500000
+[22:03:29] [Server thread/INFO]: System chat: Teleported Player242 to 2414.500000, 206.000000, -1980.500000
+[22:03:37] [Server thread/INFO]: System chat: Teleported Player242 to 2424.500000, 206.000000, -1980.500000
+[22:03:45] [Server thread/INFO]: System chat: Teleported Player242 to 2418.500000, 203.000000, -1984.500000
+[22:03:54] [Server thread/INFO]: System chat: Teleported Player242 to 2394.500000, 206.000000, -1980.500000
+[22:04:02] [Server thread/INFO]: System chat: Changed the block at 2410, 201, -1992
+[22:04:14] [Server thread/INFO]: System chat: [Player242: Set the weather to clear]
+[22:04:14] [Server thread/INFO]: System chat: [Player242: Teleported Player242 to 2394.500000, 206.000000, -1980.500000]
+[22:04:20] [Server thread/INFO]: System chat: [Player242: Successfully filled 4813 block(s)]
+[22:04:20] [Server thread/INFO]: System chat: [Player242: Successfully filled 2271 block(s)]
+[22:04:20] [Server thread/INFO]: System chat: [Player242: Successfully filled 2491 block(s)]
+[22:04:20] [Server thread/INFO]: System chat: [Player242: Successfully filled 1842 block(s)]
+[22:04:20] [Server thread/INFO]: System chat: [Player242: Successfully filled 2340 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 27 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 36 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 36 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 16 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Successfully filled 123 block(s)]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Changed the block at 2410, 201, -1992]
+[22:04:21] [Server thread/INFO]: System chat: [Player242: Teleported Player242 to 2394.500000, 206.000000, -1980.500000]
+[22:05:07] [Server thread/INFO]: Player242 lost connection: Disconnected
+[22:05:07] [Server thread/INFO]: System chat: Player242 left the game
+[22:05:38] [Server thread/INFO]: Player59[/127.0.0.1:41770] logged in with entity id 2123 at (91.5, 131.0, -30.5)
+[22:05:38] [Server thread/INFO]: System chat: Player59 joined the game
+[22:05:40] [Server thread/INFO]: System chat: Made Player59 a server operator
+[22:06:20] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[22:06:20] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[22:06:20] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[22:06:21] [Server thread/INFO]: System chat: Set Player59's game mode to Spectator Mode
+[22:06:21] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[22:06:21] [Server thread/INFO]: System chat: Set the weather to clear
+[22:06:22] [Server thread/INFO]: System chat: Teleported Player59 to -6000.500000, 170.000000, -6000.500000
+[22:06:54] [Server thread/INFO]: System chat: [Player59: Set the weather to clear]
+[22:06:54] [Server thread/INFO]: System chat: [Player59: Teleported Player59 to -6000.500000, 170.000000, -6000.500000]
+[22:07:39] [Server thread/INFO]: Player59 lost connection: Disconnected
+[22:07:39] [Server thread/INFO]: System chat: Player59 left the game
+[22:07:47] [Server thread/INFO]: System chat: Stopping the server
+[22:07:47] [Server thread/INFO]: Stopping server
+[22:07:47] [Server thread/INFO]: Saving players
+[22:07:47] [Server thread/INFO]: Saving worlds
+[22:07:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[22:07:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[22:07:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+EXIT 0
