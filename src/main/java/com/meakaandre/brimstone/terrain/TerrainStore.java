@@ -304,15 +304,22 @@ public final class TerrainStore {
     }
 
     /**
-     * A translucent layer: its vertices and its index list go into one arena (the region's, another with room for
-     * both, or a new one), so one draw binds a single buffer for both.
+     * The arena translucent layers go to first (package 3): consecutive translucent sections in vanilla's order then
+     * share an arena (and, all being wide, a format), so they draw as one run instead of breaking wherever their
+     * regions' arenas alternate. Render thread, under the lock.
+     */
+    private static Arena translucentArena;
+
+    /**
+     * A translucent layer: its vertices and its index list go into one arena (the translucent arena, another with room
+     * for both, or a new one, which then becomes the translucent arena), so one draw binds a single buffer for both.
      */
     private static void allocateTranslucent(GpuDevice device, CommandEncoder encoder, Region region, Entry e, ByteBuffer vertices,
                                             int format, int stride, int vertexCount, ByteBuffer indices, IndexType type, int indexCount) {
         int vbytes = vertices.remaining(), ibytes = indices.remaining();
         List<Arena> order = new ArrayList<>(ARENAS.size() + 1);
-        if (region.preferred != null && !region.preferred.closed) order.add(region.preferred);
-        for (Arena c : ARENAS) if (c != region.preferred) order.add(c);
+        if (translucentArena != null && !translucentArena.closed) order.add(translucentArena);
+        for (Arena c : ARENAS) if (c != translucentArena) order.add(c);
         for (int pass = 0; pass < 2; pass++) {
             if (pass == 1) order = List.of(newArena(device));
             for (Arena arena : order) {
@@ -323,6 +330,7 @@ public final class TerrainStore {
                     arena.allocator.free(va);
                     continue;
                 }
+                if (translucentArena == null || translucentArena.closed || pass == 1) translucentArena = arena;
                 if (region.preferred == null || region.preferred.closed || region.live <= 1) region.preferred = arena;
                 Part p;
                 try {
@@ -566,6 +574,7 @@ public final class TerrainStore {
                 a.closed = true;
                 PENDING_CLOSE.add(a.buffer);
             }
+            translucentArena = null;
             ARENAS.clear();
             closePending();
             Arrays.fill(LIVE_VERTICES, 0);
