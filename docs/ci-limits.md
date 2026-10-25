@@ -13,6 +13,53 @@ applies vanilla's Intel multi-draw-indirect workaround flag. **Vulkan**: Mesa la
 `--graphicsBackend vulkan`. Brimstone full is compared with vanilla-a, old-GPU with vanilla old-GPU, Vulkan with
 vanilla Vulkan.
 
+## Quick CI and per-branch logs (design doc, Quick CI, 2026-10-26)
+
+Branch pushes run **quick mode**: the core suite only, with vanilla-a, vanilla-b and brimstone-old (about 10
+minutes). Brimstone's old-GPU run is compared with vanilla-a (vanilla's GL 3.3 and GL 4.5 pictures differ no more
+than vanilla a and b: on run 40233004611, 0 to 82 pixels over 8/255 per shot against 0 to 1,295 for a/b), and the
+strict check counts the pixels where vanilla a and b agree. Every limit and baseline is the full mode's. Quick mode
+leaves out the measure runs (so the same-run draw-call gate, the terrain GPU memory gate and the measure runs'
+pictures), the full and Vulkan profiles and the SIFTEC suite; the report says so at the top. **Full mode** (every
+suite and run, every gate) runs on main, on a commit with `[full]` in its message (every pre-merge check) and on a
+manual run (workflow_dispatch). A package merges only on a green full run. Each branch publishes its logs to its
+own `ci-logs-<branch>` branch (`/` becomes `-`; main's are on `ci-logs-main`; the old `ci-logs` branch is no
+longer written). `ci/compare.py` reads the mode from `CI_MODE` (`quick`, else full).
+
+Equivalence of full mode: the new compare.py and the one before it gave identical failures, data and reports on
+run 40233004611's results, and on a copy with injected failures (wrong pictures in three profiles and a measure run,
+a missing measure bench, a translucency miss); a full CI run of the change is in docs/progress.md.
+
+## Smallest thing each scene must catch (standing rules, 2026-10-26)
+
+Noise that vanilla shows against itself may be re-collected by the documented rule (largest sample x 1.5 over at
+least 3 runs) even upward, but each scene's strict limit must stay below the smallest thing it has to catch. Sizes
+are on-screen pixels at 1280x720, measured on run 40233004611's vanilla-a screenshots (a block face counted as the
+square of its edge in pixels at the subject's distance). Other gates that catch the same failure are named.
+
+| scene | what it must catch | smallest such thing on screen | strict limit | below? |
+|---|---|---|---|---|
+| core/spawn | a missing, misplaced or wrongly lit terrain section | one section on the near cliff (blocks ~25 px): ~100,000; at mid distance (blocks ~8 px): ~16,000 | 18,057 | near: yes; mid-distance section: **no** |
+| core/flythrough | a missing or stale section while moving | a section at mid distance (blocks ~3 px): ~2,300 | 6,020 | **no** (the visibility pop-in check gates missing section layers exactly) |
+| core/water_glass | a wrong water, glass or translucent block | one block face (~44 px edge): ~1,900 | 25,508 | **no** (the per-frame translucency check gates order and sort exactly) |
+| core/nether | a wrong block or light on a netherrack face | one block face (~50 px): ~2,500 | 905 | yes |
+| core/mobs | a missing or wrongly drawn mob | a pig ~1,200; a chicken ~480 | 600 | pig yes; chicken **no** |
+| core/occlusion | a wrongly hidden entity or block entity | the iron golem in the doorway ~200 (package 2) | 22 | yes |
+| core/occlusion_move (+ shots) | a wrongly hidden object while moving | each object larger than its shot's limit, measured with the bare shots (package 2) | 10 to 110 | yes |
+| core/translucent_move (+ shots) | a stained-glass block out of order | one pane block face (~34 px): ~1,150 | 13 to 41 | yes |
+| core/water_glass_oit | a wrong translucent block with Improved Transparency | one block face: ~1,900 | 57 | yes |
+| core/translucent_move_oit (+ shots) | as translucent_move, with Improved Transparency | one pane block face: ~1,150 | 10 to 40 | yes |
+| siftec/factory | a wrongly drawn Create machine part | a machine ~4,800; one ladder strip ~320 | 500 | machine yes; one ladder strip alone **no** |
+| siftec/sift | a wrong block or light in the Sift terrain | a block face at mid distance (~24 px): ~580 | 100 | yes |
+| siftec/hub | a wrong GUI element or text line (package 7) | a line of text ~2,000 | 12,506 | **no** |
+| siftec/mam | a wrong item icon or GUI element (package 7) | one item icon (32 px): ~1,000 | 155,106 | **no** |
+| siftec/map | (not strict-gated, Andre's decision: its noise is larger than anything it could show) | | not gated | |
+| siftec/hologram | a missing or wrong outline line | one outline edge ~1,200 | 413 | yes |
+
+The **no** rows are limits already set (by the rule and Andre's earlier decisions) that are larger than the smallest
+thing the scene shows; they are listed for Andre, not changed. They matter most for package 7 (hub and mam are its
+GUI scenes) and should be re-collected or the scenes made quieter there.
+
 ## Pixel limits (`ci/pixel-limits.json`)
 
 A screenshot's difference is the share of pixels whose largest RGB channel differs by more than 8 (of 255): small
