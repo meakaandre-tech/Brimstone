@@ -283,7 +283,7 @@ runs). **Memory**: heap used after a GC at the end of the bench, and java.nio di
 
 **Baseline = the highest value across the clean runs listed.** CI fails when a count goes over **baseline x 1.10
 plus a step allowance**: 2 draw calls, 1 upload, 16 KiB, 16 MB heap, 4 MB direct (direct buffers grow in 2 MB steps
-and land on either side between runs). The fly-through is gated on memory only: its uploads and draw calls depend on
+and land on either side between runs). Against these committed baselines the fly-through is gated on memory only (its draw calls are gated against vanilla in the same run since package 3, see "Against vanilla in the same run"): its uploads and draw calls depend on
 how fast CI's server generates the new terrain. The Vulkan baselines come from two runs; the core spawn scene's limit and baselines from one run (its camera moved to a fixed height in the last package-0 run).
 
 | suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB | runs |
@@ -324,7 +324,7 @@ Brimstone drawing exactly vanilla's entities and block entities.
 
 Package 3's scenes (`translucent_move`, `water_glass_oit`, `translucent_move_oit`) got their baselines from the
 collection run 40115084815, with Brimstone's translucency in dry run (vanilla drawing all translucent terrain, as
-before package 3). `translucent_move` and `translucent_move_oit` are gated on memory only (`ciGatedCounts`): the
+before package 3). Against these baselines `translucent_move` and `translucent_move_oit` are gated on memory only (`ciGatedCounts`; their draw calls are gated against vanilla in the same run): the
 moving camera makes vanilla sort again and upload new index lists at times that depend on the runner's speed.
 
 | suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
@@ -431,7 +431,7 @@ Exceptions, each by Andre's rule:
   with a game tick and draws the tick's extra draws). Run 40180107484 attempt 1, full: Brimstone 154.0 average / 154
   median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps; Vulkan 153.97 / 154 at 15.8 fps against
   153.94 / 154 at 12.37 fps. (`"ciVanillaDrawGate": "median"` on the scene, with this reason.)
-- `core/flythrough`: vanilla + 2, Andre's rule for a fly-through excess of 2 draws per frame or fewer. Run
+- `core/flythrough`: vanilla + 2 on full and Vulkan (old-GPU stays at vanilla), Andre's rule for a fly-through excess of 2 draws per frame or fewer. Run
   40180107484 attempt 1, Vulkan: average 123.11 against vanilla's 123.05 (medians 123 and 123; full 123.07 against
   123.07). Brimstone's terrain draws there are exactly vanilla's 3 indirect draws (solid, cutout, translucent: one
   arena each); the 0.06 is in the other draws (`single` 120.11 against 120.05), which depend on what the server has

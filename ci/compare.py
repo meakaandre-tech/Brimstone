@@ -194,7 +194,7 @@ def main():
                 failures.append(f"{name}/{r}: GL version is not forced to 3.3 ({m.group(2).strip()})")
             if ext and old and ("GL_ARB_multi_draw_indirect" in exts or "GL_ARB_buffer_storage" in exts):
                 failures.append(f"{name}/{r}: vanilla still lists a hidden extension")
-            if r.startswith("brimstone"):
+            if r.startswith(("brimstone", "measure")):
                 if not probe:
                     failures.append(f"{name}/{r}: no Brimstone capability line")
                 else:
@@ -211,83 +211,98 @@ def main():
                             failures.append(f"{name}/{r}: probe does not show gl=3.3")
                         if old and "vanilla.mdiKnownIssues=yes" not in p:
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
-                    # the terrain module must be on in every Brimstone run and must never have fallen back to vanilla
-                    if re.search(r"Brimstone terrain: (turned off|not used)", t):
-                        failures.append(f"{name}/{r}: the terrain module fell back to vanilla (see client log)")
-                    if "Brimstone terrain: on " not in t:
-                        failures.append(f"{name}/{r}: the terrain module never turned on")
-                    if re.search(r"Brimstone visibility: turned off", t):
-                        failures.append(f"{name}/{r}: the visibility module fell back to vanilla (see client log)")
-                    if "Brimstone visibility: on " not in t:
-                        failures.append(f"{name}/{r}: the visibility module never turned on")
-                    if "DRY RUN (noise collection)" in t:
-                        failures.append(f"{name}/{r}: visibility dry run (a noise collection run: hides nothing, never for merge)")
-                    nwarn = len(re.findall(r"Brimstone visibility check:", t))
-                    if nwarn:
-                        failures.append(f"{name}/{r}: pop-in: {nwarn} ray-check warnings in the client log (a hidden object was reachable from the camera)")
-                    nwarn = len(re.findall(r"Brimstone translucency check:", t))
-                    if nwarn:
-                        failures.append(f"{name}/{r}: translucency: {nwarn} per-frame check misses in the client log (Brimstone's translucent draws differed from vanilla's order or latest sort)")
-                    if re.search(r"Brimstone visibility: deferring", t):
-                        failures.append(f"{name}/{r}: the visibility module deferred to vanilla (see client log)")
-                    for f in glob.glob(os.path.join(d, "bench", "*.json")):
-                        bj = json.load(open(f))
-                        vis = bj.get("visibility")
-                        scene_def = next((x for x in scenes if x["id"] == bj["scene"]), {})
-                        if vis is None:
-                            failures.append(f"{name}/{r}: bench {bj['scene']} has no visibility report")
-                        else:
-                            if vis.get("state") != "on" or vis.get("fallbacks", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: visibility module {vis.get('state')}, fallbacks {vis.get('fallbacks')} ({vis.get('reason')})")
-                            if not vis.get("terrainFrames"):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: the terrain pop-in check did not run")
-                            if vis.get("sectionLayersMissing", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: pop-in: {vis.get('sectionLayersMissing')} section layers of vanilla's visible list were not drawn")
-                            if not vis.get("verify"):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: the ray check of hidden objects was not on")
-                            if vis.get("violations", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: pop-in: {vis.get('violations')} hidden entities or block entities were on screen and unoccluded (see client log)")
-                            if vis.get("dryRun"):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: visibility dry run (noise collection run, never for merge)")
-                            if vis.get("violationsSinceStart", 0) != 0 or vis.get("unverifiedSinceStart", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: ray check since start-up: {vis.get('violationsSinceStart')} violations, {vis.get('unverifiedSinceStart')} unchecked hidden objects")
-                            if vis.get("unverifiedObjects", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: {vis.get('unverifiedObjects')} hidden objects were not ray-checked (check budget)")
-                            if scene_def.get("ciRequiresCulling") and not (vis.get("entitiesCulled", 0) > 0 and vis.get("blockEntitiesCulled", 0) > 0):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
-                        tr = bj.get("translucency")
-                        if tr is None:
-                            failures.append(f"{name}/{r}: bench {bj['scene']} has no translucency report")
-                        else:
-                            if tr.get("dryRun"):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: translucency dry run (noise collection run, never for merge)")
-                            if not tr.get("verify"):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: the per-frame translucency check was not on")
-                            if tr.get("violations", 0) != 0 or tr.get("violationsSinceStart", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: translucency check: {tr.get('violations')} misses while measuring, {tr.get('violationsSinceStart')} since start-up")
-                            if tr.get("mixedFrames", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: {tr.get('mixedFrames')} measured frames drew translucent sections of vanilla's own next to Brimstone's")
-                            if scene_def.get("ciRequiresTranslucent") and not tr.get("dryRun") and not (tr.get("sectionLayersPerFrame", 0) > 0 and tr.get("entriesChecked", 0) > 0):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no translucent sections (section layers/frame {tr.get('sectionLayersPerFrame')}, checked {tr.get('entriesChecked')})")
-                            frames_measured = tr.get("framesMeasured", 0)
-                            if scene_def.get("ciRequiresOit") and not tr.get("dryRun") and tr.get("oitFrames", 0) < frames_measured:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: Improved Transparency was not on in every measured frame ({tr.get('oitFrames')} stage draws for {frames_measured} frames)")
-                            if not scene_def.get("ciRequiresOit") and tr.get("oitFrames", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: drawn with Improved Transparency, which this scene does not set")
-                        ter = bj.get("terrain")
-                        if ter is None:
-                            failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
-                        elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
-                            failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
-                        elif ter.get("alphaLayersKeptByVanilla", 0) or ter.get("translucentHandedBackForAlpha"):
-                            failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Brimstone's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
-                        elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
-                            failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
-                        miss = bj.get("counters", {}).get("missing")
-                        if miss is None:
-                            failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
-                        elif miss:
-                            failures.append(f"{name}/{r}: counters that did not apply: {', '.join(miss)}")
+                    if r.startswith("measure"):
+                        # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)
+                        for mod in ("terrain", "visibility"):
+                            if f"Brimstone {mod}: off, brimstone.ci.measureOnly is set" not in t:
+                                failures.append(f"{name}/{r}: the {mod} module did not stay off for measuring (no measure-only line in the client log)")
+                        if "Brimstone terrain: on " in t or "Brimstone visibility: on " in t:
+                            failures.append(f"{name}/{r}: a Brimstone module turned on in a measure run")
+                        for f in glob.glob(os.path.join(d, "bench", "*.json")):
+                            bj = json.load(open(f))
+                            ter, vis, tg = bj.get("terrain") or {}, bj.get("visibility") or {}, bj.get("terrainGpu") or {}
+                            if ter.get("state") != "off" or ter.get("reason") != "measure only (CI)" or vis.get("state") != "off":
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: modules not off for measuring (terrain {ter.get('state')} ({ter.get('reason')}), visibility {vis.get('state')})")
+                            if tg.get("brimstoneArenasReservedMB") != 0 or ter.get("layersTaken", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone held terrain in a measure run ({tg.get('brimstoneArenasReservedMB')} MB, {ter.get('layersTaken')} layers)")
+                    else:
+                        # the terrain module must be on in every Brimstone run and must never have fallen back to vanilla
+                        if re.search(r"Brimstone terrain: (turned off|not used)", t):
+                            failures.append(f"{name}/{r}: the terrain module fell back to vanilla (see client log)")
+                        if "Brimstone terrain: on " not in t:
+                            failures.append(f"{name}/{r}: the terrain module never turned on")
+                        if re.search(r"Brimstone visibility: turned off", t):
+                            failures.append(f"{name}/{r}: the visibility module fell back to vanilla (see client log)")
+                        if "Brimstone visibility: on " not in t:
+                            failures.append(f"{name}/{r}: the visibility module never turned on")
+                        if "DRY RUN (noise collection)" in t:
+                            failures.append(f"{name}/{r}: visibility dry run (a noise collection run: hides nothing, never for merge)")
+                        nwarn = len(re.findall(r"Brimstone visibility check:", t))
+                        if nwarn:
+                            failures.append(f"{name}/{r}: pop-in: {nwarn} ray-check warnings in the client log (a hidden object was reachable from the camera)")
+                        nwarn = len(re.findall(r"Brimstone translucency check:", t))
+                        if nwarn:
+                            failures.append(f"{name}/{r}: translucency: {nwarn} per-frame check misses in the client log (Brimstone's translucent draws differed from vanilla's order or latest sort)")
+                        if re.search(r"Brimstone visibility: deferring", t):
+                            failures.append(f"{name}/{r}: the visibility module deferred to vanilla (see client log)")
+                        for f in glob.glob(os.path.join(d, "bench", "*.json")):
+                            bj = json.load(open(f))
+                            vis = bj.get("visibility")
+                            scene_def = next((x for x in scenes if x["id"] == bj["scene"]), {})
+                            if vis is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no visibility report")
+                            else:
+                                if vis.get("state") != "on" or vis.get("fallbacks", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: visibility module {vis.get('state')}, fallbacks {vis.get('fallbacks')} ({vis.get('reason')})")
+                                if not vis.get("terrainFrames"):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: the terrain pop-in check did not run")
+                                if vis.get("sectionLayersMissing", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: pop-in: {vis.get('sectionLayersMissing')} section layers of vanilla's visible list were not drawn")
+                                if not vis.get("verify"):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: the ray check of hidden objects was not on")
+                                if vis.get("violations", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: pop-in: {vis.get('violations')} hidden entities or block entities were on screen and unoccluded (see client log)")
+                                if vis.get("dryRun"):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: visibility dry run (noise collection run, never for merge)")
+                                if vis.get("violationsSinceStart", 0) != 0 or vis.get("unverifiedSinceStart", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: ray check since start-up: {vis.get('violationsSinceStart')} violations, {vis.get('unverifiedSinceStart')} unchecked hidden objects")
+                                if vis.get("unverifiedObjects", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: {vis.get('unverifiedObjects')} hidden objects were not ray-checked (check budget)")
+                                if scene_def.get("ciRequiresCulling") and not (vis.get("entitiesCulled", 0) > 0 and vis.get("blockEntitiesCulled", 0) > 0):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
+                            tr = bj.get("translucency")
+                            if tr is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no translucency report")
+                            else:
+                                if tr.get("dryRun"):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: translucency dry run (noise collection run, never for merge)")
+                                if not tr.get("verify"):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: the per-frame translucency check was not on")
+                                if tr.get("violations", 0) != 0 or tr.get("violationsSinceStart", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: translucency check: {tr.get('violations')} misses while measuring, {tr.get('violationsSinceStart')} since start-up")
+                                if tr.get("mixedFrames", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: {tr.get('mixedFrames')} measured frames drew translucent sections of vanilla's own next to Brimstone's")
+                                if scene_def.get("ciRequiresTranslucent") and not tr.get("dryRun") and not (tr.get("sectionLayersPerFrame", 0) > 0 and tr.get("entriesChecked", 0) > 0):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no translucent sections (section layers/frame {tr.get('sectionLayersPerFrame')}, checked {tr.get('entriesChecked')})")
+                                frames_measured = tr.get("framesMeasured", 0)
+                                if scene_def.get("ciRequiresOit") and not tr.get("dryRun") and tr.get("oitFrames", 0) < frames_measured:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Improved Transparency was not on in every measured frame ({tr.get('oitFrames')} stage draws for {frames_measured} frames)")
+                                if not scene_def.get("ciRequiresOit") and tr.get("oitFrames", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: drawn with Improved Transparency, which this scene does not set")
+                            ter = bj.get("terrain")
+                            if ter is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no terrain report")
+                            elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
+                            elif ter.get("alphaLayersKeptByVanilla", 0) or ter.get("translucentHandedBackForAlpha"):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Brimstone's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
+                            elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
+                            miss = bj.get("counters", {}).get("missing")
+                            if miss is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
+                            elif miss:
+                                failures.append(f"{name}/{r}: counters that did not apply: {', '.join(miss)}")
                 srv = os.path.join(d, "server.log")
                 st = open(srv, errors="replace").read() if os.path.exists(srv) else ""
                 if not re.search(r"\bbrimstone\b", st):
@@ -469,12 +484,12 @@ def main():
                 median_only = sc.get("ciDrawCallGate") == "median" or sc.get("ciVanillaDrawGate") == "median"
                 stats = [("median", "drawCallsPerFrameMedian")] + ([] if median_only else [("average", "drawCallsPerFrameAvg")])
                 for label, k in stats:
-                    lim = vc[k] + allowance.get(f"{name}/{sid}", 0) if sid in translucent else round(vc[k] * RISE + SLACK["drawCallsPerFrame"], 2)
+                    lim = vc[k] + allowance.get(f"{name}/{prof}/{sid}", 0) if sid in translucent else round(vc[k] * RISE + SLACK["drawCallsPerFrame"], 2)
                     if c[k] > lim:
                         failures.append(f"{name}/{prof}/{sid}: {label} {c[k]} draw calls per frame, more than {lim} (vanilla's {vc[k]} in the same run"
-                                        f"{(' + ' + str(allowance[name + '/' + sid])) if sid in translucent and name + '/' + sid in allowance else '' if sid in translucent else ' x 1.10 + 2'}; fps {c.get('fps')} against vanilla's {vc.get('fps')})")
+                                        f"{(' + ' + str(allowance[name + '/' + prof + '/' + sid])) if sid in translucent and name + '/' + prof + '/' + sid in allowance else '' if sid in translucent else ' x 1.10 + 2'}; fps {c.get('fps')} against vanilla's {vc.get('fps')})")
                 lines.append(f"| {sid} | {c['drawCallsPerFrameAvg']} / {c['drawCallsPerFrameMedian']} ({c.get('fps')}) | {vc['drawCallsPerFrameAvg']} / {vc['drawCallsPerFrameMedian']} ({vc.get('fps')}) | "
-                             f"{' and '.join(l for l, _ in stats)}{(', at most vanilla + ' + str(allowance[name + '/' + sid])) if sid in translucent and name + '/' + sid in allowance else ', at most vanilla' if sid in translucent else ', x 1.10 + 2'} |")
+                             f"{' and '.join(l for l, _ in stats)}{(', at most vanilla + ' + str(allowance[name + '/' + prof + '/' + sid])) if sid in translucent and name + '/' + prof + '/' + sid in allowance else ', at most vanilla' if sid in translucent else ', x 1.10 + 2'} |")
             lines.append("")
             lines.append(f"Terrain GPU memory, {name} {prof} (MB; reserved in the Brimstone run must not be more than vanilla's):\n")
             lines.append("| scene | Brimstone run reserved / used | of which Brimstone's arenas | of which vanilla's heaps | vanilla (measure run) reserved / used |")

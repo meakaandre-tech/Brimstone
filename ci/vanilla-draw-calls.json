@@ -11,7 +11,8 @@
     "hologram"
   ],
   "allowance": {
-    "core/flythrough": 2
+    "core/full/flythrough": 2,
+    "core/vulkan/flythrough": 2
   },
   "_allowanceNote": "Andre's decision (2026-10-25): if the fly-through stays over vanilla by 2 draw calls per frame or fewer on full or Vulkan, accept it as a documented deviation with the gate at vanilla + 2 for the fly-through only. Run 40180107484: Vulkan average 123.11 against vanilla's 123.05 (medians 123 and 123; Brimstone's terrain draws the same 3 indirect draws as vanilla, the 0.06 is in the other draws); see docs/ci-limits.md."
 }

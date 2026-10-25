@@ -57,6 +57,7 @@ public final class Terrain {
     private static volatile boolean translucentReleasePending;
     static final java.util.concurrent.atomic.AtomicInteger ALPHA_LAYERS_KEPT_BY_VANILLA = new java.util.concurrent.atomic.AtomicInteger();
     private static volatile boolean alphaWarned;
+    private static final java.util.concurrent.atomic.AtomicBoolean TRANSLUCENT_ALPHA_WARNED = new java.util.concurrent.atomic.AtomicBoolean();
     /** Set by a resource reload: check packs again before the next frame. */
     private static volatile boolean resourcesChanged;
 
@@ -346,7 +347,10 @@ public final class Terrain {
      */
     private static boolean takeTranslucent(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ByteBuffer vertices,
                                            ByteBuffer indices) {
-        if (TRANSLUCENT_DRY_RUN || translucentToVanilla) return false;
+        if (TRANSLUCENT_DRY_RUN) return false;
+        // after the hand-back (alpha below 255), new layers stay with vanilla; a new index list still goes through
+        // stageIndices, which drops it for a mesh Brimstone held (vanilla has no vertices of it) and leaves the rest
+        if (translucentToVanilla && vertices != null) return false;
         try {
             int gen = TerrainStore.generation();
             SectionMesh.SectionDraw draw = mesh.getSectionDraw(ChunkSectionLayer.TRANSLUCENT);
@@ -382,7 +386,7 @@ public final class Terrain {
                 translucentToVanilla = true;
                 translucentReleasePending = true;
                 ALPHA_LAYERS_KEPT_BY_VANILLA.incrementAndGet();
-                BrimstoneClient.LOG.warn("Brimstone terrain: a translucent layer (section {} {} {}) has vertex colours with alpha below 255, which"
+                if (TRANSLUCENT_ALPHA_WARNED.compareAndSet(false, true)) BrimstoneClient.LOG.warn("Brimstone terrain: a translucent layer (section {} {} {}) has vertex colours with alpha below 255, which"
                     + " Brimstone's vertex does not hold; translucent terrain goes back to vanilla for the rest of the session, solid and cutout"
                     + " stay with Brimstone (likely a mod's tinted model)", x >> 4, y >> 4, z >> 4);
                 return false;

@@ -28,12 +28,13 @@ import org.lwjgl.system.MemoryUtil;
  * Where Brimstone keeps terrain: a few GPU buffers ("arenas", up to {@link #ARENA_BYTES} each), sub-allocated with
  * the game's own TLSF allocator. An arena's allocator spans the full size from the start, but its buffer starts at
  * {@link #INITIAL_ARENA_BYTES} and doubles (a one-time GPU copy into the bigger buffer, at the end of the frame where
- * meshes are copied in) when an allocation reaches past it; the allocator hands out the lowest free space, so the
- * buffer follows what the arena holds. Each layer of a section is one small copy (16-byte vertices); a translucent layer also
+ * meshes are copied in) when an allocation reaches past it. The allocator splits the blocks it hands out from their front, so while an
+ * arena fills its buffer stays close to what it holds; a grown buffer keeps its size until the arena empties (known
+ * limit, package 9). Each layer of a section is one small copy (16-byte vertices); a translucent layer also
  * keeps vanilla's sorted index list, in the same arena as its vertices (package 3), and only that list is rewritten
  * when vanilla sorts the layer again. Each layer (solid, cutout, translucent) has arenas of its own, so a layer spans a
  * second arena only once that layer alone passes one arena, and the draws of a layer break only there (package 3).
- * Allocations never move and arenas are never resized. An arena that empties is closed (except a layer's last), so
+ * Allocations never move (a grow copies the buffer, offsets stay). An arena that empties is closed (except a layer's last), so
  * memory follows what is loaded. Sections are grouped into regions of 8x4x8; a region keeps each layer of its sections
  * in one arena where it can, so the plain path draws a region with one call per layer.
  *
@@ -254,7 +255,10 @@ public final class TerrainStore {
                          TranslucencyCheck.Sorted sorted) {
         Staged s = new Staged(section, mesh, layer, x, y, z, split, indices, indexType, indexCount, sorted);
         synchronized (LOCK) {
-            if (gen != generation || !accepting || !Terrain.takingMeshes()) {
+            // a translucent layer after the hand-back (checked under the lock that releaseTranslucent takes) stays with
+            // vanilla, so no section's translucent layer outlives the hand-back in Brimstone
+            if (gen != generation || !accepting || !Terrain.takingMeshes()
+                || (layer == ChunkSectionLayer.TRANSLUCENT && !Terrain.takingTranslucent())) {
                 s.free();
                 return false;
             }
