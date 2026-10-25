@@ -232,6 +232,9 @@ jobs:
           RUN: ${{ matrix.run }}
           OUT: /tmp/out/${{ matrix.suite }}-${{ matrix.run }}
           BENCH_SECONDS: "20"
+          # DIAGNOSTIC (branch only): SIFTEC noise collection (factory and map strict limits, hologram re-collected)
+          VISIBILITY_DRY_RUN: "1"
+          TRANSLUCENCY_DRY_RUN: "1"
         run: |
           chmod +x gradlew
           if [ -f siftec-server.tar ]; then tar xf siftec-server.tar; fi
