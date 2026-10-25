@@ -114,7 +114,9 @@ def main():
             xdo("keyup", "F3")
             time.sleep(1)
         shot = os.path.join(out, "shots", sid + ".png")
-        entry["steadyAfter"] = steady_shot(shot)
+        # a scene whose picture keeps changing for a while (package 3: SIFTEC's map still scanning tiles when it opens)
+        # can ask for a stricter wait, "ciSteadyShot": {"gap": s, "pct": %, "tries": n}; the same in every run
+        entry["steadyAfter"] = steady_shot(shot, **sc.get("ciSteadyShot", {}))
         entry["shot"] = os.path.exists(shot)
         # extra fixed points (package 2): commands to the server, then a screenshot named <scene>.<name>, the same in
         # every run; the Brimstone bench afterwards sets the scene up again from scratch

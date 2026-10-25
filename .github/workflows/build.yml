@@ -200,7 +200,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, siftec]
+        suite: [siftec]
         run: [vanilla-a, vanilla-b, vanilla-old, vanilla-vk, brimstone-full, brimstone-old, brimstone-vk]
     steps:
       - uses: actions/checkout@v4
@@ -232,6 +232,9 @@ jobs:
           RUN: ${{ matrix.run }}
           OUT: /tmp/out/${{ matrix.suite }}-${{ matrix.run }}
           BENCH_SECONDS: "20"
+          # DIAGNOSTIC (branch only): SIFTEC noise collection for the map's strict limit (steady-map wait)
+          VISIBILITY_DRY_RUN: "1"
+          TRANSLUCENCY_DRY_RUN: "1"
         run: |
           chmod +x gradlew
           if [ -f siftec-server.tar ]; then tar xf siftec-server.tar; fi

@@ -101,6 +101,7 @@
         "#wait 3",
         "siftec worldtest map open 1.5"
       ],
+      "ciSteadyShot": {"gap": 5.0, "pct": 0.001, "tries": 36},
       "screen": {
         "expect": "MapScreen"
       },
