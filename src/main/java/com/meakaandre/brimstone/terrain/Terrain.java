@@ -129,6 +129,13 @@ public final class Terrain {
     }
 
     private static void activate() {
+        if (Boolean.getBoolean("brimstone.debug.measureOnly")) {
+            // DIAGNOSTIC (branch only, removed before merge): vanilla draws everything, the bench only measures
+            state = State.OFF;
+            reason = "measure only (debug)";
+            BrimstoneClient.LOG.warn("Brimstone terrain: off, brimstone.debug.measureOnly is set (vanilla draws all terrain)");
+            return;
+        }
         if (!TerrainRenderer.drawHookSeen) {
             // the draw hook runs inside vanilla's terrain pass: wait until it has run once (vanilla draws meanwhile)
             if (++framesWithoutDrawHook < 600) return;
