@@ -345,6 +345,7 @@ public final class TerrainRenderer {
             if (part == null || ip.arena != part.arena) throw new IllegalStateException("a translucent layer's vertices and indices are not in one arena");
             TerrainStore.Region region = plain ? e.region : null;
             if (run == null || !run.fits(part.arena, ip.type, region)) {
+                if (run != null) TranslucencyStats.runBreak(run.arena != part.arena, run.type != ip.type, run.region != region);
                 run = new TRun(part.arena, ip.type, region);
                 TRUNS.add(run);
             }

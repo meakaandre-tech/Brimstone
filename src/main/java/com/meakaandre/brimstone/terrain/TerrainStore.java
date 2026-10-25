@@ -97,7 +97,7 @@ public final class TerrainStore {
         }
     }
 
-    /** A translucent layer's sorted index list (vanilla's bytes), in the same arena as the layer's vertices. */
+    /** A translucent layer's sorted index list (vanilla's indices, 32-bit), in the same arena as the layer's vertices. */
     static final class IndexPart {
         final Arena arena;
         final TlsfAllocator.Allocation allocation;
@@ -224,10 +224,10 @@ public final class TerrainStore {
 
     /**
      * Worker thread: vanilla sorted a mesh's translucent layer again. If Brimstone holds that layer, the new index list
-     * (copied here) replaces the old one at the end of the frame; if Brimstone held it and vanilla has since let go of
+     * ({@code ints}: vanilla's list as 32-bit indices, owned by the store from here on, freed if not staged) replaces the old one at the end of the frame; if Brimstone held it and vanilla has since let go of
      * the mesh, the list is dropped (vanilla would draw nothing of it either); otherwise it is vanilla's.
      */
-    static Resort stageIndices(int gen, CompiledSectionMesh mesh, ByteBuffer src, IndexType type, int count, TranslucencyCheck.Sorted sorted) {
+    static Resort stageIndices(int gen, CompiledSectionMesh mesh, ByteBuffer ints, int count, TranslucencyCheck.Sorted sorted) {
         synchronized (LOCK) {
             Entry[] es = ENTRIES.get(mesh);
             boolean held = es != null && es[TRANSLUCENT] != null;
@@ -239,11 +239,12 @@ public final class TerrainStore {
                     }
                 }
             }
-            if (!held) return RELEASED_TRANSLUCENT.contains(mesh) ? Resort.DROPPED : Resort.NOT_OURS;
-            if (gen != generation || !accepting || !Terrain.takingMeshes()) return Resort.DROPPED;
-            ByteBuffer copy = MemoryUtil.memAlloc(src.remaining());
-            MemoryUtil.memCopy(src, copy);
-            STAGED.add(new Staged(null, mesh, ChunkSectionLayer.TRANSLUCENT, 0, 0, 0, null, copy, type, count, sorted));
+            if (!held || gen != generation || !accepting || !Terrain.takingMeshes()) {
+                MemoryUtil.memFree(ints);
+                if (!held) return RELEASED_TRANSLUCENT.contains(mesh) ? Resort.DROPPED : Resort.NOT_OURS;
+                return Resort.DROPPED;
+            }
+            STAGED.add(new Staged(null, mesh, ChunkSectionLayer.TRANSLUCENT, 0, 0, 0, null, ints, IndexType.INT, count, sorted));
             return Resort.STAGED;
         }
     }

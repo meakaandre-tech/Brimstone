@@ -340,7 +340,7 @@ public final class Terrain {
     /**
      * A translucent layer: with its vertices (a fresh mesh, sorted by vanilla as it was built) or only a new index list
      * (vanilla's resort task, on its worker thread, re-sorted the layer for a new camera position). Brimstone keeps
-     * vanilla's index bytes as they are, so the quad order is exactly vanilla's, ties included. A layer Brimstone
+     * vanilla's index lists as they are (16-bit ones widened to 32 bits), so the quad order is exactly vanilla's, ties included. A layer Brimstone
      * can't hold makes the whole module hand terrain back (a translucent layer must never be split between vanilla's
      * draws and Brimstone's, or the order between sections would no longer be vanilla's).
      */
@@ -363,7 +363,7 @@ public final class Terrain {
             }
             TranslucencyCheck.Sorted sorted = TranslucencyCheck.sortedFor(section, vertices, indices, type);
             if (vertices == null) {
-                TerrainStore.Resort r = TerrainStore.stageIndices(gen, mesh, indices, type, indexCount, sorted);
+                TerrainStore.Resort r = TerrainStore.stageIndices(gen, mesh, intIndices(indices, type, indexCount), indexCount, sorted);
                 if (r == TerrainStore.Resort.NOT_OURS) return false;
                 TranslucencyStats.resortTaken(r == TerrainStore.Resort.STAGED);
                 return true;
@@ -390,13 +390,12 @@ public final class Terrain {
             CompactVertex.Converted split = CompactVertex.convert(vertices, CompactVertex.sectionIndex(x, y, z));
             if (split == null) throw new IllegalStateException("a translucent layer Brimstone's vertex format cannot hold (" + count
                 + " vertices: not whole quads, or a position, UV or alpha out of its range)");
-            ByteBuffer copy = MemoryUtil.memAlloc(indices.remaining());
-            MemoryUtil.memCopy(indices, copy);
+            ByteBuffer copy = intIndices(indices, type, indexCount);
             TerrainStats.converted(split);
             // as for solid and cutout: both flags must be set before vanilla can swap the mesh in, and Brimstone
             // copies both the vertices and the index list in one go at the end of the frame
             mesh.setIndexBufferUploaded(ChunkSectionLayer.TRANSLUCENT);
-            if (!TerrainStore.stage(gen, section, mesh, ChunkSectionLayer.TRANSLUCENT, x, y, z, split, copy, type, indexCount, sorted)) return false;
+            if (!TerrainStore.stage(gen, section, mesh, ChunkSectionLayer.TRANSLUCENT, x, y, z, split, copy, IndexType.INT, indexCount, sorted)) return false;
             TerrainStats.LAYERS_TAKEN.incrementAndGet();
             TranslucencyStats.layerTaken();
             TerrainStats.transcoded(System.nanoTime() - t0);
@@ -405,6 +404,22 @@ public final class Terrain {
             fail("translucent meshing", t, true);
             return false;
         }
+    }
+
+    /**
+     * A copy of vanilla's sorted index list as 32-bit indices (memAlloc'd; the caller owns it): the same indices in the
+     * same order, only a 16-bit list widened, so that consecutive translucent sections share one index type and draw as
+     * one run (vanilla picks 16 or 32 bits per section by its vertex count).
+     */
+    private static ByteBuffer intIndices(ByteBuffer src, IndexType type, int count) {
+        ByteBuffer out = MemoryUtil.memAlloc(count * 4);
+        if (type == IndexType.INT) {
+            MemoryUtil.memCopy(src, out);
+        } else {
+            int p = src.position();
+            for (int i = 0; i < count; i++) out.putInt(i * 4, src.getShort(p + i * 2) & 0xFFFF);
+        }
+        return out;
     }
 
     public static void released(SectionMesh mesh) {

@@ -28,6 +28,7 @@ public final class TranslucencyStats {
     private static long windowResortsUploaded;
     private static long frames, drawCalls, sectionLayers, oitFrames, mixedFrames, vanillaSectionLayers, handedOver;
     private static long checkFrames, entriesChecked, entriesUnchecked, violations;
+    private static long breaksArena, breaksIndexType, breaksRegion;
     private static final ThreadLocal<long[]> SORT_START = ThreadLocal.withInitial(() -> new long[1]);
 
     private TranslucencyStats() {
@@ -42,6 +43,7 @@ public final class TranslucencyStats {
         windowResortsUploaded = 0;
         frames = drawCalls = sectionLayers = oitFrames = mixedFrames = vanillaSectionLayers = handedOver = 0;
         checkFrames = entriesChecked = entriesUnchecked = violations = 0;
+        breaksArena = breaksIndexType = breaksRegion = 0;
     }
 
     /** {@code MeshData.SortState.buildSortedIndexBuffer}: vanilla sorts a translucent layer's quads (any thread). */
@@ -105,6 +107,14 @@ public final class TranslucencyStats {
         drawCalls += calls;
     }
 
+    /** Render thread: a translucent run ended because the next section layer is in another arena, index type or region. */
+    static void runBreak(boolean arena, boolean indexType, boolean region) {
+        if (!GpuCounters.enabled) return;
+        if (arena) breaksArena++;
+        if (indexType) breaksIndexType++;
+        if (region) breaksRegion++;
+    }
+
     static void oitFrame() {
         if (GpuCounters.enabled) oitFrames++;
     }
@@ -140,6 +150,9 @@ public final class TranslucencyStats {
         o.addProperty("framesMeasured", frames);
         o.addProperty("sectionLayersPerFrame", per(sectionLayers));
         o.addProperty("drawCallsPerFrame", per(drawCalls));
+        o.addProperty("runBreaksPerFrameArena", per(breaksArena));
+        o.addProperty("runBreaksPerFrameIndexType", per(breaksIndexType));
+        o.addProperty("runBreaksPerFrameRegion", per(breaksRegion));
         o.addProperty("vanillaSectionLayersPerFrame", per(vanillaSectionLayers));
         o.addProperty("mixedFrames", mixedFrames);
         o.addProperty("mixedFramesSinceStart", mixedFramesSinceStart);
