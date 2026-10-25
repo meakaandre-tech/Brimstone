@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.TlsfAllocator;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.IndexType;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.nio.ByteBuffer;
@@ -14,42 +15,86 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
+import net.minecraft.client.renderer.chunk.TranslucencyPointOfView;
 import net.minecraft.core.SectionPos;
 import org.lwjgl.system.MemoryUtil;
 
 /**
- * Where Brimstone keeps terrain: a few large GPU buffers ("arenas", {@link #ARENA_BYTES} each), sub-allocated with
- * the game's own TLSF allocator. Each layer of a section is one small copy (compact or wide);
- * allocations never move and arenas are never resized. An arena that empties is closed (except the first), so memory
- * follows what is loaded. Sections are grouped into regions of 8x4x8; a region keeps its sections in one arena where
- * it can, so the plain path draws a region with one call per format.
+ * Where Brimstone keeps terrain: a few GPU buffers ("arenas", up to {@link #ARENA_BYTES} each), sub-allocated with
+ * the game's own TLSF allocator. An arena's allocator spans the full size from the start, but its buffer starts at
+ * {@link #INITIAL_ARENA_BYTES} and doubles (a one-time GPU copy into the bigger buffer, at the end of the frame where
+ * meshes are copied in) when an allocation reaches past it. The allocator splits the blocks it hands out from their front, so while an
+ * arena fills its buffer stays close to what it holds; a grown buffer keeps its size until the arena empties (known
+ * limit, package 9). Each layer of a section is one small copy (16-byte vertices); a translucent layer also
+ * keeps vanilla's sorted index list, in the same arena as its vertices (package 3), and only that list is rewritten
+ * when vanilla sorts the layer again. Each layer (solid, cutout, translucent) has arenas of its own, so a layer spans a
+ * second arena only once that layer alone passes one arena, and the draws of a layer break only there (package 3).
+ * Allocations never move (a grow copies the buffer, offsets stay). An arena that empties is closed (except a layer's last), so
+ * memory follows what is loaded. Sections are grouped into regions of 8x4x8; a region keeps each layer of its sections
+ * in one arena where it can, so the plain path draws a region with one call per layer.
  *
  * <p>Meshes are staged from the worker threads ({@link #stage}) and copied in on the render thread at the end of the
  * frame ({@link #upload}), where vanilla uploads its own. Everything here is guarded by one lock.
  */
 public final class TerrainStore {
     static final long ARENA_BYTES = 64L << 20;
+    /** An arena's buffer when it is made; it doubles when full, up to {@link #ARENA_BYTES} (package 3). */
+    static final long INITIAL_ARENA_BYTES = 4L << 20;
     /** A layer bigger than this stays with vanilla (it would hog an arena). */
     static final int MAX_LAYER_BYTES = (int) (ARENA_BYTES / 8);
 
     static final Object LOCK = new Object();
 
-    /** The two vertex formats. */
-    static final int COMPACT = 0, WIDE = 1;
-
     static final class Arena {
-        final GpuBuffer buffer;
+        /** The arena's buffer, replaced by a bigger one when it grows (render thread, under the lock). */
+        GpuBuffer buffer;
+        /** Size of {@link #buffer}. */
+        long capacity;
+        final int index;
         final TlsfAllocator allocator;
+        /** The layer this arena holds: 0 solid, 1 cutout, 2 translucent. */
+        final int layer;
         long used;
         boolean closed;
 
-        Arena(GpuDevice device, int index) {
-            this.buffer = device.createBuffer(() -> "Brimstone terrain " + index,
-                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, ARENA_BYTES);
+        Arena(GpuDevice device, int index, int layer) {
+            this.layer = layer;
+            this.index = index;
+            this.capacity = INITIAL_ARENA_BYTES;
+            this.buffer = create(device, capacity);
             this.allocator = new TlsfAllocator(new TlsfAllocator.Heap(ARENA_BYTES));
+        }
+
+        private GpuBuffer create(GpuDevice device, long size) {
+            return device.createBuffer(() -> "Brimstone terrain " + index + " (" + LAYER_NAMES[layer] + ")",
+                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_INDEX | GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_COPY_SRC, size);
+        }
+
+        /**
+         * Makes the buffer reach {@code end} bytes: doubles it (up to the arena's full size) and copies what it holds
+         * into the bigger one, once; the old buffer is closed before the next frame's draws.
+         */
+        void ensure(CommandEncoder encoder, long end) {
+            if (end <= capacity) return;
+            long size = capacity;
+            while (size < end) size *= 2;
+            size = Math.min(size, ARENA_BYTES);
+            GpuBuffer bigger = create(RenderSystem.getDevice(), size);
+            try {
+                encoder.copyToBuffer(buffer.slice(0, capacity), bigger.slice(0, capacity));
+            } catch (Throwable t) {
+                bigger.close();
+                throw t;
+            }
+            PENDING_CLOSE.add(buffer);
+            buffer = bigger;
+            capacity = size;
+            TerrainStats.ARENA_GROWS.incrementAndGet();
         }
     }
 
@@ -57,7 +102,8 @@ public final class TerrainStore {
         final int originX, originY, originZ;
         final long key;
         int live;
-        Arena preferred;
+        /** Per layer, the arena this region's sections of that layer go to first. */
+        final Arena[] preferred = new Arena[LAYERS];
         /** The plain path's uniform block for this region (origin, fade-in per section); made when first drawn. */
         GpuBuffer ubo;
         /** What {@link #ubo} holds now, per section of the region (NaN: never written). */
@@ -76,17 +122,17 @@ public final class TerrainStore {
         }
     }
 
-    /** One format's part of one layer of one section, in an arena. */
+    /** One layer of one section's vertices, in an arena. */
     static final class Part {
         final Arena arena;
         final TlsfAllocator.Allocation allocation;
         final int baseVertex;
         final int vertices;
 
-        Part(Arena arena, TlsfAllocator.Allocation allocation, int stride, int vertices) {
+        Part(Arena arena, TlsfAllocator.Allocation allocation, int vertices) {
             this.arena = arena;
             this.allocation = allocation;
-            this.baseVertex = (int) (allocation.getOffsetFromHeap() / stride);
+            this.baseVertex = (int) (allocation.getOffsetFromHeap() / CompactVertex.BYTES);
             this.vertices = vertices;
         }
 
@@ -95,12 +141,35 @@ public final class TerrainStore {
         }
     }
 
-    /** One layer of one section: its compact and wide parts (either may be null). */
+    /** A translucent layer's sorted index list (vanilla's indices, 32-bit), in the same arena as the layer's vertices. */
+    static final class IndexPart {
+        final Arena arena;
+        final TlsfAllocator.Allocation allocation;
+        final IndexType type;
+        final int count;
+
+        IndexPart(Arena arena, TlsfAllocator.Allocation allocation, IndexType type, int count) {
+            this.arena = arena;
+            this.allocation = allocation;
+            this.type = type;
+            this.count = count;
+        }
+
+        long offset() {
+            return allocation.getOffsetFromHeap();
+        }
+    }
+
+    /** One layer of one section: its vertices, and for translucent its indices. */
     static final class Entry {
-        final Part[] parts = new Part[2];
+        Part part;
         final Region region;
         final int slot;
         final int originX, originY, originZ;
+        IndexPart index;
+        /** CI's translucency check only: what was last written to the index list, and the sort it came from. */
+        TranslucencyCheck.Sorted sorted;
+        boolean sortedChecked;
 
         Entry(Region region, int slot, int x, int y, int z) {
             this.region = region;
@@ -111,19 +180,36 @@ public final class TerrainStore {
         }
     }
 
+    /**
+     * A layer on its way in. {@code split} null: an index list only (vanilla sorted a translucent layer Brimstone
+     * holds again); {@code indices} null: solid or cutout. Buffers are memAlloc'd and owned here.
+     */
     private record Staged(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer,
-                          int x, int y, int z, CompactVertex.Split split) {
+                          int x, int y, int z, CompactVertex.Converted split, ByteBuffer indices, IndexType indexType, int indexCount,
+                          TranslucencyCheck.Sorted sorted) {
+        void free() {
+            if (split != null) split.free();
+            if (indices != null) MemoryUtil.memFree(indices);
+        }
+
+        boolean indicesOnly() {
+            return split == null;
+        }
     }
 
-    public record Snapshot(int regions, int arenas, long arenaBytes, long usedBytes, long compactVertices, long wideVertices) {
+    public record Snapshot(int regions, int arenas, long arenaBytes, long usedBytes, long vertices) {
     }
 
     private static final List<Arena> ARENAS = new ArrayList<>();
     private static final Long2ObjectOpenHashMap<Region> REGIONS = new Long2ObjectOpenHashMap<>();
-    /** Live meshes: index 0 solid, 1 cutout. */
+    /** Live meshes: index 0 solid, 1 cutout, 2 translucent. */
     static final Map<CompiledSectionMesh, Entry[]> ENTRIES = new IdentityHashMap<>();
+    static final int LAYERS = 3, TRANSLUCENT = 2;
+    private static final String[] LAYER_NAMES = {"solid", "cutout", "translucent"};
+    /** Meshes whose translucent layer Brimstone held and which vanilla has let go of since: a late sort of one is dropped. */
+    private static final Set<CompiledSectionMesh> RELEASED_TRANSLUCENT = java.util.Collections.newSetFromMap(new WeakHashMap<>());
     private static final List<Staged> STAGED = new ArrayList<>();
-    private static final long[] LIVE_VERTICES = new long[2];
+    private static long liveVertices;
     private static final List<GpuBuffer> PENDING_CLOSE = new ArrayList<>();
     /** Bumped whenever the store is emptied or a section dispatcher comes or goes: older staged meshes are dropped. */
     private static int generation;
@@ -150,7 +236,7 @@ public final class TerrainStore {
     }
 
     static int layerIndex(ChunkSectionLayer layer) {
-        return layer == ChunkSectionLayer.SOLID ? 0 : layer == ChunkSectionLayer.CUTOUT ? 1 : -1;
+        return layer == ChunkSectionLayer.SOLID ? 0 : layer == ChunkSectionLayer.CUTOUT ? 1 : layer == ChunkSectionLayer.TRANSLUCENT ? 2 : -1;
     }
 
     static int generation() {
@@ -160,19 +246,61 @@ public final class TerrainStore {
     }
 
     /**
-     * Worker thread (or render thread for nearby sections): takes ownership of {@code split}. False (and the split
-     * freed) if the store was emptied since {@code gen} or the module no longer takes meshes.
+     * Worker thread (or render thread for nearby sections): takes ownership of {@code split} and {@code indices}
+     * (translucent only). False (and both freed) if the store was emptied since {@code gen} or the module no longer
+     * takes meshes.
      */
     static boolean stage(int gen, SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer,
-                         int x, int y, int z, CompactVertex.Split split) {
+                         int x, int y, int z, CompactVertex.Converted split, ByteBuffer indices, IndexType indexType, int indexCount,
+                         TranslucencyCheck.Sorted sorted) {
+        Staged s = new Staged(section, mesh, layer, x, y, z, split, indices, indexType, indexCount, sorted);
         synchronized (LOCK) {
-            if (gen != generation || !accepting || !Terrain.takingMeshes()) {
-                split.free();
+            // a translucent layer after the hand-back (checked under the lock that releaseTranslucent takes) stays with
+            // vanilla, so no section's translucent layer outlives the hand-back in Brimstone
+            if (gen != generation || !accepting || !Terrain.takingMeshes()
+                || (layer == ChunkSectionLayer.TRANSLUCENT && !Terrain.takingTranslucent())) {
+                s.free();
                 return false;
             }
-            STAGED.add(new Staged(section, mesh, layer, x, y, z, split));
+            STAGED.add(s);
             return true;
         }
+    }
+
+    /** What happened to a new index list for a translucent layer (vanilla sorted it again). */
+    enum Resort { STAGED, NOT_OURS, DROPPED }
+
+    /**
+     * Worker thread: vanilla sorted a mesh's translucent layer again. If Brimstone holds that layer, the new index list
+     * ({@code ints}: vanilla's list as 32-bit indices, owned by the store from here on, freed if not staged) replaces the old one at the end of the frame; if Brimstone held it and vanilla has since let go of
+     * the mesh, the list is dropped (vanilla would draw nothing of it either); otherwise it is vanilla's.
+     */
+    static Resort stageIndices(int gen, CompiledSectionMesh mesh, ByteBuffer ints, int count, TranslucencyCheck.Sorted sorted) {
+        synchronized (LOCK) {
+            Entry[] es = ENTRIES.get(mesh);
+            boolean held = es != null && es[TRANSLUCENT] != null;
+            if (!held) {
+                for (Staged s : STAGED) {
+                    if (s.mesh == mesh && s.layer == ChunkSectionLayer.TRANSLUCENT && !s.indicesOnly()) {
+                        held = true;
+                        break;
+                    }
+                }
+            }
+            if (!held || gen != generation || !accepting || !Terrain.takingMeshes()) {
+                MemoryUtil.memFree(ints);
+                if (!held) return RELEASED_TRANSLUCENT.contains(mesh) ? Resort.DROPPED : Resort.NOT_OURS;
+                return Resort.DROPPED;
+            }
+            STAGED.add(new Staged(null, mesh, ChunkSectionLayer.TRANSLUCENT, 0, 0, 0, null, ints, IndexType.INT, count, sorted));
+            return Resort.STAGED;
+        }
+    }
+
+    /** Whether an index list for this mesh's translucent layer is waiting to be copied in (render thread, under the lock). */
+    static boolean indicesPending(CompiledSectionMesh mesh) {
+        for (Staged s : STAGED) if (s.mesh == mesh && s.indices != null) return true;
+        return false;
     }
 
     /** Render thread, under the lock: closes buffers let go of since the last frame. */
@@ -181,35 +309,92 @@ public final class TerrainStore {
         PENDING_CLOSE.clear();
     }
 
-    private static Part allocate(GpuDevice device, CommandEncoder encoder, Region region, ByteBuffer data, int stride, int vertices) {
+    /** A solid or cutout layer: into the region's arena for that layer, another arena of that layer, or a new one. */
+    private static Part allocate(GpuDevice device, CommandEncoder encoder, Region region, int layer, ByteBuffer data, int vertices) {
+        int stride = CompactVertex.BYTES;
         int bytes = data.remaining();
+        Arena pref = region.preferred[layer];
         Arena arena = null;
         TlsfAllocator.Allocation a = null;
-        if (region.preferred != null && !region.preferred.closed) {
-            a = region.preferred.allocator.allocate(bytes, stride);
-            if (a != null) arena = region.preferred;
+        if (pref != null && !pref.closed) {
+            a = pref.allocator.allocate(bytes, stride);
+            if (a != null) arena = pref;
         }
         for (int i = 0; a == null && i < ARENAS.size(); i++) {
             Arena c = ARENAS.get(i);
-            if (c == region.preferred) continue;
+            if (c == pref || c.layer != layer) continue;
             a = c.allocator.allocate(bytes, stride);
             if (a != null) arena = c;
         }
         if (a == null) {
-            arena = new Arena(device, ARENAS.size());
-            ARENAS.add(arena);
+            arena = newArena(device, layer);
             a = arena.allocator.allocate(bytes, stride);
             if (a == null) throw new IllegalStateException("a fresh terrain arena refused " + bytes + " bytes");
         }
-        if (region.preferred == null || region.preferred.closed || region.live == 0) region.preferred = arena;
+        if (pref == null || pref.closed || region.live <= 1) region.preferred[layer] = arena;
+        return write(encoder, arena, a, data, vertices);
+    }
+
+    private static Arena newArena(GpuDevice device, int layer) {
+        Arena arena = new Arena(device, ARENAS.size(), layer);
+        ARENAS.add(arena);
+        return arena;
+    }
+
+    private static Part write(CommandEncoder encoder, Arena arena, TlsfAllocator.Allocation a, ByteBuffer data, int vertices) {
         try {
-            encoder.writeToBuffer(arena.buffer.slice(a.getOffsetFromHeap(), bytes), data);
+            arena.ensure(encoder, a.getOffsetFromHeap() + a.getSize());
+            encoder.writeToBuffer(arena.buffer.slice(a.getOffsetFromHeap(), data.remaining()), data);
         } catch (Throwable t) {
             arena.allocator.free(a);
             throw t;
         }
         arena.used += a.getSize();
-        return new Part(arena, a, stride, vertices);
+        return new Part(arena, a, vertices);
+    }
+
+    /**
+     * A translucent layer: its vertices and its index list go into one translucent arena (the oldest with room for
+     * both, or a new one), so one draw binds a single buffer for both, and consecutive translucent sections in vanilla's
+     * order share an arena until the translucent layers alone pass one arena.
+     */
+    private static void allocateTranslucent(GpuDevice device, CommandEncoder encoder, Region region, Entry e, ByteBuffer vertices,
+                                            int vertexCount, ByteBuffer indices, IndexType type, int indexCount) {
+        int stride = CompactVertex.BYTES;
+        int vbytes = vertices.remaining(), ibytes = indices.remaining();
+        List<Arena> order = new ArrayList<>(ARENAS.size());
+        for (Arena c : ARENAS) if (c.layer == TRANSLUCENT) order.add(c);
+        for (int pass = 0; pass < 2; pass++) {
+            if (pass == 1) order = List.of(newArena(device, TRANSLUCENT));
+            for (Arena arena : order) {
+                TlsfAllocator.Allocation va = arena.allocator.allocate(vbytes, stride);
+                if (va == null) continue;
+                TlsfAllocator.Allocation ia = arena.allocator.allocate(ibytes, 4);
+                if (ia == null) {
+                    arena.allocator.free(va);
+                    continue;
+                }
+                Part p;
+                try {
+                    p = write(encoder, arena, va, vertices, vertexCount);
+                } catch (Throwable t) {
+                    arena.allocator.free(ia);
+                    throw t;
+                }
+                e.part = p;
+                try {
+                    arena.ensure(encoder, ia.getOffsetFromHeap() + ia.getSize());
+                    encoder.writeToBuffer(arena.buffer.slice(ia.getOffsetFromHeap(), ibytes), indices);
+                } catch (Throwable t) {
+                    arena.allocator.free(ia);
+                    throw t;
+                }
+                arena.used += ia.getSize();
+                e.index = new IndexPart(arena, ia, type, indexCount);
+                return;
+            }
+        }
+        throw new IllegalStateException("a fresh terrain arena refused a translucent layer of " + (vbytes + ibytes) + " bytes");
     }
 
     /** Render thread, end of frame (inside vanilla's terrain upload): copies staged meshes into the arenas. */
@@ -224,6 +409,11 @@ public final class TerrainStore {
                 CommandEncoder encoder = device.createCommandEncoder();
                 for (; next < done.size(); next++) {
                     Staged s = done.get(next);
+                    if (s.indicesOnly()) {
+                        rewriteIndices(device, encoder, s);
+                        s.free();
+                        continue;
+                    }
                     long key = regionKey(s.x, s.y, s.z);
                     Region region = REGIONS.get(key);
                     if (region == null) {
@@ -232,29 +422,31 @@ public final class TerrainStore {
                     }
                     Entry e = new Entry(region, CompactVertex.sectionIndex(s.x, s.y, s.z), s.x, s.y, s.z);
                     region.live++;
-                    Entry[] es = ENTRIES.computeIfAbsent(s.mesh, k -> new Entry[2]);
+                    Entry[] es = ENTRIES.computeIfAbsent(s.mesh, k -> new Entry[LAYERS]);
                     int li = layerIndex(s.layer);
                     if (es[li] != null) free(es[li]);
                     es[li] = e;
-                    CompactVertex.Split sp = s.split;
-                    if (sp.compact() != null) {
-                        e.parts[COMPACT] = allocate(device, encoder, region, sp.compact(), CompactVertex.BYTES, sp.compactVertices());
-                        LIVE_VERTICES[COMPACT] += sp.compactVertices();
+                    ByteBuffer v = s.split.data();
+                    int count = s.split.vertices();
+                    if (s.indices != null) {
+                        allocateTranslucent(device, encoder, region, e, v, count, s.indices, s.indexType, s.indexCount);
+                        e.sorted = s.sorted;
+                    } else {
+                        e.part = allocate(device, encoder, region, li, v, count);
                     }
-                    if (sp.wide() != null) {
-                        e.parts[WIDE] = allocate(device, encoder, region, sp.wide(), CompactVertex.WIDE_BYTES, sp.wideVertices());
-                        LIVE_VERTICES[WIDE] += sp.wideVertices();
-                    }
-                    sp.free();
+                    liveVertices += count;
+                    s.free();
                 }
             } finally {
                 // whatever wasn't copied (an exception part-way) is freed, never leaked
-                for (int i = next; i < done.size(); i++) done.get(i).split.free();
+                for (int i = next; i < done.size(); i++) done.get(i).free();
             }
             // vanilla's own "uploaded" callback, which swaps the section's new mesh in once all its layers are there
             // and releases the old one (that re-enters this lock on this thread). A mesh vanilla let go of meanwhile
-            // (a cancelled task) gets no callback, as vanilla skips its own uploads for it.
+            // (a cancelled task) gets no callback, as vanilla skips its own uploads for it. A new index list only
+            // replaces the one a live mesh already has: vanilla's own callback for it changes nothing then.
             for (Staged s : done) {
+                if (s.indicesOnly()) continue;
                 Entry[] es = ENTRIES.get(s.mesh);
                 if (es == null || es[layerIndex(s.layer)] == null) continue;
                 RenderSectionInvoker section = (RenderSectionInvoker) s.section;
@@ -268,17 +460,39 @@ public final class TerrainStore {
         }
     }
 
+    /** A new index list for a translucent layer Brimstone holds: written over the old one (same size), in its place. */
+    private static void rewriteIndices(GpuDevice device, CommandEncoder encoder, Staged s) {
+        Entry[] es = ENTRIES.get(s.mesh);
+        Entry e = es == null ? null : es[TRANSLUCENT];
+        if (e == null || e.index == null) {
+            TranslucencyStats.resortDropped();
+            return;
+        }
+        IndexPart ip = e.index;
+        int bytes = s.indices.remaining();
+        if (ip.type != s.indexType || ip.count != s.indexCount || (long) ip.count * ip.type.bytes != bytes) {
+            throw new IllegalStateException("a new index list for a translucent layer does not match the old one (" + ip.count + " "
+                + ip.type + " indices, now " + s.indexCount + " " + s.indexType + ", " + bytes + " bytes)");
+        }
+        encoder.writeToBuffer(ip.arena.buffer.slice(ip.offset(), bytes), s.indices);
+        e.sorted = TranslucencyCheck.resorted(e.sorted, s.sorted);
+        e.sortedChecked = false;
+        TranslucencyStats.resortUploaded();
+    }
+
     /** A mesh vanilla let go of (replaced, section reset, task cancelled). Any thread. */
     static void release(CompiledSectionMesh mesh) {
         synchronized (LOCK) {
             Entry[] es = ENTRIES.remove(mesh);
             if (es != null) {
                 for (Entry e : es) if (e != null) free(e);
+                if (es[TRANSLUCENT] != null) RELEASED_TRANSLUCENT.add(mesh);
             }
             if (!STAGED.isEmpty()) {
                 STAGED.removeIf(s -> {
                     if (s.mesh != mesh) return false;
-                    s.split.free();
+                    if (s.layer == ChunkSectionLayer.TRANSLUCENT) RELEASED_TRANSLUCENT.add(mesh);
+                    s.free();
                     return true;
                 });
             }
@@ -287,25 +501,35 @@ public final class TerrainStore {
     }
 
     private static void free(Entry e) {
-        for (int f = 0; f < 2; f++) {
-            Part p = e.parts[f];
-            if (p == null) continue;
+        if (e.index != null) {
+            IndexPart ip = e.index;
+            e.index = null;
+            ip.arena.used -= ip.allocation.getSize();
+            ip.arena.allocator.free(ip.allocation);
+            closeIfEmpty(ip.arena);
+        }
+        Part p = e.part;
+        if (p != null) {
+            e.part = null;
             p.arena.used -= p.allocation.getSize();
             p.arena.allocator.free(p.allocation);
-            LIVE_VERTICES[f] -= p.vertices;
-            Arena a = p.arena;
-            if (!a.closed && ARENAS.indexOf(a) > 0 && a.allocator.isCompletelyFree()) {
-                // an empty arena goes (closed on the render thread before the next frame's draws)
-                a.closed = true;
-                ARENAS.remove(a);
-                PENDING_CLOSE.add(a.buffer);
-            }
+            liveVertices -= p.vertices;
+            closeIfEmpty(p.arena);
         }
         Region r = e.region;
         if (--r.live <= 0) {
             REGIONS.remove(r.key);
             if (r.ubo != null) PENDING_CLOSE.add(r.ubo);
             r.ubo = null;
+        }
+    }
+
+    private static void closeIfEmpty(Arena a) {
+        if (!a.closed && a.allocator.isCompletelyFree() && ARENAS.stream().anyMatch(o -> o != a && o.layer == a.layer)) {
+            // an empty arena goes (closed on the render thread before the next frame's draws)
+            a.closed = true;
+            ARENAS.remove(a);
+            PENDING_CLOSE.add(a.buffer);
         }
     }
 
@@ -322,8 +546,9 @@ public final class TerrainStore {
     static void dropStaged() {
         synchronized (LOCK) {
             for (Staged s : STAGED) {
-                s.split.free();
-                DROPPED.add(s);
+                s.free();
+                // a dropped new index list needs nothing: vanilla meshes the section again
+                if (!s.indicesOnly()) DROPPED.add(s);
             }
             STAGED.clear();
             generation++;
@@ -357,6 +582,51 @@ public final class TerrainStore {
     }
 
     /** The sections Brimstone holds, as SectionPos longs (for handing them back to vanilla). */
+    /**
+     * Render thread, end of frame: lets go of every translucent layer Brimstone holds or has staged (translucent terrain
+     * goes back to vanilla for the session; solid and cutout stay). Returns their sections (SectionPos longs), to be
+     * marked dirty so vanilla meshes them again and keeps their translucent layers itself.
+     */
+    static LongOpenHashSet releaseTranslucent() {
+        LongOpenHashSet out = new LongOpenHashSet();
+        synchronized (LOCK) {
+            for (var it = ENTRIES.entrySet().iterator(); it.hasNext(); ) {
+                var en = it.next();
+                Entry[] es = en.getValue();
+                Entry e = es[TRANSLUCENT];
+                if (e == null) continue;
+                out.add(SectionPos.asLong(e.originX >> 4, e.originY >> 4, e.originZ >> 4));
+                free(e);
+                es[TRANSLUCENT] = null;
+                RELEASED_TRANSLUCENT.add(en.getKey());
+                if (es[0] == null && es[1] == null) it.remove();
+            }
+            List<Staged> unfinished = new ArrayList<>();
+            STAGED.removeIf(st -> {
+                if (st.layer != ChunkSectionLayer.TRANSLUCENT) return false;
+                if (!st.indicesOnly()) {
+                    out.add(SectionPos.asLong(st.x >> 4, st.y >> 4, st.z >> 4));
+                    unfinished.add(st);
+                }
+                st.free();
+                return true;
+            });
+            // vanilla counted those layers as Brimstone's: complete each through vanilla's own callback (its section
+            // shows no translucent layer until vanilla meshes it again, it is marked dirty) or, if a newer mesh of the
+            // section is already in, release it, as for a hand-back (finishDropped). Never left half-uploaded.
+            for (Staged st : unfinished) {
+                RELEASED_TRANSLUCENT.add(st.mesh);
+                RenderSectionInvoker section = (RenderSectionInvoker) st.section;
+                if (st.section.getSectionMesh().getCompileTaskStartTime() > st.mesh.getCompileTaskStartTime()) {
+                    section.brimstone$releaseSectionMesh(st.mesh);
+                } else {
+                    section.brimstone$vertexBufferUploaded(st.mesh, st.layer);
+                }
+            }
+        }
+        return out;
+    }
+
     static LongOpenHashSet heldSections() {
         LongOpenHashSet out = new LongOpenHashSet();
         synchronized (LOCK) {
@@ -378,10 +648,11 @@ public final class TerrainStore {
     /** Render thread: drops everything (the dispatcher is going away, or the module stopped drawing). */
     static void clear() {
         synchronized (LOCK) {
-            for (Staged s : STAGED) s.split.free();
+            for (Staged s : STAGED) s.free();
             STAGED.clear();
             DROPPED.clear();
             ENTRIES.clear();
+            RELEASED_TRANSLUCENT.clear();
             for (Region r : REGIONS.values()) if (r.ubo != null) PENDING_CLOSE.add(r.ubo);
             REGIONS.clear();
             for (Arena a : ARENAS) {
@@ -390,7 +661,7 @@ public final class TerrainStore {
             }
             ARENAS.clear();
             closePending();
-            Arrays.fill(LIVE_VERTICES, 0);
+            liveVertices = 0;
             generation++;
         }
     }
@@ -403,7 +674,9 @@ public final class TerrainStore {
         synchronized (LOCK) {
             long used = 0;
             for (Arena a : ARENAS) used += a.used;
-            return new Snapshot(REGIONS.size(), ARENAS.size(), ARENAS.size() * ARENA_BYTES, used, LIVE_VERTICES[COMPACT], LIVE_VERTICES[WIDE]);
+            long reserved = 0;
+            for (Arena a : ARENAS) reserved += a.capacity;
+            return new Snapshot(REGIONS.size(), ARENAS.size(), reserved, used, liveVertices);
         }
     }
 }

@@ -1,0 +1,18 @@
+{
+  "_note": "Translucent scenes where Brimstone's draw calls per frame (average and median) must not exceed vanilla's, in every profile (Andre, 2026-10-25); in the other scenes they may be at most vanilla's x 1.10 + 2. Vanilla's numbers come from the same CI run (the measure-* runs: Brimstone loaded with every module off), so the runner and today's pins are the same for both.",
+  "core": [
+    "water_glass",
+    "translucent_move",
+    "water_glass_oit",
+    "translucent_move_oit",
+    "flythrough"
+  ],
+  "siftec": [
+    "hologram"
+  ],
+  "allowance": {
+    "core/full/flythrough": 2,
+    "core/vulkan/flythrough": 2
+  },
+  "_allowanceNote": "Andre's decision (2026-10-25): if the fly-through stays over vanilla by 2 draw calls per frame or fewer on full or Vulkan, accept it as a documented deviation with the gate at vanilla + 2 for the fly-through only. Run 40180107484: Vulkan average 123.11 against vanilla's 123.05 (medians 123 and 123; Brimstone's terrain draws the same 3 indirect draws as vanilla, the 0.06 is in the other draws); see docs/ci-limits.md."
+}

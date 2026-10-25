@@ -74,6 +74,10 @@ def main():
         entry = {"scene": sid}
         if not sc.get("skip") and sc.get("requiresMod") and loaded is not None and sc["requiresMod"] not in loaded:
             sc["skip"] = "needs the mod " + sc["requiresMod"] + " (" + sc.get("requiresNote", "not loaded") + ")"
+        # a run a scene cannot run in (package 3: "ciSkipRuns", for a driver crash that hits vanilla too); compare.py
+        # leaves that profile out for the scene
+        if not sc.get("skip") and os.environ.get("RUN") in sc.get("ciSkipRuns", []):
+            sc["skip"] = "not run in " + os.environ["RUN"] + ": " + sc.get("ciSkipReason", "ciSkipRuns")
         if sc.get("skip"):
             entry["skipped"] = sc["skip"]
             summary.append(entry)
@@ -90,6 +94,11 @@ def main():
             # park the mouse where no screen draws a tooltip, the same in every run
             xdo("mousemove", "1", "1")
             time.sleep(5)
+        # keys a scene needs pressed after its setup (package 3: the Build Gun's next-tab key, which picks a building
+        # so its hologram shows); the same in every run
+        for k in sc.get("ciKeys", []):
+            xdo("key", k)
+            time.sleep(1.5)
         if not screen:
             # F3+A: vanilla's own "reload all chunks", so a section the client dropped or never meshed under load
             # is rebuilt before the picture is taken; the same in every run

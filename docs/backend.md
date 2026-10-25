@@ -1,7 +1,15 @@
 # 26.3's graphics backend (package 0 findings)
 
-Facts read from the 26.3 classes (CI's `javap` dump: `.github/dump-signatures`, `.github/dump-bytecode`; output on
-the `ci-logs` branch under `build/`) and from CI client logs. No choice is made here.
+Facts read from the 26.3 classes (CI's `javap` dump: `.github/dump-signatures`, `.github/dump-bytecode`) and from CI
+client logs. No choice is made here.
+
+Where the dumps are (since 2026-10-25): the build job's **`game-dumps` Actions artifact** of that run
+(`javap-all.txt.gz`, `bytecode.txt.gz` and the class lists), kept for **1 day**. Nothing of Mojang's goes to the public
+`ci-logs` branch (design doc, Rules: Mojang code); `ci-logs` carries only Brimstone's own `build.log`, the client runs
+and the compare report. Until then the dumps were published on `ci-logs` under `build/`; that directory was removed
+and `ci-logs` republished on 2026-10-25 (GitHub may keep older force-pushed commits fetchable by ID for a while).
+Note for chats: the agent workspace cannot download Actions artifacts (their storage host isn't reachable), so a
+chat that needs a dump asks Andre to download `game-dumps` from the run and attach it.
 
 ## What exists
 

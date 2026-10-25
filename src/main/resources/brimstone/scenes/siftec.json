@@ -34,12 +34,18 @@
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
+        "gamerule spawn_mobs false",
+        "gamerule spawn_phantoms false",
         "execute in the_sift:the_sift run tp @a 0.5 200 0.5 45 20",
         "execute in the_sift:the_sift run time set 6000",
         "execute in the_sift:the_sift run weather clear",
         "#wait 6",
-        "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20"
-      ]
+        "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20",
+        "execute as @a at @s run tp @e[type=!minecraft:player,distance=..400] ~ -200 ~"
+      ],
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. Run 40180107484, full: Brimstone 154.0 average / 154 median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps (Vulkan: 153.97 / 154 at 15.8 fps against 153.94 / 154 at 12.37 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "ciNote": "Mob spawning is off for this scene and the mobs already there are sent away before it settles, in vanilla's runs and Brimstone's alike: Andre's decision (package 3, 2026-10-25), as the sprites over the canyon were somewhere else in every run; they turned out to be the Sift's note particles, which CI's pin mod holds off (SiftParticlesMixin). The next scene turns spawning back on."
     },
     {
       "id": "hub",
@@ -47,6 +53,8 @@
       "renderDistance": 8,
       "settleSeconds": 8,
       "setup": [
+        "gamerule spawn_mobs true",
+        "gamerule spawn_phantoms true",
         "gamemode creative @a",
         "item replace entity @a weapon.mainhand with minecraft:air",
         "execute in minecraft:overworld run tp @a 2240.5 201 -1996.5 180 21",
@@ -101,11 +109,44 @@
         "#wait 3",
         "siftec worldtest map open 1.5"
       ],
+      "ciNoStrict": "SIFTEC's map shows whichever tiles it has scanned when it opens, so vanilla runs differ from each other by up to 22,532 strict pixels there (35-58k pixels in all after two attempts to wait for a steady map); package 7 (GUI) must give it real strict coverage",
       "screen": {
         "expect": "MapScreen"
       },
       "requiresMod": "siftec_selftest",
       "requiresNote": "SIFTEC's map unlocks through progression; its test command (siftec worldtest map) opens it, and that lives in SIFTEC's CI-only selftest mod, not in its release."
+    },
+    {
+      "id": "hologram",
+      "ciDrawCallGate": "median",
+      "title": "SIFTEC Build Gun hologram (green where the building fits) in front of a water pool, high above the terrain (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 15,
+      "setup": [
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1981.5 180 30",
+        "#wait 5",
+        "fill 2148 285 -2014 2174 305 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2148,y=285,z=-2014,dx=26,dy=20,dz=38] 2160.5 -200 -1995.5",
+        "fill 2148 288 -2014 2174 288 -1976 minecraft:stone",
+        "fill 2148 289 -2014 2174 289 -1976 minecraft:smooth_stone",
+        "fill 2151 288 -2010 2169 288 -1992 minecraft:sea_lantern",
+        "fill 2151 289 -2010 2169 289 -1992 minecraft:water",
+        "item replace entity @a weapon.mainhand with siftec:build_gun",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla in front of Brimstone's translucent water. CI presses Tab once after the setup (the Build Gun's next-tab key: picks the first Power building, the Power Pole Mk.1; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. The pool's floor is sea lanterns: up there water freezes over at random where block light is low (ice in vanilla's own runs, run 40121527770), and light 14 at the surface stops it. The last setup step moves the camera three blocks, so vanilla sorts the water again from where the picture is taken. Not run on Vulkan: lavapipe segfaults (libvulkan_lvp.so) as soon as the outliner draws, in vanilla's run too (runs 40115084815 and 40119107821).",
+      "ciKeys": [
+        "Tab"
+      ],
+      "ciSkipRuns": [
+        "vanilla-vk",
+        "brimstone-vk",
+        "measure-vk"
+      ],
+      "ciSkipReason": "Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
     }
   ],
   "prepare": [

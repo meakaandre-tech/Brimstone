@@ -11,7 +11,8 @@
     "RenderSectionMixin",
     "SectionCompilerMixin",
     "SectionRenderDispatcherMixin",
-    "ShaderManagerMixin"
+    "ShaderManagerMixin",
+    "SortStateMixin"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -62,6 +62,26 @@
     "uploadBytesPerFrame": 27764,
     "uploadsPerFrame": 15
   },
+  "translucent_move": {
+    "directBuffersMB": 5.46,
+    "drawCallsPerFrame": 126.0,
+    "heapUsedAfterGcMB": 268.35,
+    "runs": [
+      40115084815
+    ],
+    "uploadBytesPerFrame": 10220,
+    "uploadsPerFrame": 15
+  },
+  "translucent_move_oit": {
+    "directBuffersMB": 3.46,
+    "drawCallsPerFrame": 131.0,
+    "heapUsedAfterGcMB": 248.38,
+    "runs": [
+      40115084815
+    ],
+    "uploadBytesPerFrame": 10332,
+    "uploadsPerFrame": 15
+  },
   "water_glass": {
     "directBuffersMB": 4.23,
     "drawCallsPerFrame": 153.28,
@@ -71,6 +91,16 @@
       11
     ],
     "uploadBytesPerFrame": 15108,
+    "uploadsPerFrame": 15
+  },
+  "water_glass_oit": {
+    "directBuffersMB": 3.46,
+    "drawCallsPerFrame": 131.0,
+    "heapUsedAfterGcMB": 245.99,
+    "runs": [
+      40115084815
+    ],
+    "uploadBytesPerFrame": 15024,
     "uploadsPerFrame": 15
   }
 }

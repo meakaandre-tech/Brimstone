@@ -27,6 +27,7 @@ public final class BenchRun {
     private Stage stage = Stage.SETUP;
     private long waitUntil;
     private int previousRenderDistance = -1;
+    private Boolean previousImprovedTransparency;
     private long measureStart;
     private int nextStep;
     private double px, py, pz;
@@ -55,6 +56,12 @@ public final class BenchRun {
         if (scene != null) {
             run.previousRenderDistance = mc.options.renderDistance().get();
             mc.options.renderDistance().set(scene.renderDistance);
+            String oit = scene.clientOptions == null ? null : scene.clientOptions.get("improvedTransparency");
+            if (oit != null && Boolean.parseBoolean(oit) != mc.options.improvedTransparency().get()) {
+                run.previousImprovedTransparency = mc.options.improvedTransparency().get();
+                mc.options.improvedTransparency().set(Boolean.parseBoolean(oit));
+                BrimstoneClient.LOG.info("Brimstone bench: Improved Transparency set to {} for this scene (put back afterwards)", oit);
+            }
         }
         BrimstoneClient.LOG.info("BRIMSTONE BENCH START scene={} seconds={}", run.sceneId, seconds);
         say("Bench " + run.sceneId + ": setting up" + (scene == null ? "" : " (needs commands allowed)") + ", then " + seconds + " s of measuring.");
@@ -185,6 +192,7 @@ public final class BenchRun {
 
     private void restore(Minecraft mc) {
         if (previousRenderDistance > 0) mc.options.renderDistance().set(previousRenderDistance);
+        if (previousImprovedTransparency != null) mc.options.improvedTransparency().set(previousImprovedTransparency);
         if (scene != null && scene.screen != null && mc.gui.screen() != null) mc.gui.setScreen(null);
     }
 

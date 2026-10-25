@@ -14,7 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * Brimstone draws its part of each terrain layer right after vanilla draws its own, in vanilla's pass and with the
- * uniforms vanilla bound for terrain. Fabric's terrain events, which wrap the whole group, still fire around both.
+ * uniforms vanilla bound for terrain. Fabric's terrain events, which wrap the whole group, still fire around both. The
+ * same call carries vanilla's pipeline overrides: its wireframe view, or (translucent with Improved Transparency) the
+ * terrain pipeline of the stage being drawn, in that stage's own pass.
  */
 @Mixin(ChunkSectionsToRender.class)
 public abstract class ChunkSectionsToRenderMixin {
@@ -24,6 +26,6 @@ public abstract class ChunkSectionsToRenderMixin {
                                      IndexType indexType, RenderPipeline wireframe, RenderPipeline wireframeMultidraw,
                                      Operation<Void> original) {
         original.call(self, layer, pass, indexBuffer, indexType, wireframe, wireframeMultidraw);
-        TerrainRenderer.draw(layer, pass, wireframe != null);
+        TerrainRenderer.draw(layer, pass, wireframe, wireframeMultidraw);
     }
 }

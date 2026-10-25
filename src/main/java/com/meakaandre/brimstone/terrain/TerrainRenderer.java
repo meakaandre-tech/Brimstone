@@ -11,7 +11,9 @@ import com.mojang.renderpearl.api.device.DeviceFeatures;
 import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -19,8 +21,10 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import net.minecraft.client.renderer.DynamicGpuData;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.util.Util;
@@ -35,8 +39,14 @@ import org.lwjgl.system.MemoryUtil;
  * graph runs, no render pass open): picks the sections vanilla found visible whose layers Brimstone holds, builds one
  * draw list per layer, and writes the little that changed (a region's fade-in values).</li>
  * <li>{@link #draw}, inside vanilla's terrain pass right after vanilla draws its own part of each layer (solid, then
- * cutout), with vanilla's uniforms and samplers already bound.</li>
+ * cutout, then translucent), with vanilla's uniforms and samplers already bound; with Improved Transparency on,
+ * translucent is drawn in each of vanilla's three stage passes, with that stage's pipeline.</li>
  * </ul>
+ *
+ * <p>Translucent (package 3) is drawn in exactly vanilla's order: vanilla's visible-section list, reversed (back to
+ * front) on frames where vanilla sorts translucent terrain (Improved Transparency off), each section with vanilla's
+ * own sorted index list. Brimstone's draw calls cover runs of consecutive sections in that order that share a
+ * region (plain path) and arena, so batching never changes the order.
  *
  * How it draws follows what vanilla does on the device:
  * <ul>
@@ -91,13 +101,64 @@ public final class TerrainRenderer {
         }
     }
 
+    /** Consecutive translucent section layers (in vanilla's order) that one draw call covers. */
+    private static final class TRun {
+        final TerrainStore.Arena arena;
+        final IndexType type;
+        final TerrainStore.Region region;
+        /** The region's uniform block as of this frame (plain path). */
+        GpuBuffer ubo;
+        int[] counts = new int[8];
+        int[] bases = new int[8];
+        /** Where each section layer's indices start in the arena, in bytes. */
+        long[] offsets = new long[8];
+        int n;
+        final List<DynamicGpuData.IndexedDraw> commands = new ArrayList<>();
+        int commandStart;
+        /** CI's check only: the section layers this run draws, in order. */
+        final List<CompiledSectionMesh> meshes = new ArrayList<>();
+        final List<TerrainStore.Entry> entries = new ArrayList<>();
+
+        TRun(TerrainStore.Arena arena, IndexType type, TerrainStore.Region region) {
+            this.arena = arena;
+            this.type = type;
+            this.region = region;
+        }
+
+        boolean fits(TerrainStore.Arena arena, IndexType type, TerrainStore.Region region) {
+            return this.arena == arena && this.type == type && this.region == region;
+        }
+
+        void add(int count, int base, long offset) {
+            if (n == counts.length) {
+                counts = Arrays.copyOf(counts, n * 2);
+                bases = Arrays.copyOf(bases, n * 2);
+                offsets = Arrays.copyOf(offsets, n * 2);
+            }
+            counts[n] = count;
+            bases[n] = base;
+            offsets[n] = offset;
+            n++;
+        }
+    }
+
     // this frame
     private static Path path;
+    /** This frame's translucent draws, in vanilla's order, and whether vanilla sorts translucent this frame. */
+    private static final List<TRun> TRUNS = new ArrayList<>();
+    private static boolean sortTranslucent;
+    // per frame, reused: translucent layers in vanilla's visible order, their meshes and instances
+    private static final List<TerrainStore.Entry> TL_ENTRIES = new ArrayList<>();
+    private static final List<CompiledSectionMesh> TL_MESHES = new ArrayList<>();
+    private static final it.unimi.dsi.fastutil.ints.IntArrayList TL_INSTANCES = new it.unimi.dsi.fastutil.ints.IntArrayList();
+    // visible sections whose translucent layer Brimstone doesn't hold (vanilla may)
+    private static final List<SectionRenderDispatcher.RenderSection> TL_OTHER = new ArrayList<>();
+    /** Sections sent back to vanilla's mesher so Brimstone takes their translucent layer over: node to that mesh's build time. */
+    private static final Long2LongOpenHashMap HANDED_OVER = new Long2LongOpenHashMap();
     private static boolean prepared;
     @SuppressWarnings("unchecked")
-    /** Draw lists, index layer * 2 + format (format 0 compact, 1 wide). */
-    private static final List<ArenaDraws>[] FRAME = new List[] {new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>(),
-        new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
+    /** Draw lists, index layer (0 solid, 1 cutout). */
+    private static final List<ArenaDraws>[] FRAME = new List[] {new ArrayList<ArenaDraws>(), new ArrayList<ArenaDraws>()};
     private static final List<DynamicGpuData.ChunkSectionInfo> INSTANCES = new ArrayList<>();
     private static GpuBufferSlice instanceSlice;
     /** This frame's one Brimstone command list (indirect path), all layers and arenas back to back, and its slice. */
@@ -115,6 +176,7 @@ public final class TerrainRenderer {
     private static IntBuffer bases = MemoryUtil.memAllocInt(1024);
     private static IntBuffer interleaved = MemoryUtil.memAllocInt(3 * 1024);
     private static PointerBuffer zeroOffsets = MemoryUtil.memCallocPointer(1024);
+    private static PointerBuffer offsets = MemoryUtil.memCallocPointer(1024);
     private static ByteBuffer uboScratch;
 
     private TerrainRenderer() {
@@ -151,13 +213,15 @@ public final class TerrainRenderer {
 
     /**
      * Render thread, as vanilla starts preparing this frame's terrain draws. {@code indirect}: vanilla draws terrain
-     * with multi-draw indirect this frame.
+     * with multi-draw indirect this frame; {@code sort}: vanilla draws translucent back to front this frame (Improved
+     * Transparency off).
      */
-    public static void prepare(List<SectionRenderDispatcher.RenderSection> visible, double fadeSeconds, boolean indirect) {
+    public static void prepare(List<SectionRenderDispatcher.RenderSection> visible, double fadeSeconds, boolean indirect, boolean sort) {
         prepared = false;
         Terrain.beginFrame();
         if (!Terrain.drawing()) return;
         try {
+            sortTranslucent = sort;
             prepareFrame(visible, fadeSeconds, indirect && !Terrain.FORCE_PLAIN);
             prepared = true;
         } catch (Throwable t) {
@@ -173,6 +237,11 @@ public final class TerrainRenderer {
         path = indirect ? Path.INDIRECT : plainPath(device.getDeviceInfo());
         boolean plain = path != Path.INDIRECT;
         for (List<ArenaDraws> l : FRAME) l.clear();
+        TRUNS.clear();
+        TL_ENTRIES.clear();
+        TL_MESHES.clear();
+        TL_INSTANCES.clear();
+        TL_OTHER.clear();
         INSTANCES.clear();
         instanceSlice = null;
         COMMANDS.clear();
@@ -190,10 +259,13 @@ public final class TerrainRenderer {
         synchronized (TerrainStore.LOCK) {
             TerrainStore.closePending();
             for (SectionRenderDispatcher.RenderSection section : visible) {
-                TerrainStore.Entry[] es = TerrainStore.ENTRIES.get(section.getSectionMesh());
-                if (audit) audited += audit(section.getSectionMesh(), es);
+                SectionMesh mesh = section.getSectionMesh();
+                TerrainStore.Entry[] es = TerrainStore.ENTRIES.get(mesh);
+                if (audit) audited += audit(mesh, es);
+                TerrainStore.Entry tl = es == null ? null : es[TerrainStore.TRANSLUCENT];
+                if (tl == null && mesh.getSectionDraw(ChunkSectionLayer.TRANSLUCENT) != null) TL_OTHER.add(section);
                 if (es == null) continue;
-                TerrainStore.Entry any = es[0] != null ? es[0] : es[1];
+                TerrainStore.Entry any = es[0] != null ? es[0] : es[1] != null ? es[1] : es[2];
                 if (any == null) continue;
                 float visibility = section.getVisibility(now, fadeMs);
                 int instance = INSTANCES.size();
@@ -210,10 +282,10 @@ public final class TerrainRenderer {
                 for (int li = 0; li < 2; li++) {
                     TerrainStore.Entry e = es[li];
                     if (e == null) continue;
-                    for (int f = 0; f < 2; f++) {
-                        TerrainStore.Part part = e.parts[f];
+                    {
+                        TerrainStore.Part part = e.part;
                         if (part == null) continue;
-                        ArenaDraws ad = arenaDraws(li * 2 + f, part.arena);
+                        ArenaDraws ad = arenaDraws(li, part.arena);
                         int count = part.indexCount();
                         maxIndexCount = Math.max(maxIndexCount, count);
                         if (plain) {
@@ -229,6 +301,21 @@ public final class TerrainRenderer {
                         }
                     }
                 }
+                if (tl != null && tl.index != null && mesh instanceof CompiledSectionMesh cm) {
+                    TL_ENTRIES.add(tl);
+                    TL_MESHES.add(cm);
+                    TL_INSTANCES.add(instance);
+                }
+            }
+            buildTranslucentRuns(plain);
+            if (TranslucencyCheck.ENABLED) {
+                List<CompiledSectionMesh> drawnMeshes = new ArrayList<>(TL_MESHES.size());
+                List<TerrainStore.Entry> drawn = new ArrayList<>(TL_ENTRIES.size());
+                for (TRun run : TRUNS) {
+                    drawnMeshes.addAll(run.meshes);
+                    drawn.addAll(run.entries);
+                }
+                TranslucencyCheck.frame(visible, sortTranslucent, drawnMeshes, drawn);
             }
             CommandEncoder encoder = null;
             for (TerrainStore.Region r : touched) {
@@ -236,27 +323,98 @@ public final class TerrainRenderer {
                 encoder = writeRegion(device, encoder, r);
             }
             for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) for (RegionDraw rd : ad.regions) rd.ubo = rd.region.ubo;
+            for (TRun run : TRUNS) if (run.region != null) run.ubo = run.region.ubo;
         }
         if (maxIndexCount > 0) RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS).requestIndexCount(maxIndexCount);
         if (audit) VisibilityStats.terrainFrame(audited, missingFromVanilla());
+        translucentOthers();
     }
 
-    // pop-in audit (only while a bench measures): solid and cutout layers of vanilla's visible sections that have
-    // geometry must be drawn by Brimstone (in this frame's draw lists) or by vanilla (in its buffers)
+    /**
+     * This frame's translucent runs, in vanilla's order: the visible list as is, or reversed when vanilla sorts. A run
+     * goes on while the next section layer shares its arena, index type and (plain path) region.
+     */
+    private static void buildTranslucentRuns(boolean plain) {
+        int n = TL_ENTRIES.size();
+        TRun run = null;
+        for (int k = 0; k < n; k++) {
+            int i = sortTranslucent ? n - 1 - k : k;
+            TerrainStore.Entry e = TL_ENTRIES.get(i);
+            TerrainStore.Part part = e.part;
+            TerrainStore.IndexPart ip = e.index;
+            if (part == null || ip.arena != part.arena) throw new IllegalStateException("a translucent layer's vertices and indices are not in one arena");
+            TerrainStore.Region region = plain ? e.region : null;
+            if (run == null || !run.fits(part.arena, ip.type, region)) {
+                if (run != null) TranslucencyStats.runBreak(run.arena != part.arena, run.type != ip.type, run.region != region);
+                run = new TRun(part.arena, ip.type, region);
+                TRUNS.add(run);
+            }
+            run.add(ip.count, part.baseVertex, ip.offset());
+            if (TranslucencyCheck.ENABLED) {
+                run.meshes.add(TL_MESHES.get(i));
+                run.entries.add(e);
+            }
+            if (!plain) {
+                run.commands.add(new DynamicGpuData.IndexedDraw(ip.count, 1, (int) (ip.offset() / ip.type.bytes), part.baseVertex, TL_INSTANCES.getInt(i)));
+            }
+        }
+    }
+
+    /**
+     * Visible sections with translucent geometry that Brimstone doesn't hold: vanilla draws them (meshed before
+     * Brimstone turned on, or while it was handing terrain back). Vanilla draws its part of the layer before Brimstone's,
+     * so in a frame with both the order between the two sets would not be vanilla's: such a section is sent back to
+     * vanilla's mesher once, so that its next mesh comes to Brimstone. Counted in the bench (mixed frames).
+     */
+    private static void translucentOthers() {
+        int vanillaHeld = 0, handed = 0;
+        if (!TL_OTHER.isEmpty()) {
+            SectionRenderDispatcher dispatcher = net.minecraft.client.Minecraft.getInstance().levelRenderer.sectionRenderDispatcher();
+            if (dispatcher != null) {
+                List<SectionRenderDispatcher.RenderSection> held = new ArrayList<>();
+                dispatcher.lock();
+                try {
+                    for (SectionRenderDispatcher.RenderSection s : TL_OTHER) {
+                        if (dispatcher.getRenderSectionSlice(s.getSectionMesh(), ChunkSectionLayer.TRANSLUCENT) != null) held.add(s);
+                    }
+                } finally {
+                    dispatcher.unlock();
+                }
+                vanillaHeld = held.size();
+                var extractor = net.minecraft.client.Minecraft.getInstance().levelExtractor;
+                if (Terrain.takingTranslucent() && extractor != null) {
+                    for (SectionRenderDispatcher.RenderSection s : held) {
+                        long node = s.getSectionNode();
+                        long built = s.getSectionMesh().getCompileTaskStartTime();
+                        if (HANDED_OVER.containsKey(node) && HANDED_OVER.get(node) == built) continue;
+                        HANDED_OVER.put(node, built);
+                        extractor.setSectionDirty(net.minecraft.core.SectionPos.x(node), net.minecraft.core.SectionPos.y(node), net.minecraft.core.SectionPos.z(node));
+                        handed++;
+                    }
+                }
+            }
+            TL_OTHER.clear();
+        }
+        if (HANDED_OVER.size() > 65536) HANDED_OVER.clear();
+        TranslucencyStats.frame(TL_ENTRIES.size(), vanillaHeld, handed);
+    }
+
+    // pop-in audit (only while a bench measures): solid, cutout and translucent layers of vanilla's visible sections
+    // that have geometry must be drawn by Brimstone (in this frame's draw lists) or by vanilla (in its buffers)
     private static final List<SectionMesh> AUDIT_MESHES = new ArrayList<>();
     private static final List<ChunkSectionLayer> AUDIT_LAYERS = new ArrayList<>();
-    private static final ChunkSectionLayer[] OPAQUE_LAYERS = {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT};
+    private static final ChunkSectionLayer[] AUDIT_LAYER_ORDER = {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT, ChunkSectionLayer.TRANSLUCENT};
 
     /** Counts this section's layers with geometry; remembers those Brimstone doesn't hold, for vanilla's check. */
     private static int audit(SectionMesh mesh, TerrainStore.Entry[] es) {
         int n = 0;
-        for (int li = 0; li < 2; li++) {
-            if (mesh.getSectionDraw(OPAQUE_LAYERS[li]) == null) continue;
+        for (int li = 0; li < TerrainStore.LAYERS; li++) {
+            if (mesh.getSectionDraw(AUDIT_LAYER_ORDER[li]) == null) continue;
             n++;
             TerrainStore.Entry e = es == null ? null : es[li];
-            if (e == null || (e.parts[0] == null && e.parts[1] == null)) {
+            if (e == null || e.part == null || (li == TerrainStore.TRANSLUCENT && e.index == null)) {
                 AUDIT_MESHES.add(mesh);
-                AUDIT_LAYERS.add(OPAQUE_LAYERS[li]);
+                AUDIT_LAYERS.add(AUDIT_LAYER_ORDER[li]);
             }
         }
         return n;
@@ -349,6 +507,12 @@ public final class TerrainRenderer {
                 }
             }
         }
+        for (TRun run : TRUNS) {
+            run.commandStart = COMMANDS.size();
+            for (DynamicGpuData.IndexedDraw d : run.commands) {
+                COMMANDS.add(shift == 0 ? d : new DynamicGpuData.IndexedDraw(d.indexCount(), 1, d.firstIndex(), d.baseVertex(), d.baseInstance() + shift));
+            }
+        }
         if (COMMANDS.isEmpty()) return vanilla;
         List<List<DynamicGpuData.IndexedDraw>> all = new ArrayList<>(vanilla.size() + 1);
         all.addAll(vanilla);
@@ -386,12 +550,17 @@ public final class TerrainRenderer {
      * Render thread, in vanilla's terrain pass right after vanilla drew its own part of {@code layer}. Vanilla has
      * bound the terrain uniforms, the block atlas and the lightmap.
      */
-    public static void draw(ChunkSectionLayer layer, RenderPass pass, boolean wireframe) {
+    public static void draw(ChunkSectionLayer layer, RenderPass pass, RenderPipeline override, RenderPipeline overrideMultidraw) {
         drawHookSeen = true;
         if (!prepared || !Terrain.drawing()) return;
         int li = TerrainStore.layerIndex(layer);
         if (li < 0) return;
-        if (FRAME[li * 2].isEmpty() && FRAME[li * 2 + 1].isEmpty()) return;
+        if (li == TerrainStore.TRANSLUCENT) {
+            drawTranslucent(pass, override, overrideMultidraw);
+            return;
+        }
+        boolean wireframe = override != null || overrideMultidraw != null;
+        if (FRAME[li].isEmpty()) return;
         try {
             TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
             boolean plain = path != Path.INDIRECT;
@@ -399,16 +568,15 @@ public final class TerrainRenderer {
             GpuBuffer indexBuffer = quads.getBuffer();
             if (indexBuffer == null || !quads.hasStorage(maxIndexCount)) throw new IllegalStateException("the shared quad index buffer is too small");
             int draws = 0, sectionLayers = 0;
-            for (int f = 0; f < 2; f++) {
-                List<ArenaDraws> list = FRAME[li * 2 + f];
-                if (list.isEmpty()) continue;
+            {
+                List<ArenaDraws> list = FRAME[li];
                 CompiledRenderPipeline pipeline;
                 if (wireframe) {
-                    pipeline = TerrainPipelines.wireframe(f, plain);
-                    if (pipeline == null) continue;
+                    pipeline = TerrainPipelines.wireframe(plain);
                 } else {
-                    pipeline = TerrainPipelines.compiled(TerrainPipelines.pipeline(f, plain, li == 1));
+                    pipeline = TerrainPipelines.compiled(TerrainPipelines.pipeline(plain, li == 1));
                 }
+                if (pipeline == null) return;
                 pass.setPipeline(pipeline);
                 pass.setIndexBuffer(indexBuffer, quads.type());
                 draws += plain ? drawPlain(pass, list) : drawIndirect(pass, list);
@@ -427,6 +595,107 @@ public final class TerrainRenderer {
         } catch (Throwable t) {
             prepared = false;
             Terrain.fail("drawing terrain", t, false);
+        }
+    }
+
+    /**
+     * Translucent, right after vanilla's own part of it (in the classic pass, or in one of the Improved Transparency
+     * stage passes): Brimstone's runs in order, each with the pipeline made from the one vanilla draws this mode with.
+     */
+    private static void drawTranslucent(RenderPass pass, RenderPipeline override, RenderPipeline overrideMultidraw) {
+        int mode = TerrainPipelines.translucentMode(override, overrideMultidraw);
+        if (mode >= 1) TranslucencyStats.oitFrame();
+        if (TRUNS.isEmpty()) return;
+        try {
+            if (mode == -2) throw new IllegalStateException("vanilla drew translucent terrain with a pipeline Brimstone does not know: " + override + ", " + overrideMultidraw);
+            TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
+            boolean plain = path != Path.INDIRECT;
+            if (!plain) {
+                if (vanillaCommandLists < 0) throw new IllegalStateException("hook that did not apply: LevelRenderer#brimstone$commands");
+                if (instanceSlice == null) throw new IllegalStateException("hook that did not apply: LevelRenderer#brimstone$instances");
+                if (commandSlice == null) throw new IllegalStateException("no indirect commands this frame");
+                pass.setVertexBuffer(1, instanceSlice);
+            }
+            int maxInterleaved = path == Path.PLAIN_INTERLEAVED
+                ? RenderSystem.getDevice().getDeviceInfo().limits().maxMultiDrawDirectInterleavedDrawCount() : 0;
+            int maxIndirect = Math.max(1, RenderSystem.getDevice().getDeviceInfo().limits().maxDrawIndirectDrawCount());
+            CompiledRenderPipeline current = null;
+            int draws = 0, sectionLayers = 0;
+            for (TRun run : TRUNS) {
+                CompiledRenderPipeline pipeline;
+                if (mode == -1) {
+                    pipeline = TerrainPipelines.wireframe(plain);
+                    if (pipeline == null) continue;
+                } else {
+                    RenderPipeline p = TerrainPipelines.translucent(mode, plain);
+                    if (p == null) throw new IllegalStateException("no translucent pipeline");
+                    pipeline = TerrainPipelines.compiled(p);
+                }
+                if (pipeline != current) {
+                    pass.setPipeline(pipeline);
+                    current = pipeline;
+                }
+                pass.setVertexBuffer(0, run.arena.buffer.slice());
+                pass.setIndexBuffer(run.arena.buffer, run.type);
+                int n = run.n;
+                sectionLayers += n;
+                if (!plain) {
+                    GpuBuffer buffer = commandSlice.buffer();
+                    long base = commandSlice.offset() + (long) run.commandStart * RenderPass.INDIRECT_INDEXED_DRAW_SIZE;
+                    for (int done = 0; done < n; ) {
+                        int m = Math.min(maxIndirect, n - done);
+                        pass.drawIndexedIndirect(buffer.slice(base + (long) done * RenderPass.INDIRECT_INDEXED_DRAW_SIZE,
+                            (long) m * RenderPass.INDIRECT_INDEXED_DRAW_SIZE), m);
+                        done += m;
+                        draws++;
+                    }
+                    continue;
+                }
+                pass.setUniform("BrimRegion", run.ubo);
+                switch (path) {
+                    case PLAIN_SEPARATE -> {
+                        ensureCapacity(n);
+                        counts.clear().put(run.counts, 0, n).flip();
+                        bases.clear().put(run.bases, 0, n).flip();
+                        offsets.clear();
+                        for (int i = 0; i < n; i++) offsets.put(run.offsets[i]);
+                        offsets.flip();
+                        pass.multiDrawIndexed(offsets, counts, bases, n);
+                        draws++;
+                    }
+                    case PLAIN_INTERLEAVED -> {
+                        for (int done = 0; done < n; ) {
+                            int m = Math.min(n - done, maxInterleaved);
+                            ensureCapacity(m);
+                            interleaved.clear();
+                            for (int i = done; i < done + m; i++) {
+                                interleaved.put((int) (run.offsets[i] / run.type.bytes)).put(run.counts[i]).put(run.bases[i]);
+                            }
+                            interleaved.flip();
+                            pass.multiDrawIndexed(interleaved, 1, 0, m);
+                            done += m;
+                            draws++;
+                        }
+                    }
+                    default -> {
+                        for (int i = 0; i < n; i++) {
+                            pass.drawIndexed(run.counts[i], 1, (int) (run.offsets[i] / run.type.bytes), run.bases[i], 0);
+                            draws++;
+                        }
+                    }
+                }
+            }
+            lastPath = path;
+            TerrainStats.drew(draws, sectionLayers);
+            TranslucencyStats.drew(draws);
+            String err = TerrainGpuErrors.since(mark);
+            if (err != null) {
+                prepared = false;
+                Terrain.fail("drawing translucent terrain", new IllegalStateException("GPU error: " + err), false);
+            }
+        } catch (Throwable t) {
+            prepared = false;
+            Terrain.fail("drawing translucent terrain", t, false);
         }
     }
 
@@ -503,10 +772,12 @@ public final class TerrainRenderer {
             MemoryUtil.memFree(counts);
             MemoryUtil.memFree(bases);
             MemoryUtil.memFree(zeroOffsets);
+            MemoryUtil.memFree(offsets);
             MemoryUtil.memFree(interleaved);
             counts = MemoryUtil.memAllocInt(c);
             bases = MemoryUtil.memAllocInt(c);
             zeroOffsets = MemoryUtil.memCallocPointer(c);
+            offsets = MemoryUtil.memCallocPointer(c);
             interleaved = MemoryUtil.memAllocInt(3 * c);
         }
     }

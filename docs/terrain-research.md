@@ -225,6 +225,37 @@ No push constants are used for terrain (no `pushConstants` call on this path).
   re-uploads **only the index buffer** via `addSectionBuffersToUberBuffer(TRANSLUCENT, mesh, null, indices)`, then
   `setTranslucencyPointOfView`. The initial sort happens at compile time, by the camera position at task start.
 
+### 6a. Translucent details for package 3 (fact, from `dump/bytecode3.txt`)
+
+- **Every translucent layer has its own sorted index list.** `SectionCompiler.compile` calls `MeshData.sortQuads` for
+  the TRANSLUCENT layer whenever it has geometry; the quads are sorted by the camera position at compile time
+  (`RenderSection.createVertexSorting(SectionPos, Vec3)` = `VertexSorting.byDistance(cam - sectionMin)` as floats).
+- **The sort:** quad centre = midpoint of the quad's first and third corner (`MeshData.decodeQuadCentroids`, floats
+  in a `CompactVectorArray`); key = squared distance to the camera; `IntArrays.mergeSort` (stable) with the comparator
+  reversed, so far first and equal distances keep the order the quads were built in. `SortState.buildSortedIndexBuffer`
+  writes 6 indices per quad in that order.
+- **Resorting:** `ResortTransparencyTask.doTask` (on vanilla's worker queue) skips unless the mesh's
+  `TranslucencyPointOfView` changed (or is axis-aligned), then builds the new list and hands it to
+  `addSectionBuffersToUberBuffer(TRANSLUCENT, mesh, null, indices)` (vertices `null` = index list only), spinning
+  while that returns false, then sets the mesh's point of view. The bytes are copied into vanilla's staging buffer at
+  once (the task closes its buffer right after) and uploaded in `uploadTerrainBuffersToGpu` at the end of the frame.
+  The index callback with only indices sets the "index uploaded" flag and does not re-check the mesh.
+- **`addSectionBuffersToUberBuffer`** takes vanilla's `copyLock` itself (an injection at HEAD runs before it).
+- **Draw order (`extractSectionDrawGroups` + `prepareChunkRenders*`):** with `sortTranslucent` (Improved Transparency
+  off) a translucent draw only joins the previous group if it is the same (buffers, index type), and both the group
+  list and each group's draws are reversed: translucent is drawn in exactly the reverse of `visibleSections`. Without
+  it (Improved Transparency on) groups are keyed by a hash of (vertex buffer, index buffer, index type) and drawn in
+  order of first appearance; with one translucent heap (128 MiB) that is `visibleSections` order.
+- **Improved Transparency:** `executeOit` calls `ChunkSectionsToRender.renderOit` once per `OitStage` (DEPTH_BOUNDS,
+  TRANSMITTANCE, ACCUMULATE), each in its own pass from `OitRenderPassProvider.createRenderPass`; `renderOit` runs the
+  same `renderLayers` for the TRANSLUCENT group and passes `OIT_TERRAIN.getPipeline(stage)` and
+  `OIT_TERRAIN_MULTIDRAW.getPipeline(stage)` in the slots the wireframe view uses. These pipelines use the game's
+  `core/terrain` shaders with OIT defines; with `OIT_ALPHA_ONLY` (depth bounds, transmittance) the vertex stage skips
+  the lightmap (`vertexColor = Color`) and no `Sampler2` is bound. `GameRenderer.useImprovedTransparency()` = the
+  option and not wireframe. The option is `improvedTransparency` in options.txt (default false).
+- **Classic translucent pipeline:** `TRANSLUCENT_TERRAIN(_MULTIDRAW)` = terrain snippet + `BlendFunction.TRANSLUCENT`
+  + `ALPHA_CUTOUT 0.1`, default depth state.
+
 ## 7. Lighting, AO, tint: all on the CPU at mesh time
 
 - `ModelBlockRenderer(boolean ao, boolean cull, BlockColors)`: `tesselateBlock(BlockQuadOutput, x, y, z,

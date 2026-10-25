@@ -10,7 +10,10 @@
     "FrontendGpuDeviceMixin",
     "FrontendGpuSurfaceMixin",
     "FrontendRenderPassMixin",
-    "TransientMemoryMixin"
+    "TransientMemoryMixin",
+    "SectionRenderDispatcherAccessor",
+    "SectionUberBuffersAccessor",
+    "UberGpuBufferAccessor"
   ],
   "injectors": {
     "defaultRequire": 0

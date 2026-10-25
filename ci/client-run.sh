@@ -1,5 +1,8 @@
 #!/bin/bash
-# One CI client run: SUITE (core | siftec) x RUN (vanilla-a | vanilla-b | vanilla-old | brimstone-full | brimstone-old).
+# One CI client run: SUITE (core | siftec) x RUN (vanilla-a | vanilla-b | vanilla-old | vanilla-vk | brimstone-full |
+# brimstone-old | brimstone-vk | measure-full | measure-old | measure-vk). measure runs load Brimstone with every module
+# off (brimstone.ci.measureOnly): vanilla draws everything and Brimstone's bench measures it, in the same profile as the
+# Brimstone run of the same name (package 3).
 #
 # Starts the suite's server (core: a plain Fabric server with Fabric API, seed 12345, fresh world; siftec: SIFTEC's
 # server and CI world from the siftec-world job), then one dev client per render distance the suite's scenes use,
@@ -20,7 +23,8 @@ loader=$(grep '^loader_version' gradle.properties | sed 's/.*= *//')
 fapi=$(grep '^fabric_version' gradle.properties | sed 's/.*= *//')
 suitefile=src/main/resources/brimstone/scenes/$SUITE.json
 
-case "$RUN" in brimstone-*) brim=1;; *) brim=0;; esac
+case "$RUN" in brimstone-*|measure-*) brim=1;; *) brim=0;; esac
+case "$RUN" in measure-*) measure=1;; *) measure=0;; esac
 case "$RUN" in *-old)
   export MESA_EXTENSION_OVERRIDE="-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage"
   export MESA_GL_VERSION_OVERRIDE=3.3
@@ -30,13 +34,19 @@ esac
 extra_args=""
 client_jvm=""
 case "$RUN" in *-vk) extra_args="--graphicsBackend vulkan"; echo "Vulkan profile: --graphicsBackend vulkan on lavapipe";; esac
-case "$RUN" in brimstone-old) client_jvm="-Dbrimstone.debug.forceIntelMdiIssue=true"; echo "old-GPU Brimstone run: $client_jvm";; esac
+case "$RUN" in brimstone-old|measure-old) client_jvm="-Dbrimstone.debug.forceIntelMdiIssue=true"; echo "old-GPU Brimstone run: $client_jvm";; esac
 # every Brimstone run: the visibility module checks each entity and block entity it hides with rays from the camera
 # (package 2's pop-in check; ci/compare.py fails on any violation). VISIBILITY_DRY_RUN=1 makes it decide and count but hide
 # nothing (used once to sample the new occlusion scene's noise with Brimstone drawing exactly vanilla's set).
-if [ $brim = 1 ]; then
-  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true"
+# every Brimstone run also checks its translucent draws each frame against vanilla's order and latest sort (package 3;
+# ci/compare.py fails on any miss). TRANSLUCENCY_DRY_RUN=1 leaves translucent terrain with vanilla (noise collection only).
+if [ $measure = 1 ]; then
+  client_jvm="$client_jvm -Dbrimstone.ci.measureOnly=true"
+  echo "measure run JVM properties:$client_jvm"
+elif [ $brim = 1 ]; then
+  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true"
   if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
+  if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
   echo "Brimstone run JVM properties:$client_jvm"
 fi
 
@@ -95,21 +105,29 @@ sleep 2
 (glxinfo -B; eglinfo -B 2>/dev/null | head -60; vulkaninfo --summary 2>/dev/null | head -60) > "$OUT/gfx.txt" 2>&1
 echo "op @a" >&3
 
+# one client session per render distance and set of client options (package 3: scenes with "clientOptions", e.g.
+# Improved Transparency, get their own session with those lines in options.txt; the same in every run)
 groups=$(python3 -c "
 import json; s=json.load(open('$suitefile'))
 rd={}
-[rd.setdefault(x.get('renderDistance',8),[]).append(x['id']) for x in s['scenes']]
-print(' '.join(str(k)+':'+','.join(v) for k,v in sorted(rd.items())))")
+for x in s['scenes']:
+    opts=','.join(k+'='+str(v) for k,v in sorted((x.get('clientOptions') or {}).items()))
+    rd.setdefault((x.get('renderDistance',8), opts),[]).append(x['id'])
+print(' '.join(str(k[0])+'|'+(k[1] or '-')+'|'+','.join(v) for k,v in sorted(rd.items())))")
 echo "sessions: $groups"
 n=0
 for g in $groups; do
   n=$((n+1))
-  rd=${g%%:*}; ids=$(echo "${g#*:}" | tr ',' ' ')
+  rd=${g%%|*}; rest=${g#*|}; opts=${rest%%|*}; ids=$(echo "${rest#*|}" | tr ',' ' ')
   # clouds off: their position follows elapsed game time, which differs between runs, so they would only add noise
   # no version line: the file is datafixed from the oldest layout, where key codes are LWJGL2 numbers (22 = U)
   # glDebugVerbosity 1 (the game's default, set explicitly): the GPU's high-severity debug messages, errors among them,
   # go to the log in every run alike; ci/compare.py compares their counts between Brimstone and vanilla
   printf 'pauseOnLostFocus:false\nglDebugVerbosity:1\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nkey_key.use:22\n' "$rd" > run/options.txt
+  if [ "$opts" != "-" ]; then
+    for kv in $(echo "$opts" | tr ',' ' '); do echo "${kv%%=*}:${kv#*=}" >> run/options.txt; done
+    echo "session $n client options: $opts"
+  fi
   rm -f run/logs/latest.log
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)

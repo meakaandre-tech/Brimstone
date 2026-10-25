@@ -1,9 +1,9 @@
 {
   "core": {
-    "flythrough": 5900,
+    "flythrough": 6020,
     "mobs": 600,
-    "nether": 900,
-    "occlusion": 20,
+    "nether": 905,
+    "occlusion": 22,
     "occlusion_move": 10,
     "occlusion_move.bare_open": 110,
     "occlusion_move.bare_x2297": 70,
@@ -14,13 +14,30 @@
     "occlusion_move.open": 10,
     "occlusion_move.x2297": 10,
     "occlusion_move.x2305": 10,
-    "occlusion_move.x2309": 30,
-    "spawn": 18000,
-    "water_glass": 25500
+    "occlusion_move.x2309": 32,
+    "spawn": 18057,
+    "translucent_move": 13,
+    "translucent_move.back": 13,
+    "translucent_move.bare_back": 13,
+    "translucent_move.low": 41,
+    "translucent_move.x2404": 15,
+    "translucent_move.x2414": 13,
+    "translucent_move.x2424": 13,
+    "translucent_move_oit": 12,
+    "translucent_move_oit.back": 12,
+    "translucent_move_oit.bare_back": 15,
+    "translucent_move_oit.low": 40,
+    "translucent_move_oit.x2404": 16,
+    "translucent_move_oit.x2414": 10,
+    "translucent_move_oit.x2424": 15,
+    "water_glass": 25508,
+    "water_glass_oit": 57
   },
   "siftec": {
-    "hub": 12500,
-    "mam": 155100,
-    "sift": 4900
+    "factory": 500,
+    "hologram": 413,
+    "hub": 12506,
+    "mam": 155106,
+    "sift": 100
   }
 }

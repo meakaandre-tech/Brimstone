@@ -30,12 +30,12 @@ public abstract class LevelRendererMixin {
 
     @Inject(method = "prepareChunkRenders", at = @At("HEAD"))
     private void brimstone$preparePlain(Matrix4fc viewRotation, boolean sortTranslucent, CallbackInfoReturnable<ChunkSectionsToRender> cir) {
-        TerrainRenderer.prepare(((LevelRenderer) (Object) this).visibleSections(), optionsRenderState.chunkSectionFadeInTime, false);
+        TerrainRenderer.prepare(((LevelRenderer) (Object) this).visibleSections(), optionsRenderState.chunkSectionFadeInTime, false, sortTranslucent);
     }
 
     @Inject(method = "prepareChunkRendersIndirect", at = @At("HEAD"))
     private void brimstone$prepareIndirect(Matrix4fc viewRotation, boolean sortTranslucent, CallbackInfoReturnable<ChunkSectionsToRender> cir) {
-        TerrainRenderer.prepare(((LevelRenderer) (Object) this).visibleSections(), optionsRenderState.chunkSectionFadeInTime, true);
+        TerrainRenderer.prepare(((LevelRenderer) (Object) this).visibleSections(), optionsRenderState.chunkSectionFadeInTime, true, sortTranslucent);
     }
 
     @WrapOperation(method = "prepareChunkRendersIndirect", at = @At(value = "INVOKE",

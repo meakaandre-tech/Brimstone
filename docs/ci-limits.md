@@ -53,6 +53,26 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | core/occlusion_move.bare_x2309 (package 2) | 40091787069 | 4 | 0.0 | 0.25 |
 | core/occlusion_move.bare_open (package 2) | 40091787069 | 4 | 0.0133 | 0.3 |
 
+Package 3's scenes (`translucent_move` and `translucent_move_oit`, each with six fixed-point shots, and
+`water_glass_oit`) were sampled in the marked collection run 40115084815, with Brimstone's translucency in dry run
+(translucent terrain left with vanilla; solid and cutout still Brimstone's), so all four samples per shot are noise.
+Every sample was at most 0.001%, so the rule's floor applies (0.3). See the table below for the strict gate.
+
+| scene / shot (package 3) | samples (vanilla a/b, full, old-GPU, Vulkan; %) | limit % |
+|---|---|---|
+| core/translucent_move | 0.0001, 0.0001, 0.0001, 0.0002 | 0.3 |
+| core/translucent_move.x2404 / .x2414 / .x2424 | at most 0.0003 | 0.3 |
+| core/translucent_move.low | 0.0004, 0.0004, 0.0004, 0.0009 | 0.3 |
+| core/translucent_move.back / .bare_back | at most 0.0002 | 0.3 |
+| core/translucent_move_oit (all seven shots) | at most 0.001 | 0.3 |
+| core/water_glass_oit | 0.0037, 0.003, 0.0033, 0.0035 | 0.3 |
+| siftec/hologram (run 40123696828; not run on Vulkan) | 0.0027 (vanilla a/b), 0.2629 (full), 0.238 (old-GPU) | 0.55 |
+
+The SIFTEC `hologram` scene (package 3) was sampled in run 40123696828, with only the SIFTEC suite in translucency
+dry run. It is not run in the two Vulkan runs (`ciSkipRuns`): Mesa's lavapipe segfaults as soon as Create's outliner
+draws the hologram, in vanilla's Vulkan run as much as Brimstone's, so its samples and limits cover the other three
+profiles, and its strict gate uses the three other vanilla runs.
+
 The occlusion_move shots (package 2) were sampled in the collection run 40091787069, also in dry run. The happy
 ghast, whose tentacles animate, appears only in the last shot (`ghast`), so its animation adds noise to no other
 shot.
@@ -78,8 +98,9 @@ captures 4 s apart to agree, and parks the mouse for screen scenes. All of it is
 
 The 8/255 threshold above ignores small shifts. The strict check doesn't: per scene and Brimstone profile it counts
 the pixels where **all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly** but the Brimstone run
-differs from its own profile's vanilla run **at all** (threshold 0). Over the limit fails. Like the other limits these
-may only go down, never up.
+differs from its own profile's vanilla run **by more than 2/255 in any channel** (threshold 0 until package 3; see
+"The 16-byte vertex" below). Over the limit fails. Like the other limits these may only go down, never up, except by
+Andre's decisions recorded here.
 
 **Noise samples.** The same count for vanilla against itself: vanilla b against a (and a against b) on the pixels
 where the other three vanilla runs agree, plus the counts of Brimstone builds that hold every vertex exactly
@@ -112,9 +133,65 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/occlusion_move.bare_x2305 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.bare_x2309 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.bare_open (package 2) | 0/0 (run 40091787069) | 69 (dry run) | 110 |
-| SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
+| core/translucent_move (package 3) | 0/1 (run 40115084815) | 2 (dry run) | 10 |
+| core/translucent_move.x2404 / .x2414 / .x2424 (package 3) | at most 3 | at most 3 (dry run) | 10 |
+| core/translucent_move.low (package 3) | 2/4 | 11 (dry run, Vulkan) | 20 |
+| core/translucent_move.back / .bare_back (package 3) | at most 3 | at most 4 (dry run) | 10 |
+| core/translucent_move_oit, .x2404, .x2414, .x2424, .back, .bare_back (package 3) | at most 6 | at most 5 (dry run) | 10 |
+| core/translucent_move_oit.low (package 3) | 7/4 | 7 (dry run) | 20 |
+| core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
+| SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
+| SIFTEC/factory (strict limit from 2026-10-25) | 0/0 in most runs; **315/0** (run 40156711337 attempt 2: a vanilla-only flip, see below) | 2 (dry run); real runs 0 or 313-315 | 500 (100 from the first, single-run collection) |
+| SIFTEC/map | 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190) | 3168 (dry run) | **not gated** (`ciNoStrict`, see below) |
+| SIFTEC/sift | with the Sift particle pin, threshold >2/255: 0/0, 0/0, 0/0 (runs 40185974374, 40187878826, 40189806229); before: 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 (threshold 0) | 55-61 (16-byte vertex: the rounding extra, not noise) | 100 (4900 before the pin) |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
+
+Package 3's shots use package 2's finer rule (largest sample x 1.5, rounded up to 10 pixels, at least 10). The
+smallest translucent element tested there, the single ice block in front of the stained-glass stripes, covers
+8,148-8,157 pixels on screen in every vanilla run (3,429-3,433 differ by more than 8/255), measured between the
+`back` and `bare_back` shots (the same view without that block): far above the strict limit of 10. Every other
+element (the stripes, the tank, the panes, the ice inside the water) is larger.
+
+The hologram scene was an exception until 2026-10-25: Create's outliner drew the Build Gun hologram in one of two
+brightness states (the far edges 3.6% darker or not), so its first strict limit (21,840) was larger than the whole
+outline (about 14,500 pixels) and the strict gate could not see a wrong outline. Probe runs (40135570271,
+40138168127) found the cause: the game's outline feature phase groups submits into batches by render type in a map
+whose order follows identity hash codes, so from one game start to the next the outliner's translucent checkered
+faces were drawn before or after its solid edges; when the edges came first, the far edges (seen through the faces)
+were blended under them. The outliner's own state (colour, light, alpha, pose, normals) and the lightmap's inputs were
+identical in both states. Since then the CI pin mod (`FeatureBatchOrderMixin`) keeps those batches in the order they
+were first submitted, in every client run, vanilla and Brimstone alike: all vanilla runs now draw the outline the
+same way (they agree on 100% of the hologram frame), and the strict limit was re-collected by the rule above in a
+SIFTEC noise collection run (40139105024): vanilla b/a 7/4, Brimstone dry run 15 (full) and 18 (old-GPU), so
+18 x 1.5 = 27, rounded up to 30. That came from one shot per run and was too few samples: vanilla's own water
+changes by 15-27 pixels from one shot to the next in the same run, and SIFTEC's minimap differs between runs. So the
+limit was re-collected (with Andre's OK, 2026-10-25) over eleven shots of the scene per run, 0.5 s plus a steady-shot
+wait apart, in run 40155387068 (dry run): vanilla b/a 221-234 and 9-22 (the 234 is mostly the minimap's tiles plus
+scattered water pixels), Brimstone dry run up to 63 (full) and 24 (old-GPU): 234 x 1.5 = 351, rounded up to 10:
+**360**. The outline covers about 14,500 pixels, about 3,900 of them over Brimstone's water.
+
+The crosshair outline: the outline the game draws around the block under the crosshair moved by one pixel row from
+one frame to the next in the old-GPU profile (GL 3.3), in vanilla's own runs too (run 40152673881: 2 of 11 hologram
+shots in vanilla's old-GPU run, 5 of 11 in Brimstone's, with the same draws and the same target block in every frame),
+so the shot decided about 100-230 pixels along the hologram's bottom edge. Since 2026-10-25 the CI pin mod
+(`BlockOutlineMixin`) leaves that outline out of every client run, vanilla and Brimstone alike (with it, all eleven
+shots in every profile agreed there, run 40154022133). **The block outline is therefore untested in CI**; package 6
+or 7 must add a scene that checks it with the outline drawn.
+
+The SIFTEC factory and map scenes run again since SIFTEC's latest release carries its selftest jar (2026-10-25); they
+had no strict limits (skipped since package 1). Factory's first limit (100, run 40155387068 alone) was under-sampled: in about one run in
+four, a yellow-and-black striped part of one Create machine in the factory is in another phase (its angle or
+texture follows time), in vanilla's runs too (vanilla b against a: 315 pixels in run 40156711337 attempt 2;
+Brimstone 313-315 in runs 40162905190 and 40166776073). By the rule, 315 x 1.5 = 472.5, rounded up to 100: **500**
+(Andre's OK, 2026-10-25). Package 5 (Flywheel and Create) makes that animation repeatable in CI, vanilla and Brimstone
+alike, then re-collects and lowers this limit. The map's first limit (13,100, one run) was under-sampled: vanilla runs differ from each
+other there by up to 22,532 pixels, because SIFTEC's map shows whichever tiles it has scanned by the time it opens.
+Two attempts to make it steady from the client side (Andre's time box) did not: waiting until two captures 5 s apart
+were identical (run 40161774743: every run steady at once, vanilla runs still 37-44k pixels apart) and standing 60 s
+in the area before opening (run 40162905190: 35-58k apart). So, as Andre decided (fallback (b)), the map has **no
+strict gate** (`"ciNoStrict"` on the scene; compare.py reports its counts); its 8/255 limit (11.35%) stays.
+**Package 7 (GUI) must give the map real strict coverage.**
 
 Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
 fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
@@ -133,6 +210,78 @@ Brimstone run caught another. Water is still drawn by vanilla, so this was noise
 was pinned. The strict limits set before this pin stay as they are (they now have more room). Package 8 (animated
 textures only when seen) needs its own check with animation running.
 
+### The 16-byte vertex: strict threshold 2/255 and new limits (decided by Andre, 2026-10-25)
+
+Package 3 moved every terrain layer to one 16-byte vertex: positions off the 1/2048-block grid and UVs off the
+1/65536 grid are rounded (largest error 0.000245 block and 1.45e-5 UV, at most 0.06 px on a 1280x720 screen; on-grid
+vertices are bit-identical, shader harness). The rounding moves interpolated colours by 1-2/255 on rounded geometry
+(water surfaces above all): at threshold 0 that added up to about 2,700 strict pixels in water_glass and 4,500 in
+the hologram scene, almost all off by exactly 1/255, nothing visible (vanilla next to Brimstone at 4x, plant-heavy
+and water-edge views, sent to Andre). **Andre's decision:** the strict gate counts a pixel only when it differs by
+more than 2/255 in any channel, still only where every vanilla run agrees exactly; each scene's extra under that
+threshold is measured, and **new strict limit = old limit + 1.5 x the extra**. The 8/255 gate is unchanged. The count
+at any difference is still reported next to the gated one.
+
+How the extra was measured: per scene and profile, the strict count (>2/255) in the five runs of the exact 28/16-byte
+build before the switch (`a9444ac` 40164365265, `2e3f85f` 40166776073, `99fe3bd` 40167492584, `5298f1d`
+40168745352, `998a7a0` 40169188320) and in the five runs with the 16-byte vertex (`1dd6880` 40170948997, `49fec37`
+40172887031, `629f023` 40177279502, `9a3d411` 40180107484 attempts 1 and 2); extra = median after - median before,
+the largest over the profiles. The median, not the largest single run, because single runs on both sides carry
+run-wide noise events that vanilla shows too (spawn in run 40180107484 attempt 1: 2,228-2,309 in all three Brimstone
+profiles at once, where vanilla b against a reached 1,350-1,582 in other runs; hub: vanilla b against a up to 9,812):
+the largest-run method would have raised spawn by 2,834 and hub by 1,638 on noise alone. Every one of the ten runs
+passes the new limits. (The agent chose the median while Andre was away; recorded at the top of docs/progress.md.)
+
+| scene | old limit | extra (median after - before) | largest single run after | new limit |
+|---|---|---|---|---|
+| core/flythrough | 5900 | 80 (vulkan: 18 before, 98 after) | 115 | **6020** |
+| core/mobs | 600 | -31 (old-gpu: 94 before, 63 after) | 317 | **600** |
+| core/nether | 900 | 3 (vulkan: 0 before, 3 after) | 164 | **905** |
+| core/occlusion | 20 | 1 (vulkan: 0 before, 1 after) | 1 | **22** |
+| core/occlusion_move | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.bare_open | 110 | 0 (vulkan: 0 before, 0 after) | 0 | **110** |
+| core/occlusion_move.bare_x2297 | 70 | 0 (vulkan: 0 before, 0 after) | 0 | **70** |
+| core/occlusion_move.bare_x2300 | 90 | 0 (vulkan: 0 before, 0 after) | 0 | **90** |
+| core/occlusion_move.bare_x2305 | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.bare_x2309 | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.closed | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.open | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.x2297 | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.x2305 | 10 | 0 (vulkan: 0 before, 0 after) | 0 | **10** |
+| core/occlusion_move.x2309 | 30 | 1 (old-gpu: 0 before, 1 after) | 21 | **32** |
+| core/spawn | 18000 | 38 (vulkan: 278 before, 316 after) | 2309 | **18057** |
+| core/translucent_move | 10 | 2 (vulkan: 0 before, 2 after) | 3 | **13** |
+| core/translucent_move.back | 10 | 2 (old-gpu: 1 before, 3 after) | 4 | **13** |
+| core/translucent_move.bare_back | 10 | 2 (vulkan: 1 before, 3 after) | 3 | **13** |
+| core/translucent_move.low | 20 | 14 (old-gpu: 3 before, 17 after) | 20 | **41** |
+| core/translucent_move.x2404 | 10 | 3 (vulkan: 1 before, 4 after) | 7 | **15** |
+| core/translucent_move.x2414 | 10 | 2 (vulkan: 1 before, 3 after) | 7 | **13** |
+| core/translucent_move.x2424 | 10 | 2 (old-gpu: 0 before, 2 after) | 4 | **13** |
+| core/translucent_move_oit | 10 | 1 (vulkan: 1 before, 2 after) | 3 | **12** |
+| core/translucent_move_oit.back | 10 | 1 (old-gpu: 0 before, 1 after) | 5 | **12** |
+| core/translucent_move_oit.bare_back | 10 | 3 (old-gpu: 0 before, 3 after) | 5 | **15** |
+| core/translucent_move_oit.low | 20 | 13 (vulkan: 3 before, 16 after) | 17 | **40** |
+| core/translucent_move_oit.x2404 | 10 | 4 (vulkan: 1 before, 5 after) | 6 | **16** |
+| core/translucent_move_oit.x2414 | 10 | 0 (old-gpu: 2 before, 2 after) | 3 | **10** |
+| core/translucent_move_oit.x2424 | 10 | 3 (old-gpu: 0 before, 3 after) | 4 | **15** |
+| core/water_glass | 25500 | 5 (vulkan: 14 before, 19 after) | 33 | **25508** |
+| core/water_glass_oit | 40 | 11 (old-gpu: 11 before, 22 after) | 27 | **57** |
+| siftec/factory | 500 | 0 (vulkan: 0 before, 0 after) | 247 | **500** |
+| siftec/hologram | 360 | 35 (old-gpu: 15 before, 50 after) | 244 | **413** |
+| siftec/hub | 12500 | 4 (vulkan: 24 before, 28 after) | 1518 | **12506** |
+| siftec/mam | 155100 | 4 (vulkan: 24 before, 28 after) | 575 | **155106** |
+
+Scenes not listed kept their limits (extra 0 or below: mobs, factory, every `occlusion_move` shot but `x2309`,
+`translucent_move_oit.x2414`). The map stays ungated (`ciNoStrict`).
+
+**sift** (re-collected, Andre's decision): its strict noise was the Sift dimension's floating note particles
+(`the_sift:sift_note`, random places in every run, vanilla's too); mob spawning off plus sending the mobs away did not
+remove them, the CI pin mod's `SiftParticlesMixin` (no particles in the Sift dimension, every client run) did. Samples
+under >2/255 with the pin, runs 40185974374, 40187878826 and 40189806229: vanilla b/a 0/0 in each and the measure
+runs 0, so vanilla's noise is 0; Brimstone 55 / 55 / 61 (full / old-GPU / Vulkan) in each, the 16-byte vertex's
+rounding (decision 3's extra). Limit = noise + 1.5 x that extra = 91.5, rounded up to 100 pixels as for the other
+SIFTEC scenes: **100** (was 4,900). Samples in `ci/pixel-noise-samples.json`.
+
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 
 From the bench in each Brimstone run (20 s per scene in CI). **Draw calls**: per-frame average (frames that line up
@@ -142,8 +291,8 @@ runs). **Memory**: heap used after a GC at the end of the bench, and java.nio di
 
 **Baseline = the highest value across the clean runs listed.** CI fails when a count goes over **baseline x 1.10
 plus a step allowance**: 2 draw calls, 1 upload, 16 KiB, 16 MB heap, 4 MB direct (direct buffers grow in 2 MB steps
-and land on either side between runs). The fly-through is gated on memory only: its uploads and draw calls depend on
-how fast CI's server generates the new terrain. The Vulkan baselines come from two runs; the core spawn scene's limit and baselines from one run (its camera moved to a fixed height in the last package-0 run).
+and land on either side between runs). Against these committed baselines the fly-through is gated on memory only (its draw calls are gated against vanilla in the same run since package 3, see "Against vanilla in the same run"): its uploads and draw calls depend on
+how fast CI's server generates the new terrain. The Vulkan count baselines come from two runs; the core spawn scene's limit and baselines from one run (its camera moved to a fixed height in the last package-0 run).
 
 | suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB | runs |
 |---|---|---|---|---|---|---|---|
@@ -181,11 +330,157 @@ how fast CI's server generates the new terrain. The Vulkan baselines come from t
 The occlusion scene's baselines (package 2) come from one run with Brimstone's visibility module in dry run, i.e. with
 Brimstone drawing exactly vanilla's entities and block entities.
 
+Package 3's scenes (`translucent_move`, `water_glass_oit`, `translucent_move_oit`) got their baselines from the
+collection run 40115084815, with Brimstone's translucency in dry run (vanilla drawing all translucent terrain, as
+before package 3). Against these baselines `translucent_move` and `translucent_move_oit` are gated on memory only (`ciGatedCounts`; their draw calls are gated against vanilla in the same run): the
+moving camera makes vanilla sort again and upload new index lists at times that depend on the runner's speed.
+
+| suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
+|---|---|---|---|---|---|---|
+| core-full | translucent_move (memory gated only) | 122.86 | 15 | 10108 | 267.48 | 5.48 |
+| core-full | water_glass_oit | 131.0 | 15 | 14688 | 245.02 | 3.73 |
+| core-full | translucent_move_oit (memory gated only) | 131.0 | 15 | 10108 | 247.19 | 3.73 |
+| core-old-gpu | translucent_move (memory gated only) | 141.14 | 14 | 3060 | 268.19 | 3.73 |
+| core-old-gpu | water_glass_oit | 154.0 | 14 | 7604 | 245.78 | 3.73 |
+| core-old-gpu | translucent_move_oit (memory gated only) | 161.0 | 14 | 2948 | 248.15 | 3.73 |
+| core-vulkan | translucent_move (memory gated only) | 126.0 | 15 | 10220 | 268.35 | 5.46 |
+| core-vulkan | water_glass_oit | 131.0 | 15 | 15024 | 245.99 | 3.46 |
+| core-vulkan | translucent_move_oit (memory gated only) | 131.0 | 15 | 10332 | 248.38 | 3.46 |
+| siftec-full | hologram (draw calls: **median**, see below; direct MB: see "SIFTEC scenes on SIFTEC's 2026-10-25 release"; the rest run 40123696828, SIFTEC dry run) | 165 | 24 | 70368 | 453.57 | 8.24 |
+| siftec-old-gpu | hologram (draw calls: **median**, see below; direct MB: see "SIFTEC scenes on SIFTEC's 2026-10-25 release"; the rest run 40123696828, SIFTEC dry run) | 166 | 23 | 70624 | 452.39 | 6.31 |
+
+### Hologram draw calls: gated on the median (decided by Andre, 2026-10-25)
+
+The hologram scene runs below CI's 30 fps cap on slower runners, and its per-frame draw-call *average* follows the
+frame rate (frames that line up with a game tick draw more): about 119 at 30 fps, 142-148 at 22-24 fps, while
+Brimstone's own draws are the same in every run. Per the design doc (Testing, "Counts that follow the runner's
+speed"), this scene alone is gated on the per-frame **median** (`"ciDrawCallGate": "median"` in `siftec.json`), in
+every profile it runs in (full and old-GPU; not run on Vulkan). Baseline = the highest clean median from package 3's
+runs on `4cb5419`, `6d48fc7` and later. Every other scene and every other count is gated as before.
+
+| run | commit | full: median (avg) | old-GPU: median (avg) | clean? |
+|---|---|---|---|---|
+| 40123696828 | `4cb5419` | 166 (119.16) | 170 (155.07) | no: translucency and visibility dry run (Brimstone drew vanilla's set, vanilla drew the translucent terrain) |
+| 40126212181 | `6d48fc7` | 166 (118.92) | 167 (124.18) | yes (green) |
+| 40128444322 | `0db931b` | 166 (144.24) | 167 (148.72) | yes (failed only on this average) |
+| 40130610610 | `13f56fb` | 166 (142.45) | 167 (146.9) | yes (failed only on this average) |
+
+Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2), then **165 / 166** since the crosshair outline pin: it removed exactly one draw per frame from this scene (median 174 to 173 on full, 175 to 174 on old-GPU between runs 40152673881 and 40154022133), so the baselines went down by that draw, as after the texture-animation pin. The dry run's 170 is left out: in a dry run Brimstone isn't
+drawing the translucent terrain itself, so its count is not Brimstone's.
+
+### SIFTEC scenes on SIFTEC's 2026-10-25 release (factory and map back, sift uploads, hologram direct buffers)
+
+Baselines from the three runs of commit `41c9e44` (run 40156711337, attempts 1-3; a run counts as clean for a scene
+when that scene passed every check in it, Andre 2026-10-25):
+
+- **`sift` upload bytes re-baselined** (Andre's rule: vanilla jumps the same way, so it is the pack). The per-frame
+  median moves in about 12.9 KB steps (30k, 43k, 56k, 69k, 82k) and since SIFTEC's latest releases reaches 81,788 in
+  some runs (over the old gate, about 77.7k). Vanilla's own counts in the same runs (branch-only jobs that ran the
+  factory and sift scenes with every Brimstone module off, so the bench measured vanilla): vanilla a / b / old-GPU /
+  Vulkan = 43,120 / 68,936 / 47,504 / 55,980, then 43,120 / 55,972 / 34,316 / 55,764, then 55,980 / 56,304 / 60,252 /
+  43,128. Brimstone in the same runs: full 68,940 / 43,128 / 68,940, old-GPU 43,264 / 43,376 / 43,376, Vulkan
+  55,980 / 56,084 / 43,232. New baselines: full **68,940** (was 55,764), old-GPU **43,376** (was 73,228: down),
+  Vulkan **56,084** (was 55,980). Then, Andre's one-off exception to "highest clean value" (2026-10-25, other scenes
+  keep the rule): the upload breakdown by kind shows every byte of the jump is in MAP_WRITE (writes into mapped GPU
+  buffers) in vanilla and Brimstone alike; WRITE_TEXTURE is 0 everywhere, WRITE_BUFFER is constant (4,016 B/frame on
+  full and Vulkan, 112 on old-GPU), always 3 + 16 uploads per frame (2 + ~15 on old-GPU). So the `sift` baseline is the
+  highest value seen in any run, vanilla or Brimstone, **81,788** on every profile (gate as usual: x1.10 + 16 KiB).
+
+  | run | vanilla a | vanilla b | vanilla old | vanilla vk | Brimstone full | Brimstone old | Brimstone vk |
+  |---|---|---|---|---|---|---|---|
+  | 40156711337 #1 | 43,120 (39,125) | 68,936 (64,928) | 47,504 (47,359) | 55,980 (54,012) | 68,940 (66,584) | 43,264 (44,452) | 55,980 (54,217) |
+  | #2 | 43,120 (41,420) | 55,972 (51,423) | 34,316 (34,236) | 55,764 (51,497) | 43,128 (44,802) | 43,376 (43,256) | 56,084 (52,072) |
+  | #3 | 55,980 (49,537) | 56,304 (56,785) | 60,252 (59,115) | 43,128 (38,981) | 68,940 (64,885) | 43,376 (43,246) | 43,232 (47,485) |
+  | 40154022133 | - | - | - | - | 55,872 (51,858) | 30,860 (33,856) | 81,788 (77,935) |
+
+  Upload bytes per frame, median; in brackets the MAP_WRITE part (a per-frame average, so it doesn't add up exactly
+  to the median). Vanilla's factory uploads matched Brimstone's too (6,284-6,488 on full, 49,444-49,604
+  old-GPU, 51,036-51,056 Vulkan).
+- **`hologram` direct buffers re-baselined** (Andre's OK): full **8.24** (was 4.24), old-GPU **6.31** (was 3.73, one
+  dry-run sample from when factory and map were skipped). The map scene now runs just before the hologram in the same
+  client session, and the JVM's direct pool grows to 8.24 MB there and keeps that size (attempt 1, full: mam 7.73, map
+  8.24, hologram 8.24; attempt 2, old-GPU the same). Old-GPU's value comes from attempts 1 and 3 (6.06, 6.31): attempt 2
+  failed this very check (8.24 against the old 3.73), so it was not clean for the hologram (review finding, 2026-10-25);
+  its 8.24 is within the new gate (6.31 x 1.10 + 4 = 10.94). Brimstone allocates no java.nio direct buffers at all, and a
+  15-minute hologram bench showed no growth (docs/progress.md, package 3).
+- **`factory` and `map` count baselines** (they had none, so their counts were not gated): from the same runs (map
+  from attempts 1 and 3; attempt 2 failed the map's then strict limit).
+
+| suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
+|---|---|---|---|---|---|---|
+| siftec-full | factory | 111.52 | 14 | 6488 | 421.74 | 5.48 |
+| siftec-full | map | 177.0 | 14 | 47032 | 504.13 | 8.24 |
+| siftec-old-gpu | factory | 119.43 | 13 | 48604 | 421.54 | 5.48 |
+| siftec-old-gpu | map | 225.0 | 12 | 31404 | 506.16 | 6.31 |
+| siftec-vulkan | factory | 111.25 | 15 | 51148 | 420.23 | 3.71 |
+| siftec-vulkan | map | 177.0 | 14 | 47072 | 504.09 | 8.23 |
+
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
 
 Meshing time per section is measured since package 1 (the bench's `meshing` block: vanilla's mesher plus Brimstone's
 transcode, sections meshed while measuring) and shown in CI's report; it is not gated (it follows CI's CPU load).
+
+### Against vanilla in the same run: draw calls and terrain GPU memory (package 3, decided by Andre, 2026-10-25)
+
+**Measure runs.** Every CI run has three more client runs per suite, `measure-full`, `measure-old` and `measure-vk`:
+Brimstone loaded with every module off (`-Dbrimstone.ci.measureOnly=true`), in the profile of the Brimstone run of the
+same name, so Brimstone's bench measures vanilla's own counts under the same pins and runner. They must look like
+vanilla: their screenshots go through the same 8/255 and strict limits against vanilla's runs as Brimstone's runs
+(compare.py's "Measure runs" table); run 40180107484 attempt 2: every measure run inside every limit. CI also
+checks that a measure run really is vanilla: both modules' "measureOnly is set" log lines and no "on" line, every
+bench with terrain off ("measure only (CI)") and visibility off, no Brimstone arena and no layer taken, and the same
+profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag).
+
+**Draw calls.** In every scene, Brimstone's draw calls per frame against the measure run of its profile, on the
+per-frame average **and** the median: the translucent scenes (`ci/vanilla-draw-calls.json`: water_glass,
+translucent_move, water_glass_oit, translucent_move_oit, flythrough; SIFTEC hologram) at most vanilla's, the others at
+most vanilla's x 1.10 + 2 (the count gate's allowance). These sit next to the committed count baselines, which stay.
+Exceptions, each by Andre's rule:
+- `siftec/hologram`: median only (decided earlier, see above).
+- `siftec/sift`: median only, because its average follows the runner's frame rate (below 20 fps every frame lines up
+  with a game tick and draws the tick's extra draws). Run 40180107484 attempt 1, full: Brimstone 154.0 average / 154
+  median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps; Vulkan 153.97 / 154 at 15.8 fps against
+  153.94 / 154 at 12.37 fps. (`"ciVanillaDrawGate": "median"` on the scene, with this reason.)
+- `core/water_glass`, `water_glass_oit`, `nether`, `translucent_move`, `mobs`: median only, by the same rule. Each
+  failed only on the average, in the Vulkan profile (lavapipe runs near 20 fps), where the Brimstone run and the
+  measure run ran at different speeds, with equal medians: water_glass 124.0 / 124 at 18.57 fps against 103.78 / 124
+  at 24.15 fps; water_glass_oit 129.01 / 129 at 9.86 fps against 129.0 / 129 at 13.46 fps; nether 120.73 / 121 at
+  18.93 fps against 102.5 / 121 at 23.63 fps (all three run 40180107484 attempt 2); translucent_move 124.0 / 124 at
+  15.57 fps against 123.4 / 124 at 19.28 fps; mobs 134.0 / 134 at 18.81 fps against 115.65 / 134 at 23.72 fps (both
+  run 40193520268, and attempt 2 above). The reasons are on the scenes. Gated on both average and median: spawn,
+  flythrough, occlusion, occlusion_move, translucent_move_oit, factory, hub, mam, map.
+- `core/flythrough`: vanilla + 2 on full and Vulkan (old-GPU stays at vanilla), Andre's rule for a fly-through excess of 2 draws per frame or fewer. Run
+  40180107484 attempt 1, Vulkan: average 123.11 against vanilla's 123.05 (medians 123 and 123; full 123.07 against
+  123.07). Brimstone's terrain draws there are exactly vanilla's 3 indirect draws (solid, cutout, translucent: one
+  arena each); the 0.06 is in the other draws (`single` 120.11 against 120.05), which depend on what the server has
+  generated as the camera flies. (`"allowance"` in `ci/vanilla-draw-calls.json`.)
+
+Before arenas per layer, the fly-through drew 136-139 against vanilla's 123 on full and Vulkan: translucent runs broke
+at every change between two shared arenas (run 40172887031: 12-15 breaks per frame, none from index types after
+`49fec37` widened 16-bit index lists to 32 bits). With arenas per layer (`629f023`) there are no arena breaks.
+
+**Terrain GPU memory.** The bench reports terrain GPU memory reserved (buffers made) and used: vanilla's own heaps (its
+section dispatcher's vertex and index buffers per layer: heaps x heap size, 128 MiB vertex heaps and 32 MiB index
+heaps, made on first use) and Brimstone's arenas (each starts at 4 MiB and doubles up to 64 MiB, per layer). CI fails
+when a Brimstone run reserves more than vanilla's measure run of the same profile, in any scene. Run 40180107484
+attempt 1, full profile (MB reserved / used):
+
+| scene | Brimstone | vanilla |
+|---|---|---|
+| spawn | 36 / 21.8 | 416 / 38.0 |
+| flythrough | 112 / 87.1 | 416 / 144.1 |
+| water_glass | 36 / 12.7 | 416 / 21.7 |
+| nether | 20 / 15.2 | 256 / 26.5 |
+| mobs | 16 / 9.7 | 256 / 16.9 |
+| translucent_move | 28 / 13.2 | 416 / 23.0 |
+| SIFTEC factory | 28 / 1.4 | 256 / 2.6 |
+| SIFTEC sift | 16 / 7.4 | 416 / 12.9 |
+| SIFTEC map | 56 / 31.6 | 416 / 60.2 |
+| SIFTEC hologram | 56 / 0.24 | 288 / 0.39 |
+
+A grown arena keeps its size until it empties (the hologram's 56-72 MB were grown in the map scene before it): a known
+limit, for package 9.
 
 ## Counter audit
 

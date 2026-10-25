@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.probe.Capabilities;
 import com.meakaandre.brimstone.terrain.TerrainStats;
+import com.meakaandre.brimstone.terrain.TranslucencyStats;
 import com.meakaandre.brimstone.visibility.VisibilityStats;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.lang.management.BufferPoolMXBean;
@@ -90,6 +91,8 @@ final class BenchReport {
         out.add("meshing", TerrainStats.meshingJson());
         out.add("terrain", TerrainStats.terrainJson(n));
         out.add("visibility", VisibilityStats.json());
+        out.add("translucency", TranslucencyStats.json());
+        out.add("terrainGpu", TerrainGpuMemory.json());
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
         CounterAudit.missing().forEach(missing::add);
@@ -159,6 +162,10 @@ final class BenchReport {
             + ", committed " + mem.get("heapCommittedMB") + ", max allowed " + mem.get("heapMaxMB"));
         line(b, "off-heap MB", "direct buffers " + mem.get("directBuffersMB") + " (" + mem.get("directBuffersCount") + "), mapped "
             + mem.get("mappedBuffersMB") + ", non-heap " + mem.get("nonHeapMB"));
+        JsonObject tg = o.getAsJsonObject("terrainGpu");
+        line(b, "terrain GPU MB", "reserved " + tg.get("reservedMB") + ", used " + tg.get("usedMB") + " (vanilla's heaps "
+            + tg.get("vanillaHeapsReservedMB") + " / " + tg.get("vanillaHeapsUsedMB") + ", Brimstone's arenas " + tg.get("brimstoneArenasReservedMB")
+            + " / " + tg.get("brimstoneArenasUsedMB") + ")");
         line(b, "capabilities", caps == null ? "not probed" : caps.describe());
         line(b, "display", disp.get("width") + "x" + disp.get("height") + ", render distance " + disp.get("renderDistance")
             + " (effective " + disp.get("effectiveRenderDistance") + "), max fps " + disp.get("maxFps") + ", vsync " + disp.get("vsync"));
@@ -167,12 +174,13 @@ final class BenchReport {
         line(b, "meshing", mesh.get("sections") + " sections, ms per section avg " + mesh.get("msPerSection") + " (vanilla mesher avg "
             + mesh.get("compileMsAvg") + ", p95 " + mesh.get("compileMsP95") + "; transcode per layer " + mesh.get("transcodeMsPerLayer") + ")");
         line(b, "terrain", ter.get("state").getAsString() + " (" + ter.get("reason").getAsString() + "), fallbacks " + ter.get("fallbacks")
-            + ", " + ter.get("vertexBytes") + "/" + ter.get("wideVertexBytes") + "-byte vertices (vanilla " + ter.get("vanillaVertexBytes")
-            + "; " + ter.get("widePct") + "% wide, " + ter.get("bytesPerVertex") + " bytes per vertex on average), path " + ter.get("lastDrawPath").getAsString()
+            + ", " + ter.get("vertexBytes") + "-byte vertices (vanilla " + ter.get("vanillaVertexBytes")
+            + "; " + ter.get("positionRoundedPct") + "% with a position rounded to the grid), path " + ter.get("lastDrawPath").getAsString()
             + ", draws/frame " + ter.get("drawCallsPerFrame") + " for " + ter.get("sectionLayersPerFrame") + " section layers, " + ter.get("regions")
             + " regions in " + ter.get("arenas") + " arenas (" + ter.get("usedMB") + " of " + ter.get("arenaMB") + " MB used; vanilla's format would need "
             + ter.get("vanillaEquivalentMB") + " MB), layers taken " + ter.get("layersTaken") + ", kept by vanilla " + ter.get("layersKeptByVanilla"));
         line(b, "visibility", VisibilityStats.line(o.getAsJsonObject("visibility")));
+        line(b, "translucency", TranslucencyStats.line(o.getAsJsonObject("translucency")));
         JsonObject cnt = o.getAsJsonObject("counters");
         line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")
             + ", not loaded (backend not in use) " + cnt.get("notLoaded"));
