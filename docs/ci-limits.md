@@ -143,7 +143,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
 | SIFTEC/factory (strict limit from 2026-10-25) | 0/0 in most runs; **315/0** (run 40156711337 attempt 2: a vanilla-only flip, see below) | 2 (dry run); real runs 0 or 313-315 | 500 (100 from the first, single-run collection) |
 | SIFTEC/map | 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190) | 3168 (dry run) | **not gated** (`ciNoStrict`, see below) |
-| SIFTEC/sift | 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 | 2099 | 4900 |
+| SIFTEC/sift | with the Sift particle pin, threshold >2/255: 0/0, 0/0, 0/0 (runs 40185974374, 40187878826, 40189806229); before: 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 (threshold 0) | 61 | 100 (4900 before the pin) |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
 
@@ -272,7 +272,14 @@ passes the new limits. (The agent chose the median while Andre was away; recorde
 | siftec/mam | 155100 | 4 (vulkan: 24 before, 28 after) | 575 | **155106** |
 
 Scenes not listed kept their limits (extra 0 or below: mobs, factory, every `occlusion_move` shot but `x2309`,
-`translucent_move_oit.x2414`). The map stays ungated (`ciNoStrict`). **sift**: see below.
+`translucent_move_oit.x2414`). The map stays ungated (`ciNoStrict`).
+
+**sift** (re-collected, Andre's decision): its strict noise was the Sift dimension's floating note particles
+(`the_sift:sift_note`, random places in every run, vanilla's too); mob spawning off plus sending the mobs away did not
+remove them, the CI pin mod's `SiftParticlesMixin` (no particles in the Sift dimension, every client run) did. Samples
+under >2/255 with the pin, runs 40185974374, 40187878826 and 40189806229: vanilla b/a 0/0 in each; Brimstone 55 / 55 /
+61 (full / old-GPU / Vulkan) in each; measure runs 0. By the rule (largest sample x 1.5, rounded up to 100 pixels):
+61 x 1.5 = 91.5, **100** (was 4,900).
 
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 

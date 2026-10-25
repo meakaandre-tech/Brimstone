@@ -2,40 +2,37 @@
 
 ## Where things stand
 
-**STOPPED (2026-10-25) at package 3, on a decision only Andre can make.** Package 3 (translucency) is built on branch
-`package-3` and its last code commit (`6d48fc7`) is green in every profile and both suites
-(https://github.com/meakaandre-tech/Brimstone/actions/runs/40126212181). But the runs after it (docs only, same code)
-fail one count: the new SIFTEC `hologram` scene's draw calls on the full profile (about 142-144 against a 119
-baseline that came from one sample at 30 fps; the scene's average follows the runner's frame rate, Brimstone's own
-draws are constant). Getting it green means either raising that baseline (from more clean runs it would be about
-155), gating this scene on the median, or reporting its draw calls only: each raises a number or changes a check,
-which the rules forbid doing to get green, and the agent's attempt to make it reported-only was blocked by the
-permission system as a CI bypass. So package 3 is not merged and package 4 is not started. Details, the options and
-an independent review of package 3 are in `docs/progress.md` on branch `package-3` (Package 3 section).
+**For Andre (2026-10-26):** package 3 merged as MERGE_SHA (main CI MAIN_RUN, `latest` rebuilt). PACKAGE4_STATUS
 
-- **Done and merged:** packages 0 (repo, CI, bench harness), 1 (terrain meshing and region buffers) and 2
-  (visibility). After the package 2 merge, main's CI failed on water-animation noise (not Brimstone); a CI
-  determinism fix (`ced21b3`) pinned texture animation in every run, lowered the draw-call baselines by exactly the
-  effect of that pin, and made scenes clear areas without killing entities. Main is green
-  (https://github.com/meakaandre-tech/Brimstone/actions/runs/40108769128) and the `latest` release is built from it.
-- **Decide first:** the package 3 hologram draw-call gate (see above), then merge package 3 or tell the next chat how.
-- **Pending on Andre:**
-  - SIFTEC's `latest` release no longer carries SIFTEC's test commands (they moved to its CI-only `siftec_selftest`
-    mod), so the SIFTEC factory and map scenes are skipped. Attaching `siftec-selftest-26.3.jar` to SIFTEC's
-    `latest` release brings them back; Brimstone's CI already fetches it from there.
-  - Laptop benches: package 0's vanilla baselines (steps in `docs/laptop-bench.md`), then after packages 1 and 2
-    (commands in their sections), 5 and 10.
-- **To decide:**
-  - CI publishes javap dumps of the game's classes (signatures, and bytecode of the graphics, renderer and
-    visibility classes) on the public `ci-logs` branch, as SIFTEC's CI does (Brimstone's dump was modelled on it, as
-    asked). Package 1's CI briefly also published the game's shader sources there; that was removed and `ci-logs`
-    republished without them on 2026-10-24, but GitHub may keep old force-pushed commits fetchable by ID for a
-    while. Decide whether the class dumps may stay public.
-  - Package 1's compact vertex format now covers only about half the terrain (package 1, "Review"): accept it, or
-    pick one of the options listed there.
-  - CI-only pins (`ci/pin-mod`): the lightmap flicker and texture animation are held still in every CI run, vanilla
-    and Brimstone alike. Package 8 (animated textures) will need its own check with animation running.
-  - The "Choices to confirm" lists under each package.
+Decisions made on your behalf while you were away (each also in its section):
+1. **Strict extras measured on medians:** extra = median of five 16-byte runs minus median of five runs before the
+   switch, largest over the profiles (not the largest single run, which carried run-wide noise that vanilla shows
+   too; that would have raised spawn by 2,834 and hub by 1,638). Every run passes the new limits (`docs/ci-limits.md`).
+2. **Permanent `measure-*` CI runs** (Brimstone loaded, every module off) to measure vanilla in the same run: your
+   memory gate and same-run draw-call gate need vanilla's numbers and vanilla runs have no bench. They are checked
+   against vanilla's pictures, and that their modules really stayed off (review round 3).
+3. **Fly-through vanilla + 2** (your rule, full and Vulkan only): Vulkan averaged 123.11 against 123.05 in one run;
+   Brimstone's terrain draws are exactly vanilla's 3, the 0.06 is in other draws.
+4. **sift draw calls on the median** (your rule): its average follows the runner's fps (154.0 at 15.1 fps against
+   135.58 at 22.64 fps; medians 154 and 154).
+5. **sift particles:** the CI pin holds off every particle in the Sift dimension (25 `the_sift:sift_note`, one
+   `minecraft:poof`), not only the notes; sift strict limit re-collected: 4,900 -> 100. Mob spawning is off for the
+   sift scene and back on in the next one; the setup sends every non-player entity away.
+6. **Translucent scene list for the at-or-under-vanilla draw gate** stays water_glass, translucent_move,
+   water_glass_oit, translucent_move_oit, flythrough and the hologram; spawn, hub, mam and the rest are gated at
+   vanilla x 1.10 + 2 (hub and mam averages are 1-7 draws over vanilla's on some profiles). Confirm or tighten.
+7. **The memory gate reads one snapshot at the end of each bench**; the moment of a grow, when an arena's old and new
+   buffers both exist (up to 96 MiB for one arena), isn't measured.
+8. **The hologram scene skips the measure-vk run** (lavapipe segfaults on Create's outliner, as in vanilla's run).
+
+Known limits recorded for later packages: vertex alpha below 255 (package 4), a grown arena doesn't shrink until
+empty (package 9), a deterministic particle scene (package 8), the block outline untested in CI (package 6 or 7), the
+factory's Create animation (package 5), the map's strict coverage (package 7).
+
+- **Done and merged:** packages 0 (repo, CI, bench harness), 1 (terrain meshing and region buffers), 2 (visibility)
+  and 3 (translucency, the 16-byte vertex, arenas per layer).
+- **Pending on Andre:** laptop benches (`docs/laptop-bench.md`, and each package's "Laptop bench" section); the
+  "Choices to confirm" lists under each package.
 
 ---
 
@@ -1218,6 +1215,65 @@ counts: green, red on the map's first strict limit and the hologram's old direct
 40162905190 (map steadiness attempts, collection), **40164365265 (final code, every profile and both suites:
 green)**.
 
+### The 16-byte vertex, arenas per layer and the vanilla-relative gates (2026-10-25, Andre's later decisions)
+
+The second review (round 2) left two things for Andre: translucent draw calls above vanilla on full and Vulkan (B1)
+and sift's upload bytes (M2, settled: baseline 81,788, see `docs/ci-limits.md`). His decisions and what came of them:
+
+**One 16-byte vertex for every terrain layer** (replaces the 28-byte wide format and the per-layer choice):
+`0 u16 x,y,z ((p+8) x 2048)`, `6 u16 section slot | block light << 8`, `8 u8 r,g,b, sky light`, `12 u16 u,v (65535 =
+1.0)`. Positions off the 1/2048-block grid and UVs off the 1/65536 grid are rounded; on-grid vertices are
+bit-identical (shader harness, three seeds: 0 differences); largest error 0.000245 block and 1.45e-5 UV, at most
+0.06 px on screen. Vanilla's translucent index lists and order are kept as they are (16-bit lists widened to 32 bits,
+`49fec37`, so neighbouring translucent sections share an index type). Bytes per vertex 16 against vanilla's 28; terrain
+vertices in the fly-through 79.6 MB against 139.3 MB in vanilla's format (water_glass 11.8 against 20.7, spawn 19.9
+against 34.9). Vanilla next to Brimstone at 4x (plant-heavy and water-edge views): no gaps, cracks or shimmering
+edges; the differences are 1/255 steps on rounded geometry.
+
+**Vertex alpha** (Andre: no alpha byte): a solid or cutout layer with a vertex alpha below 255 stays with vanilla; a
+translucent layer with one hands all translucent terrain back to vanilla for the session (solid and cutout stay with
+Brimstone); one WARN line names the section, the bench counts it (`alphaLayersKeptByVanilla`,
+`translucentHandedBackForAlpha`) and CI fails if either is non-zero. No CI scene has such a layer. **Known limit,
+for package 4 (Fabric Renderer API):** models that tint vertices with alpha (FRAPI emitters can) lose Brimstone's
+terrain for that layer or, for translucent, for the session.
+
+**Strict gate at >2/255** (Andre): the rounding moves interpolated colours by 1-2/255; limits = old + 1.5 x the
+measured extra (`docs/ci-limits.md`, "The 16-byte vertex", with the samples and the median method).
+
+**Arenas per layer, starting small** (Andre): solid, cutout and translucent each have arenas of their own (so a
+layer's draws break only when that layer alone passes 64 MiB), and an arena's buffer starts at 4 MiB and doubles up to
+64 MiB (a one-time GPU copy at the end of the frame where meshes are copied in; offsets never change; the game's TLSF
+allocator splits the blocks it hands out from their front, so a filling arena's buffer stays close to what it holds). Terrain GPU memory reserved is
+now 16-112 MB in the core scenes against vanilla's 256-416 MB (table in `docs/ci-limits.md`), gated in every scene.
+**Known limit, for package 9:** a grown arena does not shrink until it is empty (the hologram scene keeps the 56 MB
+grown in the map scene before it).
+
+**Draw calls against vanilla in the same run**: three `measure-*` client runs per suite (Brimstone loaded, every
+module off) stand in for vanilla, checked against vanilla's pictures with the same limits; every scene's draw calls
+are gated against them on average and median (`docs/ci-limits.md`, "Against vanilla in the same run"). Fly-through:
+123.07 against 123.07 (full) and 123.11 against 123.05 (Vulkan; the gate there is vanilla + 2 by Andre's rule);
+translucent runs break 0 times per frame at arena or index-type changes (old-GPU's plain path breaks at regions, 24.5
+per frame, as designed).
+
+**sift**: its strict noise came from small sprites drifting over the canyon in every run, vanilla's too. Mob and
+phantom spawning off for the scene plus sending the mobs away (19 entities) left them in place, so they are not
+entities; the CI pin mod now makes no particles in the Sift dimension (`SiftParticlesMixin`, every client run).
+The kinds held off, from the pin's log: `the_sift:sift_note` (the Sift's floating note particles, 25 in the scene)
+and one `minecraft:poof`. With the pin, vanilla b against a is 0/0 and the measure runs 0 in runs 40185974374 and
+40187878826, and the sift strict limit was re-collected by the rule (`docs/ci-limits.md`; runs 40185974374, 40187878826, 40189806229): **100 pixels** (was 4,900; samples 55-61 in all three runs).
+The sift setup's mob spawning goes back on in the next scene (hub).
+
+**Review round 3** (fresh agent, of `f8018c2`): done-when holds; Andre's decisions carried out; every limit recomputed
+from the PNGs and matching. Fixed: B1 (sift limit and the progress notes not yet committed), M1 (nothing checked that
+the measure runs really ran with Brimstone's modules off: now the log lines, the bench state and zero arenas are
+required), M2 (the alpha hand-back's races: a translucent layer staged after it is refused under the store's lock,
+later index lists go through `stageIndices`, one WARN), m1 (hologram skips measure-vk), m2 (fly-through allowance on
+full and Vulkan only), m3 (stale text). N1-N3 are decisions 6, 7 and 5 at the top of this file; N4 (a UV of exactly
+65535/65536 stored as 1.0) matters only for a 65536-pixel atlas.
+
+**For package 8's plan (Andre, 2026-10-25):** a deterministic particle scene (particles are random per run; CI holds
+them off in the Sift and nowhere else yet).
+
 ### Laptop bench (Andre, when back)
 
 Same instances and steps as `docs/laptop-bench.md`, with this branch's jar (after the merge, the `latest` release).
@@ -1249,14 +1305,12 @@ FPS and frame times.
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
-`docs/laptop-bench.md` and the design doc. CI results are on the `ci-logs` branch. Local builds aren't possible in
-the agent workspace (no access to Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes
-about 25 minutes (45 when the SIFTEC world cache is rebuilt).
+`docs/laptop-bench.md` and the design doc. CI results are on the `ci-logs` branch (each run overwrites it; extract a
+run as soon as it finishes if another is running). Local builds aren't possible in the agent workspace (no access to
+Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes about 45 minutes (20 client runs).
+Game class dumps are a 1-day Actions artifact (`game-dumps`) the workspace can't download; ask Andre to attach one if
+needed. Scratch tools (not in the repo): a compile check against stubs generated from a javap dump
+(`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
+strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** package 3 (translucency) on branch `package-3`, implemented; the last code change (`6d48fc7`) is green in run
-40126212181. The docs-only rerun 40128444322 failed one count, the SIFTEC hologram scene's draw calls on full, which
-follow the runner's frame rate (package 3, "Open issues": a decision for Andre; nothing raised or ungated). Next:
-review rounds, then merge. The branch still carries the branch-only CI trigger commit
-(`package-3` in `build.yml`), to be stripped at merge. Scratch tools from this package (not in the repo): a compile
-check against stubs generated from the javap dump (`scratchpad/p3/stubgen/check.sh`), the shader harness with OIT
-defines (`scratchpad/p3/harness3.py`), limit and evidence scripts (`scratchpad/p3/newlimits.py`, `tables.py`).
+**Now:** HANDOFF_NOW
