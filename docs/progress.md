@@ -1324,9 +1324,11 @@ FPS and frame times.
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
-`docs/laptop-bench.md` and the design doc. CI results are on the `ci-logs` branch (each run overwrites it; extract a
-run as soon as it finishes if another is running). Local builds aren't possible in the agent workspace (no access to
-Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes about 27 minutes (20 client runs; longer when the SIFTEC world cache is rebuilt).
+`docs/laptop-bench.md` and the design doc. CI results are on each branch's `ci-logs-<branch>` branch (main's on
+`ci-logs-main`; each run overwrites its branch's). Branch pushes run quick mode (core suite, vanilla a and b,
+Brimstone old-GPU, about 10 minutes); main, `[full]` commits and manual runs the full matrix (`docs/ci-limits.md`,
+"Quick CI"). A package merges only on a green full run, so no branch-only CI commit is needed any more. Local builds aren't possible in the agent workspace (no access to
+Fabric's maven or Mojang); everything is built and tested in CI. A full CI run takes about 30-40 minutes (20 client runs; longer when the SIFTEC world cache is rebuilt).
 Game class dumps are a 1-day Actions artifact (`game-dumps`) the workspace can't download; ask Andre to attach one if
 needed. Scratch tools (not in the repo): a compile check against stubs generated from a javap dump
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
