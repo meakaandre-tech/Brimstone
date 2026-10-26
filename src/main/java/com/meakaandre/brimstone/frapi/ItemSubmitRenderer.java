@@ -67,6 +67,7 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
             if (s.outlineColor() != 0) {
                 List<BakedQuad> quads = new ArrayList<>(s.quads());
                 s.mesh().forEach(q -> quads.add(Quads.toBaked(q)));
+                RendererStats.MESH_QUADS_VANILLA.add(s.mesh().size());
                 v.add(new ItemFeatureRenderer.Submit(s.pose(), s.displayContext(), s.lightCoords(), s.overlayCoords(), s.outlineColor(),
                     s.tintLayers(), quads, s.foilType()));
                 return;
@@ -77,9 +78,11 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
             if (s.mesh().size() > 0) {
                 List<BakedQuad> all = new ArrayList<>(quads);
                 s.mesh().forEach(q -> {
+                    // with the block renderer off, every quad (vanilla's code draws everything)
                     if (BrimstoneRenderer.blockRendererOff() || Quads.vanillaLike(q)) all.add(Quads.toBaked(q));
                     else own[0] = true;
                 });
+                RendererStats.MESH_QUADS_VANILLA.add(all.size() - quads.size());
                 quads = all;
             }
             if (!quads.isEmpty()) {
@@ -162,6 +165,7 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
         }
 
         private void buffer(ExtendedItemSubmit s, QuadView quad) {
+            RendererStats.MESH_QUADS_BRIMSTONE.increment();
             ItemStackRenderState.FoilType foil = quad.foilType() != null ? quad.foilType() : s.foilType();
             RenderType type = switch (foil) {
                 case NONE -> quad.itemRenderType();

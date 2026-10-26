@@ -1,4 +1,12 @@
 {
+  "create_ct": {
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 100.31,
+    "heapUsedAfterGcMB": 470.81,
+    "runs": 2,
+    "uploadBytesPerFrame": 1596,
+    "uploadsPerFrame": 12
+  },
   "factory": {
     "directBuffersMB": 5.48,
     "drawCallsPerFrame": 111.52,
@@ -7,6 +15,14 @@
       "40156711337 attempts 1-3"
     ],
     "uploadBytesPerFrame": 6488,
+    "uploadsPerFrame": 14
+  },
+  "factory_flat": {
+    "directBuffersMB": 3.99,
+    "drawCallsPerFrame": 107.77,
+    "heapUsedAfterGcMB": 422.37,
+    "runs": 3,
+    "uploadBytesPerFrame": 6264,
     "uploadsPerFrame": 14
   },
   "hologram": {

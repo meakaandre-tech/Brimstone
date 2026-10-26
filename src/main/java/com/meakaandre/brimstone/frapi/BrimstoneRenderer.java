@@ -20,7 +20,6 @@ import net.fabricmc.fabric.api.client.renderer.v1.render.submit.ExtendedItemSubm
 import net.fabricmc.fabric.api.client.rendering.v1.FeatureRendererRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.CustomValue;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.client.color.block.BlockColors;
 
@@ -73,7 +72,11 @@ public final class BrimstoneRenderer implements Renderer {
         } catch (IOException e) {
             BrimstoneClient.LOG.warn("Brimstone: could not read or write {}; block-renderer stays on", file, e);
         }
-        return "off".equalsIgnoreCase(p.getProperty("block-renderer", "on").trim());
+        String v = p.getProperty("block-renderer", "on").trim();
+        if (!v.equalsIgnoreCase("on") && !v.equalsIgnoreCase("off")) {
+            BrimstoneClient.LOG.warn("Brimstone: {} has block-renderer={}, which is neither on nor off; the block renderer stays on", file, v);
+        }
+        return v.equalsIgnoreCase("off");
     }
 
     /**
@@ -91,8 +94,9 @@ public final class BrimstoneRenderer implements Renderer {
             Renderer.register(INSTANCE);
             registered = true;
         } catch (Throwable t) {
-            BrimstoneClient.LOG.error("Brimstone renderer fallback: could not register its Fabric Renderer API implementation (another"
-                + " renderer mod registered first; that renderer draws instead)", t);
+            // a warning: the one error is reportOtherRenderers' (naming the other mod) when one declares itself the renderer
+            BrimstoneClient.LOG.warn("Brimstone renderer fallback: could not register its Fabric Renderer API implementation (another"
+                + " renderer registered first; that renderer draws instead)", t);
         } finally {
             reportOtherRenderers(registered);
         }
@@ -122,14 +126,14 @@ public final class BrimstoneRenderer implements Renderer {
             for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
                 ModMetadata m = mod.getMetadata();
                 if ("brimstone".equals(m.getId())) continue;
-                CustomValue v = m.getCustomValue("fabric-renderer-api-v1:contains_renderer");
-                if (v != null && v.getType() == CustomValue.CvType.BOOLEAN && v.getAsBoolean()) others.add(m.getName() + " (" + m.getId() + ")");
+                // the test Indigo makes to stand aside: the key is present, whatever its value
+                if (m.containsCustomValue("fabric-renderer-api-v1:contains_renderer")) others.add(m.getName() + " (" + m.getId() + ")");
             }
             if (!others.isEmpty()) {
                 BrimstoneClient.LOG.error("Brimstone renderer conflict: {} also declare{} itself the Fabric Renderer API's renderer; only one can"
                     + " draw: {}", String.join(", ", others), others.size() == 1 ? "s" : "",
-                    brimstoneWon ? "Brimstone's renderer won (registered first); the other renderer's registration will fail"
-                        : "the other renderer won (registered first); Brimstone's renderer is not used");
+                    brimstoneWon ? "Brimstone's renderer won (it registered first); the other renderer's registration will fail"
+                        : "the other renderer won (it registered first); Brimstone's renderer is not used");
             }
         } catch (Throwable t) {
             if (t instanceof VirtualMachineError e) throw e;

@@ -1040,5 +1040,139 @@
       40189806229
     ],
     "strictNote": "With the Sift particle pin (SiftParticlesMixin), threshold >2/255: vanilla noise 0 (vanilla b/a 0/0 and the measure runs 0 in all three runs), so limit = noise + 1.5 x the 16-byte vertex's rounding extra (Brimstone 55/55/61, full/old-GPU/Vulkan, the same in every run) = 91.5, rounded up to 100 (was 4900, before the pin)."
+  },
+  "core/flat_plants": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0226,
+      0.0226,
+      0.0226,
+      0.023,
+      0.023,
+      0.023,
+      0.023,
+      0.023,
+      0.023,
+      0.023
+    ],
+    "limit": 0.3,
+    "max": 0.023,
+    "runs": [
+      40270542386,
+      40274749083,
+      40279156080,
+      40287221751
+    ],
+    "samples": 23,
+    "note": "package 4: vanilla a/b, measure runs and Brimstone (the 16-byte vertex's rounding; block lighting exact against Indigo, diagnostic run 40274749083)"
+  },
+  "core/renderer_off": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      40270542386,
+      40274749083,
+      40279156080,
+      40287221751
+    ],
+    "samples": 23,
+    "note": "package 4: vanilla a/b, measure runs and Brimstone"
+  },
+  "siftec/factory_flat": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0041,
+      0.0041,
+      0.0041
+    ],
+    "limit": 0.3,
+    "max": 0.0041,
+    "runs": [
+      40274749083,
+      40279156080,
+      40287221751
+    ],
+    "samples": 21,
+    "note": "package 4: vanilla a/b, measure runs and Brimstone"
+  },
+  "siftec/create_ct": {
+    "all": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "limit": 0.25,
+    "max": 0.0,
+    "runs": [
+      40279156080,
+      40287221751
+    ],
+    "samples": 14,
+    "note": "package 4: with the GUI hidden (F1); the third run is the branch's final full run; before the GUI was hidden (run 40274749083) the minimap gave up to 0.2202 (measure old-GPU)"
   }
 }

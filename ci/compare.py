@@ -332,6 +332,16 @@ def main():
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: {vis.get('unverifiedObjects')} hidden objects were not ray-checked (check budget)")
                                 if scene_def.get("ciRequiresCulling") and not (vis.get("entitiesCulled", 0) > 0 and vis.get("blockEntitiesCulled", 0) > 0):
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
+                            # package 4: which path the blocks and API mesh quads took since the session started; with
+                            # block-renderer=off none may go Brimstone's way, else none to vanilla's block renderer
+                            rs = bj.get("renderer")
+                            off_scene = (scene_def.get("brimstoneConfig") or {}).get("block-renderer") == "off"
+                            if rs is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no renderer report")
+                            elif off_scene and not (rs.get("blockRendererOff") and rs.get("blocksBrimstone") == 0 and rs.get("meshQuadsBrimstone") == 0 and rs.get("blocksVanilla", 0) > 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: with block-renderer=off, blocks Brimstone/vanilla {rs.get('blocksBrimstone')}/{rs.get('blocksVanilla')}, mesh quads by Brimstone {rs.get('meshQuadsBrimstone')} (want 0/more than 0, 0)")
+                            elif not off_scene and (rs.get("blockRendererOff") or rs.get("blocksVanilla") != 0 or rs.get("blocksBrimstone", 0) == 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: blocks Brimstone/vanilla {rs.get('blocksBrimstone')}/{rs.get('blocksVanilla')} (want more than 0/0), block renderer off: {rs.get('blockRendererOff')}")
                             tr = bj.get("translucency")
                             if tr is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no translucency report")
@@ -525,6 +535,9 @@ def main():
                         if v > bv * RISE + SLACK[k]:
                             failures.append(f"{name}/{prof}/{sid}: {k}{' (median)' if k == 'drawCallsPerFrame' and sid in median_gated else ''} rose from {bv} to {v} (over 10%)")
                     cells.append(cell)
+                if base is not None and sid not in base:
+                    # package 4: a scene with no committed baseline would go ungated without a word
+                    failures.append(f"{name}/{prof}/{sid}: no committed baseline entry in {base_file}")
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
             # package 3 (Andre, 2026-10-25), against vanilla measured in the same run (MEASURE): in the translucent
             # scenes (ci/vanilla-draw-calls.json) Brimstone's median draw calls per frame at most vanilla's median; in

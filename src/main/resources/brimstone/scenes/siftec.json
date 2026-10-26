@@ -194,6 +194,8 @@
         "fill 2066 240 -1996 2068 240 -1994 create:brass_casing",
         "execute in minecraft:overworld run tp @a 2071.5 243 -1987.5 180 12"
       ],
+      "requiresMod": "create",
+      "requiresNote": "Create's casings and framed glass: without Create the scene would show only stone, so it is skipped.",
       "ciNote": "The design doc's done-when names Create's connected textures: Create draws them through the Fabric Renderer API, so these blocks are tessellated by Brimstone's renderer in Brimstone's runs and by Indigo in the vanilla runs. CT blocks in view: create:andesite_casing (a 5x4 wall plus a 3-block return at its west end), create:brass_casing (a 5x4 wall and a 3x3 floor patch in front), create:copper_casing (a 5x4 wall with minecraft:stone set in at its centre left), create:framed_glass (a 5x4 wall); each wall ends against minecraft:stone or minecraft:glass, which do not connect. CI presses F1 after the setup (vanilla's hide-GUI key): SIFTEC's minimap shows whichever tiles it has scanned, which differs from run to run (vanilla against vanilla up to 167 strict pixels in run 40274749083), and a single wrong connected-texture border is smaller than that. It is the suite's last scene, so the hidden GUI reaches only its own bench.",
       "ciKeys": [
         "F1"

@@ -128,6 +128,7 @@ final class BlockRenderer implements AltModelBlockRenderer {
     public void tesselateBlock(QuadEmitter output, float x, float y, float z, BlockAndTintGetter level, BlockPos pos, BlockState blockState,
                                BlockStateModel model, long seed) {
         if (BrimstoneRenderer.blockRendererOff()) {
+            if (!quiet) RendererStats.BLOCKS_VANILLA.increment();
             tesselateVanilla(output, x, y, z, level, pos, blockState, model, seed);
             return;
         }
@@ -165,6 +166,7 @@ final class BlockRenderer implements AltModelBlockRenderer {
         }
         try {
             if (done) {
+                if (!quiet) RendererStats.BLOCKS_BRIMSTONE.increment();
                 Meshes.SlotQuad q = slot;
                 for (int i = 0; i < pendingCount; i++) {
                     q.at(pending, i * QuadData.STRIDE, null, null, false);
@@ -172,6 +174,7 @@ final class BlockRenderer implements AltModelBlockRenderer {
                     output.emit();
                 }
             } else {
+                if (!quiet) RendererStats.BLOCKS_VANILLA.increment();
                 tesselateVanilla(output, x, y, z, level, pos, blockState, model, seed);
             }
         } finally {
@@ -298,7 +301,7 @@ final class BlockRenderer implements AltModelBlockRenderer {
     }
 
     /** Vanilla's own block renderer for one block, its quads handed to the API's output as vanilla would write them. */
-    private void tesselateVanilla(QuadEmitter output, float x, float y, float z, BlockAndTintGetter level, BlockPos pos, BlockState state,
+    void tesselateVanilla(QuadEmitter output, float x, float y, float z, BlockAndTintGetter level, BlockPos pos, BlockState state,
                                   BlockStateModel model, long seed) {
         if (vanilla == null) vanilla = new ModelBlockRenderer(ambientOcclusion, cull, blockColors);
         vanilla.tesselateBlock((qx, qy, qz, quad, qi) -> {

@@ -150,6 +150,65 @@ public final class RendererSelfTest {
         drawn = split.size() == 1 ? quads(split.get(0).modelParts()) : List.of();
         check(drawn.size() == 5 && drawn.get(0) == top, "a block model submit's mesh did not hand vanilla its own vanilla quad", failed);
 
+        // the vanilla path (block-renderer=off, and a model that throws) hands vanilla's own output on unchanged: tinted,
+        // cutout and light-emitting blocks, compared quad by quad with vanilla's ModelBlockRenderer
+        for (BlockState st : List.of(Blocks.GRASS_BLOCK.defaultBlockState(), Blocks.OAK_LEAVES.defaultBlockState(),
+            Blocks.GLOWSTONE.defaultBlockState(), Blocks.TORCH.defaultBlockState())) {
+            BlockStateModel m = mc.getModelManager().getBlockStateModelSet().get(st);
+            List<String> want = new ArrayList<>(), got = new ArrayList<>();
+            new net.minecraft.client.renderer.block.ModelBlockRenderer(false, false, mc.getBlockColors()).tesselateBlock((qx, qy, qz, q, qi) -> {
+                StringBuilder sb = new StringBuilder();
+                int em = q.materialInfo().lightEmission();
+                for (int i = 0; i < 4; i++) {
+                    sb.append(q.position(i).x() + qx).append(',').append(q.position(i).y() + qy).append(',').append(q.position(i).z() + qz)
+                        .append(' ').append(Integer.toHexString(qi.getColor(i))).append(' ').append(Integer.toHexString(qi.getLightCoordsWithEmission(i, em))).append(';');
+                }
+                want.add(sb.toString());
+            }, 0, 0, 0, mc.level, pos, st, m, 42L);
+            renderer.tesselateVanilla(BrimstoneRenderer.INSTANCE.quadEmitter(q -> {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 4; i++) {
+                    sb.append(q.x(i)).append(',').append(q.y(i)).append(',').append(q.z(i)).append(' ').append(Integer.toHexString(q.color(i)))
+                        .append(' ').append(Integer.toHexString(q.lightmap(i))).append(';');
+                }
+                got.add(sb.toString());
+            }), 0, 0, 0, mc.level, pos, st, m, 42L);
+            check(!want.isEmpty() && want.equals(got), "the vanilla path changed " + st + "'s quads (" + got.size() + " against vanilla's " + want.size() + ")", failed);
+        }
+
+        // Indigo's quad geometry: a 45-degree quad's light face (x before z, y before x), a mesh quad's face normal read back
+        // packed, a copy keeping it, and a vanilla quad at full light emission made emissive
+        QuadEmitter g = BrimstoneRenderer.INSTANCE.quadEmitter(q -> {
+        });
+        g.pos(0, 0, 0, 0).pos(1, 0, 1, 0).pos(2, 1, 1, 1).pos(3, 1, 0, 1);
+        check(g.lightFace().getAxis() == Direction.Axis.X, "a quad facing x and z equally has light face " + g.lightFace() + " (Indigo's: along x)", failed);
+        g.pos(0, 0, 0, 0).pos(1, 1, 1, 0).pos(2, 1, 1, 1).pos(3, 0, 0, 1);
+        check(g.lightFace().getAxis() == Direction.Axis.Y, "a quad facing x and y equally has light face " + g.lightFace() + " (Indigo's: along y)", failed);
+        MutableMesh gm = BrimstoneRenderer.INSTANCE.mutableMesh();
+        QuadEmitter ge = gm.emitter();
+        ge.pos(0, 0, 0, 0).pos(1, 0, 1, 0).pos(2, 1, 1, 0.3f).pos(3, 1, 0, 0.3f);
+        Vector3f exactNormal = new Vector3f().set(ge.faceNormal());
+        ge.emit();
+        Vector3f[] read = new Vector3f[2];
+        gm.immutableCopy().forEach(q -> {
+            read[0] = new Vector3f().set(q.faceNormal());
+            QuadEmitter c = BrimstoneRenderer.INSTANCE.quadEmitter(x -> {
+            });
+            c.copyFrom(q);
+            read[1] = new Vector3f().set(c.faceNormal());
+        });
+        int packed = GeometryHelper.packNormal(exactNormal.x, exactNormal.y, exactNormal.z);
+        Vector3f quantised = new Vector3f(GeometryHelper.unpackNormal(packed, 0), GeometryHelper.unpackNormal(packed, 1), GeometryHelper.unpackNormal(packed, 2));
+        check(read[0] != null && read[0].equals(quantised) && !quantised.equals(exactNormal), "a mesh quad's face normal is " + read[0]
+            + ", not its packed " + quantised + " (as Indigo's meshes keep it)", failed);
+        check(read[1] != null && read[1].equals(quantised), "a copy of a mesh quad has face normal " + read[1] + ", not the mesh's " + quantised, failed);
+        BakedQuad.MaterialInfo glow = new BakedQuad.MaterialInfo(sprite, ChunkSectionLayer.SOLID, cutout, cutout, cutout, -1, null, 15);
+        g.fromBakedQuad(new BakedQuad(new Vector3f(0, 1, 0), new Vector3f(0, 1, 1), new Vector3f(1, 1, 1), new Vector3f(1, 1, 0), 0L, 0L, 0L, 0L,
+            Direction.UP, glow));
+        boolean emissive15 = g.emissive();
+        g.fromBakedQuad(top);
+        check(emissive15 && (top.materialInfo().lightEmission() == 15 || !g.emissive()), "fromBakedQuad's emissive flag does not follow light emission 15", failed);
+
         // S4: buffer() without a pose writes the exact face normal, not the light face's axis
         QuadEmitter angled = BrimstoneRenderer.INSTANCE.quadEmitter(q -> {
         });

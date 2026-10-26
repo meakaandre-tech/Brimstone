@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Brimstone (package 4): Brimstone's quad emitter (LGPL-3.0-only, like the rest of Brimstone), whose copyFrom
+// (carrying the source's geometry, a mesh quad's nominal face being its light face) and fromBakedQuad (emissive at
+// light emission 15, block atlas when the sprite's is unknown) follow Fabric API's Indigo renderer
+// (fabric-renderer-indigo, Fabric API 0.161.0+26.3, mesh/MutableQuadViewImpl), adapted under the Apache License 2.0
+// above (see NOTICE). Changes: Brimstone's own quad encoding, transform stack and vanilla-quad tracking.
+
 package com.meakaandre.brimstone.frapi;
 
 import static com.meakaandre.brimstone.frapi.QuadData.*;
@@ -57,6 +79,11 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     private void geometryChanged() {
         geometryDirty = true;
         exactQuad = null;
+    }
+
+    /** Sets the stored nominal face only (a decoded quad's, which is its light face, as Indigo's {@code load()} sets it). */
+    final void decodedNominalFace(Direction face) {
+        setBits(NOMINAL_SHIFT, DIR_MASK, dirValue(face));
     }
 
     /** Drops every pushed transform (after a model threw between a push and its pop). */
@@ -251,7 +278,7 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
                 // a mesh quad: what the mesh kept of it; its nominal face is transient, a decoded quad's is its light face
                 exactQuad = q.exactQuad();
                 sprite = q.knownSprite();
-                nominalFace(q.lightFace);
+                decodedNominalFace(q.lightFace);
             }
             return this;
         }

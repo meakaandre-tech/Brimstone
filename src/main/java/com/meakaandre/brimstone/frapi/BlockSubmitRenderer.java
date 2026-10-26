@@ -118,10 +118,12 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
                 List<BakedQuad> quads = new ArrayList<>(s.mesh().size());
                 boolean[] own = {false};
                 s.mesh().forEach(q -> {
+                    // with the block renderer off, every quad (vanilla's code draws everything)
                     if (BrimstoneRenderer.blockRendererOff() || Quads.vanillaLike(q)) quads.add(Quads.toBaked(q));
                     else own[0] = true;
                 });
                 if (!quads.isEmpty()) addVanilla(s, List.of(new QuadsPart(quads)), v);
+                RendererStats.MESH_QUADS_VANILLA.add(quads.size());
                 if (own[0]) m.add(s);
             }
         }
@@ -272,6 +274,7 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
         }
 
         private void buffer(ExtendedBlockModelSubmit s, QuadView quad) {
+            RendererStats.MESH_QUADS_BRIMSTONE.increment();
             RenderType type = s.renderTypeFunction().apply(quad.chunkLayer());
             if (type == null) return;
             VertexConsumer consumer = getVertexBuilder(type);

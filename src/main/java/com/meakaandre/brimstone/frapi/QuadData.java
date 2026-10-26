@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Brimstone (package 4): Brimstone's quad encoding (LGPL-3.0-only, like the rest of Brimstone); its normal packing
+// and unpacking follow Fabric API's Indigo renderer (fabric-renderer-indigo, Fabric API 0.161.0+26.3,
+// helper/NormalHelper), adapted under the Apache License 2.0 above (see NOTICE). Changes: Brimstone's own layout.
+
 package com.meakaandre.brimstone.frapi;
 
 import com.meakaandre.brimstone.BrimstoneClient;

@@ -557,7 +557,7 @@
     {
       "id": "flat_plants",
       "ciVanillaDrawGate": "median",
-      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40274749083, Vulkan: Brimstone 121.34 average / 124 median at 20.36 fps, vanilla's measure run 103.03 / 124 at 24.41 fps (limit x 1.10 + 2: 115.33); full on the same run: 123.96 / 124 against 123.62 / 124 at 15.72 and 16.15 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: the slower a run, the more of its frames line up with a game tick and draw that tick's extra draws, so the average moves with fps while the median does not. run 40274749083, Vulkan: Brimstone 121.34 average / 124 median at 20.36 fps, vanilla's measure run 103.03 / 124 at 24.41 fps (limit x 1.10 + 2: 115.33); full on the same run: 123.96 / 124 against 123.62 / 124 at 15.72 and 16.15 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "A garden of plants with smooth lighting off (flat lighting): grass, ferns, flowers, berry bushes, saplings, pink petals, crops on farmland, sugar cane and lily pads by water, leaves, bamboo, azaleas, moss carpet and vines (package 4)",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -603,12 +603,12 @@
       "clientOptions": {
         "ao": "false"
       },
-      "ciNote": "Flat lighting of cross and angled plant models (package 4: Brimstone lights blocks exactly as Indigo, the vanilla runs' renderer, does, flat lighting included). Random ticks are stopped so nothing grows, spreads or dries out."
+      "ciNote": "Flat lighting of cross and angled plant models (package 4: Brimstone lights blocks exactly as Indigo, the vanilla runs' renderer, does, flat lighting included). Random ticks are stopped so nothing grows, spreads or dries out. The gamerule stays at 0 for the rest of that game's server, in every run alike (the later sessions: renderer_off and the Improved Transparency scenes)."
     },
     {
       "id": "renderer_off",
       "ciVanillaDrawGate": "median",
-      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40279156080, Vulkan: Brimstone 96.3 average / 123 median at 25.89 fps, vanilla's measure run 84.85 / 123 at 29.76 fps (limit x 1.10 + 2: 95.34); full on the same run: 95.72 / 123 against 97.05 / 123. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: the slower a run, the more of its frames line up with a game tick and draw that tick's extra draws, so the average moves with fps while the median does not. run 40279156080, Vulkan: Brimstone 96.3 average / 123 median at 25.89 fps, vanilla's measure run 84.85 / 123 at 29.76 fps (limit x 1.10 + 2: 95.34); full on the same run: 95.72 / 123 against 97.05 / 123. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "A stone-brick hut with slabs, stairs, a glass window and a block display, with Brimstone's block renderer switched off in its config and smooth lighting off (package 4)",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -633,7 +633,7 @@
       "brimstoneConfig": {
         "block-renderer": "off"
       },
-      "ciNote": "CI's check of Brimstone's block-renderer=off config option (package 4): this scene's session starts with it off (ci/client-run.sh writes config/brimstone.properties), so every block and item, the block display included, is drawn by vanilla's own code; the pictures are gated against the vanilla runs like every scene's. Smooth lighting is off because vanilla's own smooth lighting is not Indigo's (Indigo's flat lighting of these cube-shaped blocks is vanilla's)."
+      "ciNote": "CI's check of Brimstone's block-renderer=off config option (package 4): this scene's session starts with it off (ci/client-run.sh writes config/brimstone.properties), so every block and item, the block display included, is drawn by vanilla's own code; the pictures are gated against the vanilla runs like every scene's. Smooth lighting is off because vanilla's own smooth lighting is not Indigo's (Indigo's flat lighting of these cube-shaped blocks is vanilla's). Besides the picture, CI checks the bench's renderer report in this session: no block and no API mesh quad went Brimstone's way, and blocks went vanilla's (in every other session, no block went vanilla's). The self-test checks, quad by quad, that this vanilla path hands vanilla's output on unchanged for tinted, cutout and light-emitting blocks."
     }
   ]
 }
