@@ -1,0 +1,1828 @@
+{
+  "failures": [],
+  "suites": {
+    "core": {
+      "noise": {
+        "spawn": {
+          "pct": 0.3018,
+          "mean": 0.1325
+        },
+        "flythrough": {
+          "pct": 0.0065,
+          "mean": 0.0009
+        },
+        "water_glass": {
+          "pct": 0.0031,
+          "mean": 0.0004
+        },
+        "nether": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "mobs": {
+          "pct": 0.1086,
+          "mean": 0.1014
+        },
+        "occlusion": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.x2297": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.x2305": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.x2309": {
+          "pct": 0.0014,
+          "mean": 0.001
+        },
+        "occlusion_move.open": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.closed": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.bare_x2300": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.bare_x2297": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.bare_x2305": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.bare_x2309": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "occlusion_move.bare_open": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "translucent_move": {
+          "pct": 0.0002,
+          "mean": 0.0
+        },
+        "translucent_move.x2404": {
+          "pct": 0.0003,
+          "mean": 0.0
+        },
+        "translucent_move.x2414": {
+          "pct": 0.0001,
+          "mean": 0.0
+        },
+        "translucent_move.x2424": {
+          "pct": 0.0001,
+          "mean": 0.0
+        },
+        "translucent_move.low": {
+          "pct": 0.0008,
+          "mean": 0.0001
+        },
+        "translucent_move.back": {
+          "pct": 0.0002,
+          "mean": 0.0
+        },
+        "translucent_move.bare_back": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "water_glass_oit": {
+          "pct": 0.0038,
+          "mean": 0.0004
+        },
+        "translucent_move_oit": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "translucent_move_oit.x2404": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "translucent_move_oit.x2414": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "translucent_move_oit.x2424": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "translucent_move_oit.low": {
+          "pct": 0.0003,
+          "mean": 0.0
+        },
+        "translucent_move_oit.back": {
+          "pct": 0.0,
+          "mean": 0.0
+        },
+        "translucent_move_oit.bare_back": {
+          "pct": 0.0004,
+          "mean": 0.0
+        }
+      },
+      "picture": {
+        "spawn": {
+          "old-gpu": {
+            "pct": 0.054,
+            "mean": 0.0094
+          }
+        },
+        "flythrough": {
+          "old-gpu": {
+            "pct": 0.0062,
+            "mean": 0.0012
+          }
+        },
+        "water_glass": {
+          "old-gpu": {
+            "pct": 0.0042,
+            "mean": 0.0024
+          }
+        },
+        "nether": {
+          "old-gpu": {
+            "pct": 0.006,
+            "mean": 0.0008
+          }
+        },
+        "mobs": {
+          "old-gpu": {
+            "pct": 0.0271,
+            "mean": 0.0311
+          }
+        },
+        "occlusion": {
+          "old-gpu": {
+            "pct": 0.0001,
+            "mean": 0.0001
+          }
+        },
+        "occlusion_move": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.x2297": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.x2305": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.x2309": {
+          "old-gpu": {
+            "pct": 0.0035,
+            "mean": 0.0021
+          }
+        },
+        "occlusion_move.open": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.closed": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.bare_x2300": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.bare_x2297": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.bare_x2305": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.bare_x2309": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "occlusion_move.bare_open": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0
+          }
+        },
+        "translucent_move": {
+          "old-gpu": {
+            "pct": 0.0001,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move.x2404": {
+          "old-gpu": {
+            "pct": 0.0005,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move.x2414": {
+          "old-gpu": {
+            "pct": 0.0002,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move.x2424": {
+          "old-gpu": {
+            "pct": 0.0002,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move.low": {
+          "old-gpu": {
+            "pct": 0.0015,
+            "mean": 0.0003
+          }
+        },
+        "translucent_move.back": {
+          "old-gpu": {
+            "pct": 0.0003,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move.bare_back": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0001
+          }
+        },
+        "water_glass_oit": {
+          "old-gpu": {
+            "pct": 0.0043,
+            "mean": 0.0023
+          }
+        },
+        "translucent_move_oit": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move_oit.x2404": {
+          "old-gpu": {
+            "pct": 0.0004,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move_oit.x2414": {
+          "old-gpu": {
+            "pct": 0.0004,
+            "mean": 0.0002
+          }
+        },
+        "translucent_move_oit.x2424": {
+          "old-gpu": {
+            "pct": 0.0003,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move_oit.low": {
+          "old-gpu": {
+            "pct": 0.0009,
+            "mean": 0.0002
+          }
+        },
+        "translucent_move_oit.back": {
+          "old-gpu": {
+            "pct": 0.0,
+            "mean": 0.0001
+          }
+        },
+        "translucent_move_oit.bare_back": {
+          "old-gpu": {
+            "pct": 0.0005,
+            "mean": 0.0001
+          }
+        }
+      },
+      "strict": {
+        "spawn": {
+          "vanillaAgreePct": 99.48,
+          "pixels": {
+            "old-gpu": 298
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 939
+          }
+        },
+        "flythrough": {
+          "vanillaAgreePct": 99.99,
+          "pixels": {
+            "old-gpu": 87
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 358
+          }
+        },
+        "water_glass": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 31
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 3516
+          }
+        },
+        "nether": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 57
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 518
+          }
+        },
+        "mobs": {
+          "vanillaAgreePct": 99.89,
+          "pixels": {
+            "old-gpu": 108
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 108
+          }
+        },
+        "occlusion": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 1
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 76
+          }
+        },
+        "occlusion_move": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.x2297": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.x2305": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.x2309": {
+          "vanillaAgreePct": 99.96,
+          "pixels": {
+            "old-gpu": 24
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 44
+          }
+        },
+        "occlusion_move.open": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.closed": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.bare_x2300": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.bare_x2297": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.bare_x2305": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.bare_x2309": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "occlusion_move.bare_open": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 0
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 0
+          }
+        },
+        "translucent_move": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 2
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 124
+          }
+        },
+        "translucent_move.x2404": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 6
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 176
+          }
+        },
+        "translucent_move.x2414": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 3
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 163
+          }
+        },
+        "translucent_move.x2424": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 2
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 121
+          }
+        },
+        "translucent_move.low": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 16
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 22
+          }
+        },
+        "translucent_move.back": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 5
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 127
+          }
+        },
+        "translucent_move.bare_back": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 2
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 124
+          }
+        },
+        "water_glass_oit": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 28
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 3514
+          }
+        },
+        "translucent_move_oit": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 3
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 125
+          }
+        },
+        "translucent_move_oit.x2404": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 5
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 174
+          }
+        },
+        "translucent_move_oit.x2414": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 7
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 167
+          }
+        },
+        "translucent_move_oit.x2424": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 5
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 124
+          }
+        },
+        "translucent_move_oit.low": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 13
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 19
+          }
+        },
+        "translucent_move_oit.back": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 1
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 123
+          }
+        },
+        "translucent_move_oit.bare_back": {
+          "vanillaAgreePct": 100.0,
+          "pixels": {
+            "old-gpu": 2
+          },
+          "pixelsAnyDifference": {
+            "old-gpu": 124
+          }
+        }
+      },
+      "counts": {
+        "old-gpu": {
+          "spawn": {
+            "drawCallsPerFrame": 158.0,
+            "uploadsPerFrame": 12,
+            "uploadBytesPerFrame": 1380,
+            "drawCallsPerFrameAvg": 158.0,
+            "drawCallsPerFrameMedian": 158,
+            "uploadBytesPerFrameAvg": 37853.71,
+            "heapUsedAfterGcMB": 256.3,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": 4.241,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 11,
+              "arenas": 3,
+              "arenaMB": 36.0,
+              "usedMB": 22.279,
+              "arenaGrows": 4,
+              "liveVertices": 1345176,
+              "vertexMB": 20.526,
+              "vanillaEquivalentMB": 35.92,
+              "layersTaken": 2245,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 4524124,
+              "verticesWithPositionRounded": 1896060,
+              "verticesWithUvRounded": 3444,
+              "positionRoundedPct": 41.91,
+              "drawCallsPerFrame": 38.203,
+              "sectionLayersPerFrame": 756.021
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 188,
+              "sectionsVisiblePerFrame": 324.0,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 11.0,
+              "blockEntitiesTestedPerFrame": 1.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.032,
+              "cullMsMax": 0.447,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 188,
+              "sectionLayersCheckedPerFrame": 752.0,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 716,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 519,
+              "framesMeasured": 188,
+              "sectionLayersPerFrame": 151.0,
+              "drawCallsPerFrame": 16.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 15.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 50,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": 0.03,
+              "sortMsP95": 0.05,
+              "sortMsMax": 0.06,
+              "sortMsTotal": 1.486,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 0,
+              "resortsUploadedSinceStart": 0,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 188,
+              "entriesChecked": 28388,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 36.0,
+              "brimstoneArenasUsedMB": 22.279,
+              "reservedMB": 36.0,
+              "usedMB": 22.279
+            },
+            "frames": 187,
+            "fps": 9.38
+          },
+          "water_glass": {
+            "drawCallsPerFrame": 135.0,
+            "uploadsPerFrame": 13,
+            "uploadBytesPerFrame": 7316,
+            "drawCallsPerFrameAvg": 135.0,
+            "drawCallsPerFrameMedian": 135,
+            "uploadBytesPerFrameAvg": 7348.34,
+            "heapUsedAfterGcMB": 243.71,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": null,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 7,
+              "arenas": 3,
+              "arenaMB": 36.0,
+              "usedMB": 12.454,
+              "arenaGrows": 4,
+              "liveVertices": 773344,
+              "vertexMB": 11.8,
+              "vanillaEquivalentMB": 20.651,
+              "layersTaken": 2926,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 6321772,
+              "verticesWithPositionRounded": 2143340,
+              "verticesWithUvRounded": 4754,
+              "positionRoundedPct": 33.904,
+              "drawCallsPerFrame": 14.043,
+              "sectionLayersPerFrame": 273.83
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 330,
+              "sectionsVisiblePerFrame": 140.0,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 0.0,
+              "blockEntitiesTestedPerFrame": 0.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.001,
+              "cullMsMax": 0.021,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 330,
+              "sectionLayersCheckedPerFrame": 273.0,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 181,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 574,
+              "framesMeasured": 330,
+              "sectionLayersPerFrame": 4.0,
+              "drawCallsPerFrame": 1.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 0.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 0,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": null,
+              "sortMsP95": null,
+              "sortMsMax": null,
+              "sortMsTotal": 0.0,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 0,
+              "resortsUploadedSinceStart": 0,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 330,
+              "entriesChecked": 1320,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 36.0,
+              "brimstoneArenasUsedMB": 12.454,
+              "reservedMB": 36.0,
+              "usedMB": 12.454
+            },
+            "frames": 329,
+            "fps": 16.45
+          },
+          "nether": {
+            "drawCallsPerFrame": 138.95,
+            "uploadsPerFrame": 10,
+            "uploadBytesPerFrame": 4860,
+            "drawCallsPerFrameAvg": 138.95,
+            "drawCallsPerFrameMedian": 139,
+            "uploadBytesPerFrameAvg": 9264.81,
+            "heapUsedAfterGcMB": 264.36,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": 2.853,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 11,
+              "arenas": 2,
+              "arenaMB": 20.0,
+              "usedMB": 15.206,
+              "arenaGrows": 6,
+              "liveVertices": 954560,
+              "vertexMB": 14.565,
+              "vanillaEquivalentMB": 25.49,
+              "layersTaken": 3937,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 8415260,
+              "verticesWithPositionRounded": 2397888,
+              "verticesWithUvRounded": 14402,
+              "positionRoundedPct": 28.495,
+              "drawCallsPerFrame": 20.065,
+              "sectionLayersPerFrame": 473.542
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 307,
+              "sectionsVisiblePerFrame": 300.0,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 1.0,
+              "blockEntitiesTestedPerFrame": 1.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.016,
+              "cullMsMax": 0.149,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 307,
+              "sectionLayersCheckedPerFrame": 472.0,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 95,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 574,
+              "framesMeasured": 307,
+              "sectionLayersPerFrame": 0.0,
+              "drawCallsPerFrame": 0.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 0.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 0,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": null,
+              "sortMsP95": null,
+              "sortMsMax": null,
+              "sortMsTotal": 0.0,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 0,
+              "resortsUploadedSinceStart": 0,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 307,
+              "entriesChecked": 0,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 20.0,
+              "brimstoneArenasUsedMB": 15.206,
+              "reservedMB": 20.0,
+              "usedMB": 15.206
+            },
+            "frames": 306,
+            "fps": 15.32
+          },
+          "mobs": {
+            "drawCallsPerFrame": 140.7,
+            "uploadsPerFrame": 15,
+            "uploadBytesPerFrame": 610676,
+            "drawCallsPerFrameAvg": 140.7,
+            "drawCallsPerFrameMedian": 143,
+            "uploadBytesPerFrameAvg": 610674.17,
+            "heapUsedAfterGcMB": 263.3,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": null,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 6,
+              "arenas": 2,
+              "arenaMB": 16.0,
+              "usedMB": 9.647,
+              "arenaGrows": 8,
+              "liveVertices": 602956,
+              "vertexMB": 9.2,
+              "vanillaEquivalentMB": 16.101,
+              "layersTaken": 4382,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 9674636,
+              "verticesWithPositionRounded": 2496460,
+              "verticesWithUvRounded": 14402,
+              "positionRoundedPct": 25.804,
+              "drawCallsPerFrame": 11.027,
+              "sectionLayersPerFrame": 198.491
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 404,
+              "sectionsVisiblePerFrame": 108.0,
+              "entitiesPerFrame": 65.0,
+              "entitiesTestedPerFrame": 64.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 0.0,
+              "blockEntitiesTestedPerFrame": 0.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.136,
+              "cullMsMax": 0.264,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 404,
+              "sectionLayersCheckedPerFrame": 198.0,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 204,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 574,
+              "framesMeasured": 404,
+              "sectionLayersPerFrame": 0.0,
+              "drawCallsPerFrame": 0.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 0.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 0,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": null,
+              "sortMsP95": null,
+              "sortMsMax": null,
+              "sortMsTotal": 0.0,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 0,
+              "resortsUploadedSinceStart": 0,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 404,
+              "entriesChecked": 0,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 16.0,
+              "brimstoneArenasUsedMB": 9.647,
+              "reservedMB": 16.0,
+              "usedMB": 9.647
+            },
+            "frames": 403,
+            "fps": 20.18
+          },
+          "occlusion": {
+            "drawCallsPerFrame": 99.33,
+            "uploadsPerFrame": 13,
+            "uploadBytesPerFrame": 98148,
+            "drawCallsPerFrameAvg": 99.33,
+            "drawCallsPerFrameMedian": 138,
+            "uploadBytesPerFrameAvg": 98117.33,
+            "heapUsedAfterGcMB": 264.88,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": null,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 6,
+              "arenas": 3,
+              "arenaMB": 20.0,
+              "usedMB": 2.597,
+              "arenaGrows": 8,
+              "liveVertices": 163160,
+              "vertexMB": 2.49,
+              "vanillaEquivalentMB": 4.357,
+              "layersTaken": 4604,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 10159004,
+              "verticesWithPositionRounded": 2501196,
+              "verticesWithUvRounded": 14402,
+              "positionRoundedPct": 24.62,
+              "drawCallsPerFrame": 10.017,
+              "sectionLayersPerFrame": 69.115
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 601,
+              "sectionsVisiblePerFrame": 48.0,
+              "entitiesPerFrame": 11.0,
+              "entitiesTestedPerFrame": 10.0,
+              "entitiesCulledPerFrame": 2.0,
+              "entitiesCulled": 1202,
+              "blockEntitiesPerFrame": 9.0,
+              "blockEntitiesTestedPerFrame": 9.0,
+              "blockEntitiesCulledPerFrame": 4.0,
+              "blockEntitiesCulled": 2404,
+              "cullMsPerFrame": 0.068,
+              "cullMsMax": 0.328,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 601,
+              "sectionLayersCheckedPerFrame": 69.0,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 3606,
+              "verifiedRays": 1632316,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 399,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 593,
+              "framesMeasured": 601,
+              "sectionLayersPerFrame": 2.0,
+              "drawCallsPerFrame": 2.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 1.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 0,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": null,
+              "sortMsP95": null,
+              "sortMsMax": null,
+              "sortMsTotal": 0.0,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 0,
+              "resortsUploadedSinceStart": 0,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 601,
+              "entriesChecked": 1202,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 20.0,
+              "brimstoneArenasUsedMB": 2.597,
+              "reservedMB": 20.0,
+              "usedMB": 2.597
+            },
+            "frames": 600,
+            "fps": 30.0
+          },
+          "occlusion_move": {
+            "drawCallsPerFrame": 101.03,
+            "uploadsPerFrame": 13,
+            "uploadBytesPerFrame": 79984,
+            "drawCallsPerFrameAvg": 101.03,
+            "drawCallsPerFrameMedian": 136,
+            "uploadBytesPerFrameAvg": 76699.58,
+            "heapUsedAfterGcMB": 265.33,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": 5.259,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 7,
+              "arenas": 3,
+              "arenaMB": 20.0,
+              "usedMB": 3.399,
+              "arenaGrows": 8,
+              "liveVertices": 212528,
+              "vertexMB": 3.243,
+              "vanillaEquivalentMB": 5.675,
+              "layersTaken": 4880,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 10765864,
+              "verticesWithPositionRounded": 2506764,
+              "verticesWithUvRounded": 14402,
+              "positionRoundedPct": 23.284,
+              "drawCallsPerFrame": 10.997,
+              "sectionLayersPerFrame": 74.436
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 597,
+              "sectionsVisiblePerFrame": 50.347,
+              "entitiesPerFrame": 10.0,
+              "entitiesTestedPerFrame": 9.0,
+              "entitiesCulledPerFrame": 2.353,
+              "entitiesCulled": 1405,
+              "blockEntitiesPerFrame": 6.0,
+              "blockEntitiesTestedPerFrame": 6.0,
+              "blockEntitiesCulledPerFrame": 2.28,
+              "blockEntitiesCulled": 1361,
+              "cullMsPerFrame": 0.061,
+              "cullMsMax": 0.376,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 597,
+              "sectionLayersCheckedPerFrame": 74.312,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 2766,
+              "verifiedRays": 1496206,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 5496,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 626,
+              "framesMeasured": 597,
+              "sectionLayersPerFrame": 2.0,
+              "drawCallsPerFrame": 2.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 1.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 36,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": 0.015,
+              "sortMsP95": 0.033,
+              "sortMsMax": 0.056,
+              "sortMsTotal": 0.556,
+              "resortsTaken": 32,
+              "resortsUploaded": 32,
+              "resortsTakenSinceStart": 52,
+              "resortsUploadedSinceStart": 52,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 597,
+              "entriesChecked": 1194,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 20.0,
+              "brimstoneArenasUsedMB": 3.399,
+              "reservedMB": 20.0,
+              "usedMB": 3.399
+            },
+            "frames": 596,
+            "fps": 29.85
+          },
+          "translucent_move": {
+            "drawCallsPerFrame": 133.0,
+            "uploadsPerFrame": 13,
+            "uploadBytesPerFrame": 2836,
+            "drawCallsPerFrameAvg": 133.0,
+            "drawCallsPerFrameMedian": 133,
+            "uploadBytesPerFrameAvg": 31408.58,
+            "heapUsedAfterGcMB": 267.93,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": 6.713,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 7,
+              "arenas": 3,
+              "arenaMB": 28.0,
+              "usedMB": 12.979,
+              "arenaGrows": 9,
+              "liveVertices": 801104,
+              "vertexMB": 12.224,
+              "vanillaEquivalentMB": 21.392,
+              "layersTaken": 5649,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 12848516,
+              "verticesWithPositionRounded": 2578008,
+              "verticesWithUvRounded": 15610,
+              "positionRoundedPct": 20.065,
+              "drawCallsPerFrame": 12.036,
+              "sectionLayersPerFrame": 245.458
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 333,
+              "sectionsVisiblePerFrame": 132.294,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 0.0,
+              "blockEntitiesTestedPerFrame": 0.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.0,
+              "cullMsMax": 0.02,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 333,
+              "sectionLayersCheckedPerFrame": 244.721,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 8436,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 706,
+              "framesMeasured": 333,
+              "sectionLayersPerFrame": 7.0,
+              "drawCallsPerFrame": 2.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 1.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 180,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": 0.147,
+              "sortMsP95": 0.201,
+              "sortMsMax": 2.412,
+              "sortMsTotal": 26.404,
+              "resortsTaken": 180,
+              "resortsUploaded": 180,
+              "resortsTakenSinceStart": 262,
+              "resortsUploadedSinceStart": 262,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 333,
+              "entriesChecked": 2331,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 28.0,
+              "brimstoneArenasUsedMB": 12.979,
+              "reservedMB": 28.0,
+              "usedMB": 12.979
+            },
+            "frames": 332,
+            "fps": 16.63
+          },
+          "water_glass_oit": {
+            "drawCallsPerFrame": 140.0,
+            "uploadsPerFrame": 13,
+            "uploadBytesPerFrame": 7652,
+            "drawCallsPerFrameAvg": 140.0,
+            "drawCallsPerFrameMedian": 140,
+            "uploadBytesPerFrameAvg": 7526.86,
+            "heapUsedAfterGcMB": 246.11,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": null,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 7,
+              "arenas": 3,
+              "arenaMB": 28.0,
+              "usedMB": 12.428,
+              "arenaGrows": 3,
+              "liveVertices": 771684,
+              "vertexMB": 11.775,
+              "vanillaEquivalentMB": 20.606,
+              "layersTaken": 1476,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 3831456,
+              "verticesWithPositionRounded": 662600,
+              "verticesWithUvRounded": 2924,
+              "positionRoundedPct": 17.294,
+              "drawCallsPerFrame": 16.089,
+              "sectionLayersPerFrame": 280.559
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 180,
+              "sectionsVisiblePerFrame": 139.0,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 0.0,
+              "blockEntitiesTestedPerFrame": 0.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.001,
+              "cullMsMax": 0.001,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 180,
+              "sectionLayersCheckedPerFrame": 271.0,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 0,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 138,
+              "framesMeasured": 180,
+              "sectionLayersPerFrame": 4.0,
+              "drawCallsPerFrame": 3.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 0.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 540,
+              "sorts": 0,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": null,
+              "sortMsP95": null,
+              "sortMsMax": null,
+              "sortMsTotal": 0.0,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 0,
+              "resortsUploadedSinceStart": 0,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 180,
+              "entriesChecked": 720,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 28.0,
+              "brimstoneArenasUsedMB": 12.428,
+              "reservedMB": 28.0,
+              "usedMB": 12.428
+            },
+            "frames": 179,
+            "fps": 9.0
+          },
+          "translucent_move_oit": {
+            "drawCallsPerFrame": 140.0,
+            "uploadsPerFrame": 13,
+            "uploadBytesPerFrame": 2948,
+            "drawCallsPerFrameAvg": 140.0,
+            "drawCallsPerFrameMedian": 140,
+            "uploadBytesPerFrameAvg": 19075.54,
+            "heapUsedAfterGcMB": 248.71,
+            "directBuffersMB": 3.99,
+            "meshingMsPerSection": 6.733,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 6,
+              "arenas": 3,
+              "arenaMB": 28.0,
+              "usedMB": 12.531,
+              "arenaGrows": 3,
+              "liveVertices": 773248,
+              "vertexMB": 11.799,
+              "vanillaEquivalentMB": 20.648,
+              "layersTaken": 2836,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 7596364,
+              "verticesWithPositionRounded": 866952,
+              "verticesWithUvRounded": 7410,
+              "positionRoundedPct": 11.413,
+              "drawCallsPerFrame": 16.092,
+              "sectionLayersPerFrame": 259.293
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 175,
+              "sectionsVisiblePerFrame": 132.303,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 0.0,
+              "blockEntitiesTestedPerFrame": 0.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.001,
+              "cullMsMax": 0.004,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 175,
+              "sectionLayersCheckedPerFrame": 243.811,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 0,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 249,
+              "framesMeasured": 175,
+              "sectionLayersPerFrame": 7.0,
+              "drawCallsPerFrame": 6.0,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 1.0,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 525,
+              "sorts": 0,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": null,
+              "sortMsP95": null,
+              "sortMsMax": null,
+              "sortMsTotal": 0.0,
+              "resortsTaken": 0,
+              "resortsUploaded": 0,
+              "resortsTakenSinceStart": 30,
+              "resortsUploadedSinceStart": 30,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 175,
+              "entriesChecked": 1225,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 28.0,
+              "brimstoneArenasUsedMB": 12.531,
+              "reservedMB": 28.0,
+              "usedMB": 12.531
+            },
+            "frames": 174,
+            "fps": 8.74
+          },
+          "flythrough": {
+            "drawCallsPerFrame": 176.94,
+            "uploadsPerFrame": 50,
+            "uploadBytesPerFrame": 579788,
+            "drawCallsPerFrameAvg": 176.94,
+            "drawCallsPerFrameMedian": 174,
+            "uploadBytesPerFrameAvg": 1057444.7,
+            "heapUsedAfterGcMB": 317.82,
+            "directBuffersMB": 4.24,
+            "meshingMsPerSection": 7.27,
+            "terrain": {
+              "state": "active",
+              "reason": "on",
+              "fallbacks": 0,
+              "plainDrawPath": "plain, one multi-draw per region and layer",
+              "lastDrawPath": "plain, one multi-draw per region and layer",
+              "vertexBytes": 16,
+              "vanillaVertexBytes": 28,
+              "regionSections": "8x4x8",
+              "regions": 29,
+              "arenas": 3,
+              "arenaMB": 112.0,
+              "usedMB": 84.057,
+              "arenaGrows": 9,
+              "liveVertices": 5087004,
+              "vertexMB": 77.622,
+              "vanillaEquivalentMB": 135.838,
+              "layersTaken": 6579,
+              "layersKeptByVanilla": 0,
+              "alphaLayersKeptByVanilla": 0,
+              "translucentHandedBackForAlpha": false,
+              "verticesConverted": 14303728,
+              "verticesWithPositionRounded": 2966328,
+              "verticesWithUvRounded": 128012,
+              "positionRoundedPct": 20.738,
+              "drawCallsPerFrame": 57.262,
+              "sectionLayersPerFrame": 897.452
+            },
+            "visibility": {
+              "state": "on",
+              "reason": "on",
+              "fallbacks": 0,
+              "dryRun": false,
+              "sections": "vanilla's frustum and cave graph (SectionOcclusionGraph), unchanged",
+              "entityTypesAllowed": 13,
+              "blockEntityTypesAllowed": 12,
+              "frames": 127,
+              "sectionsVisiblePerFrame": 429.866,
+              "entitiesPerFrame": 1.0,
+              "entitiesTestedPerFrame": 0.0,
+              "entitiesCulledPerFrame": 0.0,
+              "entitiesCulled": 0,
+              "blockEntitiesPerFrame": 1.701,
+              "blockEntitiesTestedPerFrame": 0.0,
+              "blockEntitiesCulledPerFrame": 0.0,
+              "blockEntitiesCulled": 0,
+              "cullMsPerFrame": 0.002,
+              "cullMsMax": 0.013,
+              "framesOverBudget": 0,
+              "budgetMs": 2.0,
+              "terrainFrames": 127,
+              "sectionLayersCheckedPerFrame": 890.386,
+              "sectionLayersMissing": 0,
+              "verify": true,
+              "verifiedObjects": 0,
+              "verifiedRays": 0,
+              "unverifiedObjects": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "unverifiedSinceStart": 0,
+              "trackedSectionChanges": 12351,
+              "entityHookSeen": true,
+              "blockEntityHookSeen": true
+            },
+            "translucency": {
+              "dryRun": false,
+              "layersTaken": 1406,
+              "framesMeasured": 127,
+              "sectionLayersPerFrame": 187.512,
+              "drawCallsPerFrame": 26.197,
+              "runBreaksPerFrameArena": 0.0,
+              "runBreaksPerFrameIndexType": 0.0,
+              "runBreaksPerFrameRegion": 25.197,
+              "vanillaSectionLayersPerFrame": 0.0,
+              "mixedFrames": 0,
+              "mixedFramesSinceStart": 0,
+              "sectionsHandedOver": 0,
+              "sectionsHandedOverSinceStart": 0,
+              "oitFrames": 0,
+              "sorts": 862,
+              "sortsOnRenderThread": 0,
+              "sortMsAvg": 0.038,
+              "sortMsP95": 0.049,
+              "sortMsMax": 8.122,
+              "sortMsTotal": 33.065,
+              "resortsTaken": 40,
+              "resortsUploaded": 40,
+              "resortsTakenSinceStart": 40,
+              "resortsUploadedSinceStart": 40,
+              "resortsDroppedSinceStart": 0,
+              "verify": true,
+              "checkFrames": 127,
+              "entriesChecked": 23814,
+              "entriesUnchecked": 0,
+              "violations": 0,
+              "violationsSinceStart": 0,
+              "note": "sorts: vanilla's own (MeshData.SortState.buildSortedIndexBuffer) while measuring, on vanilla's worker threads unless counted as render thread (vanilla's synchronous builds of nearby sections); Brimstone takes each new index list and uploads only that list at the end of the frame, where vanilla uploads its own"
+            },
+            "terrainGpu": {
+              "vanillaHeapsReservedMB": 0.0,
+              "vanillaHeapsUsedMB": 0.0,
+              "brimstoneArenasReservedMB": 112.0,
+              "brimstoneArenasUsedMB": 84.057,
+              "reservedMB": 112.0,
+              "usedMB": 84.057
+            },
+            "frames": 126,
+            "fps": 6.3
+          }
+        }
+      },
+      "skipped": {},
+      "skippedRuns": {
+        "spawn": null,
+        "flythrough": null,
+        "water_glass": null,
+        "nether": null,
+        "mobs": null,
+        "occlusion": null,
+        "occlusion_move": null,
+        "translucent_move": null,
+        "water_glass_oit": null,
+        "translucent_move_oit": null
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+[00:00:03] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[00:00:15] [Render thread/INFO] (Brimstone) BRIMSTONE BENCH START scene=flythrough seconds=20
+[00:00:15] [Render thread/INFO] (Minecraft) [System] [CHAT] [Brimstone] Bench flythrough: setting up (needs commands allowed), then 20 s of measuring.
+[00:00:15] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[00:00:15] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[00:00:15] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[00:00:15] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[00:00:35] [Render thread/INFO] (Brimstone) BRIMSTONE BENCH MEASURING scene=flythrough
+[00:00:56] [Render thread/INFO] (Brimstone) 
+===== BRIMSTONE BENCH BEGIN =====
+  scene: flythrough (Fly-through over fresh terrain, 12 chunks, scripted path north at 10 blocks/s), 20 s
+  versions: brimstone 0.0.1+26.3, minecraft 26.3
+  fps: avg 6.3, 1% low 3.27, 0.1% low 3.25 (126 frames)
+  frame time ms: p50 142.73, p95 260.9, p99 303.08, max 308.13, frames over 50 ms 126
+  draw calls/frame: avg 176.94, median 174, p95 198, max 210  by kind {"single":120.06,"multi":56.88,"indirect":0.0}
+  uploads/frame: avg 54.83, median 50, p95 108, max 127  by kind {"write_buffer":44.77,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.06}
+  upload bytes/frame: avg 1057444.7, median 579788, p95 3445020, max 4314700  by kind {"write_buffer":1056086.03,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":1358.67}
+  heap MB: used avg 447.8, max 538.36, after GC 317.82, committed 608.0, max allowed 3998.0
+  off-heap MB: direct buffers 4.24 (34), mapped 0.0, non-heap 201.47
+  terrain GPU MB: reserved 112.0, used 84.057 (vanilla's heaps 0.0 / 0.0, Brimstone's arenas 112.0 / 84.057)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 6.17.0-1022-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 12 (effective 12), max fps 30, vsync true
+  mods: 53 mods, list hash 2822dccd7188e3e9
+  meshing: 1643 sections, ms per section avg 7.27 (vanilla mesher avg 6.744, p95 17.925; transcode per layer 0.24)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 20.738% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 57.262 for 897.452 section layers, 29 regions in 3 arenas (84.057 of 112.0 MB used; vanilla's format would need 135.838 MB), layers taken 6579, kept by vanilla 0
+  visibility: on (on), fallbacks 0, sections visible/frame 429.866, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 1.701 (tested 0.0, hidden 0.0), ms/frame 0.002 (max 0.013, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 187.512 in 26.197 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 862 (ms avg 0.038, p95 0.049, max 8.122; on the render thread 0), new index lists uploaded 40, check on (23814 checked, 0 violations, 0 since start-up)
+  counters: 41 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== BRIMSTONE BENCH END =====
+[00:00:56] [Render thread/INFO] (Brimstone) BRIMSTONE BENCH END scene=flythrough json=/home/runner/work/Brimstone/Brimstone/run/brimstone/bench/20261026-000056-flythrough.json
+[00:00:56] [Render thread/INFO] (Minecraft) [System] [CHAT] [Brimstone] Bench flythrough done: results are in latest.log and brimstone/bench/.
