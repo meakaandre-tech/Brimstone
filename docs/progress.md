@@ -9,7 +9,7 @@
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | `package-4` | **done, not merged (your review)**: `d37c587`, rebased on main, full run 40256275410 green; review fixes S1-S7 and a second independent review done. For you: flat lighting of cross models (vanilla facing, Indigo's not measured), no runtime off switch for the whole renderer (per-block/per-submit fallbacks, each fails CI), whether to declare `breaks` against other renderer mods, confirm the black-box Indigo method |
-| package 7 (GUI and text) | `package-7` | in progress; not to be merged before your review |
+| package 7 (GUI and text) | `package-7` | **done, not merged (your review)**: code `2801baa`, full run 40276630375 green. No GUI batcher: vanilla 26.3 already batches the GUI (1-23 GUI draws per frame, at most 2 to win, in map); work went into CI: hub/mam/map noise pinned (strict limits 12,506 / 155,106 / ungated down to 10), block outline scene back, Ponder index scene. For you: accept "batched GUI" as met by vanilla or redefine it; Ponder limits from fewer than 3 runs. Independent review in progress |
 | package 8 (effects) | `package-8` | in progress; not to be merged before your review |
 
 **Quick CI** (decisions on your behalf): quick mode compares Brimstone old-GPU with vanilla-a (vanilla's GL 3.3 and
