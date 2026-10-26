@@ -38,7 +38,8 @@
     "particles.bare": 4,
     "animation": 10,
     "animation.behind": 10,
-    "animation.front": 10
+    "animation.front": 10,
+    "animated_items": 10
   },
   "siftec": {
     "create_ct": 10,

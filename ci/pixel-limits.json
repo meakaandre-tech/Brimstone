@@ -38,7 +38,8 @@
     "particles.bare": 0.25,
     "animation": 0.25,
     "animation.behind": 0.25,
-    "animation.front": 0.25
+    "animation.front": 0.25,
+    "animated_items": 0.25
   },
   "siftec": {
     "create_ct": 0.25,
