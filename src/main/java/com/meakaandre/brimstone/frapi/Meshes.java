@@ -35,7 +35,7 @@ final class Meshes {
             this.base = base;
             this.exact = exact;
             this.sprite = sprite;
-            geometryDirty = true;
+            loadGeometry();
         }
 
         @Override
@@ -60,11 +60,12 @@ final class Meshes {
      * quad); {@link #emit()} does nothing (an in-place edit is not emitted, and must not clear the quad).
      */
     static final class SlotQuad extends MutableQuadViewImpl {
-        void at(int[] data, int base, BakedQuad exact, TextureAtlasSprite sprite) {
+        /** {@code stored}: the slot's geometry is stored with it (a mesh quad), else worked out again when asked for. */
+        void at(int[] data, int base, BakedQuad exact, TextureAtlasSprite sprite, boolean stored) {
             this.data = data;
             this.base = base;
-            geometryDirty = true;
-            vanillaQuad = null;
+            if (stored) loadGeometry();
+            else geometryDirty = true;
             exactQuad = exact;
             this.sprite = sprite;
         }
@@ -147,6 +148,7 @@ final class Meshes {
         };
 
         private void add(MutableQuadViewImpl q) {
+            q.computeGeometry(); // kept with the quad, as Indigo's meshes keep it
             if ((size + 1) * STRIDE > data.length) data = Arrays.copyOf(data, data.length * 2);
             System.arraycopy(q.data, q.base, data, size * STRIDE, STRIDE);
             int capacity = data.length / STRIDE;
@@ -183,7 +185,7 @@ final class Meshes {
         public void forEachMutable(Consumer<? super MutableQuadView> action) {
             SlotQuad c = new SlotQuad();
             for (int i = 0; i < size; i++) {
-                c.at(data, i * STRIDE, at(exact, i), at(sprites, i));
+                c.at(data, i * STRIDE, at(exact, i), at(sprites, i), true);
                 action.accept(c);
                 // what an in-place edit left of the vanilla quad and sprite
                 if (c.exactQuad != null && exact == null) exact = new BakedQuad[data.length / STRIDE];

@@ -1,23 +1,47 @@
+/*
+ * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Brimstone (package 4): Brimstone's block renderer (LGPL-3.0-only, like the rest of Brimstone), with the block
+// shading and tinting of Fabric API's Indigo renderer (fabric-renderer-indigo, Fabric API 0.161.0+26.3,
+// render/AltModelBlockRendererImpl: shadeQuad, tintQuad and its tint cache) adapted under the Apache License 2.0
+// above (see NOTICE). Changes: Brimstone's quad classes; quads are shaded in a held copy rather than as a transform on
+// the output emitter; Indigo's ambient occlusion mode fixed to its default (hybrid).
+
 package com.meakaandre.brimstone.frapi;
 
 import com.meakaandre.brimstone.BrimstoneClient;
-import com.mojang.blaze3d.vertex.QuadInstance;
+import com.meakaandre.brimstone.mixin.frapi.BlockModelLighterAccessor;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.ShadeMode;
 import net.fabricmc.fabric.api.client.renderer.v1.model.FabricBlockStateModel;
 import net.fabricmc.fabric.api.client.renderer.v1.render.AltModelBlockRenderer;
-import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.client.Minecraft;
+import net.fabricmc.fabric.api.client.renderer.v1.render.ExtraLightCoordsUtil;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockTintsFactory;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockModelLighter;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
@@ -28,24 +52,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Brimstone's block tessellation for the Fabric Renderer API (chunk meshing, moving blocks): the model emits its
- * quads ({@link FabricBlockStateModel#emitQuads}), and each is culled, lit, tinted and written the way vanilla's
- * {@link ModelBlockRenderer} does it: smooth lighting as Indigo (the reference) does it ({@link FaceAo}), flat lighting
- * through vanilla's own {@link BlockModelLighter} (on the quad's vanilla {@link BakedQuad} where it still has one),
- * vanilla's tint sources and vanilla's light-emission rule. The API's per-quad properties come on top: its ambient
- * occlusion setting, vertex colours, lightmaps and emissive flag. One instance per meshing call (one thread).
+ * Brimstone's block tessellation for the Fabric Renderer API (chunk meshing, moving blocks): the model emits its quads
+ * ({@link FabricBlockStateModel#emitQuads}), and each is culled (vanilla's {@link Block#shouldRenderFace}), lit, tinted
+ * and moved into place exactly as Indigo, the API's reference renderer, does it (smooth lighting {@link AoCalculator},
+ * flat lighting {@link FlatLighter}, Indigo's tint cache). One instance per meshing call (one thread).
  *
  * <p>A block's quads are held until its model has emitted them all. If the model throws, they are dropped, the
  * transforms it left pushed are cleared, and the block is drawn with vanilla's own {@link ModelBlockRenderer} instead
- * (logged once), so no quad is drawn twice.
+ * (logged once), so no quad is drawn twice. With Brimstone's block renderer switched off in its config, every block
+ * goes that way.
  */
 final class BlockRenderer implements AltModelBlockRenderer {
     private final boolean ambientOcclusion;
     private final boolean cull;
     private final BlockColors blockColors;
-    private final BlockModelLighter lighter = new BlockModelLighter();
-    private final FaceAo faceAo = new FaceAo(lighter);
-    private final QuadInstance quadInstance = new QuadInstance();
+    private final AoCalculator aoCalc;
+    private final FlatLighter flatLighter;
     private final RandomSource random = RandomSource.createThreadLocalInstance(0L);
     private final BlockPos.MutableBlockPos scratch = new BlockPos.MutableBlockPos();
     private final MutableQuadViewImpl input = new MutableQuadViewImpl() {
@@ -58,44 +80,68 @@ final class BlockRenderer implements AltModelBlockRenderer {
     private int[] pending = new int[QuadData.STRIDE * 16];
     private int pendingCount;
     private final Meshes.SlotQuad slot = new Meshes.SlotQuad();
-    /** Any sprite, for the vanilla quads that vanilla's lighting gets (it never reads the sprite). */
-    private TextureAtlasSprite lightingSprite;
     private ModelBlockRenderer vanilla;
-    private static volatile boolean fallbackLogged;
+    private static volatile boolean fallbackLogged, cacheLogged;
     /** The renderer self-test's instance: its deliberate failures are not logged (nor use up the log-once). */
     boolean quiet;
 
     // the block being tessellated
-    private QuadEmitter output;
-    private float x, y, z;
+    private float offsetX, offsetY, offsetZ;
     private BlockAndTintGetter level;
     private BlockPos pos;
     private BlockState state;
+    private boolean defaultAo;
     private int cullChecked, cullHidden;
-    private List<BlockTintSource> tintSources;
-    private int tintIndex = -1, tintValue;
+
+    // Indigo's tint cache
+    private int tintCacheIndex = -1;
+    private int tintCacheValue;
+    private boolean tintSourcesInitialized;
+    private final List<BlockTintSource> tintSources = new ArrayList<>();
+    private final IntList computedTintValues = new IntArrayList();
 
     BlockRenderer(boolean ambientOcclusion, boolean cull, BlockColors blockColors) {
         this.ambientOcclusion = ambientOcclusion;
         this.cull = cull;
         this.blockColors = blockColors;
+        BlockModelLighter.Cache lightCache = lightCache();
+        aoCalc = new AoCalculator(lightCache);
+        flatLighter = new FlatLighter(lightCache);
+    }
+
+    /** Vanilla's per-thread light cache (on while sections are meshed), as Indigo uses it; a fresh one if not reachable. */
+    private static BlockModelLighter.Cache lightCache() {
+        try {
+            return BlockModelLighterAccessor.brimstone$getCache().get();
+        } catch (Throwable t) {
+            if (t instanceof VirtualMachineError e) throw e;
+            if (!cacheLogged) {
+                cacheLogged = true;
+                BrimstoneClient.LOG.warn("Brimstone renderer fallback: vanilla's block light cache is not reachable; blocks are lit"
+                    + " without it (the same light, slower)", t);
+            }
+            return new BlockModelLighter.Cache();
+        }
     }
 
     @Override
     public void tesselateBlock(QuadEmitter output, float x, float y, float z, BlockAndTintGetter level, BlockPos pos, BlockState blockState,
                                BlockStateModel model, long seed) {
+        if (BrimstoneRenderer.blockRendererOff()) {
+            tesselateVanilla(output, x, y, z, level, pos, blockState, model, seed);
+            return;
+        }
         Vec3 offset = blockState.getOffset(pos);
-        this.output = output;
-        this.x = x + (float) offset.x;
-        this.y = y + (float) offset.y;
-        this.z = z + (float) offset.z;
+        offsetX = (float) (x + offset.x);
+        offsetY = (float) (y + offset.y);
+        offsetZ = (float) (z + offset.z);
         this.level = level;
         this.pos = pos;
         this.state = blockState;
+        defaultAo = ambientOcclusion && blockState.getLightEmission() == 0;
         cullChecked = 0;
         cullHidden = 0;
-        tintSources = null;
-        tintIndex = -1;
+        aoCalc.prepare(level, blockState, pos);
         pendingCount = 0;
         boolean done = false;
         try {
@@ -114,12 +160,14 @@ final class BlockRenderer implements AltModelBlockRenderer {
             }
         } finally {
             this.level = null;
+            aoCalc.clear();
+            resetTintCache();
         }
         try {
             if (done) {
                 Meshes.SlotQuad q = slot;
                 for (int i = 0; i < pendingCount; i++) {
-                    q.at(pending, i * QuadData.STRIDE, null, null);
+                    q.at(pending, i * QuadData.STRIDE, null, null, false);
                     output.copyFrom(q);
                     output.emit();
                 }
@@ -128,7 +176,6 @@ final class BlockRenderer implements AltModelBlockRenderer {
             }
         } finally {
             pendingCount = 0;
-            this.output = null;
         }
     }
 
@@ -143,56 +190,111 @@ final class BlockRenderer implements AltModelBlockRenderer {
         return (cullHidden & bit) != 0;
     }
 
+    /** One emitted quad: culled, then shaded, tinted and moved into place in a held copy (Indigo's transform). */
     private void light(MutableQuadViewImpl quad) {
-        Direction cullFace = quad.cullFace();
-        if (hidden(cullFace)) return;
-        TriState aoSetting = quad.ambientOcclusion();
-        boolean ao = aoSetting == TriState.TRUE ? ambientOcclusion
-            : aoSetting == TriState.FALSE ? false : ambientOcclusion && state.getLightEmission() == 0;
-        BakedQuad baked = quad.vanillaQuad();
-        if (baked == null) {
-            if (lightingSprite == null) lightingSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(QuadAtlas.BLOCK.getId()).missingSprite();
-            baked = Quads.forLighting(quad, lightingSprite);
-        }
-        QuadInstance qi = quadInstance;
-        if (ao) {
-            if (!faceAo.light(level, state, pos, quad, baked, qi)) lighter.prepareQuadAmbientOcclusion(level, state, pos, baked, qi);
-        } else {
-            int lightCoords = cullFace != null ? lighter.getLightCoords(state, level, scratch.setWithOffset(pos, cullFace)) : BlockModelLighter.CHECK_LIGHT;
-            lighter.prepareQuadFlat(level, state, pos, lightCoords, baked, qi);
-        }
-        int tint = quad.tintIndex();
-        if (tint != -1) qi.multiplyColor(tintColor(tint));
-        boolean emissive = quad.emissive();
-        // vanilla writes every vertex's light through its light-emission rule (QuadInstance.getLightCoordsWithEmission),
-        // with the quad's emission; an API lightmap other than that emission is applied on top as a minimum
-        int emission = baked.materialInfo().lightEmission();
-        int vanillaLight = LightCoordsUtil.pack(emission, emission);
+        if (hidden(quad.cullFace())) return;
         if ((pendingCount + 1) * QuadData.STRIDE > pending.length) pending = Arrays.copyOf(pending, pending.length * 2);
-        Meshes.SlotQuad out = slot;
-        out.at(pending, pendingCount++ * QuadData.STRIDE, null, null);
-        out.copyFrom(quad);
-        for (int i = 0; i < 4; i++) {
-            out.pos(i, quad.x(i) + x, quad.y(i) + y, quad.z(i) + z);
-            int c = qi.getColor(i), qc = quad.color(i);
-            out.color(i, qc == -1 ? c : ARGB.multiply(c, qc));
-            int light = qi.getLightCoordsWithEmission(i, emission), ql = quad.lightmap(i);
-            out.lightmap(i, emissive ? LightCoordsUtil.FULL_BRIGHT : ql == vanillaLight ? light : LightCoordsUtil.max(light, ql));
+        Meshes.SlotQuad q = slot;
+        q.at(pending, pendingCount++ * QuadData.STRIDE, null, null, false);
+        q.copyFrom(quad);
+        shadeQuad(q, ambientOcclusion && quad.ambientOcclusion().orElse(defaultAo), quad.emissive(), quad.shadeMode() == ShadeMode.VANILLA);
+        int tintIndex = q.tintIndex();
+        if (tintIndex != -1) q.multiplyColor(getTintColor(level, state, pos, tintIndex));
+        q.translate(offsetX, offsetY, offsetZ);
+    }
+
+    private void shadeQuad(MutableQuadViewImpl quad, boolean ao, boolean emissive, boolean vanillaShade) {
+        // routines below have a bit of copy-paste code reuse to avoid conditional execution inside a hot loop
+        if (ao) {
+            aoCalc.compute(quad, vanillaShade);
+
+            if (emissive) {
+                for (int i = 0; i < 4; i++) {
+                    quad.color(i, ARGB.scaleRGB(quad.color(i), aoCalc.ao[i]));
+                    quad.lightmap(i, LightCoordsUtil.FULL_BRIGHT);
+                }
+            } else {
+                for (int i = 0; i < 4; i++) {
+                    quad.color(i, ARGB.scaleRGB(quad.color(i), aoCalc.ao[i]));
+                    quad.lightmap(i, ExtraLightCoordsUtil.smoothMax(quad.lightmap(i), aoCalc.light[i]));
+                }
+            }
+        } else {
+            if (emissive) {
+                quad.lightmap(LightCoordsUtil.FULL_BRIGHT, LightCoordsUtil.FULL_BRIGHT, LightCoordsUtil.FULL_BRIGHT, LightCoordsUtil.FULL_BRIGHT);
+            } else {
+                quad.minLightmap(flatLighter.light(level, state, pos, quad));
+            }
+
+            flatLighter.applyDirectionalBrightness(level.cardinalLighting(), quad, vanillaShade);
         }
     }
 
-    /** The tint colour for a tint index, as vanilla computes it (the block's tint source at that index), cached per block. */
-    private int tintColor(int index) {
-        if (index == tintIndex) return tintValue;
-        if (tintSources == null) tintSources = blockColors.getTintSources(state);
-        int color = -1;
-        if (index < tintSources.size()) {
-            BlockTintSource source = tintSources.get(index);
-            if (source != null) color = source.colorInWorld(state, level, pos);
+    private void configureTintCache(BlockState blockState, BlockAndTintGetter level, BlockPos pos) {
+        List<BlockTintSource> sources = blockColors.getTintSources(blockState);
+        int tintSourceCount = sources.size();
+
+        if (tintSourceCount > 0) {
+            this.tintSources.addAll(sources);
+
+            for (int i = 0; i < tintSourceCount; ++i) {
+                computedTintValues.add(-1);
+            }
+        } else {
+            final BlockTintsFactory factory = BlockColorRegistry.getFactory(blockState);
+
+            if (factory != null) {
+                factory.collect(blockState, level, pos, computedTintValues);
+            }
+
+            if (!this.computedTintValues.isEmpty()) {
+                for (int i = 0; i < this.computedTintValues.size(); i++) {
+                    this.tintSources.add(null);
+                }
+            }
         }
-        tintIndex = index;
-        tintValue = color;
-        return color;
+    }
+
+    private int computeTintColor(BlockAndTintGetter level, BlockState state, BlockPos pos, int tintIndex) {
+        if (!tintSourcesInitialized) {
+            configureTintCache(state, level, pos);
+            tintSourcesInitialized = true;
+        }
+
+        if (tintIndex >= tintSources.size()) {
+            return -1;
+        } else {
+            BlockTintSource tintSource = tintSources.set(tintIndex, null);
+
+            if (tintSource != null) {
+                int computedTintValue = tintSource.colorInWorld(state, level, pos);
+                computedTintValues.set(tintIndex, computedTintValue);
+                return computedTintValue;
+            } else {
+                return computedTintValues.getInt(tintIndex);
+            }
+        }
+    }
+
+    private int getTintColor(BlockAndTintGetter level, BlockState state, BlockPos pos, int tintIndex) {
+        if (tintCacheIndex == tintIndex) {
+            return tintCacheValue;
+        } else {
+            int tintColor = computeTintColor(level, state, pos, tintIndex);
+            tintCacheIndex = tintIndex;
+            tintCacheValue = tintColor;
+            return tintColor;
+        }
+    }
+
+    private void resetTintCache() {
+        tintCacheIndex = -1;
+
+        if (tintSourcesInitialized) {
+            tintSources.clear();
+            computedTintValues.clear();
+            tintSourcesInitialized = false;
+        }
     }
 
     /** Vanilla's own block renderer for one block, its quads handed to the API's output as vanilla would write them. */

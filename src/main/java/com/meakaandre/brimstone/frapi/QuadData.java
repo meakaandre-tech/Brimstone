@@ -11,11 +11,12 @@ import net.minecraft.client.renderer.rendertype.RenderType;
  *
  * <p>Header: {@link #BITS} (packed properties, below), {@link #TINT}, {@link #TAG}, three render type ids
  * ({@link #ITEM_RT}, {@link #GLINT_RT}, {@link #GLINT_SPECIAL_RT}: indexes into {@link #renderType}), {@link #NORMALS}
- * (which vertices carry their own normal, bits 0-3). Then four vertices of {@link #VERTEX_STRIDE} ints: x, y, z, u, v
- * (float bits), colour (ARGB), lightmap, normal (three signed bytes, x lowest).
+ * (which vertices carry their own normal, bits 0-3), {@link #FACE_NORMAL} (the packed face normal). Then four
+ * vertices of {@link #VERTEX_STRIDE} ints: x, y, z, u, v (float bits), colour (ARGB), lightmap, normal (three signed
+ * bytes, x lowest).
  */
 final class QuadData {
-    static final int BITS = 0, TINT = 1, TAG = 2, ITEM_RT = 3, GLINT_RT = 4, GLINT_SPECIAL_RT = 5, NORMALS = 6;
+    static final int BITS = 0, TINT = 1, TAG = 2, ITEM_RT = 3, GLINT_RT = 4, GLINT_SPECIAL_RT = 5, NORMALS = 6, FACE_NORMAL = 7;
     static final int HEADER = 8;
     static final int X = 0, Y = 1, Z = 2, U = 3, V = 4, COLOR = 5, LIGHT = 6, NORMAL = 7;
     static final int VERTEX_STRIDE = 8;
@@ -25,6 +26,8 @@ final class QuadData {
     static final int NOMINAL_SHIFT = 0, CULL_SHIFT = 3, SHADE_DIR_SHIFT = 6, LAYER_SHIFT = 9, AO_SHIFT = 13, FOIL_SHIFT = 15;
     static final int DIR_MASK = 7, LAYER_MASK = 15, AO_MASK = 3, FOIL_MASK = 3;
     static final int EMISSIVE = 1 << 17, ANIMATED = 1 << 18, SHADE_VANILLA = 1 << 19, ATLAS_ITEM = 1 << 20;
+    // the quad's geometry as worked out last (light face, shape flags), kept with the packed face normal (FACE_NORMAL)
+    static final int LIGHT_FACE_SHIFT = 21, GEOMETRY_SHIFT = 24, GEOMETRY_MASK = 7;
     static final int NO_DIR = 6;
 
     /** Render types by id; replaced (never changed in place) when one is added, so reads need no lock. */
@@ -74,6 +77,6 @@ final class QuadData {
     }
 
     static float unpackNormal(int packed, int component) {
-        return ((byte) (packed >> (8 * component))) / 127f;
+        return ((byte) (packed >> (8 * component))) * (1.0f / 127.0f);
     }
 }

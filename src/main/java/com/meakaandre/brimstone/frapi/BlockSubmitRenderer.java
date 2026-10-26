@@ -118,7 +118,7 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
                 List<BakedQuad> quads = new ArrayList<>(s.mesh().size());
                 boolean[] own = {false};
                 s.mesh().forEach(q -> {
-                    if (Quads.vanillaLike(q)) quads.add(Quads.toBaked(q));
+                    if (BrimstoneRenderer.blockRendererOff() || Quads.vanillaLike(q)) quads.add(Quads.toBaked(q));
                     else own[0] = true;
                 });
                 if (!quads.isEmpty()) addVanilla(s, List.of(new QuadsPart(quads)), v);

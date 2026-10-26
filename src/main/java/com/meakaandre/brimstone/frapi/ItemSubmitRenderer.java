@@ -77,7 +77,7 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
             if (s.mesh().size() > 0) {
                 List<BakedQuad> all = new ArrayList<>(quads);
                 s.mesh().forEach(q -> {
-                    if (Quads.vanillaLike(q)) all.add(Quads.toBaked(q));
+                    if (BrimstoneRenderer.blockRendererOff() || Quads.vanillaLike(q)) all.add(Quads.toBaked(q));
                     else own[0] = true;
                 });
                 quads = all;

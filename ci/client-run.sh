@@ -127,12 +127,14 @@ sleep 2
 echo "op @a" >&3
 
 # one client session per render distance and set of client options (package 3: scenes with "clientOptions", e.g.
-# Improved Transparency, get their own session with those lines in options.txt; the same in every run)
+# Improved Transparency, get their own session with those lines in options.txt; the same in every run; package 4:
+# "brimstoneConfig", e.g. the block renderer off, likewise, written to config/brimstone.properties)
 groups=$(python3 -c "
 import json; s=json.load(open('$suitefile'))
 rd={}
 for x in s['scenes']:
-    opts=','.join(k+'='+str(v) for k,v in sorted((x.get('clientOptions') or {}).items()))
+    o=dict(x.get('clientOptions') or {}); o.update({'brimstone.'+k: v for k,v in (x.get('brimstoneConfig') or {}).items()})
+    opts=','.join(k+'='+str(v) for k,v in sorted(o.items()))
     rd.setdefault((x.get('renderDistance',8), opts),[]).append(x['id'])
 print(' '.join(str(k[0])+'|'+(k[1] or '-')+'|'+','.join(v) for k,v in sorted(rd.items())))")
 echo "sessions: $groups"
@@ -145,8 +147,15 @@ for g in $groups; do
   # glDebugVerbosity 1 (the game's default, set explicitly): the GPU's high-severity debug messages, errors among them,
   # go to the log in every run alike; ci/compare.py compares their counts between Brimstone and vanilla
   printf 'pauseOnLostFocus:false\nglDebugVerbosity:1\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nkey_key.use:22\n' "$rd" > run/options.txt
+  # package 4: "brimstoneConfig" entries (brimstone.<key>=<value>) go to Brimstone's config file, the rest to options.txt
+  mkdir -p run/config; rm -f run/config/brimstone.properties
   if [ "$opts" != "-" ]; then
-    for kv in $(echo "$opts" | tr ',' ' '); do echo "${kv%%=*}:${kv#*=}" >> run/options.txt; done
+    for kv in $(echo "$opts" | tr ',' ' '); do
+      case "$kv" in
+        brimstone.*) k=${kv%%=*}; echo "${k#brimstone.}=${kv#*=}" >> run/config/brimstone.properties;;
+        *) echo "${kv%%=*}:${kv#*=}" >> run/options.txt;;
+      esac
+    done
     echo "session $n client options: $opts"
   fi
   rm -f run/logs/latest.log

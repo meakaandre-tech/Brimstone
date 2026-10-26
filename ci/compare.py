@@ -160,6 +160,18 @@ def drive_skips(run_dir):
     return out
 
 
+def session_options(suite):
+    """Each client session's options in client-run.sh's order (client-<n>.log is session n): per render distance and
+    set of client options and Brimstone config entries (brimstone.<key>=<value>)."""
+    rd = {}
+    for x in suite["scenes"]:
+        o = dict(x.get("clientOptions") or {})
+        o.update({"brimstone." + k: v for k, v in (x.get("brimstoneConfig") or {}).items()})
+        opts = ",".join(k + "=" + str(v) for k, v in sorted(o.items()))
+        rd.setdefault((x.get("renderDistance", 8), opts), []).append(x["id"])
+    return [k[1] for k in sorted(rd)]
+
+
 def logs(run_dir):
     text = ""
     for f in sorted(glob.glob(os.path.join(run_dir, "client-*.log"))):
@@ -231,9 +243,18 @@ def main():
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
                     # package 4: Brimstone's Fabric Renderer API implementation draws in every Brimstone run, never falling
                     # back; measure runs stand in for vanilla, so Indigo draws there as in the vanilla runs
-                    # checked per client session (each is its own game start)
+                    # checked per client session (each is its own game start); a session whose scenes switch Brimstone's
+                    # block renderer off must start with it off and draw (its pictures are gated like every scene's)
+                    sess_opts = session_options(suite)
                     for f in sorted(glob.glob(os.path.join(d, "client-*.log"))):
                         st, sess = open(f, errors="replace").read(), os.path.basename(f)
+                        m_n = re.match(r"client-(\d+)\.log", sess)
+                        off = bool(m_n) and int(m_n.group(1)) <= len(sess_opts) and "brimstone.block-renderer=off" in sess_opts[int(m_n.group(1)) - 1]
+                        if not r.startswith("measure"):
+                            if off and "Brimstone block renderer: off" not in st:
+                                failures.append(f"{name}/{r}/{sess}: the session with block-renderer=off did not start with Brimstone's block renderer off")
+                            if not off and "Brimstone block renderer: off" in st:
+                                failures.append(f"{name}/{r}/{sess}: Brimstone's block renderer was off in a session that does not switch it off")
                         if r.startswith("measure"):
                             if "[Indigo] Registering Indigo renderer" not in st:
                                 failures.append(f"{name}/{r}/{sess}: the measure run did not draw with Fabric's Indigo renderer")
@@ -247,7 +268,8 @@ def main():
                             nwarn = len(re.findall(r"Brimstone renderer fallback:", st))
                             if nwarn:
                                 failures.append(f"{name}/{r}/{sess}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")
-                            if "Brimstone renderer self-test: passed" not in st or "Brimstone renderer self-test FAILED" in st:
+                            want_test = "Brimstone renderer self-test: not run (block renderer off)" if off else "Brimstone renderer self-test: passed"
+                            if want_test not in st or "Brimstone renderer self-test FAILED" in st:
                                 failures.append(f"{name}/{r}/{sess}: the renderer self-test did not pass (see client log)")
                     if r.startswith("measure"):
                         # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)

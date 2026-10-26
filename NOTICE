@@ -1,0 +1,15 @@
+Brimstone (https://github.com/meakaandre-tech/Brimstone), licensed under the GNU Lesser General Public License v3.0
+only (LICENSE, with the GPL-3.0 text it builds on in COPYING).
+
+This product includes software from Fabric API (https://github.com/FabricMC/fabric), the Indigo renderer
+(fabric-renderer-indigo, Fabric API 0.161.0+26.3), Copyright (c) 2016, 2017, 2018, 2019 FabricMC, licensed under the
+Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0). Adapted, with changes, in these files, each
+of which keeps the Apache License header and says what was changed:
+
+  src/main/java/com/meakaandre/brimstone/frapi/AoCalculator.java   (Indigo aocalc/AoCalculator)
+  src/main/java/com/meakaandre/brimstone/frapi/AoFace.java         (Indigo aocalc/AoFace, aocalc/AoVertexClampFunction)
+  src/main/java/com/meakaandre/brimstone/frapi/AoFaceData.java     (Indigo aocalc/AoFaceData)
+  src/main/java/com/meakaandre/brimstone/frapi/FlatLighter.java    (Indigo aocalc/FlatLighter)
+  src/main/java/com/meakaandre/brimstone/frapi/GeometryHelper.java (Indigo helper/GeometryHelper, helper/NormalHelper)
+  src/main/java/com/meakaandre/brimstone/frapi/BlockRenderer.java  (Indigo render/AltModelBlockRendererImpl: block
+                                                                    shading, tinting and its tint cache)

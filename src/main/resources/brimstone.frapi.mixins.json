@@ -4,7 +4,7 @@
   "package": "com.meakaandre.brimstone.mixin.frapi",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "BlockModelLighterInvoker",
+    "BlockModelLighterAccessor",
     "ItemFeatureRendererInvoker"
   ],
   "injectors": {

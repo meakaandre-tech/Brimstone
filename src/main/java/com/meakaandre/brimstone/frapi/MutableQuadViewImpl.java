@@ -26,15 +26,12 @@ import org.joml.Vector3fc;
  * One quad being built: Brimstone's {@link QuadEmitter}. {@link #emit()} runs the pushed transforms (last pushed
  * first), hands the quad to {@link #emitDirectly()} unless a transform dropped it, and resets it.
  *
- * <p>When the quad came from a vanilla {@link BakedQuad} ({@link #fromBakedQuad}) and nothing that vanilla's block
- * lighting reads has changed since, {@link #vanillaQuad()} returns that quad, so lighting runs on vanilla's own data;
- * while nothing a vanilla quad stores has changed, {@link #exactQuad()} returns it too (meshes keep it per quad), so a
- * vanilla quad drawn through a mesh needs no conversion back.
+ * <p>When the quad came from a vanilla {@link BakedQuad} ({@link #fromBakedQuad}) and nothing a vanilla quad stores has
+ * changed since, {@link #exactQuad()} returns it (meshes keep it per quad), so a vanilla quad drawn through a mesh
+ * needs no conversion back.
  */
 abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     private final List<QuadTransform> transforms = new ArrayList<>();
-    /** The vanilla quad this one was made from, while the positions and shade direction are still its own. */
-    BakedQuad vanillaQuad;
     /** The vanilla quad this one is unchanged from, in everything a vanilla quad stores. */
     BakedQuad exactQuad;
     /** The sprite this quad's UVs come from (its vanilla quad's or a material bake's, UVs unchanged since), or null. */
@@ -46,11 +43,6 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     }
 
     protected abstract void emitDirectly();
-
-    /** The vanilla quad this one still matches for block lighting, or null. */
-    final BakedQuad vanillaQuad() {
-        return vanillaQuad;
-    }
 
     @Override
     final BakedQuad exactQuad() {
@@ -64,7 +56,6 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
 
     private void geometryChanged() {
         geometryDirty = true;
-        vanillaQuad = null;
         exactQuad = null;
     }
 
@@ -195,7 +186,6 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     @Override
     public QuadEmitter shadeDirectionOverride(Direction shadeDirection) {
         setBits(SHADE_DIR_SHIFT, DIR_MASK, dirValue(shadeDirection));
-        vanillaQuad = null;
         exactQuad = null;
         return this;
     }
@@ -248,18 +238,21 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     public QuadEmitter copyFrom(QuadView quad) {
         if (quad instanceof QuadViewImpl q) {
             System.arraycopy(q.data, q.base, data, base, STRIDE);
-            geometryChanged();
+            // the geometry as the source has it (as Indigo copies it: a mesh quad's packed face normal included)
+            geometryDirty = q.geometryDirty;
+            if (!geometryDirty) {
+                faceNormal.set(q.faceNormal);
+                lightFace = q.lightFace;
+            }
             if (q instanceof MutableQuadViewImpl m) {
-                vanillaQuad = m.vanillaQuad;
                 exactQuad = m.exactQuad;
                 sprite = m.sprite;
             } else {
-                // a mesh quad: what the mesh kept of it (lighting goes on the decoded quad, as before meshes kept it)
+                // a mesh quad: what the mesh kept of it; its nominal face is transient, a decoded quad's is its light face
                 exactQuad = q.exactQuad();
                 sprite = q.knownSprite();
+                nominalFace(q.lightFace);
             }
-            // nominal face is transient: a decoded quad's is its light face
-            if (!(q instanceof MutableQuadViewImpl)) nominalFace(lightFace());
             return this;
         }
         clear();
@@ -307,15 +300,16 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
         nominalFace(quad.direction());
         TextureAtlasSprite s = info.sprite();
         QuadAtlas atlas = s != null ? QuadAtlas.ofLocation(s.atlasLocation()) : null;
-        if (atlas != null) atlas(atlas);
+        atlas(atlas != null ? atlas : QuadAtlas.BLOCK);
         animated(s != null && s.contents().isAnimated());
+        // as Indigo: a vanilla quad at full light emission is emissive
+        emissive(info.lightEmission() == 15);
         chunkLayer(info.layer());
         itemRenderType(info.itemRenderType());
         itemGlintRenderType(info.itemGlintRenderType());
         itemGlintSpecialRenderType(info.itemGlintSpecialRenderType());
         tintIndex(info.tintIndex());
         setBits(SHADE_DIR_SHIFT, DIR_MASK, dirValue(info.shadeDirectionOverride()));
-        vanillaQuad = quad;
         exactQuad = quad;
         sprite = s;
         return this;

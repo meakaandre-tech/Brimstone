@@ -30,6 +30,9 @@
   "custom": {
     "fabric-renderer-api-v1:contains_renderer": true
   },
+  "breaks": {
+    "sodium": "*"
+  },
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": ">=26.3- <26.4-",

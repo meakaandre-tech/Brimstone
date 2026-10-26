@@ -46,6 +46,11 @@ public final class RendererSelfTest {
     public static void tick(Minecraft mc) {
         if (done || mc.level == null || mc.player == null) return;
         done = true;
+        if (BrimstoneRenderer.blockRendererOff()) {
+            // every block and item goes to vanilla's code: nothing of Brimstone's renderer to test (CI's off session)
+            BrimstoneClient.LOG.info("Brimstone renderer self-test: not run (block renderer off)");
+            return;
+        }
         List<String> failed = new ArrayList<>();
         int checks = 0;
         try {

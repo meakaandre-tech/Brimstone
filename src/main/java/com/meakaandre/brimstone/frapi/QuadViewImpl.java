@@ -27,9 +27,13 @@ class QuadViewImpl implements QuadView {
 
     int[] data;
     int base;
-    /** Face normal and light face, computed from the positions when first asked for after a change. */
-    private final Vector3f faceNormal = new Vector3f();
-    private Direction lightFace;
+    /**
+     * Face normal, light face and shape flags, worked out from the positions (as Indigo does) when first asked for after
+     * a change, and kept in the quad's data (packed normal, light face and flags), so a mesh quad reads them back as
+     * stored, the packed normal included, as Indigo's meshes do.
+     */
+    final Vector3f faceNormal = new Vector3f();
+    Direction lightFace;
     protected boolean geometryDirty = true;
 
     QuadViewImpl(int[] data, int base) {
@@ -132,29 +136,39 @@ class QuadViewImpl implements QuadView {
         return target.set(normalX(vertexIndex), normalY(vertexIndex), normalZ(vertexIndex));
     }
 
-    private void computeGeometry() {
+    final void computeGeometry() {
         if (!geometryDirty) return;
-        // normal of the plane through the two diagonals
-        float ax = x(2) - x(0), ay = y(2) - y(0), az = z(2) - z(0);
-        float bx = x(3) - x(1), by = y(3) - y(1), bz = z(3) - z(1);
-        float nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
-        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len != 0) faceNormal.set(nx / len, ny / len, nz / len);
-        else faceNormal.set(0, 1, 0);
-        lightFace = lightFace(faceNormal.x, faceNormal.y, faceNormal.z);
         geometryDirty = false;
+        GeometryHelper.computeFaceNormal(faceNormal, this, storedNominalFace());
+        data[base + FACE_NORMAL] = GeometryHelper.packNormal(faceNormal.x, faceNormal.y, faceNormal.z);
+        lightFace = GeometryHelper.lightFace(faceNormal);
+        int flags = GeometryHelper.computeShapeFlags(this, lightFace);
+        data[base + BITS] = (data[base + BITS] & ~(DIR_MASK << LIGHT_FACE_SHIFT | GEOMETRY_MASK << GEOMETRY_SHIFT))
+            | lightFace.get3DDataValue() << LIGHT_FACE_SHIFT | flags << GEOMETRY_SHIFT;
     }
 
-    /**
-     * The face a normal points to most: its largest component, x before y before z when they are equal (within float
-     * noise), as Indigo (the reference) picks it for a quad at 45 degrees, such as a cross model's.
-     */
-    private static Direction lightFace(float nx, float ny, float nz) {
-        final float tie = 1.0e-5f;
-        float ax = Math.abs(nx), ay = Math.abs(ny), az = Math.abs(nz);
-        if (ax >= ay - tie && ax >= az - tie) return nx > 0 ? Direction.EAST : Direction.WEST;
-        if (ay >= az - tie) return ny > 0 ? Direction.UP : Direction.DOWN;
-        return nz > 0 ? Direction.SOUTH : Direction.NORTH;
+    /** Reads the stored geometry back (a mesh quad's: its geometry was worked out when it was added). */
+    final void loadGeometry() {
+        geometryDirty = false;
+        int packed = data[base + FACE_NORMAL];
+        faceNormal.set(GeometryHelper.unpackNormal(packed, 0), GeometryHelper.unpackNormal(packed, 1), GeometryHelper.unpackNormal(packed, 2));
+        lightFace = Direction.from3DDataValue(bits() >> LIGHT_FACE_SHIFT & DIR_MASK);
+    }
+
+    /** Indigo's shape flags ({@link GeometryHelper#CUBIC_FLAG} and the others). */
+    final int geometryFlags() {
+        computeGeometry();
+        return bits() >> GEOMETRY_SHIFT & GEOMETRY_MASK;
+    }
+
+    /** Whether every vertex carries its own normal. */
+    final boolean hasAllVertexNormals() {
+        return (data[base + NORMALS] & 0b1111) == 0b1111;
+    }
+
+    /** Whether any vertex carries its own normal. */
+    final boolean hasVertexNormals() {
+        return (data[base + NORMALS] & 0b1111) != 0;
     }
 
     @Override

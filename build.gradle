@@ -39,4 +39,5 @@ java {
 jar {
     from("LICENSE") { rename { "LICENSE_brimstone" } }
     from("COPYING") { rename { "COPYING_brimstone" } }
+    from("NOTICE") { rename { "NOTICE_brimstone" } }
 }
