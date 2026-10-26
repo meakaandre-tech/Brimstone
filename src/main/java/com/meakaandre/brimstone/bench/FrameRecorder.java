@@ -9,13 +9,15 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 public final class FrameRecorder {
     private static volatile boolean recording;
     private static long lastPresent;
-    private static long[] lastDraws, lastUploads, lastBytes;
+    private static long[] lastDraws, lastUploads, lastBytes, lastPhase;
 
     static final LongArrayList FRAME_NANOS = new LongArrayList();
     static final LongArrayList DRAWS = new LongArrayList();
     static final LongArrayList UPLOADS = new LongArrayList();
     static final LongArrayList BYTES = new LongArrayList();
     static long[] startDraws, startUploads, startBytes, endDraws, endUploads, endBytes;
+    /** Draws by {@link GpuCounters.Phase} at the first and last measured present (package 8). */
+    static long[] startPhase, endPhase;
 
     private FrameRecorder() {
     }
@@ -24,6 +26,8 @@ public final class FrameRecorder {
         com.meakaandre.brimstone.terrain.TerrainStats.startWindow();
         com.meakaandre.brimstone.visibility.VisibilityStats.startWindow();
         com.meakaandre.brimstone.terrain.TranslucencyStats.startWindow();
+        com.meakaandre.brimstone.animation.Animation.startWindow();
+        EffectsStats.startWindow();
         FRAME_NANOS.clear();
         DRAWS.clear();
         UPLOADS.clear();
@@ -33,13 +37,17 @@ public final class FrameRecorder {
         lastDraws = startDraws = GpuCounters.snapshot(GpuCounters.DRAWS);
         lastUploads = startUploads = GpuCounters.snapshot(GpuCounters.UPLOADS);
         lastBytes = startBytes = GpuCounters.snapshot(GpuCounters.UPLOAD_BYTES);
+        lastPhase = startPhase = GpuCounters.snapshot(GpuCounters.PHASE_DRAWS);
+        endPhase = null;
         recording = true;
     }
 
     /** Stops at the last whole frame; the counts after it are left out like the partial frame itself. */
     static void stop() {
         recording = false;
+        EffectsStats.stopWindow();
         GpuCounters.enabled = false;
+        endPhase = lastPhase;
         endDraws = lastDraws;
         endUploads = lastUploads;
         endBytes = lastBytes;
@@ -53,6 +61,7 @@ public final class FrameRecorder {
         long[] d = GpuCounters.snapshot(GpuCounters.DRAWS);
         long[] u = GpuCounters.snapshot(GpuCounters.UPLOADS);
         long[] b = GpuCounters.snapshot(GpuCounters.UPLOAD_BYTES);
+        long[] ph = GpuCounters.snapshot(GpuCounters.PHASE_DRAWS);
         if (lastPresent != 0) {
             FRAME_NANOS.add(now - lastPresent);
             DRAWS.add(sum(d) - sum(lastDraws));
@@ -63,11 +72,13 @@ public final class FrameRecorder {
             startDraws = d;
             startUploads = u;
             startBytes = b;
+            startPhase = ph;
         }
         lastPresent = now;
         lastDraws = d;
         lastUploads = u;
         lastBytes = b;
+        lastPhase = ph;
     }
 
     static long sum(long[] a) {

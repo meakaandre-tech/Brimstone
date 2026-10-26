@@ -33,7 +33,12 @@
     "translucent_move_oit.x2414": 10,
     "translucent_move_oit.x2424": 15,
     "water_glass": 25508,
-    "water_glass_oit": 57
+    "water_glass_oit": 57,
+    "particles": 4,
+    "particles.bare": 4,
+    "animation": 10,
+    "animation.behind": 10,
+    "animation.front": 10
   },
   "siftec": {
     "create_ct": 10,

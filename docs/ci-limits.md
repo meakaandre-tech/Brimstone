@@ -49,6 +49,8 @@ square of its edge in pixels at the subject's distance). Other gates that catch 
 | core/translucent_move (+ shots) | a stained-glass block out of order | one pane block face (~34 px): ~1,150 | 13 to 41 | yes |
 | core/water_glass_oit | a wrong translucent block with Improved Transparency | one block face: ~1,900 | 57 | yes |
 | core/translucent_move_oit (+ shots) | as translucent_move, with Improved Transparency | one pane block face: ~1,150 | 10 to 40 | yes |
+| core/particles (+ bare) | a missing, misplaced or wrongly drawn particle (package 8) | of the 49 particles visible in the shot, measured against the `bare` shot without them: **smallest 9 pixels**, next 16, median about 200 | 4 (Andre, 2026-10-27; was 10) | yes, every particle |
+| core/animation (+ behind, front) | an animated block or particle showing another frame than vanilla's (package 8) | the lantern ~600; a block face ~2,500 | 10 | yes |
 | siftec/factory | a wrongly drawn Create machine part | a machine ~4,800; one ladder strip ~320 | 500 | machine yes; one ladder strip alone **no** |
 | siftec/sift | a wrong block or light in the Sift terrain | a block face at mid distance (~24 px): ~580 | 100 | yes |
 | siftec/hub | a wrong GUI element or text line (package 7) | a line of text ~2,000 | 12,506 | **no** |
@@ -560,6 +562,42 @@ attempt 1, full profile (MB reserved / used):
 
 A grown arena keeps its size until it empties (the hologram's 56-72 MB were grown in the map scene before it): a known
 limit, for package 9.
+
+## Package 8: the particle and animation scenes
+
+Both scenes are made the same in every run, vanilla and Brimstone alike, by the CI pin mod (`ci/pin-mod`, `Pins`;
+docs/progress.md, package 8): in the particle scene's area particles take their random numbers from where and what
+they are, are not ticked and are drawn at partial tick 0 while the player is there, and are removed when the player
+leaves; in the animation scene's area every animated texture starts again from frame 0 when the player enters, runs
+exactly 70 ticks and is held. Vanilla's runs agree exactly on both (vanilla b/a 0 strict pixels in every run), so the
+limits are the rules' floors.
+
+| scene / shot | runs | samples (8/255 %: vanilla a/b, Brimstone; strict: vanilla b/a, Brimstone, measure runs) | limit % | strict limit |
+|---|---|---|---|---|
+| core/particles | 40257302632, 40260148458, 40263318499, 40267202902 (full), 40271672678, 40275109388 (full), 40293774852 (full) | all 0.0; strict all 0 | 0.25 | **4** |
+| core/particles.bare | 40271672678, 40275109388 (full), 40293774852 (full) | all 0.0; strict all 0 | 0.25 | **4** |
+| core/animation, .front | 40263318499, 40267202902 (full), 40271672678, 40275109388 (full) | vanilla a/b 0.0, Brimstone 0.0001 (every profile); strict vanilla 0/0, Brimstone 1, measure runs 0 | 0.25 | 10 |
+| core/animation.behind | the same | all 0.0; strict all 0 | 0.25 | 10 |
+
+Limit = max(2 x largest, largest + 0.25, 0.1) rounded up to 0.05 (0.25); strict = largest x 1.5 rounded up to 10, at
+least 10 (10), except the particle scene's: **4** (Andre, 2026-10-27), below its smallest particle (9 pixels), as its
+samples are 0 in every run and the finer rule's floor (10) would let that particle go missing unseen. Brimstone's one strict pixel in the animation shots (x 965, y 384) is on the lantern's handle edge: the lantern
+model's off-grid coordinates rounded by the 16-byte vertex (package 3, Andre's decision), the same pixel in every
+profile and run, and not in the measure runs. Earlier runs of the animation scene (before its blocks behind the camera
+moved two sections back, `5db4432`) are not counted.
+
+**Counts.** Baselines for both scenes from runs 40267202902 and 40275109388 (`ci/baselines/core-*.json`, the rule: the highest clean
+value). The animation scene's bench lets animation run freely (the pin's marker block), so its draws per frame follow
+the runner's frame rate (vanilla redraws changed sprites once per client tick): it is gated on the median from the
+start (`ciDrawCallGate`, Andre's rule for such scenes): 44 in every profile (average 33.3), raised to 49 when the
+review fixes added two steps to its bench (a block particle and a block placed while measuring; quick run
+40288502378, old-GPU median 49): the scene is new in this package, so its baseline is set, not re-collected.
+
+**Existing draw-call baselines were not lowered.** Brimstone's animation module removes most of vanilla's per-tick
+atlas redraws even in the pinned scenes (vanilla still redraws its 23 interpolated block sprites every tick: 77-115
+draws per frame in the core scenes and 94-140 in SIFTEC's, against Brimstone's 0-10; `compare/report.md`, "Effects"),
+so every draw-call baseline now has that much room. They are left as they are so the lead can merge packages 4, 7
+and 8 by hand; lowering them is listed for Andre (docs/progress.md, package 8).
 
 ## Counter audit
 

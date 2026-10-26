@@ -17,11 +17,20 @@ public final class GpuCounters {
     /** Kinds of CPU-to-GPU upload. */
     public enum Upload { WRITE_BUFFER, WRITE_TEXTURE, CREATE_BUFFER, TRANSIENT, MAP_WRITE }
 
+    /**
+     * What the render thread is drawing for, as far as the effects counters know (package 8): draws are also counted by
+     * phase while a bench measures. Set and cleared by the counting mixins around vanilla's renderers (and by
+     * Brimstone's own animation redraws); render thread only.
+     */
+    public enum Phase { OTHER, ANIMATION, PARTICLES, SKY, WEATHER, CLOUDS }
+
     public static volatile boolean enabled;
+    private static Phase phase = Phase.OTHER;
 
     static final LongAdder[] DRAWS = adders(Draw.values().length);
     static final LongAdder[] UPLOADS = adders(Upload.values().length);
     static final LongAdder[] UPLOAD_BYTES = adders(Upload.values().length);
+    static final LongAdder[] PHASE_DRAWS = adders(Phase.values().length);
 
     private static final ThreadLocal<int[]> DEPTH = ThreadLocal.withInitial(() -> new int[1]);
 
@@ -29,7 +38,26 @@ public final class GpuCounters {
     }
 
     public static void draw(Draw kind) {
-        if (enabled) DRAWS[kind.ordinal()].increment();
+        if (enabled) {
+            DRAWS[kind.ordinal()].increment();
+            PHASE_DRAWS[phase.ordinal()].increment();
+        }
+    }
+
+    /** Enters a phase; returns the one it replaces, to hand back to {@link #endPhase}. Render thread. */
+    public static Phase beginPhase(Phase p) {
+        Phase old = phase;
+        phase = p;
+        return old;
+    }
+
+    public static void endPhase(Phase previous) {
+        phase = previous == null ? Phase.OTHER : previous;
+    }
+
+    /** For the counting mixins: entering one of vanilla's renderers, or leaving it ({@code Phase.OTHER}). */
+    public static void phase(Phase p) {
+        phase = p;
     }
 
     /** Marks entry into an upload call; true if it is the outermost one on this thread (the one to count). */

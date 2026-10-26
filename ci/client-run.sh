@@ -45,7 +45,8 @@ if [ $measure = 1 ]; then
   client_jvm="$client_jvm -Dbrimstone.ci.measureOnly=true"
   echo "measure run JVM properties:$client_jvm"
 elif [ $brim = 1 ]; then
-  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true"
+  # package 8: the animation module logs each animated sprite's first use outside terrain, with where it came from
+  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true"
   if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
   if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
   echo "Brimstone run JVM properties:$client_jvm"

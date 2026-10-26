@@ -1523,6 +1523,233 @@ of cross and angled quads are gone with it.
 
 ---
 
+## Package 8: effects
+
+**Branch** `package-8` (not merged; Andre reviews it). CI logs: `ci-logs-package-8`.
+
+**Done when (doc):** "Particles, weather, sky, clouds, fog, The Sift's dimension effects, animated textures only when
+seen." Feature rows: particles and weather (as vanilla/Sodium do, written from vanilla's code and measurements),
+animated textures only when seen (texture animation work skipped for sprites not on screen); "custom dimension
+effects, sky and fog hooks keep working". The picture matches vanilla exactly in every profile.
+
+### Plan
+
+1. **Measure first** (bench, every run): draw calls per frame that vanilla spends on texture animation, particles,
+   sky, weather and clouds (draws counted while the game is inside each of those renderers), live and drawn particles,
+   particle tick and extract time. What vanilla 26.3 already does (from the class signatures): particles are frustum
+   culled at extraction into packed arrays and drawn a few draws per layer from one staged buffer; the sky comes from
+   prebuilt buffers; clouds rebuild their mesh only when the cloud cell changes; weather builds its columns only while
+   it rains; animated textures are redrawn into the block atlas on every client tick, one render pass per mip level and
+   one draw per changed sprite per level, whether or not anything on screen shows them (package 2's pin measured
+   that at 24-95 of 120-240 draw calls per frame in the core scenes and about 180-270 in SIFTEC's).
+2. **Animated textures only when seen** (the one effect with real work to save): a new module, `animation`.
+   - Which animated block-atlas sprites each section mesh shows: read from the finished mesh itself (each quad's UV
+     centre looked up in a table of the animated sprites' rectangles) on the worker thread, where the mesh goes to
+     the GPU; so it holds for vanilla, FRAPI and modded block models alike.
+   - "Seen" in a frame: in a mesh of a section in vanilla's visible list, or used anywhere outside terrain (a sprite
+     whose UVs are read outside section meshing, through the sprite's UV getters or a baked quad's UVs: items,
+     particles, entities, block entities, Create and Flywheel caches; sticky until the atlas reloads).
+   - On each client tick, sprites that changed are redrawn only if seen in the last frame; the others are marked
+     stale. Before the next frame's terrain is drawn (vanilla's visible list is known by then, no render pass is open)
+     every stale sprite that is now seen is redrawn first; a sprite first used outside terrain while stale is redrawn
+     on the spot. So whatever samples the atlas sees exactly vanilla's frame. A stale sprite that could not be redrawn
+     before its first use is counted ("late") and CI fails on any.
+   - Fallbacks: hooks missing, vertex format different, measure-only runs: off, vanilla redraws everything. Anything
+     unexpected: off for the session with one ERROR line, every stale sprite redrawn at once.
+3. **Particles, weather, sky, clouds, fog, The Sift**: optimise only where the measurement shows work to save;
+   otherwise left to vanilla (their hooks and the Sift's sky and fog then keep working by construction; the sift scene
+   checks it).
+4. **CI checks with real content:**
+   - `core/particles`: 66 kinds of particle at fixed places in front of a wall. The CI pin mod makes them the same
+     in every run, vanilla and Brimstone alike, inside that scene's area only: their random numbers seeded from where
+     they are made, frozen (not ticked, drawn at partial tick 0) while the player is in the area, removed when the
+     player leaves it.
+   - `core/animation`: animated blocks in front of the camera and behind it. The pin starts every animation from frame
+     0 when the player enters the area, lets it run exactly a fixed number of ticks and holds it there, so vanilla and
+     Brimstone reach the same frame; the blocks behind the camera are shown by extra shots after turning around (stale
+     sprites that must be caught up), plus a block particle of an animated block (a use outside terrain). During the
+     bench a marker block lets animation run freely, so the counts show vanilla's animation work against Brimstone's.
+   - compare.py: animation module on with no fallback and no late redraw in Brimstone runs, off in measure runs, and
+     skips and catch-ups seen in the animation scene.
+5. Independent review, fixes, rebase on main, green full run, docs.
+
+
+### Measurements (vanilla, from its measure runs; run 40267202902, full profile, draw calls per frame)
+
+| scene | texture animation | particles | sky | weather | clouds | particles alive / drawn |
+|---|---|---|---|---|---|---|
+| core/spawn | 115.0 | 0.44 | 3 | 0 | 0 (off in CI) | 86 / 0.8 |
+| core/water_glass | 86.3 | 1 | 3 | 0 | 0 | 52 / 52 |
+| core/nether | 87.2 | 0.8 | 0 | 0 | 0 | 43 / 8 |
+| core/mobs, occlusion, occlusion_move | 76.6-76.7 | 0 | 3 | 0 | 0 | 0 |
+| core/particles | 76.6 | 4 | 3 | 0 | 0 | 66 / 66 (the bench's own setup; 132 before the bare shot was added) |
+| core/animation (animation running) | 136.4 | 1 | 3 | 0 | 0 | 2 / 2 |
+| siftec/sift, map | 140.0 | 0 | 3-4 | 0 | 0 | 0 |
+| siftec/factory, hub, mam, hologram | 94-109 | 0-1 | 3 | 0 | 0 | 0-162 |
+
+So: texture animation is 40-60% of all of vanilla's draw calls in every scene, even with CI's pin holding animation
+still (vanilla redraws its interpolated block sprites, 23 in the core suite and 28 in SIFTEC's, on every tick, and the
+rest on every tick their frame changes). Particles (frustum culled at extraction, a few draws per layer), the sky
+(prebuilt buffers, 3-4 draws), weather (only while it rains) and clouds (mesh rebuilt only on a new cloud cell) cost
+1-4 draws each and a fraction of a millisecond (particle tick 0.001-0.16 ms per tick, extraction 0.001-0.07 ms per
+frame): nothing there worth replacing, so Brimstone leaves particles, weather, sky, clouds, fog and the Sift's
+dimension effects entirely to vanilla (their hooks keep working by construction; the sift scene shows SIFTEC's sky and
+fog matching vanilla).
+
+### What was built
+
+1. **Effects counters** (`bench/EffectsStats.java`, `mixin/counters/Effects*Mixin.java`): every bench reports draw calls
+   per frame by what they draw for (texture animation, particles, sky, weather, clouds, the rest), particles alive and
+   drawn per frame, particle tick and extraction time. Count-only mixins in the counters config, in the counter audit
+   (CI fails on a missing one). `compare/report.md` has an "Effects" table per suite and profile, vanilla (measure run)
+   next to Brimstone.
+2. **Animation module** (`animation/`, `mixin/animation/`; `brimstone.animation.mixins.json`): animated block-atlas
+   sprites are redrawn only when seen.
+   - Which animated sprites a section mesh shows is read from the mesh itself on the worker thread, as each layer goes
+     to the GPU (`RenderSection.addSectionBuffersToUberBuffer`, the hook terrain already has, before anything takes the
+     vertices): each quad's UV centre looked up in a grid of the animated sprites' rectangles (half a texel of margin).
+     So it holds for vanilla, FRAPI and modded block models alike. 0.03-0.06 ms per layer.
+   - A sprite whose UVs are read outside section meshing (the sprite's UV and position getters, a baked quad's UVs)
+     counts as used outside terrain until the atlas reloads: items, particles, entities, block entities, screen
+     overlays, Create's and Flywheel's model caches. Section meshing (a MixinExtras method wrapper, so the scope also
+     ends when meshing throws) and Fabric API's sprite finder indexing every sprite are not uses.
+   - Each client tick, sprites that changed are redrawn only if seen in the last frame (in a visible section's mesh or
+     used outside terrain); the others are marked stale. Vanilla's animation state keeps ticking exactly as before.
+   - Before each frame's terrain (vanilla's visible list known, nothing drawn yet, no render pass open), every stale
+     sprite the frame shows is redrawn; a stale sprite's first use outside terrain redraws it on the spot. A stale
+     sprite is drawn with vanilla's own `drawToAtlas`, as on the tick that changed it: with the state's redraw flag set
+     and, for a whole-frame animation, at tick 0 of its frame (vanilla only draws then, and only binds the frame then;
+     learned from CI's "Can't draw without a render pipeline", runs 40250087042-40257302632).
+   - A stale sprite that could not be redrawn before something may have drawn from it (first used inside a render pass
+     or on another thread) is counted as late; CI fails on any. None in any run.
+   - Off in measure runs (`brimstone.ci.measureOnly`); off with one ERROR line and every stale sprite redrawn at once
+     after anything unexpected; CI fails on any fallback. Debug property `brimstone.debug.animationUses` (set in CI's
+     Brimstone runs) logs each sprite's first use outside terrain with where it came from and whether it was stale.
+   - Result (run 40267202902, full): animation draws per frame 0-10 against vanilla's 77-140 in the pinned scenes, 25.7
+     against 136.4 in the animation scene with animation running; total draw calls per frame in the animation scene
+     33 (median 44) against vanilla's 144 (179).
+3. **CI pins** (`ci/pin-mod`, every run, vanilla and Brimstone alike; `Pins` holds the areas): particles in the particle
+   and animation areas seeded from where and what they are (the provider's and the particle's own random numbers),
+   not ticked and drawn at partial tick 0 while the player is in the area, removed once the player leaves; in the
+   animation area every animated texture back to frame 0 on entering and leaving, then exactly 70 ticks of animation,
+   then held (free while the scene's bench step sets its marker block). Also a banner sway pin (see deviations).
+4. **Scenes** (`core.json`): `particles` (66 particle commands, 49 particles visible at age 0, 3 blocks in front of the camera, plus a `bare` shot
+   without them) and `animation` (animated blocks in front of the camera and 34 blocks behind it, a block particle of
+   a command block whose sprite is seen nowhere else; shots `behind` and `front`). Everything there is built after
+   the 70 ticks, so Brimstone left every changed sprite out and must redraw each before it is drawn: when the front
+   blocks' sections first show, on the particle's first use, and when the `behind` shot walks to the far blocks.
+   While measuring, the scene's steps run the before-terrain and first-use paths again with animation running (a
+   block particle and a block whose sprites only the far blocks show); CI requires sprites left out, a redraw before
+   terrain and a redraw on first use inside the measured window (`ciRequiresAnimationSkip`; the bench counts catch-ups
+   by path). The core world pregenerates their area.
+   Negative control: in run 40253963481 the module's redraw of stale sprites was still broken (it fell back and redrew
+   them wrongly); the animation shots then differed from vanilla on 5,881 (front) and 3,179 (behind) strict pixels
+   against a limit of 10.
+5. **compare.py**: the animation module on, no fallback, no late redraw in Brimstone runs; off in measure runs; the
+   scene requirement above; the Effects table.
+
+### Deviations and decisions
+
+- **Clouds and weather: no new scene.** CI keeps clouds off and the weather clear, and Brimstone doesn't touch either
+  (nor the sky, fog or the Sift's dimension effects); a deterministic cloud or rain scene would test vanilla against
+  itself. Brimstone's animation redraws are the only new draws and happen before the frame's terrain, at a point where
+  vanilla's own tick-time redraws also happen.
+- **Banner sway pin** (`BannerSwayMixin`): core/occlusion_move.x2309 sees the occlusion scene's banner edge-on, and its
+  flag sways with game time, which Brimstone's benches shift: 0 to 330 strict pixels against a limit of 32 in five
+  runs, vanilla a/b 0-7. Held still in every run instead of raising the limit; banner sway is therefore untested in
+  CI (package 6's entities and block entities may want a scene with it running).
+- **Existing draw-call baselines left as they are** (they now have 70-130 draws of room): for the lead's hand merge of
+  packages 4, 7 and 8; lowering them is for Andre to decide.
+- **No independent review by a fresh agent from inside this session**: the session that built the package has no tool
+  to start another agent; it reviewed its own diff against the rules (below) and the lead should run the independent
+  review before merging.
+
+### Evidence
+
+- Full run 40275109388 (`7036ccd`, before the rebase): **passed**, every gate in both suites. New scenes: vanilla runs
+  and measure runs agree exactly with each other; Brimstone 0 strict pixels on particles, particles.bare and
+  animation.behind, 1 (the lantern edge) on animation and animation.front, in every profile. The animation module was
+  on in every Brimstone run with no fallback and no late redraw; the animation scene's three catch-up paths ran.
+- Full run 40267202902 (`22aa238`): every gate passed but the then missing limits of the new scenes.
+- Quick runs 40250087042, 40253963481, 40257302632, 40260148458, 40263318499, 40271672678 (iteration; see the
+  commits).
+- Full run 40281351708 (`2b98814`, rebased on main `0caa6ca`): **passed**. Then the review fixes below and their own
+  final full run (see "Final run").
+
+### Final run
+
+Full run 40293774852 on `da3614e` (rebased on main `d65510a`, with the review fixes): **passed**, every gate in both
+suites; the animation scene's bench ran all three catch-up paths inside its measured window (quick run 40288502378:
+12,510 left out, 2 redrawn before terrain, 1 on first use, 0 late).
+
+### Review
+
+Independent review by a headless `claude -p` reviewer with read-only tools (no agent tool in the package's session),
+of `2b98814` and run 40281351708; findings kept in the session's scratchpad (`p8/review-findings.md`). Verdict "request
+changes": F1 must be fixed, F2 documented, F3 and F4 cheap to fix. What was done:
+- **F1 (major) fixed:** the scene requirement read since-start totals that the whole client session shares (spawn
+  alone had left out 21,138 sprites before the animation scene). The bench now counts catch-ups by path (on a tick,
+  before terrain, on first use) inside the measured window, the animation scene's steps make the before-terrain and
+  first-use paths run there, and compare.py gates on those.
+- **F2 (major) documented** (Known limits): a first use outside terrain inside a render pass or on another thread
+  can't be redrawn before that draw; it is counted as late and CI fails on any, but CI only exercises render-thread
+  first uses outside a pass (none was late in any run).
+- **F3 fixed:** a batch whose redraw throws is marked stale again, so the redraw of every stale sprite after the
+  failure covers it.
+- **F4 fixed:** a handler injected into several methods (8 sprite getters, 5 baked-quad UV accessors, 2 terrain
+  prepares) counts as applied only when every target method calls it; otherwise the module stays off.
+- **F5 fixed:** after a failure on another thread, the redraw of every stale sprite also happens at a first use on the
+  render thread outside a pass, not only before the next frame's terrain.
+- **F6:** the negative control is the earlier broken run (40253963481: 5,881 and 3,179 strict pixels; see Scenes).
+- **F7 (banner pin):** left for Andre (Choices to confirm): the evidence is Brimstone against vanilla only; the pin
+  removes banner sway from CI's coverage.
+- **F8:** the new scenes' direct-buffer baselines differ between the two full runs (4.24 and 5.99 MB on full, the
+  JVM's 2 MB pool steps, as in package 3's notes); highest value kept by the rule. Existing draw-call baselines not
+  lowered (Choices to confirm).
+- **F9:** Fabric API's renderer module (`SpriteFinderImpl`, Apache-2.0, not Indigo) was opened only to see where its
+  sprite finder is built; no code taken. Listed for the lead.
+- **F10 fixed:** doc counts (66 commands, 49 visible, 66 alive in the bench), run references.
+- **F11 (note):** UV reads before the block atlas's upload finishes are not uses; recorded in Known limits.
+
+### For package 6's plan (Andre, 2026-10-27)
+
+CI now holds banner sway still in every run (`BannerSwayMixin`, package 8), so banner animation is untested: package 6
+(entities and block entities) must add a scene with banner sway running (made repeatable, as the animation scene's pin
+does for textures) and check Brimstone's banners against vanilla there.
+
+### Choices to confirm (Andre)
+
+1. The banner sway CI pin (`BannerSwayMixin`) instead of re-collecting occlusion_move.x2309's strict limit.
+2. Existing draw-call baselines left as they are (70-130 draws of room per scene since the animation module); lower
+   them after the packages 4, 7 and 8 merges?
+3. No cloud or rain scene, as Brimstone leaves clouds, weather, sky and fog to vanilla.
+4. Particles, weather, sky and clouds not optimised (vanilla spends 1-4 draws on each).
+
+### Known limits
+
+- A first use outside terrain of a stale sprite inside a render pass or on another thread (an item, entity or block
+  entity whose UVs are read while a pass is open; a Create or Flywheel worker) is drawn one frame with the stale frame:
+  it is counted as late (CI fails on any; none in any run), redrawn at the next safe point, but not prevented. CI's
+  scenes only exercise render-thread first uses outside a pass.
+- UV reads made before the block atlas's upload finishes (during the resource reload) are not uses.
+
+- A mod that copies an animated sprite's UVs without going through the sprite's getters or a baked quad (e.g. reading
+  the fields through its own accessor) would see a stale frame while nothing else shows that sprite.
+- One particle of the 49 visible in the particle scene (9 pixels) is smaller than the strict limit's floor (10).
+- Animated sprites of other atlases (items, particles, GUI) are left to vanilla; the module handles the block atlas
+  (56 animated sprites in the core suite, 119 with SIFTEC's pack).
+
+### Risks
+
+- Vanilla's AnimationState internals (where the frame's interpolation goes) are not in the bytecode dump: the design
+  only relies on drawing the current state with vanilla's own `drawToAtlas`, and the animation scene checks the
+  result against vanilla.
+- A mod that copies an animated sprite's UVs without the getters or baked quads would see a stale frame; the hooks
+  cover vanilla's paths and every mod path that reads UVs through the game's classes.
+- New scenes need limits and baselines collected by the documented rules (at least three runs).
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,

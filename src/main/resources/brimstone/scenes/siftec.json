@@ -23,10 +23,12 @@
         "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
         "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
         "#wait 4",
+        "execute in minecraft:overworld run setblock 1238 189 1018 create:fluid_tank{Size:1,Height:1,Window:1b,Fluid:{id:\"minecraft:lava\",amount:648000}}",
         "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
       ],
       "requiresMod": "siftec_selftest",
-      "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release."
+      "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.",
+      "ciNote": "Package 8 (Andre's follow-up): a Create fluid tank full of lava floats in front of the camera, so Create's fluid renderer draws an animated block sprite (lava) outside terrain; CI fails on any late redraw."
     },
     {
       "id": "factory_flat",

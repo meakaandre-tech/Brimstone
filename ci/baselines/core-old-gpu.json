@@ -1,4 +1,12 @@
 {
+  "animation": {
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 49,
+    "heapUsedAfterGcMB": 260.68,
+    "runs": 2,
+    "uploadBytesPerFrame": 1716,
+    "uploadsPerFrame": 13
+  },
   "flat_plants": {
     "directBuffersMB": 5.99,
     "drawCallsPerFrame": 137.98,
@@ -74,6 +82,14 @@
     ],
     "uploadBytesPerFrame": 102572,
     "uploadsPerFrame": 14
+  },
+  "particles": {
+    "directBuffersMB": 4.24,
+    "drawCallsPerFrame": 11.67,
+    "heapUsedAfterGcMB": 261.4,
+    "runs": 2,
+    "uploadBytesPerFrame": 16164,
+    "uploadsPerFrame": 13
   },
   "renderer_off": {
     "directBuffersMB": 5.87,

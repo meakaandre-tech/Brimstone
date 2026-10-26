@@ -35,6 +35,9 @@ block or shade, large enough to ignore rounding.
     1-2/255; the count at any difference is reported next to it); over
     ci/strict-pixel-limits.json fails (see docs/ci-limits.md); a scene with "ciNoStrict" (a reason) is reported, not
     gated, on this check.
+  - animation (package 8): every Brimstone run must show the animation module on with no fallback and no late redraw
+    (a stale animated sprite redrawn only after something may have drawn from it); measure runs must show it off;
+    scenes with "ciRequiresAnimationSkip" must have Brimstone leave out changed sprites and redraw stale ones.
 """
 import glob
 import json
@@ -137,6 +140,8 @@ def bench_results(run_dir):
             "visibility": j.get("visibility"),
             "translucency": j.get("translucency"),
             "terrainGpu": j.get("terrainGpu"),
+            "effects": j.get("effects"),
+            "animation": j.get("animation"),
             "frames": j["fps"]["frames"],
             "fps": j["fps"].get("average"),
         }
@@ -204,7 +209,7 @@ def main():
         for r, d in runs.items():
             t = logs(d)
             if os.path.isdir(d) and "brimstone_ci_pin" not in t:
-                failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift) is not among the loaded mods")
+                failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift, the particle and animation areas, banner sway) is not among the loaded mods")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
             probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)
@@ -275,10 +280,10 @@ def main():
                                 failures.append(f"{name}/{r}/{sess}: the renderer self-test did not pass (see client log)")
                     if r.startswith("measure"):
                         # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)
-                        for mod in ("terrain", "visibility"):
+                        for mod in ("terrain", "visibility", "animation"):
                             if f"Brimstone {mod}: off, brimstone.ci.measureOnly is set" not in t:
                                 failures.append(f"{name}/{r}: the {mod} module did not stay off for measuring (no measure-only line in the client log)")
-                        if "Brimstone terrain: on " in t or "Brimstone visibility: on " in t:
+                        if "Brimstone terrain: on " in t or "Brimstone visibility: on " in t or "Brimstone animation: on " in t:
                             failures.append(f"{name}/{r}: a Brimstone module turned on in a measure run")
                         for f in glob.glob(os.path.join(d, "bench", "*.json")):
                             bj = json.load(open(f))
@@ -287,6 +292,9 @@ def main():
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: modules not off for measuring (terrain {ter.get('state')} ({ter.get('reason')}), visibility {vis.get('state')})")
                             if tg.get("brimstoneArenasReservedMB") != 0 or ter.get("layersTaken", 0) != 0:
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone held terrain in a measure run ({tg.get('brimstoneArenasReservedMB')} MB, {ter.get('layersTaken')} layers)")
+                            an = bj.get("animation") or {}
+                            if an.get("state") != "off" or an.get("reason") != "measure only (CI)" or an.get("skippedSinceStart", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: animation module not off for measuring ({an.get('state')} ({an.get('reason')}), left out {an.get('skippedSinceStart')})")
                     else:
                         # the terrain module must be on in every Brimstone run and must never have fallen back to vanilla
                         if re.search(r"Brimstone terrain: (turned off|not used)", t):
@@ -307,6 +315,10 @@ def main():
                             failures.append(f"{name}/{r}: translucency: {nwarn} per-frame check misses in the client log (Brimstone's translucent draws differed from vanilla's order or latest sort)")
                         if re.search(r"Brimstone visibility: deferring", t):
                             failures.append(f"{name}/{r}: the visibility module deferred to vanilla (see client log)")
+                        if re.search(r"Brimstone animation: turned off", t):
+                            failures.append(f"{name}/{r}: the animation module fell back to vanilla (see client log)")
+                        if "Brimstone animation: on " not in t:
+                            failures.append(f"{name}/{r}: the animation module never turned on")
                         for f in glob.glob(os.path.join(d, "bench", "*.json")):
                             bj = json.load(open(f))
                             vis = bj.get("visibility")
@@ -370,6 +382,17 @@ def main():
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Brimstone's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
                             elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
+                            an = bj.get("animation")
+                            if an is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no animation report")
+                            else:
+                                if an.get("state") != "on" or an.get("fallbacks", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: animation module {an.get('state')}, fallbacks {an.get('fallbacks')} ({an.get('reason')})")
+                                if an.get("late", 0) != 0 or an.get("lateSinceStart", 0) != 0:
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: {an.get('late')} stale animated sprites redrawn late while measuring, {an.get('lateSinceStart')} since start-up (something may have drawn from them first)")
+                                # counted inside this scene's measured window only (the scene's steps make each path run there)
+                                if scene_def.get("ciRequiresAnimationSkip") and not (an.get("skipped", 0) > 0 and an.get("catchUpsBeforeTerrain", 0) > 0 and an.get("catchUpsOnFirstUse", 0) > 0):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone did not leave out and redraw animated sprites while measuring here (left out {an.get('skipped')}, redrawn before terrain {an.get('catchUpsBeforeTerrain')}, on first use {an.get('catchUpsOnFirstUse')})")
                             miss = bj.get("counters", {}).get("missing")
                             if miss is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
@@ -623,6 +646,21 @@ def main():
                     continue
                 v = c["visibility"]
                 lines.append(f"| {sc['id']}{' (dry run)' if v.get('dryRun') else ''} | {v.get('sectionsVisiblePerFrame')} | {v.get('entitiesPerFrame')} ({v.get('entitiesTestedPerFrame')}, {v.get('entitiesCulledPerFrame')}) | {v.get('blockEntitiesPerFrame')} ({v.get('blockEntitiesTestedPerFrame')}, {v.get('blockEntitiesCulledPerFrame')}) | {v.get('cullMsPerFrame')} ({v.get('cullMsMax')}; {v.get('framesOverBudget')}) | {v.get('sectionLayersMissing')} | {v.get('verifiedObjects')} / {v.get('verifiedRays')} / {v.get('violations')} / {v.get('unverifiedObjects')} |")
+            lines.append("")
+            # package 8: what vanilla spends on effects (its measure run, every Brimstone module off) next to Brimstone
+            van = {} if QUICK else bench_results(runs[MEASURE[prof]])
+            lines.append(f"Effects, {name} {prof} (reported; draw calls per frame by what they draw for; vanilla = {MEASURE[prof] if not QUICK else 'no measure run in quick mode'}):\n")
+            lines.append("| scene | animation draws: vanilla / Brimstone | particles | sky | weather | clouds | particles alive / drawn per frame | particle tick ms / extract ms | animated sprites (used outside terrain) | per tick changed / redrawn / left out | caught up / late | seen per frame |")
+            lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None or not c.get("effects"):
+                    continue
+                e, a = c["effects"], c.get("animation") or {}
+                ve = ((van.get(sc["id"]) or {}).get("effects") or {}).get("drawCallsPerFrame", {})
+                d, p = e.get("drawCallsPerFrame", {}), e.get("particles", {})
+                both = lambda k: f"{ve.get(k, '-')} / {d.get(k)}"
+                lines.append(f"| {sc['id']} | {both('animation')} | {both('particles')} | {both('sky')} | {both('weather')} | {both('clouds')} | {p.get('aliveAvg')} / {p.get('drawnPerFrame')} | {p.get('tickMsPerTick')} / {p.get('extractMsPerFrame')} | {a.get('sprites')} ({a.get('usedOutsideTerrain')}) | {a.get('changedPerTick')} / {a.get('redrawnPerTick')} / {a.get('skippedPerTick')} | {a.get('catchUps')} / {a.get('late')} | {a.get('seenPerFrame')} |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
