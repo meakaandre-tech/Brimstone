@@ -1,0 +1,42 @@
+[
+  {
+    "scene": "factory",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "map",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "hologram",
+    "skipped": "not run in measure-vk: Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
+  },
+  {
+    "scene": "create_ct",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  }
+]
