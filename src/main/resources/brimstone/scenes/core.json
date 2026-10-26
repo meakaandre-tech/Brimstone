@@ -607,6 +607,8 @@
     },
     {
       "id": "renderer_off",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40279156080, Vulkan: Brimstone 96.3 average / 123 median at 25.89 fps, vanilla's measure run 84.85 / 123 at 29.76 fps (limit x 1.10 + 2: 95.34); full on the same run: 95.72 / 123 against 97.05 / 123. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
       "title": "A stone-brick hut with slabs, stairs, a glass window and a block display, with Brimstone's block renderer switched off in its config and smooth lighting off (package 4)",
       "renderDistance": 8,
       "settleSeconds": 20,

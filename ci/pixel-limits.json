@@ -1,5 +1,6 @@
 {
   "core": {
+    "flat_plants": 0.3,
     "flythrough": 14.95,
     "mobs": 0.4,
     "nether": 0.8,
@@ -15,6 +16,7 @@
     "occlusion_move.x2297": 0.25,
     "occlusion_move.x2305": 0.25,
     "occlusion_move.x2309": 0.3,
+    "renderer_off": 0.25,
     "spawn": 10.05,
     "translucent_move": 0.3,
     "translucent_move.back": 0.3,
@@ -34,7 +36,9 @@
     "water_glass_oit": 0.3
   },
   "siftec": {
+    "create_ct": 0.25,
     "factory": 0.3,
+    "factory_flat": 0.3,
     "hologram": 0.55,
     "hub": 8.75,
     "mam": 9.3,

@@ -9,7 +9,10 @@ exactly like vanilla.
 
 ## Using it
 
-Needs Fabric Loader 0.19.5 or newer and Fabric API. Client-side; it also loads harmlessly on a server.
+Needs Fabric Loader 0.19.5 or newer and Fabric API. Client-side; it also loads harmlessly on a server. Brimstone
+replaces Sodium's job and is Fabric's block renderer itself (in place of Indigo), so it does not load next to Sodium or
+another Fabric Renderer API renderer. `config/brimstone.properties`, `block-renderer=off` (needs a restart) leaves
+every block and item to vanilla's own code.
 
 - `/brimstone bench [scene] [seconds]` measures frame rate, frame times, draw calls, uploads and memory, and writes
   the results to `latest.log` and `<game dir>/brimstone/bench/`. With no scene (or `here`) it measures where you
