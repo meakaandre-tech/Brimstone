@@ -160,6 +160,18 @@ def drive_skips(run_dir):
     return out
 
 
+def session_options(suite):
+    """Each client session's options in client-run.sh's order (client-<n>.log is session n): per render distance and
+    set of client options and Brimstone config entries (brimstone.<key>=<value>)."""
+    rd = {}
+    for x in suite["scenes"]:
+        o = dict(x.get("clientOptions") or {})
+        o.update({"brimstone." + k: v for k, v in (x.get("brimstoneConfig") or {}).items()})
+        opts = ",".join(k + "=" + str(v) for k, v in sorted(o.items()))
+        rd.setdefault((x.get("renderDistance", 8), opts), []).append(x["id"])
+    return [k[1] for k in sorted(rd)]
+
+
 def logs(run_dir):
     text = ""
     for f in sorted(glob.glob(os.path.join(run_dir, "client-*.log"))):
@@ -210,6 +222,8 @@ def main():
                 failures.append(f"{name}/{r}: GL version is not forced to 3.3 ({m.group(2).strip()})")
             if ext and old and ("GL_ARB_multi_draw_indirect" in exts or "GL_ARB_buffer_storage" in exts):
                 failures.append(f"{name}/{r}: vanilla still lists a hidden extension")
+            if r.startswith("vanilla") and os.path.isdir(d) and "[Indigo] Registering Indigo renderer" not in t:
+                failures.append(f"{name}/{r}: the vanilla run did not draw with Fabric's Indigo renderer")
             if r.startswith(("brimstone", "measure")):
                 if not probe:
                     failures.append(f"{name}/{r}: no Brimstone capability line")
@@ -227,6 +241,38 @@ def main():
                             failures.append(f"{name}/{r}: probe does not show gl=3.3")
                         if old and "vanilla.mdiKnownIssues=yes" not in p:
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
+                    # package 4: Brimstone's Fabric Renderer API implementation draws in every Brimstone run, never falling
+                    # back; measure runs stand in for vanilla, so Indigo draws there as in the vanilla runs
+                    # checked per client session (each is its own game start); a session whose scenes switch Brimstone's
+                    # block renderer off must start with it off and draw (its pictures are gated like every scene's)
+                    sess_opts = session_options(suite)
+                    for f in sorted(glob.glob(os.path.join(d, "client-*.log"))):
+                        st, sess = open(f, errors="replace").read(), os.path.basename(f)
+                        m_n = re.fullmatch(r"client-(\d+)\.log", sess)
+                        if not m_n:
+                            continue  # client-gradle-<n>.log: the same session's Gradle output
+                        off = bool(m_n) and int(m_n.group(1)) <= len(sess_opts) and "brimstone.block-renderer=off" in sess_opts[int(m_n.group(1)) - 1]
+                        if not r.startswith("measure"):
+                            if off and "Brimstone block renderer: off" not in st:
+                                failures.append(f"{name}/{r}/{sess}: the session with block-renderer=off did not start with Brimstone's block renderer off")
+                            if not off and "Brimstone block renderer: off" in st:
+                                failures.append(f"{name}/{r}/{sess}: Brimstone's block renderer was off in a session that does not switch it off")
+                        if r.startswith("measure"):
+                            if "[Indigo] Registering Indigo renderer" not in st:
+                                failures.append(f"{name}/{r}/{sess}: the measure run did not draw with Fabric's Indigo renderer")
+                            if "Brimstone renderer: off, brimstone.ci.measureOnly is set" not in st or "Fabric Renderer API implementation registered" in st:
+                                failures.append(f"{name}/{r}/{sess}: Brimstone's Fabric Renderer API implementation did not stay off for measuring")
+                        else:
+                            if "Fabric Renderer API implementation registered" not in st:
+                                failures.append(f"{name}/{r}/{sess}: Brimstone's Fabric Renderer API implementation was not registered")
+                            if "[Indigo] Registering Indigo renderer" in st:
+                                failures.append(f"{name}/{r}/{sess}: Indigo registered as the renderer next to Brimstone")
+                            nwarn = len(re.findall(r"Brimstone renderer fallback:", st))
+                            if nwarn:
+                                failures.append(f"{name}/{r}/{sess}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")
+                            want_test = "Brimstone renderer self-test: not run (block renderer off)" if off else "Brimstone renderer self-test: passed"
+                            if want_test not in st or "Brimstone renderer self-test FAILED" in st:
+                                failures.append(f"{name}/{r}/{sess}: the renderer self-test did not pass (see client log)")
                     if r.startswith("measure"):
                         # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)
                         for mod in ("terrain", "visibility"):
@@ -286,6 +332,16 @@ def main():
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: {vis.get('unverifiedObjects')} hidden objects were not ray-checked (check budget)")
                                 if scene_def.get("ciRequiresCulling") and not (vis.get("entitiesCulled", 0) > 0 and vis.get("blockEntitiesCulled", 0) > 0):
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
+                            # package 4: which path the blocks and API mesh quads took since the session started; with
+                            # block-renderer=off none may go Brimstone's way, else none to vanilla's block renderer
+                            rs = bj.get("renderer")
+                            off_scene = (scene_def.get("brimstoneConfig") or {}).get("block-renderer") == "off"
+                            if rs is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no renderer report")
+                            elif off_scene and not (rs.get("blockRendererOff") and rs.get("blocksBrimstone") == 0 and rs.get("meshQuadsBrimstone") == 0 and rs.get("blocksVanilla", 0) > 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: with block-renderer=off, blocks Brimstone/vanilla {rs.get('blocksBrimstone')}/{rs.get('blocksVanilla')}, mesh quads by Brimstone {rs.get('meshQuadsBrimstone')} (want 0/more than 0, 0)")
+                            elif not off_scene and (rs.get("blockRendererOff") or rs.get("blocksVanilla") != 0 or rs.get("blocksBrimstone", 0) == 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: blocks Brimstone/vanilla {rs.get('blocksBrimstone')}/{rs.get('blocksVanilla')} (want more than 0/0), block renderer off: {rs.get('blockRendererOff')}")
                             tr = bj.get("translucency")
                             if tr is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no translucency report")
@@ -479,6 +535,9 @@ def main():
                         if v > bv * RISE + SLACK[k]:
                             failures.append(f"{name}/{prof}/{sid}: {k}{' (median)' if k == 'drawCallsPerFrame' and sid in median_gated else ''} rose from {bv} to {v} (over 10%)")
                     cells.append(cell)
+                if base is not None and sid not in base:
+                    # package 4: a scene with no committed baseline would go ungated without a word
+                    failures.append(f"{name}/{prof}/{sid}: no committed baseline entry in {base_file}")
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
             # package 3 (Andre, 2026-10-25), against vanilla measured in the same run (MEASURE): in the translucent
             # scenes (ci/vanilla-draw-calls.json) Brimstone's median draw calls per frame at most vanilla's median; in

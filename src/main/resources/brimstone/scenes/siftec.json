@@ -29,6 +29,26 @@
       "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release."
     },
     {
+      "id": "factory_flat",
+      "title": "The SIFTEC factory scene (the buildings_a row) with smooth lighting off: flat lighting of SIFTEC and Create models (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
+        "execute in minecraft:overworld run forceload add 1180 960 1290 1040",
+        "#wait 10",
+        "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
+        "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
+        "#wait 4",
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
+      ],
+      "requiresMod": "siftec_selftest",
+      "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.",
+      "clientOptions": {
+        "ao": "false"
+      }
+    },
+    {
       "id": "sift",
       "title": "The Sift (Mielon's The Sift dimension; its own clock and weather pinned too)",
       "renderDistance": 8,
@@ -149,6 +169,37 @@
         "measure-vk"
       ],
       "ciSkipReason": "Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
+    },
+    {
+      "id": "create_ct",
+      "title": "Create connected textures: walls of andesite casing (with a corner), brass casing, copper casing with a stone block set in it, and framed glass, each beside a non-connecting block (stone, glass) (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2071.5 243 -1987.5 180 12",
+        "#wait 6",
+        "fill 2056 236 -2014 2094 252 -1982 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2056,y=230,z=-2014,dx=38,dy=22,dz=32] 2075.5 -200 -1995.5",
+        "fill 2056 239 -2012 2094 239 -1984 minecraft:smooth_stone",
+        "fill 2060 240 -2000 2064 243 -2000 create:andesite_casing",
+        "fill 2060 240 -1999 2060 243 -1997 create:andesite_casing",
+        "fill 2065 240 -2000 2065 243 -2000 minecraft:stone",
+        "fill 2066 240 -2000 2070 243 -2000 create:brass_casing",
+        "fill 2071 240 -2000 2071 243 -2000 minecraft:stone",
+        "fill 2072 240 -2000 2076 243 -2000 create:copper_casing",
+        "setblock 2074 241 -2000 minecraft:stone",
+        "fill 2077 240 -2000 2077 243 -2000 minecraft:stone",
+        "fill 2078 240 -2000 2082 243 -2000 create:framed_glass",
+        "fill 2083 240 -2000 2083 243 -2000 minecraft:glass",
+        "fill 2066 240 -1996 2068 240 -1994 create:brass_casing",
+        "execute in minecraft:overworld run tp @a 2071.5 243 -1987.5 180 12"
+      ],
+      "requiresMod": "create",
+      "requiresNote": "Create's casings and framed glass: without Create the scene would show only stone, so it is skipped.",
+      "ciNote": "The design doc's done-when names Create's connected textures: Create draws them through the Fabric Renderer API, so these blocks are tessellated by Brimstone's renderer in Brimstone's runs and by Indigo in the vanilla runs. CT blocks in view: create:andesite_casing (a 5x4 wall plus a 3-block return at its west end), create:brass_casing (a 5x4 wall and a 3x3 floor patch in front), create:copper_casing (a 5x4 wall with minecraft:stone set in at its centre left), create:framed_glass (a 5x4 wall); each wall ends against minecraft:stone or minecraft:glass, which do not connect. CI presses F1 after the setup (vanilla's hide-GUI key): SIFTEC's minimap shows whichever tiles it has scanned, which differs from run to run (vanilla against vanilla up to 167 strict pixels in run 40274749083), and a single wrong connected-texture border is smaller than that. It is the suite's last scene, so the hidden GUI reaches only its own bench.",
+      "ciKeys": [
+        "F1"
+      ]
     }
   ],
   "prepare": [

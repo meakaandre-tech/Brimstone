@@ -39,4 +39,6 @@ java {
 jar {
     from("LICENSE") { rename { "LICENSE_brimstone" } }
     from("COPYING") { rename { "COPYING_brimstone" } }
+    from("NOTICE") { rename { "NOTICE_brimstone" } }
+    from("LICENSE-APACHE-2.0") { rename { "LICENSE-APACHE-2.0_brimstone" } }
 }

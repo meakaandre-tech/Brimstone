@@ -553,6 +553,87 @@
         "improvedTransparency": "true"
       },
       "ciRequiresOit": true
+    },
+    {
+      "id": "flat_plants",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: the slower a run, the more of its frames line up with a game tick and draw that tick's extra draws, so the average moves with fps while the median does not. run 40274749083, Vulkan: Brimstone 121.34 average / 124 median at 20.36 fps, vanilla's measure run 103.03 / 124 at 24.41 fps (limit x 1.10 + 2: 115.33); full on the same run: 123.96 / 124 against 123.62 / 124 at 15.72 and 16.15 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "A garden of plants with smooth lighting off (flat lighting): grass, ferns, flowers, berry bushes, saplings, pink petals, crops on farmland, sugar cane and lily pads by water, leaves, bamboo, azaleas, moss carpet and vines (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2500.5 207 -1980.5 180 40",
+        "#wait 6",
+        "gamerule random_tick_speed 0",
+        "fill 2483 196 -2010 2517 212 -1978 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2483,y=190,z=-2010,dx=34,dy=22,dz=32] 2500.5 -200 -1995.5",
+        "fill 2485 198 -2008 2515 198 -1983 minecraft:dirt",
+        "fill 2485 199 -2008 2515 199 -1983 minecraft:grass_block",
+        "fill 2487 200 -1987 2513 200 -1987 minecraft:short_grass",
+        "fill 2487 200 -1989 2513 200 -1989 minecraft:fern",
+        "fill 2487 200 -1991 2490 200 -1991 minecraft:poppy",
+        "fill 2491 200 -1991 2494 200 -1991 minecraft:dandelion",
+        "fill 2495 200 -1991 2498 200 -1991 minecraft:blue_orchid",
+        "fill 2499 200 -1991 2502 200 -1991 minecraft:allium",
+        "fill 2503 200 -1991 2506 200 -1991 minecraft:oxeye_daisy",
+        "fill 2507 200 -1991 2510 200 -1991 minecraft:cornflower",
+        "fill 2511 200 -1991 2513 200 -1991 minecraft:azure_bluet",
+        "fill 2487 200 -1993 2492 200 -1993 minecraft:sweet_berry_bush[age=3]",
+        "fill 2493 200 -1993 2496 200 -1993 minecraft:oak_sapling",
+        "fill 2497 200 -1993 2500 200 -1993 minecraft:birch_sapling",
+        "fill 2501 200 -1993 2507 200 -1993 minecraft:pink_petals[flower_amount=4]",
+        "fill 2508 200 -1993 2513 200 -1993 minecraft:lily_of_the_valley",
+        "fill 2487 199 -1996 2513 199 -1995 minecraft:farmland[moisture=7]",
+        "fill 2487 200 -1996 2495 200 -1995 minecraft:wheat[age=7]",
+        "fill 2496 200 -1996 2504 200 -1995 minecraft:carrots[age=7]",
+        "fill 2505 200 -1996 2513 200 -1995 minecraft:potatoes[age=7]",
+        "fill 2487 199 -1997 2513 199 -1997 minecraft:water",
+        "fill 2489 200 -1997 2511 200 -1997 minecraft:lily_pad",
+        "fill 2487 200 -1998 2513 200 -1998 minecraft:sugar_cane",
+        "fill 2487 201 -1998 2513 201 -1998 minecraft:sugar_cane",
+        "fill 2487 200 -2001 2495 201 -2001 minecraft:oak_leaves[persistent=true]",
+        "fill 2496 200 -2001 2500 202 -2001 minecraft:bamboo[age=1,leaves=large]",
+        "fill 2501 200 -2001 2504 200 -2001 minecraft:azalea",
+        "fill 2505 200 -2001 2508 200 -2001 minecraft:flowering_azalea",
+        "fill 2509 200 -2001 2513 200 -2001 minecraft:moss_carpet",
+        "fill 2487 200 -2005 2513 203 -2005 minecraft:oak_planks",
+        "fill 2487 200 -2004 2513 203 -2004 minecraft:vine[north=true]",
+        "execute in minecraft:overworld run tp @a 2500.5 207 -1980.5 180 40"
+      ],
+      "clientOptions": {
+        "ao": "false"
+      },
+      "ciNote": "Flat lighting of cross and angled plant models (package 4: Brimstone lights blocks exactly as Indigo, the vanilla runs' renderer, does, flat lighting included). Random ticks are stopped so nothing grows, spreads or dries out. The gamerule stays at 0 for the rest of that game's server, in every run alike (the later sessions: renderer_off and the Improved Transparency scenes)."
+    },
+    {
+      "id": "renderer_off",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: the slower a run, the more of its frames line up with a game tick and draw that tick's extra draws, so the average moves with fps while the median does not. run 40279156080, Vulkan: Brimstone 96.3 average / 123 median at 25.89 fps, vanilla's measure run 84.85 / 123 at 29.76 fps (limit x 1.10 + 2: 95.34); full on the same run: 95.72 / 123 against 97.05 / 123. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "A stone-brick hut with slabs, stairs, a glass window and a block display, with Brimstone's block renderer switched off in its config and smooth lighting off (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2560.5 205 -1981.5 180 20",
+        "#wait 6",
+        "fill 2548 196 -2008 2572 212 -1978 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2548,y=190,z=-2008,dx=24,dy=22,dz=30] 2560.5 -200 -1995.5",
+        "fill 2550 199 -2005 2570 199 -1983 minecraft:smooth_stone",
+        "fill 2554 200 -2000 2566 204 -1992 minecraft:stone_bricks hollow",
+        "fill 2559 200 -1992 2561 202 -1992 minecraft:air",
+        "fill 2555 202 -1992 2557 203 -1992 minecraft:glass",
+        "fill 2554 205 -2000 2566 205 -1992 minecraft:oak_slab",
+        "fill 2552 200 -1990 2568 200 -1990 minecraft:oak_stairs[facing=north]",
+        "fill 2552 200 -1988 2556 200 -1986 minecraft:cobblestone",
+        "summon minecraft:block_display 2563 200 -1988 {block_state:{Name:\"minecraft:oak_log\"},transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.5f,1.5f,1.5f]}}",
+        "execute in minecraft:overworld run tp @a 2560.5 205 -1981.5 180 20"
+      ],
+      "clientOptions": {
+        "ao": "false"
+      },
+      "brimstoneConfig": {
+        "block-renderer": "off"
+      },
+      "ciNote": "CI's check of Brimstone's block-renderer=off config option (package 4): this scene's session starts with it off (ci/client-run.sh writes config/brimstone.properties), so every block and item, the block display included, is drawn by vanilla's own code; the pictures are gated against the vanilla runs like every scene's. Smooth lighting is off because vanilla's own smooth lighting is not Indigo's (Indigo's flat lighting of these cube-shaped blocks is vanilla's). Besides the picture, CI checks the bench's renderer report in this session: no block and no API mesh quad went Brimstone's way, and blocks went vanilla's (in every other session, no block went vanilla's). The self-test checks, quad by quad, that this vanilla path hands vanilla's output on unchanged for tinted, cutout and light-emitting blocks."
     }
   ]
 }

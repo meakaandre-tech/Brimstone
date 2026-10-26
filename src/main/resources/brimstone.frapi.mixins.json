@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.brimstone.mixin.frapi",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "BlockModelLighterAccessor",
+    "ItemFeatureRendererInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

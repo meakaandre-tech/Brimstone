@@ -1,4 +1,12 @@
 {
+  "flat_plants": {
+    "directBuffersMB": 5.98,
+    "drawCallsPerFrame": 124.0,
+    "heapUsedAfterGcMB": 248.07,
+    "runs": 3,
+    "uploadBytesPerFrame": 9864,
+    "uploadsPerFrame": 15
+  },
   "flythrough": {
     "directBuffersMB": 4.23,
     "drawCallsPerFrame": 122.97,
@@ -51,6 +59,14 @@
     ],
     "uploadBytesPerFrame": 104756,
     "uploadsPerFrame": 15
+  },
+  "renderer_off": {
+    "directBuffersMB": 4.1,
+    "drawCallsPerFrame": 109.4,
+    "heapUsedAfterGcMB": 241.13,
+    "runs": 3,
+    "uploadBytesPerFrame": 7180,
+    "uploadsPerFrame": 14
   },
   "spawn": {
     "directBuffersMB": 3.98,

@@ -55,6 +55,10 @@ square of its edge in pixels at the subject's distance). Other gates that catch 
 | siftec/mam | a wrong item icon or GUI element (package 7) | one item icon (32 px): ~1,000 | 155,106 | **no** |
 | siftec/map | (not strict-gated, Andre's decision: its noise is larger than anything it could show) | | not gated | |
 | siftec/hologram | a missing or wrong outline line | one outline edge ~1,200 | 413 | yes |
+| core/flat_plants (package 4) | a plant kind lit wrongly with smooth lighting off | one row of one plant kind ~1,500 or more; one flower ~150 | 350 | row yes; one flower **no** (a wrong light rule hits every plant of a kind) |
+| core/renderer_off (package 4) | a block drawn wrongly with the block renderer off | one block face (~35 px): ~1,200 | 10 | yes |
+| siftec/factory_flat (package 4) | a wrongly flat-lit Create or SIFTEC part | as factory: a machine ~4,800; one ladder strip ~320 | 40 | yes |
+| siftec/create_ct (package 4) | a wrong connected-texture border | one block's border strip (~38 px by 3): ~110 | 10 | yes |
 
 The **no** rows are limits already set (by the rule and Andre's earlier decisions) that are larger than the smallest
 thing the scene shows; they are listed for Andre, not changed. They matter most for package 7 (hub and mam are its
@@ -114,6 +118,19 @@ Every sample was at most 0.001%, so the rule's floor applies (0.3). See the tabl
 | core/translucent_move_oit (all seven shots) | at most 0.001 | 0.3 |
 | core/water_glass_oit | 0.0037, 0.003, 0.0033, 0.0035 | 0.3 |
 | siftec/hologram (run 40123696828; not run on Vulkan) | 0.0027 (vanilla a/b), 0.2629 (full), 0.238 (old-GPU) | 0.55 |
+
+Package 4's scenes (smooth lighting off, the block renderer switched off, Create connected textures). Brimstone's
+block lighting is Indigo's own code, and a diagnostic run (40274749083) found Brimstone's block renderer and Indigo's
+identical on every block of the measure runs; so Brimstone's samples below are the 16-byte vertex's rounding (package
+3, Andre's decision), not lighting. Samples per run: vanilla a/b; Brimstone full, old-GPU, Vulkan; the measure runs
+(Indigo) were 0.0 in every run but factory_flat in 40279156080 (0.0041 full). Limit by the rule above.
+
+| scene (package 4) | runs | samples (%) | limit % |
+|---|---|---|---|
+| core/flat_plants | 40270542386 (quick), 40274749083, 40279156080, 40287221751 | a/b 0.0 in all four; Brimstone 0.023, 0.023 / 0.023 / 0.0226 (each full run) | 0.3 |
+| core/renderer_off | the same four | 0.0 everywhere | 0.25 |
+| siftec/factory_flat | 40274749083, 40279156080, 40287221751 | a/b 0.0, 0.0041, 0.0; Brimstone 0.0 but 0.0041 (full, 40279156080) | 0.3 |
+| siftec/create_ct (the GUI hidden from 40279156080 on) | 40279156080, 40287221751 (third run: the final run of the branch) | 0.0 everywhere (before the GUI was hidden, run 40274749083: a/b 0.0532, all in SIFTEC's minimap) | 0.25 |
 
 The SIFTEC `hologram` scene (package 3) was sampled in run 40123696828, with only the SIFTEC suite in translucency
 dry run. It is not run in the two Vulkan runs (`ciSkipRuns`): Mesa's lavapipe segfaults as soon as Create's outliner
@@ -193,6 +210,10 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | SIFTEC/sift | with the Sift particle pin, threshold >2/255: 0/0, 0/0, 0/0 (runs 40185974374, 40187878826, 40189806229); before: 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 (threshold 0) | 55-61 (16-byte vertex: the rounding extra, not noise) | 100 (4900 before the pin) |
 | SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
 | SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
+| core/flat_plants (package 4) | 0/0 in runs 40274749083, 40279156080, 40287221751 | 225 / 225 / 217 (full / old-GPU / Vulkan) in each of the three; quick run 40270542386 old-GPU 248; measure runs 0 | 350 (finer rule: 10 for the noise, plus 1.5 x the rounding extra 225, rounded up to 10) |
+| core/renderer_off (package 4) | 0/0 in the same three | 0 | 10 |
+| SIFTEC/factory_flat (package 4) | 0/0, 0/26, 0/0 (runs 40274749083, 40279156080, 40287221751) | 0 | 40 (26 x 1.5, rounded up to 10) |
+| SIFTEC/create_ct (package 4; the GUI hidden from 40279156080 on) | 0/0, 0/0 (runs 40279156080, 40287221751; the third run is the branch's final run); before: 32/167 (minimap) | 0 | 10 (floor) |
 
 Package 3's shots use package 2's finer rule (largest sample x 1.5, rounded up to 10 pixels, at least 10). The
 smallest translucent element tested there, the single ice block in front of the stained-glass stripes, covers
@@ -477,7 +498,10 @@ vanilla: their screenshots go through the same 8/255 and strict limits against v
 (compare.py's "Measure runs" table); run 40180107484 attempt 2: every measure run inside every limit. CI also
 checks that a measure run really is vanilla: both modules' "measureOnly is set" log lines and no "on" line, every
 bench with terrain off ("measure only (CI)") and visibility off, no Brimstone arena and no layer taken, and the same
-profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag).
+profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag). Since package 4 they also draw blocks
+and items with Fabric's Indigo, as the vanilla runs do: CI takes `fabric-renderer-api-v1:contains_renderer` out of
+the measure run's copy of the jar and Brimstone does not register its renderer when measureOnly is set; CI requires
+Indigo's registration line and Brimstone's "Brimstone renderer: off" line, and no Brimstone registration.
 
 **Draw calls.** In every scene, Brimstone's draw calls per frame against the measure run of its profile, on the
 per-frame average **and** the median: the translucent scenes (`ci/vanilla-draw-calls.json`: water_glass,
@@ -500,6 +524,11 @@ Exceptions, each by Andre's rule:
 - `siftec/mam`: median only, by the same rule (2026-10-26). Run 40238316211 (the ci-quick branch, main's code),
   Vulkan: Brimstone 132.6 average / 162 median at 25.17 fps against vanilla's measure run 117.94 / 162 at 29.31 fps
   (limit x 1.10 + 2: 131.73); full in the same run 116.03 / 162 against 116.48 / 162, both at 29.83 fps.
+- `core/flat_plants` and `core/renderer_off` (package 4): median only, by the same rule (the slower run lines up more
+  frames with game ticks, so the average moves with fps and the median does not). flat_plants, run 40274749083,
+  Vulkan: Brimstone 121.34 average / 124 median at 20.36 fps against vanilla's measure run 103.03 / 124 at 24.41 fps
+  (limit x 1.10 + 2: 115.33); renderer_off, run 40279156080, Vulkan: 96.3 / 123 at 25.89 fps against 84.85 / 123 at
+  29.76 fps (limit 95.34). The reasons are on the scenes. factory_flat and create_ct are gated on both.
 - `core/flythrough`: vanilla + 2 on full and Vulkan (old-GPU stays at vanilla), Andre's rule for a fly-through excess of 2 draws per frame or fewer. Run
   40180107484 attempt 1, Vulkan: average 123.11 against vanilla's 123.05 (medians 123 and 123; full 123.07 against
   123.07). Brimstone's terrain draws there are exactly vanilla's 3 indirect draws (solid, cutout, translucent: one

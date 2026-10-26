@@ -1,4 +1,12 @@
 {
+  "create_ct": {
+    "directBuffersMB": 8.29,
+    "drawCallsPerFrame": 100.16,
+    "heapUsedAfterGcMB": 475.26,
+    "runs": 2,
+    "uploadBytesPerFrame": 1596,
+    "uploadsPerFrame": 12
+  },
   "factory": {
     "directBuffersMB": 3.71,
     "drawCallsPerFrame": 111.25,
@@ -7,6 +15,14 @@
       "40156711337 attempts 1-3"
     ],
     "uploadBytesPerFrame": 51148,
+    "uploadsPerFrame": 15
+  },
+  "factory_flat": {
+    "directBuffersMB": 3.46,
+    "drawCallsPerFrame": 107.27,
+    "heapUsedAfterGcMB": 421.17,
+    "runs": 3,
+    "uploadBytesPerFrame": 50904,
     "uploadsPerFrame": 15
   },
   "hub": {

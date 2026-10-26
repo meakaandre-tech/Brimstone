@@ -1338,6 +1338,191 @@ FPS and frame times.
 
 ---
 
+## Package 4: Fabric Renderer API (branch `package-4`, not merged: Andre reviews it first)
+
+Done when (design doc): "Full FRAPI in place of Indigo; Create connected textures and every SIFTEC model draw the
+same as with Indigo."
+
+### Plan (the first cut; "What was built" and "Review fixes" supersede it where they differ)
+
+What the API needs from a renderer in Fabric API 0.161.0+26.3 (read from its `fabric-renderer-api-v1` sources and the
+javap dump): `Renderer` (`quadEmitter`, `mutableMesh`, `altModelBlockRenderer`) and feature renderers for the API's
+two submit types (`ExtendedBlockModelSubmit`, `ExtendedItemSubmit`); the API's own mixins route chunk meshing, moving
+blocks (pistons), block models drawn as features (block displays, minecart blocks) and every item through them. A mod
+that declares `fabric-renderer-api-v1:contains_renderer` makes Indigo stand aside.
+
+1. Quads and meshes: Brimstone's own encoding (`frapi/QuadData`: 40 ints a quad), `MutableQuadViewImpl` (the
+   `QuadEmitter`, with the transform stack), `Meshes` (mutable and immutable).
+2. Blocks (`BlockRenderer`): first cut lit with vanilla's own `BlockModelLighter`; superseded (Indigo's lighting, below).
+3. Features: vanilla quads go to vanilla's own `ItemFeatureRenderer` / `BlockModelFeatureRenderer` (converted to their
+   submits; every lifecycle call forwarded one-for-one); API mesh quads are drawn as vanilla draws such a quad, with
+   vanilla's own tint lookup and special-foil decal pose through invokers.
+4. CI: every scene compares Brimstone's renderer (Brimstone runs) with Indigo (vanilla runs).
+
+**Clean room and Indigo (Andre, 2026-10-26):** Indigo is part of Fabric API, which is Apache-2.0, so the clean-room
+rule does not apply to it (the design doc's clean-room note says so): its code may be read and reused with
+attribution. Until then it was not read (its smooth lighting was measured black-box, see the history below); since
+then Brimstone's block lighting is Indigo's own code, adapted with its Apache License headers kept and a `NOTICE` file
+(shipped in the jar as `NOTICE_brimstone`). The clean-room rule still applies to every other mod.
+
+### What was built (`src/main/java/com/meakaandre/brimstone/frapi/`, `mixin/frapi/`)
+
+- `QuadData`, `QuadViewImpl`, `MutableQuadViewImpl`, `Meshes`: the API's quads, emitters and meshes in Brimstone's
+  own encoding (40 ints a quad), with the transform stack, sprite and material data. Quad geometry is Indigo's
+  (`GeometryHelper`): the face normal (the nominal face's axis when the quad lies parallel to it, else the plane through
+  its diagonals), the light face (Indigo's tie-break), the shape flags, and mesh quads keep their packed face normal,
+  light face and flags as Indigo's meshes do.
+- `BlockRenderer` (chunk meshing, pistons): the model emits its quads; each is culled with vanilla's
+  `Block.shouldRenderFace`, then shaded, tinted and moved into place exactly as Indigo's `AltModelBlockRendererImpl`
+  does it: smooth lighting `AoCalculator` (with `AoFace`, `AoFaceData`), flat lighting `FlatLighter`, Indigo's tint
+  cache (block tint sources and Fabric's `BlockColorRegistry` factories), vanilla's per-thread light cache. Indigo's
+  configuration is fixed to its defaults (ambient occlusion mode hybrid; the smooth-lighting offset, mean-light and
+  exterior-vertex fixes on), since Indigo's config file is not read once Brimstone draws.
+  A block whose model throws is drawn by vanilla's `ModelBlockRenderer` (logged once, nothing drawn twice).
+- Adapted from Indigo (Apache-2.0, headers kept, listed in `NOTICE`): `AoCalculator`, `AoFace`, `AoFaceData`,
+  `FlatLighter`, `GeometryHelper` and the shading and tinting in `BlockRenderer`.
+- `ItemSubmitRenderer`, `BlockSubmitRenderer`: the API's item and block-model submits. Vanilla quads, and mesh quads
+  carrying nothing a vanilla quad can't (white, no own normals, vanilla light, not emissive, facing along an axis), go to
+  vanilla's own `ItemFeatureRenderer` / `BlockModelFeatureRenderer`; the rest are drawn as vanilla draws such a quad,
+  with the quad's face normal where it has none of its own. Vanilla's tint lookup and foil decal pose through invokers.
+- `fabric.mod.json` declares `fabric-renderer-api-v1:contains_renderer`, so Indigo stands aside, and `breaks` Sodium;
+  Brimstone's main entrypoint (`Brimstone`, client only) registers the renderer, before any mod's client entrypoint
+  runs. Any other mod that declares `contains_renderer` is named in one error line saying which renderer won.
+- `config/brimstone.properties`, `block-renderer=on|off` (written with `on` if missing, read at start-up, needs a
+  restart): off sends every block (`BlockRenderer` straight to vanilla's `ModelBlockRenderer`) and every item and block
+  model feature (all mesh quads to vanilla's feature renderers as vanilla quads) through vanilla's code, and logs what is
+  lost (mods' API meshes lose their own lighting, colours, emissive and ambient occlusion settings). With smooth
+  lighting on, blocks then show vanilla's own smooth lighting, which differs slightly from Indigo's. The renderer itself
+  still registers: Indigo has stood aside for the whole game. The bench reports which path blocks and mesh quads took
+  (`renderer`), and CI checks it: none Brimstone's in the off session, no block vanilla's in the others.
+- CI: compare.py checks, per client session, that each vanilla run drew with Indigo, each Brimstone run with
+  Brimstone's renderer (not Indigo, no "Brimstone renderer fallback:" line, renderer self-test passed), and each
+  measure run with Indigo (CI takes `contains_renderer` out of the measure run's jar; Brimstone's renderer stays off
+  with measureOnly). The session whose scene sets `brimstoneConfig` `block-renderer=off` (ci/client-run.sh writes
+  it to `config/brimstone.properties`) must start with the block renderer off; every other session must not.
+- `RendererSelfTest` (CI, `brimstone.debug.verifyRenderer`, once in the world): a model that throws after emitting
+  quads, the transform it leaves pushed, a skipped chunk layer in a block model submit, vanilla quads through meshes
+  (kept as the same quads; dropped on any change), `emit()` on a mutable mesh cursor, and `buffer()`'s normal; "not
+  run" in the block-renderer-off session.
+- New CI scenes (package 4): `core/flat_plants` (a garden of cross, angled and tinted plants with smooth lighting
+  off), `siftec/factory_flat` (the factory with smooth lighting off), `core/renderer_off` (a stone-brick hut with
+  slabs, stairs, a window and a block display, block renderer off, smooth lighting off) and `siftec/create_ct`
+  (Create connected textures, below).
+
+### Create connected textures (done-when)
+
+`siftec/create_ct` shows, in one picture: a 5x4 wall of `create:andesite_casing` with a 3-block return at its west end
+(connections around a corner), a 5x4 wall of `create:brass_casing` and a 3x3 floor patch of it in front, a 5x4 wall of
+`create:copper_casing` with `minecraft:stone` set in at its centre left (CT around a non-CT block), and a 5x4 wall of
+`create:framed_glass`; each wall ends against `minecraft:stone` or `minecraft:glass`, which do not connect. Create
+draws these through the Fabric Renderer API, so Brimstone's renderer tessellates them in Brimstone's runs and Indigo in
+the vanilla runs, in every profile (full, old-GPU, Vulkan). CI hides the GUI for this picture (SIFTEC's minimap is run
+to run noise larger than a single connected-texture border). Result (runs 40279156080 and 40287221751): in full,
+old-GPU and Vulkan, 0.0% of pixels over 8/255 and 0 strict pixels against the vanilla runs, the same as vanilla
+against itself.
+
+### Exactness against Indigo
+
+A branch-only diagnostic (run 40274749083, removed in the next commit) ran Brimstone's `BlockRenderer` next to Indigo's
+on every block Indigo tessellated in the six measure runs (Indigo is the renderer there: chunk meshing and moving
+blocks, the `altModelBlockRenderer` path; not the item and block-model feature paths, which are unchanged), smooth and
+flat lighting, all core and SIFTEC scenes: about 4.7, 5.35 and 5.1 million blocks (core full, old-GPU, Vulkan) and 0.8, 0.85 and 0.7
+million (SIFTEC): **0 different** (every vertex's position, colour and lightmap identical). What the pictures still
+show against the vanilla runs is the 16-byte vertex's rounding (package 3, Andre's decision), mostly 1/255 on
+off-grid plant geometry (see docs/ci-limits.md).
+
+### History: Indigo's smooth lighting measured black-box (before Andre's 2026-10-26 decision)
+
+Before Indigo's code could be read, its smooth lighting was measured black-box (a branch-only diagnostic ran Indigo as
+the renderer and Brimstone's block renderer beside it; the rules were fitted offline, `FaceAo`), reproducing every quad
+facing along an axis but 11 one-step cases and quads at an angle to one light or colour step. `FaceAo` is replaced by
+Indigo's own code; the residual one-step differences, Brimstone's own light-face tie-break and vanilla's flat lighting
+of cross and angled quads are gone with it.
+
+### Review fixes (review: `scratchpad/review-package-4.md`, 7 should-fix, 14 nits)
+
+- **S1** block fallback: a block's quads are held until its model has emitted them all; if it throws they are dropped,
+  its pushed transforms cleared, and vanilla's renderer draws the block (nothing drawn twice).
+- **S2** registration from a main entrypoint (client only): every main entrypoint runs before any client entrypoint,
+  so no mod can ask for the renderer first (CI log: Brimstone's registration precedes Indigo's client entrypoint
+  standing aside). A failed registration of the renderer or of its feature renderers is an error line, and fails CI.
+- **S3** allocation: meshes keep each quad's unchanged vanilla quad and known sprite, so vanilla block models drawn in
+  entity contexts reach vanilla's renderer as the same quads (no conversion, no sprite lookup); one render type for
+  every layer skips the layer scan; block lighting of non-vanilla quads uses a constant sprite (vanilla's lighting
+  never reads it); narrowed parts, glint decal inverses, decal wrappers and posed-buffer vectors are no longer per quad.
+- **S4** `QuadView.buffer` without a pose writes the exact face normal (the API's contract); no terrain shader reads
+  terrain normals, so the picture is unchanged.
+- **S5** every renderer fallback logs "Brimstone renderer fallback:" (tessellation, face brightness, item tint and
+  foil-pose invokers, registration, feature submits); any such line fails a Brimstone run.
+- **S6** measure runs draw with Indigo (above); docs/ci-limits.md says so.
+- **S7** a layer whose render type is null is skipped, not drawn with another layer's type.
+- Nits fixed: N2 (animated reset without a sprite), N3 (decoded mesh quads report their light face as nominal face),
+  N4 (mesh cursor `emit()` does nothing), N5 (a warning above 32 item render types), N6 (separate, logged invoker
+  failures), N7 (per-quad allocations on the item path), N9 (comment), N12 (stale javadocs, progress plan, bench
+  note), N13 (branch trigger dropped in the rebase). Not changed then: N1 and N8 (both about `FaceAo`, since replaced by
+  Indigo's own lighting code, which settles them), N10 (whether `executeGroup` uses the list is unknown without
+  bytecode; the cache is bounded and cleared per frame), N11 (one atlas lookup per meshing call off the render thread,
+  as vanilla's own mesher reads sprites; benign).
+- Second review (a fresh agent over the whole package diff, after the fixes): no blockers. Fixed: feature submits
+  now fall back too (a throwing mesh or render type function draws the submit's vanilla quads only, logged, instead of
+  crashing), a JVM error is no longer swallowed by the block fallback, `atlas()` changes drop the known sprite, CI
+  checks the renderer lines per client session, the self-test checks more kinds of change, and these docs. Not
+  changed: `vanillaLike` runs twice per mesh quad (small), normals stay quantised to bytes (the API's own precision).
+  The flat lighting of cross quads it raised went to Andre, and is now Indigo's own (Andre's decisions, below).
+- Third review (a fresh agent over `d37c587..d7e21a9`, Andre's decisions; findings in
+  `scratchpad/review4c/findings.md`): no blocker; the port matches Indigo line by line. Fixed: the Apache-2.0 text
+  (`LICENSE-APACHE-2.0`, shipped in the jar) and headers plus NOTICE entries on every file with Indigo-derived logic
+  (`QuadViewImpl`, `MutableQuadViewImpl`, `Meshes`, `QuadData` too); the new scenes' samples, limits and median gates
+  recorded in docs/ci-limits.md and `ci/pixel-noise-samples.json`; count baselines for the four new scenes, and
+  compare.py now fails a scene with no committed baseline entry; the off switch checked through the bench's renderer
+  report (CI fails if any block or mesh quad takes Brimstone's path with it off, or any block vanilla's with it on);
+  the self-test compares the vanilla path quad by quad with vanilla's renderer for tinted, cutout and emitting blocks
+  and checks Indigo's geometry (45-degree light faces, a mesh quad's packed face normal and its copy, emissive at light
+  emission 15); a decoded mutable-mesh quad's nominal face is its light face; a copy from a mesh no longer drops the
+  kept vanilla quad; conflict detection uses Indigo's own test (the key present) and logs one error; an unknown
+  `block-renderer` value is warned about; `create_ct` requires Create; notes and docs. Not changed: the `breaks` text
+  (fabric.mod.json cannot carry one); `renderer_off`'s blocks (the self-test covers tinted, cutout and emitting blocks
+  on that path exactly, without a picture-changing scene edit that would need fresh noise runs).
+- Andre's decisions on the review (2026-10-26), all carried out: (1) Indigo's code may be used (Apache-2.0, with
+  attribution): block lighting is now Indigo's, exactly; (2) CI scenes with smooth lighting off (`flat_plants`,
+  `factory_flat`) against Indigo; (3) no runtime off switch, but a start-up config option (`block-renderer=off`),
+  tested in CI (`renderer_off`); (4) `breaks` Sodium, and one error naming any other mod that declares itself the
+  renderer; (5) a Create connected-texture scene (`create_ct`).
+
+### Deviations and choices to confirm
+
+- **Indigo is the reference** for block lighting, as the doc's done-when says ("draw the same as with Indigo"); since
+  Andre's 2026-10-26 decision it is Indigo's own code (Apache-2.0, attributed), exact on every block compared.
+- **Indigo's configuration fixed to its defaults**: a player's `config/fabric/indigo-renderer.properties` (ambient
+  occlusion mode and the lighting fixes) is not read once Brimstone draws.
+- **The 16-byte vertex's rounding** (package 3, Andre's decision) is what the new scenes' strict limits allow for
+  besides vanilla's own noise; it is measured per scene (docs/ci-limits.md).
+- **`breaks` Sodium**: Fabric Loader's own incompatibility message is shown (fabric.mod.json cannot carry a custom
+  text); the README says why (Brimstone replaces Sodium and is the renderer itself). Other renderer mods are not named
+  in `breaks` (only Sodium was asked for); one error line names any of them at start-up and says which renderer won.
+- **`block-renderer=off` still registers Brimstone's renderer** (Indigo has stood aside for the game), and routes every
+  block and feature through vanilla's code; the self-test does not run then.
+- **Vertex alpha below 255** (package 3's known limit) is unchanged: such a layer stays with vanilla's terrain
+  (correct picture; Brimstone's terrain path is lost for it). No CI scene has one.
+
+### Evidence
+
+- Green CI runs on the branch: 40221609346 (`4861a6c`), 40225361741 (`86a3f5f`), 40227499408 (`81ecd03`), 40230147788
+  (`248e3df`), 40233004611 (`1022f62`, the last with the diagnostic: 2.2 and 2.8 million blocks compared, 2,870 and
+  2,521 differing, every one by at most one colour or light step). The diagnostic is removed in the next commit.
+- Green full run 40236725811 (`2347de6`) before the review. After rebasing on main's quick CI (one squashed commit)
+  and the review fixes: quick run 40248977377 (`bf673ee`) and full run 40251612353 (`2e4dcbc`) green: every Brimstone
+  session registered Brimstone's renderer and passed the self-test with no fallback line, every measure and vanilla
+  session drew with Indigo, and the same-run draw-call and memory gates passed against the Indigo measure runs; full run
+  40256275410 (`d37c587`) green after the second review.
+- Andre's decisions: quick run 40270542386 (`8eb4284`); diagnostic full run 40274749083 (`3420d85`: Brimstone's block
+  renderer identical to Indigo's on every block compared); noise runs 40279156080 (`b343aa6`) and full run
+  40287221751 (`d7e21a9`) **green**, with every new scene passing: flat_plants 225 / 225 / 217 strict pixels (limit
+  350, the 16-byte vertex's rounding), renderer_off, factory_flat and create_ct 0 in every profile. The final full run
+  after the third review's fixes and the rebase is given in the hand-off to the lead.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,

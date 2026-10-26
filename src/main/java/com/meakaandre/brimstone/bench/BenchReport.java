@@ -92,6 +92,7 @@ final class BenchReport {
         out.add("terrain", TerrainStats.terrainJson(n));
         out.add("visibility", VisibilityStats.json());
         out.add("translucency", TranslucencyStats.json());
+        out.add("renderer", com.meakaandre.brimstone.frapi.RendererStats.json());
         out.add("terrainGpu", TerrainGpuMemory.json());
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
@@ -181,6 +182,7 @@ final class BenchReport {
             + ter.get("vanillaEquivalentMB") + " MB), layers taken " + ter.get("layersTaken") + ", kept by vanilla " + ter.get("layersKeptByVanilla"));
         line(b, "visibility", VisibilityStats.line(o.getAsJsonObject("visibility")));
         line(b, "translucency", TranslucencyStats.line(o.getAsJsonObject("translucency")));
+        line(b, "renderer", com.meakaandre.brimstone.frapi.RendererStats.line(o.getAsJsonObject("renderer")));
         JsonObject cnt = o.getAsJsonObject("counters");
         line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")
             + ", not loaded (backend not in use) " + cnt.get("notLoaded"));
