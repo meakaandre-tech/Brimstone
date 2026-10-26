@@ -11,6 +11,8 @@ import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -169,6 +171,11 @@ class QuadViewImpl implements QuadView {
 
     @Override
     public Direction nominalFace() {
+        return storedNominalFace();
+    }
+
+    /** The nominal face as stored (a vanilla quad's own facing, kept through {@code fromBakedQuad}). */
+    final Direction storedNominalFace() {
         return dir(bits() >> NOMINAL_SHIFT & DIR_MASK);
     }
 
@@ -243,15 +250,20 @@ class QuadViewImpl implements QuadView {
         return data[base + TAG];
     }
 
-    /** The normal written for vertices without their own: the light face's axis, as vanilla writes block quads. */
-    protected Vector3fc bufferNormal() {
-        return lightFace().getUnitVec3f();
+    /** The vanilla quad this quad is unchanged from (as {@code toBakedQuad} would rebuild it), or null. */
+    BakedQuad exactQuad() {
+        return null;
     }
 
-    /** As vanilla's {@code VertexConsumer.putBlockBakedQuad}: positions as they are, the face's axis as normal. */
+    /** The sprite this quad's UVs are known to come from, or null. */
+    TextureAtlasSprite knownSprite() {
+        return null;
+    }
+
+    /** As the API asks: positions as they are; vertices without their own normal get the exact face normal. */
     @Override
     public void buffer(int overlayCoords, VertexConsumer consumer) {
-        Vector3fc face = bufferNormal();
+        Vector3fc face = faceNormal();
         for (int i = 0; i < 4; i++) {
             float nx = face.x(), ny = face.y(), nz = face.z();
             if (hasNormal(i)) {
@@ -263,16 +275,20 @@ class QuadViewImpl implements QuadView {
         }
     }
 
+    private Vector3f[] scratch;
+
     /**
      * As vanilla's {@code VertexConsumer.putBakedQuad}: positions through the pose, normals through its normal matrix;
-     * vertices without their own normal get the quad's geometric normal (as Indigo writes them, which differs from
-     * vanilla's face axis only for quads not facing along an axis, such as a cross model's).
+     * vertices without their own normal get the quad's exact face normal (as the API asks; it differs from vanilla's
+     * face axis only for quads not facing along an axis, such as a cross model's).
      */
     @Override
     public void buffer(int overlayCoords, PoseStack.Pose pose, VertexConsumer consumer) {
+        Vector3f[] s = scratch;
+        if (s == null) scratch = s = new Vector3f[] {new Vector3f(), new Vector3f(), new Vector3f()};
         Matrix4f m = pose.pose();
-        Vector3f faceNormal = pose.transformNormal(faceNormal(), new Vector3f());
-        Vector3f p = new Vector3f(), n = new Vector3f();
+        Vector3f faceNormal = pose.transformNormal(faceNormal(), s[0]);
+        Vector3f p = s[1], n = s[2];
         for (int i = 0; i < 4; i++) {
             m.transformPosition(copyPos(i, p), p);
             Vector3f nv = faceNormal;

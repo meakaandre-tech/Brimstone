@@ -13,14 +13,14 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Smooth lighting of a block quad as the Fabric Renderer API's reference implementation (Indigo) lights it, which the design doc names as the picture to match. Measured black-box against
- * Indigo's output (Indigo's code was not read). Each corner of the face averages the shade and light of a centre block,
+ * Smooth lighting of a block quad as the Fabric Renderer API's reference implementation (Indigo) lights it, which the
+ * design doc names as the picture to match. Measured black-box against Indigo's output (Indigo's code was not read).
+ * Each corner of the face averages the shade and light of a centre block,
  * the two blocks beside it towards the corner, and the block diagonally between them: around the block in front of the
  * face for a quad on the block's face, else around the block itself (whose own light is the centre's). The face is the
  * quad's light face (for a quad not facing along an axis, such as a cross model's, the axis its normal points to most).
  * A vertex takes its corner's values, or a mix of the four by its position on the face (light per kind, rounded down).
- * Differences
- * from vanilla's own {@link BlockModelLighter}:
+ * Differences from vanilla's own {@link BlockModelLighter}:
  * <ul>
  * <li>the diagonal block counts when either of the two side blocks lets light through ({@link BlockState#isLightPermeable});
  * vanilla checks the blocks one further out from the face instead (both otherwise use the same side block's values);</li>
@@ -61,7 +61,7 @@ final class FaceAo {
             brightness = BlockModelLighterInvoker.brimstone$getDirectionalBrightness(level.cardinalLighting(), baked, face);
         } catch (Throwable t) {
             invokerFailed = true;
-            BrimstoneClient.LOG.warn("Brimstone renderer: vanilla's face brightness is not reachable; smooth lighting is vanilla's", t);
+            BrimstoneClient.LOG.warn("Brimstone renderer fallback: vanilla's face brightness is not reachable; smooth lighting is vanilla's", t);
             return false;
         }
         float depth = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1f - plane : plane;

@@ -1,5 +1,6 @@
 package com.meakaandre.brimstone.frapi;
 
+import com.meakaandre.brimstone.BrimstoneClient;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -29,6 +30,7 @@ final class QuadData {
     /** Render types by id; replaced (never changed in place) when one is added, so reads need no lock. */
     private static volatile RenderType[] renderTypes = new RenderType[0];
     private static final Map<RenderType, Integer> RENDER_TYPE_IDS = new IdentityHashMap<>();
+    private static final int MANY_RENDER_TYPES = 32;
 
     private QuadData() {
     }
@@ -45,6 +47,11 @@ final class QuadData {
                 grown[id] = type;
                 RENDER_TYPE_IDS.put(type, id);
                 renderTypes = grown;
+                if (id == MANY_RENDER_TYPES) {
+                    // the API allows only Sheets' item render types; a mod making its own per call would grow this forever
+                    BrimstoneClient.LOG.warn("Brimstone renderer: over {} distinct item render types set on API quads (a mod may be"
+                        + " creating them per call; each new one costs memory and time)", MANY_RENDER_TYPES);
+                }
             }
             return id;
         }

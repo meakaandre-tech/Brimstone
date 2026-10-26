@@ -28,12 +28,6 @@ public final class BrimstoneClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        try {
-            // first, before anything asks the Fabric Renderer API for its renderer (package 4)
-            com.meakaandre.brimstone.frapi.BrimstoneRenderer.register();
-        } catch (Throwable t) {
-            LOG.error("Brimstone: could not register its Fabric Renderer API implementation (another renderer is registered?)", t);
-        }
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             try {
                 capabilities = CapabilityProbe.run();
@@ -44,5 +38,9 @@ public final class BrimstoneClient implements ClientModInitializer {
         });
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> BenchCommand.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(BenchRun::tick);
+        // CI: the renderer's self-test, once in a world (package 4)
+        if (Boolean.getBoolean("brimstone.debug.verifyRenderer")) {
+            ClientTickEvents.END_CLIENT_TICK.register(com.meakaandre.brimstone.frapi.RendererSelfTest::tick);
+        }
     }
 }

@@ -29,9 +29,10 @@ import net.minecraft.util.LightCoordsUtil;
  * submit into an {@link ExtendedBlockModelSubmit} (vanilla model parts plus an API mesh, and a render type per chunk
  * layer). Vanilla parts go to vanilla's own {@link BlockModelFeatureRenderer}: as one vanilla submit when every layer
  * the parts use maps to the same render type (vanilla's own case), else one per layer with the parts narrowed to that
- * layer's quads. Mesh quads that carry nothing a vanilla quad cannot (every vanilla model's: the API emits block models
- * in entity contexts into meshes) go the same way, converted to vanilla quads; the others are drawn by
- * {@link MeshBlocks} the way vanilla draws a block model quad, plus the API's per-quad properties. Every call is forwarded to both, one-for-one.
+ * layer's quads. Mesh quads that carry nothing a vanilla quad cannot (every vanilla block model's: the API emits block
+ * models in entity contexts into meshes) go the same way, as vanilla quads (the very ones, where the mesh kept them);
+ * the others are drawn by {@link MeshBlocks} the way vanilla draws a block model quad, plus the API's per-quad
+ * properties. Every call is forwarded to both, one-for-one.
  */
 final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSubmit> {
     private static final ChunkSectionLayer[] LAYERS = ChunkSectionLayer.values();
@@ -41,15 +42,31 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
     private final MeshBlocks meshes = new MeshBlocks();
     private final Map<List<ExtendedBlockModelSubmit>, Split> splits = new IdentityHashMap<>();
 
-    private record Split(List<BlockModelFeatureRenderer.Submit> vanilla, List<ExtendedBlockModelSubmit> meshes) {
+    record Split(List<BlockModelFeatureRenderer.Submit> vanilla, List<ExtendedBlockModelSubmit> meshes) {
     }
 
-    /** A model part narrowed to the quads of one chunk layer. */
-    private record LayerPart(BlockStateModelPart part, ChunkSectionLayer layer) implements BlockStateModelPart {
+    /** A model part narrowed to the quads of one chunk layer (each face's list made once). */
+    static final class LayerPart implements BlockStateModelPart {
+        private final BlockStateModelPart part;
+        private final ChunkSectionLayer layer;
+        @SuppressWarnings("unchecked")
+        private final List<BakedQuad>[] byFace = new List[FACES_AND_NULL.length];
+
+        LayerPart(BlockStateModelPart part, ChunkSectionLayer layer) {
+            this.part = part;
+            this.layer = layer;
+        }
+
         @Override
         public List<BakedQuad> getQuads(Direction face) {
-            List<BakedQuad> all = part.getQuads(face), out = new ArrayList<>(all.size());
-            for (BakedQuad q : all) if (q.materialInfo().layer() == layer) out.add(q);
+            int i = face == null ? FACES_AND_NULL.length - 1 : face.ordinal();
+            List<BakedQuad> out = byFace[i];
+            if (out == null) {
+                List<BakedQuad> all = part.getQuads(face);
+                out = new ArrayList<>(all.size());
+                for (BakedQuad q : all) if (q.materialInfo().layer() == layer) out.add(q);
+                byFace[i] = out;
+            }
             return out;
         }
 
@@ -69,18 +86,18 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
         }
     }
 
-    private static Split split(List<ExtendedBlockModelSubmit> submits) {
+    static Split split(List<ExtendedBlockModelSubmit> submits) {
         List<BlockModelFeatureRenderer.Submit> v = new ArrayList<>(submits.size());
         List<ExtendedBlockModelSubmit> m = new ArrayList<>();
         for (ExtendedBlockModelSubmit s : submits) {
             if (!s.modelParts().isEmpty()) addVanilla(s, s.modelParts(), v);
             if (s.mesh() != null && s.mesh().size() > 0) {
-                // the mesh's vanilla-like quads (every vanilla model's: the API emits block models in entity contexts
-                // into meshes) to vanilla as a model part of their own, the rest to MeshBlocks
-                List<BakedQuad> quads = new ArrayList<>();
+                // the mesh's vanilla-like quads (every vanilla block model's: the API emits block models in entity
+                // contexts into meshes) to vanilla as a model part of their own, the rest to MeshBlocks
+                List<BakedQuad> quads = new ArrayList<>(s.mesh().size());
                 boolean[] own = {false};
                 s.mesh().forEach(q -> {
-                    if (Quads.vanillaLike(q)) quads.add(Quads.toBaked(q, null, true));
+                    if (Quads.vanillaLike(q)) quads.add(Quads.toBaked(q));
                     else own[0] = true;
                 });
                 if (!quads.isEmpty()) addVanilla(s, List.of(new QuadsPart(quads)), v);
@@ -91,7 +108,7 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
     }
 
     /** Converted mesh quads as a model part (all under no cull face, in the mesh's order). */
-    private record QuadsPart(List<BakedQuad> quads) implements BlockStateModelPart {
+    record QuadsPart(List<BakedQuad> quads) implements BlockStateModelPart {
         @Override
         public List<BakedQuad> getQuads(Direction face) {
             return face == null ? quads : List.of();
@@ -115,19 +132,35 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
 
     private static void addVanilla(ExtendedBlockModelSubmit s, List<BlockStateModelPart> modelParts, List<BlockModelFeatureRenderer.Submit> out) {
         Function<ChunkSectionLayer, RenderType> types = s.renderTypeFunction();
-        boolean[] used = new boolean[LAYERS.length];
-        for (BlockStateModelPart part : modelParts) {
-            for (Direction face : FACES_AND_NULL) {
-                for (BakedQuad q : part.getQuads(face)) used[q.materialInfo().layer().ordinal()] = true;
-            }
-        }
-        RenderType single = null;
-        boolean same = true;
+        RenderType[] typeOf = new RenderType[LAYERS.length];
+        boolean allSame = true;
         for (ChunkSectionLayer layer : LAYERS) {
-            if (!used[layer.ordinal()]) continue;
-            RenderType t = types.apply(layer);
-            if (single == null) single = t;
-            else if (t != single) same = false;
+            typeOf[layer.ordinal()] = types.apply(layer);
+            if (typeOf[layer.ordinal()] != typeOf[0]) allSame = false;
+        }
+        // one render type for every layer (vanilla's own case, and the API's for block models): no need to look at the quads
+        RenderType single = typeOf[0];
+        boolean same = true;
+        boolean[] used = null;
+        if (!allSame) {
+            used = new boolean[LAYERS.length];
+            for (BlockStateModelPart part : modelParts) {
+                for (Direction face : FACES_AND_NULL) {
+                    for (BakedQuad q : part.getQuads(face)) used[q.materialInfo().layer().ordinal()] = true;
+                }
+            }
+            // the render type of every layer the parts use, a null one (layer skipped) counting as a type of its own
+            boolean first = true;
+            for (ChunkSectionLayer layer : LAYERS) {
+                if (!used[layer.ordinal()]) continue;
+                RenderType t = typeOf[layer.ordinal()];
+                if (first) {
+                    single = t;
+                    first = false;
+                } else if (t != single) {
+                    same = false;
+                }
+            }
         }
         if (same) {
             if (single != null) {
@@ -138,7 +171,7 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
         }
         for (ChunkSectionLayer layer : LAYERS) {
             if (!used[layer.ordinal()]) continue;
-            RenderType t = types.apply(layer);
+            RenderType t = typeOf[layer.ordinal()];
             if (t == null) continue;
             List<BlockStateModelPart> parts = new ArrayList<>(modelParts.size());
             for (BlockStateModelPart part : modelParts) parts.add(new LayerPart(part, layer));
@@ -200,18 +233,31 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
             }
         };
 
+        /** The current submit's decal UV wrapper (breaking overlay) and the vertex builder it wraps. */
+        private VertexConsumer lastBuilder, lastDecal;
+
         @Override
         protected void buildGroup(FeatureFrameContext context, List<ExtendedBlockModelSubmit> submits) {
-            for (ExtendedBlockModelSubmit s : submits) s.mesh().forEach(q -> {
-                if (!Quads.vanillaLike(q)) buffer(s, q);
-            });
+            for (ExtendedBlockModelSubmit s : submits) {
+                lastBuilder = lastDecal = null;
+                s.mesh().forEach(q -> {
+                    if (!Quads.vanillaLike(q)) buffer(s, q);
+                });
+            }
+            lastBuilder = lastDecal = null;
         }
 
         private void buffer(ExtendedBlockModelSubmit s, QuadView quad) {
             RenderType type = s.renderTypeFunction().apply(quad.chunkLayer());
             if (type == null) return;
             VertexConsumer consumer = getVertexBuilder(type);
-            if (s.sheetedDecalPose() != null) consumer = new SheetedDecalTextureGenerator(consumer, s.sheetedDecalPose(), 1.0f);
+            if (s.sheetedDecalPose() != null) {
+                if (consumer != lastBuilder) {
+                    lastBuilder = consumer;
+                    lastDecal = new SheetedDecalTextureGenerator(consumer, s.sheetedDecalPose(), 1.0f);
+                }
+                consumer = lastDecal;
+            }
             int tint = s.tintColor() != -1 && s.tintColor() != 0 ? s.tintColor() : Quads.layerColor(s.tintLayers(), quad.tintIndex());
             MutableQuadViewImpl q = scratch;
             q.copyFrom(quad);

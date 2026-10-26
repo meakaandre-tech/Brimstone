@@ -27,13 +27,17 @@ import org.joml.Vector3fc;
  * first), hands the quad to {@link #emitDirectly()} unless a transform dropped it, and resets it.
  *
  * <p>When the quad came from a vanilla {@link BakedQuad} ({@link #fromBakedQuad}) and nothing that vanilla's block
- * lighting reads has changed since, {@link #vanillaQuad()} returns that quad, so lighting runs on vanilla's own data.
+ * lighting reads has changed since, {@link #vanillaQuad()} returns that quad, so lighting runs on vanilla's own data;
+ * while nothing a vanilla quad stores has changed, {@link #exactQuad()} returns it too (meshes keep it per quad), so a
+ * vanilla quad drawn through a mesh needs no conversion back.
  */
 abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     private final List<QuadTransform> transforms = new ArrayList<>();
     /** The vanilla quad this one was made from, while the positions and shade direction are still its own. */
-    private BakedQuad vanillaQuad;
-    /** The sprite this quad is known to use (from its vanilla quad or a material bake), or null. */
+    BakedQuad vanillaQuad;
+    /** The vanilla quad this one is unchanged from, in everything a vanilla quad stores. */
+    BakedQuad exactQuad;
+    /** The sprite this quad's UVs come from (its vanilla quad's or a material bake's, UVs unchanged since), or null. */
     TextureAtlasSprite sprite;
 
     MutableQuadViewImpl() {
@@ -48,9 +52,25 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
         return vanillaQuad;
     }
 
+    @Override
+    final BakedQuad exactQuad() {
+        return exactQuad;
+    }
+
+    @Override
+    final TextureAtlasSprite knownSprite() {
+        return sprite;
+    }
+
     private void geometryChanged() {
         geometryDirty = true;
         vanillaQuad = null;
+        exactQuad = null;
+    }
+
+    /** Drops every pushed transform (after a model threw between a push and its pop). */
+    final void resetTransforms() {
+        transforms.clear();
     }
 
     private void setBits(int shift, int mask, int value) {
@@ -90,12 +110,16 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     public QuadEmitter uv(int vertexIndex, float u, float v) {
         setF(vertexIndex, U, u);
         setF(vertexIndex, V, v);
+        exactQuad = null;
+        sprite = null;
         return this;
     }
 
     @Override
     public QuadEmitter lightmap(int vertexIndex, int lightmap) {
-        data[vertex(base, vertexIndex) + LIGHT] = lightmap;
+        int i = vertex(base, vertexIndex) + LIGHT;
+        if (data[i] != lightmap) exactQuad = null; // a vanilla quad's light emission
+        data[i] = lightmap;
         return this;
     }
 
@@ -103,11 +127,13 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     public QuadEmitter normal(int vertexIndex, float x, float y, float z) {
         data[vertex(base, vertexIndex) + NORMAL] = packNormal(x, y, z);
         data[base + NORMALS] |= 1 << vertexIndex;
+        exactQuad = null;
         return this;
     }
 
     @Override
     public QuadEmitter nominalFace(Direction face) {
+        if (exactQuad != null && face != exactQuad.direction()) exactQuad = null;
         setBits(NOMINAL_SHIFT, DIR_MASK, dirValue(face));
         return this;
     }
@@ -121,32 +147,40 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
 
     @Override
     public QuadEmitter atlas(QuadAtlas quadAtlas) {
+        if (quadAtlas != atlas()) exactQuad = null;
         flag(ATLAS_ITEM, quadAtlas == QuadAtlas.ITEM);
         return this;
     }
 
     @Override
     public QuadEmitter chunkLayer(ChunkSectionLayer layer) {
+        if (layer != chunkLayer()) exactQuad = null;
         setBits(LAYER_SHIFT, LAYER_MASK, layer.ordinal());
         return this;
     }
 
     @Override
     public QuadEmitter itemRenderType(RenderType renderType) {
-        data[base + ITEM_RT] = renderTypeId(renderType);
+        setRenderType(ITEM_RT, renderType);
         return this;
     }
 
     @Override
     public QuadEmitter itemGlintRenderType(RenderType renderType) {
-        data[base + GLINT_RT] = renderTypeId(renderType);
+        setRenderType(GLINT_RT, renderType);
         return this;
     }
 
     @Override
     public QuadEmitter itemGlintSpecialRenderType(RenderType renderType) {
-        data[base + GLINT_SPECIAL_RT] = renderTypeId(renderType);
+        setRenderType(GLINT_SPECIAL_RT, renderType);
         return this;
+    }
+
+    private void setRenderType(int field, RenderType renderType) {
+        int id = renderTypeId(renderType);
+        if (data[base + field] != id) exactQuad = null;
+        data[base + field] = id;
     }
 
     @Override
@@ -159,6 +193,7 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     public QuadEmitter shadeDirectionOverride(Direction shadeDirection) {
         setBits(SHADE_DIR_SHIFT, DIR_MASK, dirValue(shadeDirection));
         vanillaQuad = null;
+        exactQuad = null;
         return this;
     }
 
@@ -188,6 +223,7 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
 
     @Override
     public QuadEmitter tintIndex(int tintIndex) {
+        if (data[base + TINT] != tintIndex) exactQuad = null;
         data[base + TINT] = tintIndex;
         return this;
     }
@@ -212,9 +248,12 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
             geometryChanged();
             if (q instanceof MutableQuadViewImpl m) {
                 vanillaQuad = m.vanillaQuad;
+                exactQuad = m.exactQuad;
                 sprite = m.sprite;
             } else {
-                sprite = null;
+                // a mesh quad: what the mesh kept of it (lighting goes on the decoded quad, as before meshes kept it)
+                exactQuad = q.exactQuad();
+                sprite = q.knownSprite();
             }
             // nominal face is transient: a decoded quad's is its light face
             if (!(q instanceof MutableQuadViewImpl)) nominalFace(lightFace());
@@ -264,11 +303,9 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
         geometryDirty = true;
         nominalFace(quad.direction());
         TextureAtlasSprite s = info.sprite();
-        if (s != null) {
-            QuadAtlas atlas = QuadAtlas.ofLocation(s.atlasLocation());
-            if (atlas != null) atlas(atlas);
-            animated(s.contents().isAnimated());
-        }
+        QuadAtlas atlas = s != null ? QuadAtlas.ofLocation(s.atlasLocation()) : null;
+        if (atlas != null) atlas(atlas);
+        animated(s != null && s.contents().isAnimated());
         chunkLayer(info.layer());
         itemRenderType(info.itemRenderType());
         itemGlintRenderType(info.itemGlintRenderType());
@@ -276,6 +313,7 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
         tintIndex(info.tintIndex());
         setBits(SHADE_DIR_SHIFT, DIR_MASK, dirValue(info.shadeDirectionOverride()));
         vanillaQuad = quad;
+        exactQuad = quad;
         sprite = s;
         return this;
     }

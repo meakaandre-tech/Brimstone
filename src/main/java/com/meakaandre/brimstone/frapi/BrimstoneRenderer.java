@@ -15,10 +15,14 @@ import net.minecraft.client.color.block.BlockColors;
 /**
  * Brimstone's implementation of the Fabric Renderer API (package 4), in place of Fabric's Indigo: Brimstone's
  * {@code fabric.mod.json} declares {@code fabric-renderer-api-v1:contains_renderer}, so Indigo stands aside, and this
- * registers at client start-up. Quads and meshes are Brimstone's own encoding ({@link QuadData}); block lighting,
- * tinting and vertex output follow vanilla's own code ({@link BlockRenderer}); items and block models drawn as
- * features go through vanilla's own feature renderers for vanilla quads and Brimstone's for API meshes
+ * registers from Brimstone's main entrypoint, which runs before every mod's client entrypoint. Quads and meshes are
+ * Brimstone's own encoding ({@link QuadData}); blocks are lit as Indigo lights them (smooth lighting, {@link FaceAo}) or
+ * by vanilla's own code (flat lighting), tinted and written as vanilla does it ({@link BlockRenderer}); items and block
+ * models drawn as features go through vanilla's own feature renderers for vanilla quads and Brimstone's for API meshes
  * ({@link ItemSubmitRenderer}, {@link BlockSubmitRenderer}).
+ *
+ * <p>Only one renderer can be registered: with another renderer mod present, whichever registers second fails. If
+ * Brimstone is second, it logs that and the other renderer draws.
  */
 public final class BrimstoneRenderer implements Renderer {
     public static final BrimstoneRenderer INSTANCE = new BrimstoneRenderer();
@@ -26,11 +30,31 @@ public final class BrimstoneRenderer implements Renderer {
     private BrimstoneRenderer() {
     }
 
-    /** Client start-up, before anything asks for the renderer. */
+    /**
+     * Start-up, from the main entrypoint on the client: before any client entrypoint can ask the API for its renderer.
+     * In CI's measure runs (vanilla's stand-in) it stays off, and CI's jar for them does not declare
+     * {@code contains_renderer}, so Indigo draws there as in the vanilla runs.
+     */
     public static void register() {
-        Renderer.register(INSTANCE);
-        FeatureRendererRegistry.register(ExtendedBlockModelSubmit.TYPE, BlockSubmitRenderer::new);
-        FeatureRendererRegistry.register(ExtendedItemSubmit.TYPE, ItemSubmitRenderer::new);
+        if (Boolean.getBoolean("brimstone.ci.measureOnly")) {
+            BrimstoneClient.LOG.warn("Brimstone renderer: off, brimstone.ci.measureOnly is set (Indigo draws)");
+            return;
+        }
+        try {
+            Renderer.register(INSTANCE);
+        } catch (Throwable t) {
+            BrimstoneClient.LOG.error("Brimstone renderer fallback: could not register its Fabric Renderer API implementation (another"
+                + " renderer mod registered first; that renderer draws instead)", t);
+            return;
+        }
+        try {
+            FeatureRendererRegistry.register(ExtendedBlockModelSubmit.TYPE, BlockSubmitRenderer::new);
+            FeatureRendererRegistry.register(ExtendedItemSubmit.TYPE, ItemSubmitRenderer::new);
+        } catch (Throwable t) {
+            BrimstoneClient.LOG.error("Brimstone renderer fallback: its feature renderers could not be registered; items and block"
+                + " models drawn through the Fabric Renderer API will not draw", t);
+            return;
+        }
         BrimstoneClient.LOG.info("Brimstone: Fabric Renderer API implementation registered (in place of Indigo)");
     }
 

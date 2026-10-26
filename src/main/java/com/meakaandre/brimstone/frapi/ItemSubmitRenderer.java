@@ -1,6 +1,5 @@
 package com.meakaandre.brimstone.frapi;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import java.util.ArrayList;
@@ -24,11 +23,15 @@ import net.minecraft.util.LightCoordsUtil;
  * Items drawn as features with the Fabric Renderer API in place (package 4): the API turns every item submit into an
  * {@link ExtendedItemSubmit} (vanilla quads plus an API mesh). Vanilla quads go to vanilla's own
  * {@link ItemFeatureRenderer}, as vanilla submits with the same fields, so they are drawn exactly as vanilla draws
- * them, together with the mesh quads that carry nothing a vanilla quad cannot (every vanilla item model's, as the API
- * emits all models into meshes), converted to vanilla quads; outlines likewise, with all the mesh's quads (an outline
- * is one colour). The other mesh quads are drawn by {@link MeshItems} the way vanilla draws an item quad, plus the
- * API's per-quad properties (vertex colours, lightmaps, emissive, foil override). Every call is forwarded to both, one-for-one, so
- * each sees the same sequence of groups as this renderer.
+ * them, together with the mesh quads that carry nothing a vanilla quad cannot (a model's {@code MeshQuadCollection};
+ * vanilla item models' quads stay vanilla quads), as vanilla quads; outlines likewise, with all the mesh's quads (an
+ * outline is one colour). The other mesh quads are drawn by {@link MeshItems} the way vanilla draws an item quad, plus
+ * the API's per-quad properties (vertex colours, lightmaps, emissive, foil override). Every call is forwarded to both,
+ * one-for-one, so each sees the same sequence of groups as this renderer.
+ *
+ * <p>Within one group, vanilla's renderer draws all its submits before {@link MeshItems} draws its own, so in a
+ * translucent group the back-to-front order between a vanilla-drawn and a mesh-drawn submit is not kept (only items
+ * with translucent API mesh quads that vanilla cannot draw are affected; vanilla's items have none).
  */
 final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
     private final ItemFeatureRenderer vanilla = new ItemFeatureRenderer();
@@ -45,18 +48,18 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
         for (ExtendedItemSubmit s : submits) {
             if (s.outlineColor() != 0) {
                 List<BakedQuad> quads = new ArrayList<>(s.quads());
-                s.mesh().forEach(q -> quads.add(Quads.toBaked(q, null, true)));
+                s.mesh().forEach(q -> quads.add(Quads.toBaked(q)));
                 v.add(new ItemFeatureRenderer.Submit(s.pose(), s.displayContext(), s.lightCoords(), s.overlayCoords(), s.outlineColor(),
                     s.tintLayers(), quads, s.foilType()));
                 continue;
             }
-            // vanilla quads and the mesh's vanilla-like quads (every vanilla item model's, through the API) to vanilla
+            // vanilla quads and the mesh's vanilla-like quads to vanilla
             List<BakedQuad> quads = s.quads();
             boolean[] own = {false};
             if (s.mesh().size() > 0) {
                 List<BakedQuad> all = new ArrayList<>(quads);
                 s.mesh().forEach(q -> {
-                    if (Quads.vanillaLike(q)) all.add(Quads.toBaked(q, null, true));
+                    if (Quads.vanillaLike(q)) all.add(Quads.toBaked(q));
                     else own[0] = true;
                 });
                 quads = all;
@@ -123,11 +126,18 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
             }
         };
 
+        private final Quads.DecalInverse decal = new Quads.DecalInverse();
+        /** Whether {@link #decal} holds the current submit's special-foil decal pose. */
+        private boolean decalReady;
+
         @Override
         protected void buildGroup(FeatureFrameContext context, List<ExtendedItemSubmit> submits) {
-            for (ExtendedItemSubmit s : submits) s.mesh().forEach(q -> {
-                if (!Quads.vanillaLike(q)) buffer(s, q);
-            });
+            for (ExtendedItemSubmit s : submits) {
+                decalReady = false;
+                s.mesh().forEach(q -> {
+                    if (!Quads.vanillaLike(q)) buffer(s, q);
+                });
+            }
         }
 
         private void buffer(ExtendedItemSubmit s, QuadView quad) {
@@ -147,7 +157,10 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
                 q.lightmap(i, quad.emissive() ? LightCoordsUtil.FULL_BRIGHT : Quads.withQuadLight(s.lightCoords(), quad.lightmap(i)));
             }
             if (foil == ItemStackRenderState.FoilType.SPECIAL) {
-                PoseStack.Pose decal = Quads.foilDecalPose(s.displayContext(), s.pose());
+                if (!decalReady) {
+                    decal.set(Quads.foilDecalPose(s.displayContext(), s.pose()));
+                    decalReady = true;
+                }
                 Quads.bufferWithGlint(q, s.overlayCoords(), s.pose(), decal, consumer);
             } else {
                 q.buffer(s.overlayCoords(), s.pose(), consumer);

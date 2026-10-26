@@ -1,5 +1,6 @@
 package com.meakaandre.brimstone.frapi;
 
+import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.mixin.frapi.ItemFeatureRendererInvoker;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
@@ -10,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.Direction;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Matrix3f;
@@ -25,9 +27,10 @@ final class Quads {
     /**
      * Whether a quad carries nothing a vanilla quad cannot: white vertex colours, no vertex normals, not emissive, no
      * foil override, and the same lightmap on every vertex as a vanilla light emission (block and sky alike). Such a
-     * quad (every vanilla model's, through the API) is drawn by vanilla's own code as a vanilla quad, if it also faces
-     * along an axis: vanilla gives a quad its face's axis as normal, Indigo (the reference) its geometric normal, which
-     * differ for quads such as a cross model's (lit by that normal in entity and item shaders).
+     * quad (a vanilla block model's, which the API emits into a mesh in entity contexts) is drawn by vanilla's own code
+     * as a vanilla quad, if it also faces along an axis: vanilla gives a quad its face's axis as normal, Indigo (the
+     * reference) its geometric normal, which differ for quads such as a cross model's (lit by that normal in entity
+     * and item shaders).
      */
     static boolean vanillaLike(QuadView quad) {
         if (quad.emissive() || quad.foilType() != null) return false;
@@ -42,16 +45,35 @@ final class Quads {
     }
 
     /**
-     * A vanilla quad with this quad's geometry, UVs and material data ({@code sprite} if known, else the atlas's),
-     * facing its light face, or with {@code nominal} its nominal face where it has one (a vanilla quad's own facing,
-     * kept through {@code fromBakedQuad}).
+     * A vanilla quad with this quad's geometry, UVs and material data, facing its nominal face where it has one (a
+     * vanilla quad's own facing, kept through {@code fromBakedQuad}), else its light face. A quad unchanged from a
+     * vanilla quad (as meshes keep it) is that quad; otherwise the sprite is the one known for the quad, or the atlas's
+     * sprite under its UVs.
      */
-    static BakedQuad toBaked(QuadView quad, TextureAtlasSprite sprite, boolean nominal) {
+    static BakedQuad toBaked(QuadView quad) {
+        TextureAtlasSprite sprite = null;
+        Direction nominal = quad.nominalFace();
+        if (quad instanceof QuadViewImpl v) {
+            BakedQuad exact = v.exactQuad();
+            if (exact != null) return exact;
+            sprite = v.knownSprite();
+            nominal = v.storedNominalFace();
+        }
         if (sprite == null) {
             sprite = ((FabricTextureAtlas) Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(quad.atlas().getId())).spriteFinder().find(quad);
         }
-        // the quad's own facing where it still has one (a vanilla quad's, through fromBakedQuad), else its light face
-        net.minecraft.core.Direction direction = nominal && quad.nominalFace() != null ? quad.nominalFace() : quad.lightFace();
+        return build(quad, sprite, nominal != null ? nominal : quad.lightFace());
+    }
+
+    /**
+     * A vanilla quad for vanilla's block lighting only, which reads its positions, facing (the light face) and shade
+     * direction, never its sprite: {@code sprite} is any sprite.
+     */
+    static BakedQuad forLighting(QuadView quad, TextureAtlasSprite sprite) {
+        return build(quad, sprite, quad.lightFace());
+    }
+
+    private static BakedQuad build(QuadView quad, TextureAtlasSprite sprite, Direction direction) {
         int emission = 0;
         for (int i = 0; i < 4; i++) {
             int l = quad.lightmap(i);
@@ -77,15 +99,17 @@ final class Quads {
         return LightCoordsUtil.max(light, quadLight);
     }
 
-    private static volatile boolean invokerFailed;
+    private static volatile boolean tintInvokerFailed, foilInvokerFailed;
 
     /** An item layer's tint colour for a tint index, through vanilla's own lookup where it is reachable. */
     static int layerColor(int[] tintLayers, int tintIndex) {
-        if (!invokerFailed) {
+        if (!tintInvokerFailed) {
             try {
                 return ItemFeatureRendererInvoker.brimstone$getLayerColorSafe(tintLayers, tintIndex);
             } catch (Throwable t) {
-                invokerFailed = true;
+                tintInvokerFailed = true;
+                BrimstoneClient.LOG.warn("Brimstone renderer fallback: vanilla's item tint lookup is not reachable; API mesh items read"
+                    + " the tint layers directly", t);
             }
         }
         return tintIndex >= 0 && tintIndex < tintLayers.length ? tintLayers[tintIndex] : -1;
@@ -93,29 +117,44 @@ final class Quads {
 
     /** The decal pose vanilla uses for special foil (compass and clock glint), through vanilla's own code. */
     static PoseStack.Pose foilDecalPose(ItemDisplayContext context, PoseStack.Pose pose) {
-        try {
-            return ItemFeatureRendererInvoker.brimstone$computeFoilDecalPose(context, pose);
-        } catch (Throwable t) {
-            invokerFailed = true;
-            return pose;
+        if (!foilInvokerFailed) {
+            try {
+                return ItemFeatureRendererInvoker.brimstone$computeFoilDecalPose(context, pose);
+            } catch (Throwable t) {
+                foilInvokerFailed = true;
+                BrimstoneClient.LOG.warn("Brimstone renderer fallback: vanilla's special-foil decal pose is not reachable; API mesh"
+                    + " items use the item's pose for it", t);
+            }
+        }
+        return pose;
+    }
+
+    /** The inverses of a decal pose that the sheeted decal UVs need, worked out once per submit (plus scratch vectors). */
+    static final class DecalInverse {
+        final Matrix4f pose = new Matrix4f();
+        final Matrix3f normal = new Matrix3f();
+        private final Vector3f faceNormal = new Vector3f(), position = new Vector3f(), ownNormal = new Vector3f();
+
+        DecalInverse set(PoseStack.Pose decalPose) {
+            pose.set(decalPose.pose()).invert();
+            normal.set(decalPose.normal()).invert();
+            return this;
         }
     }
 
     /**
      * Writes a quad as vanilla's {@code VertexConsumer.putBakedQuadWithGlint} writes a vanilla one: through the pose,
-     * plus the sheeted decal UVs for the glint from the decal pose (normals as {@link QuadViewImpl#buffer}).
+     * plus the sheeted decal UVs for the glint from the decal pose's inverses (normals as {@link QuadViewImpl#buffer}).
      */
-    static void bufferWithGlint(QuadView quad, int overlayCoords, PoseStack.Pose pose, PoseStack.Pose decalPose, VertexConsumer consumer) {
-        Vector3fc face = quad.faceNormal();
+    static void bufferWithGlint(QuadView quad, int overlayCoords, PoseStack.Pose pose, DecalInverse decal, VertexConsumer consumer) {
         Matrix4f m = pose.pose();
-        Vector3f normal = pose.transformNormal(face, new Vector3f());
-        Matrix4f inversePose = new Matrix4f(decalPose.pose()).invert();
-        Matrix3f inverseNormal = new Matrix3f(decalPose.normal()).invert();
+        Vector3f normal = pose.transformNormal(quad.faceNormal(), decal.faceNormal);
+        Vector3f p = decal.position, own = decal.ownNormal;
         for (int i = 0; i < 4; i++) {
-            Vector3f p = m.transformPosition(quad.copyPos(i, new Vector3f()), new Vector3f());
-            Vector3f n = quad.hasNormal(i) ? pose.transformNormal(quad.normalX(i), quad.normalY(i), quad.normalZ(i), new Vector3f()) : normal;
+            m.transformPosition(quad.copyPos(i, p), p);
+            Vector3f n = quad.hasNormal(i) ? pose.transformNormal(quad.normalX(i), quad.normalY(i), quad.normalZ(i), own) : normal;
             consumer.addVertex(p.x(), p.y(), p.z(), quad.color(i), quad.u(i), quad.v(i), overlayCoords, quad.lightmap(i), n.x(), n.y(), n.z());
-            SheetedDecalTextureGenerator.setSheetedDecalUv(p, n, inversePose, inverseNormal, 1f / 128f, consumer);
+            SheetedDecalTextureGenerator.setSheetedDecalUv(p, n, decal.pose, decal.normal, 1f / 128f, consumer);
         }
     }
 }

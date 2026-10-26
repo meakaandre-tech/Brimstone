@@ -102,8 +102,8 @@ public final class TerrainStats {
             o.add("transcodeMsPerLayer", layers == 0 ? null : new com.google.gson.JsonPrimitive(round(transcode / 1e6 / layers)));
             o.addProperty("msPerSection", round((sum + transcode) / 1e6 / c.length));
         }
-        o.addProperty("note", "vanilla's SectionCompiler on its worker threads (FRAPI models through Indigo), plus Brimstone's"
-            + " transcode into its 16-byte vertex on the same thread; sections meshed while measuring");
+        o.addProperty("note", "vanilla's SectionCompiler on its worker threads (blocks through Brimstone's Fabric Renderer API"
+            + " implementation), plus Brimstone's transcode into its 16-byte vertex on the same thread; sections meshed while measuring");
         return o;
     }
 

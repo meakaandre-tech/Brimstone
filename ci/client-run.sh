@@ -40,11 +40,12 @@ case "$RUN" in brimstone-old|measure-old) client_jvm="-Dbrimstone.debug.forceInt
 # nothing (used once to sample the new occlusion scene's noise with Brimstone drawing exactly vanilla's set).
 # every Brimstone run also checks its translucent draws each frame against vanilla's order and latest sort (package 3;
 # ci/compare.py fails on any miss). TRANSLUCENCY_DRY_RUN=1 leaves translucent terrain with vanilla (noise collection only).
+# and every Brimstone run runs the renderer's self-test once in the world (package 4; ci/compare.py requires "passed").
 if [ $measure = 1 ]; then
   client_jvm="$client_jvm -Dbrimstone.ci.measureOnly=true"
   echo "measure run JVM properties:$client_jvm"
 elif [ $brim = 1 ]; then
-  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true"
+  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true"
   if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
   if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
   echo "Brimstone run JVM properties:$client_jvm"
@@ -66,6 +67,26 @@ else
   echo "eula=true" > server/eula.txt
 fi
 if [ $brim = 1 ]; then cp dist/brimstone.jar server/mods/; fi
+# measure runs stand in for vanilla, so Fabric's Indigo draws there as in the vanilla runs: their copy of the jar does
+# not declare fabric-renderer-api-v1:contains_renderer (and Brimstone does not register its renderer, measureOnly)
+if [ $measure = 1 ]; then
+  python3 -I - server/mods/brimstone.jar <<'PY' || { echo "could not take contains_renderer out of the measure run's jar"; exit 1; }
+import json, os, sys, zipfile
+jar = sys.argv[1]
+src = zipfile.ZipFile(jar)
+out = zipfile.ZipFile(jar + ".tmp", "w", zipfile.ZIP_DEFLATED)
+for item in src.infolist():
+    data = src.read(item.filename)
+    if item.filename == "fabric.mod.json":
+        meta = json.loads(data)
+        del meta["custom"]["fabric-renderer-api-v1:contains_renderer"]
+        data = json.dumps(meta, indent=2).encode()
+    out.writestr(item, data)
+out.close()
+os.replace(jar + ".tmp", jar)
+print("measure run: contains_renderer taken out of the jar's fabric.mod.json (Indigo draws)")
+PY
+fi
 cd server
 # SIFTEC's own settings, plus a view distance that covers the 12-chunk fly-through and no console echo in chat
 printf 'level-seed=12345\nwhite-list=false\nenforce-whitelist=false\nonline-mode=false\nmax-tick-time=-1\nview-distance=12\ngamemode=creative\ndifficulty=peaceful\nspawn-protection=0\npause-when-empty-seconds=-1\nbroadcast-console-to-ops=false\n' > server.properties
