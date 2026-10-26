@@ -1711,6 +1711,23 @@ changes": F1 must be fixed, F2 documented, F3 and F4 cheap to fix. What was done
 - **F10 fixed:** doc counts (66 commands, 49 visible, 66 alive in the bench), run references.
 - **F11 (note):** UV reads before the block atlas's upload finishes are not uses; recorded in Known limits.
 
+### Andre's follow-ups (2026-10-27) and the rebase onto package 4
+
+- `core/animated_items`: animated block sprites shown only outside terrain (the hotbar and held magma block, a sea
+  lantern, prismarine, lava and water buckets; an item frame and a block display holding magma; a burning cow), in a
+  third pin area where animation runs 70 ticks from frame 0 like the animation scene. Every one of those sprites is
+  stale at its first use and redrawn on the spot (quick run 40404276347: magma, fire_0, fire_1, sea_lantern and
+  prismarine each redrawn on first use, 0 late; Brimstone identical to vanilla). CI's late gate covers every scene,
+  this one included.
+- `siftec/factory`: a Create fluid tank full of lava floats in front of the camera (the shot had no lava).
+- `core/particles`: strict limit 4 (was 10), below the smallest particle (9 pixels).
+- Rebased onto main with package 4 (`ccf47501`) as one squashed commit (the branch before it is tagged locally as
+  `p8-pre-squash`). Package 4's `flat_plants` and `renderer_off` scenes stand where the particle scene and its pin
+  area were (x 2480-2560), so the particle scene and its area moved 300 blocks east (x 2800-2880); the core world now
+  pregenerates x 2496-2959 for package 8's scenes. Shared files merged by hand, keeping both packages' additions:
+  `ci/client-run.sh` (both debug properties), `BenchReport` (renderer, effects and animation lines), `fabric.mod.json`
+  (both mixin configs), the core baselines and `core.json` (main's entries plus package 8's three scenes).
+
 ### For package 6's plan (Andre, 2026-10-27)
 
 CI now holds banner sway still in every run (`BannerSwayMixin`, package 8), so banner animation is untested: package 6
