@@ -8,7 +8,7 @@
 |---|---|---|
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
-| package 4 (Fabric Renderer API) | `package-4` | in progress (review fixes, rebase on main); not to be merged before your review |
+| package 4 (Fabric Renderer API) | `package-4` | **done, not merged (your review)**: `d37c587`, rebased on main, full run 40256275410 green; review fixes S1-S7 and a second independent review done. For you: flat lighting of cross models (vanilla facing, Indigo's not measured), no runtime off switch for the whole renderer (per-block/per-submit fallbacks, each fails CI), whether to declare `breaks` against other renderer mods, confirm the black-box Indigo method |
 | package 7 (GUI and text) | `package-7` | in progress; not to be merged before your review |
 | package 8 (effects) | `package-8` | in progress; not to be merged before your review |
 
