@@ -210,6 +210,8 @@ def main():
                 failures.append(f"{name}/{r}: GL version is not forced to 3.3 ({m.group(2).strip()})")
             if ext and old and ("GL_ARB_multi_draw_indirect" in exts or "GL_ARB_buffer_storage" in exts):
                 failures.append(f"{name}/{r}: vanilla still lists a hidden extension")
+            if r.startswith("vanilla") and os.path.isdir(d) and "[Indigo] Registering Indigo renderer" not in t:
+                failures.append(f"{name}/{r}: the vanilla run did not draw with Fabric's Indigo renderer")
             if r.startswith(("brimstone", "measure")):
                 if not probe:
                     failures.append(f"{name}/{r}: no Brimstone capability line")
@@ -227,6 +229,11 @@ def main():
                             failures.append(f"{name}/{r}: probe does not show gl=3.3")
                         if old and "vanilla.mdiKnownIssues=yes" not in p:
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
+                    # package 4: Brimstone's Fabric Renderer API implementation draws in every Brimstone and measure run
+                    if "Fabric Renderer API implementation registered" not in t:
+                        failures.append(f"{name}/{r}: Brimstone's Fabric Renderer API implementation was not registered")
+                    if "[Indigo] Registering Indigo renderer" in t:
+                        failures.append(f"{name}/{r}: Indigo registered as the renderer next to Brimstone")
                     if r.startswith("measure"):
                         # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)
                         for mod in ("terrain", "visibility"):

@@ -21,8 +21,12 @@
     "brimstone.mixins.json",
     "brimstone.counters.mixins.json",
     "brimstone.terrain.mixins.json",
-    "brimstone.visibility.mixins.json"
+    "brimstone.visibility.mixins.json",
+    "brimstone.frapi.mixins.json"
   ],
+  "custom": {
+    "fabric-renderer-api-v1:contains_renderer": true
+  },
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": ">=26.3- <26.4-",

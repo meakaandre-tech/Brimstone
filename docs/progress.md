@@ -1338,6 +1338,101 @@ FPS and frame times.
 
 ---
 
+## Package 4: Fabric Renderer API (branch `package-4`, not merged: Andre reviews it first)
+
+Done when (design doc): "Full FRAPI in place of Indigo; Create connected textures and every SIFTEC model draw the
+same as with Indigo."
+
+### Plan
+
+What the API needs from a renderer in Fabric API 0.161.0+26.3 (read from its `fabric-renderer-api-v1` sources and the
+javap dump; Indigo's implementation was not read, clean room): `Renderer` (`quadEmitter`, `mutableMesh`,
+`altModelBlockRenderer`) and feature renderers for the API's two submit types (`ExtendedBlockModelSubmit`,
+`ExtendedItemSubmit`); the API's own mixins route chunk meshing, moving blocks (pistons), block models drawn as
+features (block displays, minecart blocks) and every item through them. A mod that declares
+`fabric-renderer-api-v1:contains_renderer` makes Indigo stand aside.
+
+1. Quads and meshes: Brimstone's own encoding (`frapi/QuadData`: 40 ints a quad), `MutableQuadViewImpl` (the
+   `QuadEmitter`, with the transform stack), `Meshes` (mutable and immutable).
+2. Blocks (`BlockRenderer`): the model emits its quads; each is culled (vanilla's `Block.shouldRenderFace`), lit with
+   vanilla's own `BlockModelLighter` (smooth or flat per quad by the API's ambient-occlusion setting, on the quad's
+   vanilla `BakedQuad` where it still has one), tinted with vanilla's tint sources and written as vanilla writes a
+   block quad (`putBlockBakedQuad`: same floats, colours and light), plus the API's vertex colours, lightmaps and
+   emissive flag. A block that throws is drawn by vanilla's `ModelBlockRenderer` instead (logged once).
+3. Features: vanilla quads go to vanilla's own `ItemFeatureRenderer` / `BlockModelFeatureRenderer` (converted to their
+   submits; every lifecycle call forwarded one-for-one); API mesh quads are drawn as vanilla draws such a quad, with
+   vanilla's own tint lookup and special-foil decal pose through invokers.
+4. CI: every Brimstone run and every measure run now draws with Brimstone's renderer, the vanilla runs with Indigo, so
+   every scene compares the two; compare.py checks which renderer each run used.
+
+Risk: once Brimstone declares itself the renderer, Indigo is not there to fall back to; the fallback is vanilla's own
+code (per block, and vanilla's feature renderers for vanilla quads).
+
+### What was built (`src/main/java/com/meakaandre/brimstone/frapi/`, `mixin/frapi/`)
+
+- `QuadData`, `QuadViewImpl`, `MutableQuadViewImpl`, `Meshes`: the API's quads, emitters and meshes in Brimstone's
+  own encoding (40 ints a quad), with the transform stack, sprite and material data. Light face: the axis the quad's
+  normal points to most, x before y before z on a tie (as Indigo picks it for a 45-degree quad).
+- `BlockRenderer` (chunk meshing, pistons): the model emits its quads; each is culled with vanilla's
+  `Block.shouldRenderFace`, lit (flat: vanilla's `BlockModelLighter`; smooth: `FaceAo`), tinted with vanilla's tint
+  sources and written as vanilla writes a block quad, plus the API's vertex colours, lightmaps and emissive flag. A
+  block that throws is drawn by vanilla's `ModelBlockRenderer` (logged once).
+- `FaceAo`: smooth lighting as Indigo does it (below).
+- `ItemSubmitRenderer`, `BlockSubmitRenderer`: the API's item and block-model submits. Vanilla quads, and mesh quads
+  carrying nothing a vanilla quad can't (white, no own normals, vanilla light, facing along an axis), go to vanilla's
+  own `ItemFeatureRenderer` / `BlockModelFeatureRenderer`; the rest are drawn as vanilla draws such a quad, with the
+  quad's geometric normal where it has none of its own (Indigo's; it differs from vanilla's face axis only for quads at
+  an angle, such as the mooshroom's mushrooms). Vanilla's tint lookup, foil decal pose and face brightness through
+  invokers.
+- `fabric.mod.json` declares `fabric-renderer-api-v1:contains_renderer`, so Indigo stands aside; `BrimstoneClient`
+  registers the renderer first thing at client start.
+- CI: compare.py checks each vanilla run drew with Indigo and each Brimstone and measure run with Brimstone's renderer
+  (and not Indigo). Every scene therefore compares Brimstone's renderer with Indigo.
+
+### Indigo's smooth lighting (measured black-box; Indigo's code was not read)
+
+The first cut lit blocks with vanilla's own `BlockModelLighter`, which is not what Indigo draws: nether, sift,
+occlusion and factory failed with triangle-shaped light differences. A diagnostic CI job (branch only, now removed) ran
+Indigo as the renderer and Brimstone's block renderer beside it on every block of the core and SIFTEC scenes (about
+2.3 million blocks a run), logged each difference with the block's neighbourhood (positions within one block, two
+along an axis: shade, light, opacity, permeability), and the rules were fitted offline until they reproduced Indigo.
+Each corner of a face averages a centre block, the two blocks beside it towards the corner and the diagonal block:
+
+1. Quad on the block's face: around the block in front of it. Quad inside the block (carpet top, ladder) or at an
+   angle (cross models): around the block itself, its own light as the centre's.
+2. The diagonal block counts if either side block lets light through (the side blocks themselves; vanilla checks one
+   further out), else the side along x (down, up, south faces) or y (north, west, east), vanilla's table.
+3. Light: an opaque block that gives no light of its own takes the lowest light of the other samples, per light kind,
+   whatever light the world stores in it (vanilla: zero samples take the centre's).
+4. A vertex takes its corner's values, or mixes the four by its position on the face (along u, then v; light per kind
+   rounded down); colour times the light face's directional brightness (vanilla's).
+
+Result in the last diagnostic run (`248e3df`, run 40230147788) and offline on all five data sets: every quad facing
+along an axis reproduced except 11 one-step cases; quads at an angle 2,287 of 2,468, the rest one light or colour step
+(Indigo's exact float rounding mid-face is not known). Remaining differences per block are at most 1/255 in colour
+and one light step, below the strict gate's 2/255.
+
+### Deviations and choices to confirm
+
+- **Indigo, not vanilla's lighter, is the reference** for block lighting, as the doc's done-when says ("draw the same
+  as with Indigo"); where the two differ, Brimstone follows Indigo.
+- **Black-box measurement of Indigo** (a diagnostic run with Indigo as renderer and Brimstone's renderer beside it)
+  as the clean-room method; only behaviour is reproduced. Commits say so.
+- **Residual one-step differences** at mid-face vertices of angled and partial quads (azalea, moss carpet, snow
+  layers), not fixed: invisible and under the strict threshold.
+- **Flat lighting and items are vanilla's** (Indigo's flat lighting and item drawing were not diagnosed separately; the
+  CI scenes with items and flat-lit blocks pass).
+- **Vertex alpha below 255** (package 3's known limit) is unchanged: such a layer stays with vanilla's terrain
+  (correct picture; Brimstone's terrain path is lost for it). No CI scene has one.
+
+### Evidence
+
+- Green CI runs on the branch: 40221609346 (`4861a6c`), 40225361741 (`86a3f5f`), 40227499408 (`81ecd03`), 40230147788
+  (`248e3df`), 40233004611 (`1022f62`, the last with the diagnostic: 2.2 and 2.8 million blocks compared, 2,870 and
+  2,521 differing, every one by at most one colour or light step). The diagnostic is removed in the next commit.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
