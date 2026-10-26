@@ -103,6 +103,7 @@ final class BlockRenderer implements AltModelBlockRenderer {
             ((FabricBlockStateModel) model).emitQuads(input, level, pos, blockState, random, this::hidden);
             done = true;
         } catch (Throwable t) {
+            if (t instanceof VirtualMachineError e) throw e;
             pendingCount = 0;
             input.clear();
             input.resetTransforms();

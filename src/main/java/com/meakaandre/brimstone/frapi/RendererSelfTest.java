@@ -100,16 +100,32 @@ public final class RendererSelfTest {
         e.fromBakedQuad(top);
         e.uv(0, 0.5f, 0.5f);
         e.emit();
+        // every other change to what a vanilla quad stores drops the kept quad too
+        e.fromBakedQuad(top);
+        e.tintIndex(top.materialInfo().tintIndex() + 7);
+        e.emit();
+        e.fromBakedQuad(top);
+        e.lightmap(2, 0xF000F0);
+        e.emit();
+        e.fromBakedQuad(top);
+        e.chunkLayer(top.materialInfo().layer() == ChunkSectionLayer.TRANSLUCENT ? ChunkSectionLayer.SOLID : ChunkSectionLayer.TRANSLUCENT);
+        e.emit();
+        e.fromBakedQuad(top);
+        e.pos(1, e.x(1) + 0.25f, e.y(1), e.z(1));
+        e.emit();
         Mesh mesh = mutable.immutableCopy();
         List<BakedQuad> back = new ArrayList<>();
         mesh.forEach(q -> back.add(Quads.toBaked(q)));
-        check(back.size() == 2 && back.get(0) == top, "an unchanged vanilla quad through a mesh is not the same quad", failed);
-        check(back.size() == 2 && back.get(1) != top && back.get(1).packedUV(0) != top.packedUV(0), "a changed vanilla quad through a mesh kept the old quad", failed);
+        check(back.size() == 6 && back.get(0) == top, "an unchanged vanilla quad through a mesh is not the same quad", failed);
+        check(back.size() == 6 && back.get(1) != top && back.get(1).packedUV(0) != top.packedUV(0), "a vanilla quad with new UVs through a mesh kept the old quad", failed);
+        check(back.size() == 6 && back.get(2) != top && back.get(2).materialInfo().tintIndex() != top.materialInfo().tintIndex()
+            && back.get(3) != top && back.get(4) != top && back.get(4).materialInfo().layer() != top.materialInfo().layer()
+            && back.get(5) != top && !back.get(5).position(1).equals(top.position(1)), "a changed vanilla quad (tint, light, layer or position) through a mesh kept the old quad", failed);
         // N4: emit() on a mutable mesh's in-place cursor leaves the quad as it is
         mutable.forEachMutable(q -> ((QuadEmitter) q).emit());
         List<BakedQuad> again = new ArrayList<>();
         mutable.forEach(q -> again.add(Quads.toBaked(q)));
-        check(again.size() == 2 && again.get(0) == top, "emit() on a mutable mesh's cursor changed the quad", failed);
+        check(again.size() == 6 && again.get(0) == top, "emit() on a mutable mesh's cursor changed the quad", failed);
 
         // S7: a layer whose render type is null is skipped, not drawn with another layer's type
         TextureAtlasSprite sprite = top.materialInfo().sprite();
@@ -123,9 +139,11 @@ public final class RendererSelfTest {
             "with the solid layer skipped, " + split.size() + " submits drew " + drawn.size() + " quads (want 1 submit, the cutout quad)", failed);
         split = BlockSubmitRenderer.split(List.of(submit(l -> cutout, mixed, null))).vanilla();
         check(split.size() == 1 && split.get(0).modelParts() == mixed, "one render type for every layer did not give vanilla's single submit", failed);
+        // a block model submit's mesh: vanilla gets its vanilla quads as they are (the quad with its own light on one
+        // vertex is not vanilla-like and Brimstone draws it, so vanilla gets 5 of the 6)
         split = BlockSubmitRenderer.split(List.of(submit(l -> cutout, List.of(), mesh))).vanilla();
         drawn = split.size() == 1 ? quads(split.get(0).modelParts()) : List.of();
-        check(drawn.size() == 2 && drawn.get(0) == top, "a block model submit's mesh did not hand vanilla its own vanilla quad", failed);
+        check(drawn.size() == 5 && drawn.get(0) == top, "a block model submit's mesh did not hand vanilla its own vanilla quad", failed);
 
         // S4: buffer() without a pose writes the exact face normal, not the light face's axis
         QuadEmitter angled = BrimstoneRenderer.INSTANCE.quadEmitter(q -> {

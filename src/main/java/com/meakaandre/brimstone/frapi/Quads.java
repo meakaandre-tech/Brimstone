@@ -99,7 +99,20 @@ final class Quads {
         return LightCoordsUtil.max(light, quadLight);
     }
 
-    private static volatile boolean tintInvokerFailed, foilInvokerFailed;
+    private static volatile boolean tintInvokerFailed, foilInvokerFailed, featureFallbackLogged;
+
+    /**
+     * A feature submit Brimstone could not handle (its mesh, or a mod's render type function, threw): logged once, the
+     * caller draws what vanilla can of it. An error of the JVM itself is not caught.
+     */
+    static void featureFallback(String what, Throwable t) {
+        if (t instanceof VirtualMachineError e) throw e;
+        if (!featureFallbackLogged) {
+            featureFallbackLogged = true;
+            BrimstoneClient.LOG.warn("Brimstone renderer fallback: {} threw; vanilla's renderer draws its vanilla quads only, its API"
+                + " mesh is not drawn (logged once)", what, t);
+        }
+    }
 
     /** An item layer's tint colour for a tint index, through vanilla's own lookup where it is reachable. */
     static int layerColor(int[] tintLayers, int tintIndex) {

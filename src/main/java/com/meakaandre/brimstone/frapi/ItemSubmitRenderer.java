@@ -46,12 +46,30 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
         List<ItemFeatureRenderer.Submit> v = new ArrayList<>(submits.size());
         List<ExtendedItemSubmit> m = new ArrayList<>();
         for (ExtendedItemSubmit s : submits) {
+            int before = v.size();
+            try {
+                splitOne(s, v, m);
+            } catch (Throwable t) {
+                Quads.featureFallback("an item submit", t);
+                while (v.size() > before) v.removeLast();
+                if (m.size() > 0 && m.getLast() == s) m.removeLast();
+                if (!s.quads().isEmpty()) {
+                    v.add(new ItemFeatureRenderer.Submit(s.pose(), s.displayContext(), s.lightCoords(), s.overlayCoords(), s.outlineColor(),
+                        s.tintLayers(), s.quads(), s.foilType()));
+                }
+            }
+        }
+        return new Split(v, m);
+    }
+
+    private static void splitOne(ExtendedItemSubmit s, List<ItemFeatureRenderer.Submit> v, List<ExtendedItemSubmit> m) {
+        {
             if (s.outlineColor() != 0) {
                 List<BakedQuad> quads = new ArrayList<>(s.quads());
                 s.mesh().forEach(q -> quads.add(Quads.toBaked(q)));
                 v.add(new ItemFeatureRenderer.Submit(s.pose(), s.displayContext(), s.lightCoords(), s.overlayCoords(), s.outlineColor(),
                     s.tintLayers(), quads, s.foilType()));
-                continue;
+                return;
             }
             // vanilla quads and the mesh's vanilla-like quads to vanilla
             List<BakedQuad> quads = s.quads();
@@ -70,7 +88,6 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
             }
             if (own[0]) m.add(s);
         }
-        return new Split(v, m);
     }
 
     private Split splitFor(List<ExtendedItemSubmit> submits) {
@@ -134,9 +151,13 @@ final class ItemSubmitRenderer implements FeatureRenderer<ExtendedItemSubmit> {
         protected void buildGroup(FeatureFrameContext context, List<ExtendedItemSubmit> submits) {
             for (ExtendedItemSubmit s : submits) {
                 decalReady = false;
-                s.mesh().forEach(q -> {
-                    if (!Quads.vanillaLike(q)) buffer(s, q);
-                });
+                try {
+                    s.mesh().forEach(q -> {
+                        if (!Quads.vanillaLike(q)) buffer(s, q);
+                    });
+                } catch (Throwable t) {
+                    Quads.featureFallback("an item submit's mesh", t);
+                }
             }
         }
 

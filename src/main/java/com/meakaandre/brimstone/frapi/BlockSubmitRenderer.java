@@ -90,6 +90,27 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
         List<BlockModelFeatureRenderer.Submit> v = new ArrayList<>(submits.size());
         List<ExtendedBlockModelSubmit> m = new ArrayList<>();
         for (ExtendedBlockModelSubmit s : submits) {
+            int before = v.size();
+            try {
+                splitOne(s, v, m);
+            } catch (Throwable t) {
+                Quads.featureFallback("a block model submit", t);
+                while (v.size() > before) v.removeLast();
+                if (m.size() > 0 && m.getLast() == s) m.removeLast();
+                try {
+                    if (!s.modelParts().isEmpty()) addVanilla(s, s.modelParts(), v);
+                } catch (Throwable t2) {
+                    // its render type function itself throws: nothing of it can be drawn
+                    Quads.featureFallback("a block model submit's render type function", t2);
+                    while (v.size() > before) v.removeLast();
+                }
+            }
+        }
+        return new Split(v, m);
+    }
+
+    private static void splitOne(ExtendedBlockModelSubmit s, List<BlockModelFeatureRenderer.Submit> v, List<ExtendedBlockModelSubmit> m) {
+        {
             if (!s.modelParts().isEmpty()) addVanilla(s, s.modelParts(), v);
             if (s.mesh() != null && s.mesh().size() > 0) {
                 // the mesh's vanilla-like quads (every vanilla block model's: the API emits block models in entity
@@ -104,7 +125,6 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
                 if (own[0]) m.add(s);
             }
         }
-        return new Split(v, m);
     }
 
     /** Converted mesh quads as a model part (all under no cull face, in the mesh's order). */
@@ -240,9 +260,13 @@ final class BlockSubmitRenderer implements FeatureRenderer<ExtendedBlockModelSub
         protected void buildGroup(FeatureFrameContext context, List<ExtendedBlockModelSubmit> submits) {
             for (ExtendedBlockModelSubmit s : submits) {
                 lastBuilder = lastDecal = null;
-                s.mesh().forEach(q -> {
-                    if (!Quads.vanillaLike(q)) buffer(s, q);
-                });
+                try {
+                    s.mesh().forEach(q -> {
+                        if (!Quads.vanillaLike(q)) buffer(s, q);
+                    });
+                } catch (Throwable t) {
+                    Quads.featureFallback("a block model submit's mesh", t);
+                }
             }
             lastBuilder = lastDecal = null;
         }

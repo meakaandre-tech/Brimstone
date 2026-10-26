@@ -231,21 +231,24 @@ def main():
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
                     # package 4: Brimstone's Fabric Renderer API implementation draws in every Brimstone run, never falling
                     # back; measure runs stand in for vanilla, so Indigo draws there as in the vanilla runs
-                    if r.startswith("measure"):
-                        if "[Indigo] Registering Indigo renderer" not in t:
-                            failures.append(f"{name}/{r}: the measure run did not draw with Fabric's Indigo renderer")
-                        if "Brimstone renderer: off, brimstone.ci.measureOnly is set" not in t or "Fabric Renderer API implementation registered" in t:
-                            failures.append(f"{name}/{r}: Brimstone's Fabric Renderer API implementation did not stay off for measuring")
-                    else:
-                        if "Fabric Renderer API implementation registered" not in t:
-                            failures.append(f"{name}/{r}: Brimstone's Fabric Renderer API implementation was not registered")
-                        if "[Indigo] Registering Indigo renderer" in t:
-                            failures.append(f"{name}/{r}: Indigo registered as the renderer next to Brimstone")
-                        nwarn = len(re.findall(r"Brimstone renderer fallback:", t))
-                        if nwarn:
-                            failures.append(f"{name}/{r}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")
-                        if "Brimstone renderer self-test: passed" not in t or "Brimstone renderer self-test FAILED" in t:
-                            failures.append(f"{name}/{r}: the renderer self-test did not pass (see client log)")
+                    # checked per client session (each is its own game start)
+                    for f in sorted(glob.glob(os.path.join(d, "client-*.log"))):
+                        st, sess = open(f, errors="replace").read(), os.path.basename(f)
+                        if r.startswith("measure"):
+                            if "[Indigo] Registering Indigo renderer" not in st:
+                                failures.append(f"{name}/{r}/{sess}: the measure run did not draw with Fabric's Indigo renderer")
+                            if "Brimstone renderer: off, brimstone.ci.measureOnly is set" not in st or "Fabric Renderer API implementation registered" in st:
+                                failures.append(f"{name}/{r}/{sess}: Brimstone's Fabric Renderer API implementation did not stay off for measuring")
+                        else:
+                            if "Fabric Renderer API implementation registered" not in st:
+                                failures.append(f"{name}/{r}/{sess}: Brimstone's Fabric Renderer API implementation was not registered")
+                            if "[Indigo] Registering Indigo renderer" in st:
+                                failures.append(f"{name}/{r}/{sess}: Indigo registered as the renderer next to Brimstone")
+                            nwarn = len(re.findall(r"Brimstone renderer fallback:", st))
+                            if nwarn:
+                                failures.append(f"{name}/{r}/{sess}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")
+                            if "Brimstone renderer self-test: passed" not in st or "Brimstone renderer self-test FAILED" in st:
+                                failures.append(f"{name}/{r}/{sess}: the renderer self-test did not pass (see client log)")
                     if r.startswith("measure"):
                         # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)
                         for mod in ("terrain", "visibility"):

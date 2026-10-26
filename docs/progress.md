@@ -1343,7 +1343,7 @@ FPS and frame times.
 Done when (design doc): "Full FRAPI in place of Indigo; Create connected textures and every SIFTEC model draw the
 same as with Indigo."
 
-### Plan
+### Plan (the first cut; "What was built" and "Review fixes" supersede it where they differ)
 
 What the API needs from a renderer in Fabric API 0.161.0+26.3 (read from its `fabric-renderer-api-v1` sources and the
 javap dump; Indigo's implementation was not read, clean room): `Renderer` (`quadEmitter`, `mutableMesh`,
@@ -1384,10 +1384,15 @@ code (per block, and vanilla's feature renderers for vanilla quads).
   quad's geometric normal where it has none of its own (Indigo's; it differs from vanilla's face axis only for quads at
   an angle, such as the mooshroom's mushrooms). Vanilla's tint lookup, foil decal pose and face brightness through
   invokers.
-- `fabric.mod.json` declares `fabric-renderer-api-v1:contains_renderer`, so Indigo stands aside; `BrimstoneClient`
-  registers the renderer first thing at client start.
-- CI: compare.py checks each vanilla run drew with Indigo and each Brimstone and measure run with Brimstone's renderer
-  (and not Indigo). Every scene therefore compares Brimstone's renderer with Indigo.
+- `fabric.mod.json` declares `fabric-renderer-api-v1:contains_renderer`, so Indigo stands aside; Brimstone's main
+  entrypoint (`Brimstone`, client only) registers the renderer, before any mod's client entrypoint runs.
+- CI: compare.py checks, per client session, that each vanilla run drew with Indigo, each Brimstone run with
+  Brimstone's renderer (not Indigo, no "Brimstone renderer fallback:" line, renderer self-test passed), and each
+  measure run with Indigo (CI takes `contains_renderer` out of the measure run's jar; Brimstone's renderer stays off
+  with measureOnly). Every scene therefore compares Brimstone's renderer with Indigo, and measure runs stay vanilla's.
+- `RendererSelfTest` (CI, `brimstone.debug.verifyRenderer`, once in the world): a model that throws after emitting
+  quads, the transform it leaves pushed, a skipped chunk layer in a block model submit, vanilla quads through meshes
+  (kept as the same quads; dropped on any change), `emit()` on a mutable mesh cursor, and `buffer()`'s normal.
 
 ### Indigo's smooth lighting (measured black-box; Indigo's code was not read)
 
@@ -1412,6 +1417,38 @@ along an axis reproduced except 11 one-step cases; quads at an angle 2,287 of 2,
 (Indigo's exact float rounding mid-face is not known). Remaining differences per block are at most 1/255 in colour
 and one light step, below the strict gate's 2/255.
 
+### Review fixes (review: `scratchpad/review-package-4.md`, 7 should-fix, 14 nits)
+
+- **S1** block fallback: a block's quads are held until its model has emitted them all; if it throws they are dropped,
+  its pushed transforms cleared, and vanilla's renderer draws the block (nothing drawn twice).
+- **S2** registration from a main entrypoint (client only): every main entrypoint runs before any client entrypoint,
+  so no mod can ask for the renderer first (CI log: Brimstone's registration precedes Indigo's client entrypoint
+  standing aside). A failed registration of the renderer or of its feature renderers is an error line, and fails CI.
+- **S3** allocation: meshes keep each quad's unchanged vanilla quad and known sprite, so vanilla block models drawn in
+  entity contexts reach vanilla's renderer as the same quads (no conversion, no sprite lookup); one render type for
+  every layer skips the layer scan; block lighting of non-vanilla quads uses a constant sprite (vanilla's lighting
+  never reads it); narrowed parts, glint decal inverses, decal wrappers and posed-buffer vectors are no longer per quad.
+- **S4** `QuadView.buffer` without a pose writes the exact face normal (the API's contract); no terrain shader reads
+  terrain normals, so the picture is unchanged.
+- **S5** every renderer fallback logs "Brimstone renderer fallback:" (tessellation, face brightness, item tint and
+  foil-pose invokers, registration, feature submits); any such line fails a Brimstone run.
+- **S6** measure runs draw with Indigo (above); docs/ci-limits.md says so.
+- **S7** a layer whose render type is null is skipped, not drawn with another layer's type.
+- Nits fixed: N2 (animated reset without a sprite), N3 (decoded mesh quads report their light face as nominal face),
+  N4 (mesh cursor `emit()` does nothing), N5 (a warning above 32 item render types), N6 (separate, logged invoker
+  failures), N7 (per-quad allocations on the item path), N9 (comment), N12 (stale javadocs, progress plan, bench
+  note), N13 (branch trigger dropped in the rebase). Not changed: N1 (recorded below), N8 (`FaceAo`'s per-sample
+  records: the JIT's escape analysis likely removes them, and the lighting code is picture-critical), N10 (whether
+  `executeGroup` uses the list is unknown without bytecode; the cache is bounded and cleared per frame), N11 (one atlas
+  lookup per meshing call off the render thread, as vanilla's own mesher reads sprites; benign).
+- Second review (a fresh agent over the whole package diff, after the fixes): no blockers. Fixed: feature submits
+  now fall back too (a throwing mesh or render type function draws the submit's vanilla quads only, logged, instead of
+  crashing), a JVM error is no longer swallowed by the block fallback, `atlas()` changes drop the known sprite, CI
+  checks the renderer lines per client session, the self-test checks more kinds of change, and these docs. Not
+  changed: flat lighting of vanilla quads uses vanilla's quad facing where smooth lighting uses the light face (as
+  before; changing it would change the picture of cross models under flat light, unmeasured against Indigo: for
+  Andre), `vanillaLike` runs twice per mesh quad (small), normals stay quantised to bytes (the API's own precision).
+
 ### Deviations and choices to confirm
 
 - **Indigo, not vanilla's lighter, is the reference** for block lighting, as the doc's done-when says ("draw the same
@@ -1422,6 +1459,15 @@ and one light step, below the strict gate's 2/255.
   layers), not fixed: invisible and under the strict threshold.
 - **Flat lighting and items are vanilla's** (Indigo's flat lighting and item drawing were not diagnosed separately; the
   CI scenes with items and flat-lit blocks pass).
+- **Light face tie-break** (N1): for a quad at exactly 45 degrees Brimstone picks x before y before z (as Indigo was
+  measured to), which may differ from vanilla's own `BakedQuad.direction()` for cross models; `toBakedQuad()` then
+  faces the light face.
+- **No runtime off switch for the whole renderer**: `contains_renderer` is static, so once Brimstone declares it
+  Indigo is gone for that game. Failures fall back per block (vanilla's renderer), per feature submit (its vanilla
+  quads), and per invoker (vanilla's lighter or the item's own data), each with a log line that fails CI.
+- **Another renderer mod is a hard conflict** (only one FRAPI renderer can register). If it registers first,
+  Brimstone logs that and the other renderer draws; if Brimstone is first, the other mod's registration throws. No
+  `breaks` entry is declared (which mods to name is Andre's call).
 - **Vertex alpha below 255** (package 3's known limit) is unchanged: such a layer stays with vanilla's terrain
   (correct picture; Brimstone's terrain path is lost for it). No CI scene has one.
 
@@ -1430,6 +1476,11 @@ and one light step, below the strict gate's 2/255.
 - Green CI runs on the branch: 40221609346 (`4861a6c`), 40225361741 (`86a3f5f`), 40227499408 (`81ecd03`), 40230147788
   (`248e3df`), 40233004611 (`1022f62`, the last with the diagnostic: 2.2 and 2.8 million blocks compared, 2,870 and
   2,521 differing, every one by at most one colour or light step). The diagnostic is removed in the next commit.
+- Green full run 40236725811 (`2347de6`) before the review. After rebasing on main's quick CI (one squashed commit)
+  and the review fixes: quick run 40248977377 (`bf673ee`) and full run 40251612353 (`2e4dcbc`) green: every Brimstone
+  session registered Brimstone's renderer and passed the self-test with no fallback line, every measure and vanilla
+  session drew with Indigo, and the same-run draw-call and memory gates passed against the Indigo measure runs. The
+  final full run on the rebased branch with the second review's fixes is given in the hand-off to the lead.
 
 ---
 

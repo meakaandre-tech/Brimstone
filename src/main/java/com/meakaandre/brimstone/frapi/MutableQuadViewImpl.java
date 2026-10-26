@@ -147,7 +147,10 @@ abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
 
     @Override
     public QuadEmitter atlas(QuadAtlas quadAtlas) {
-        if (quadAtlas != atlas()) exactQuad = null;
+        if (quadAtlas != atlas()) {
+            exactQuad = null;
+            sprite = null;
+        }
         flag(ATLAS_ITEM, quadAtlas == QuadAtlas.ITEM);
         return this;
     }
