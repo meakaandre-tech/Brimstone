@@ -28,11 +28,6 @@ public final class BrimstoneClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // DIAGNOSTIC (branch only): compare Brimstone's block renderer with Indigo in measure runs
-        if (Boolean.getBoolean("brimstone.debug.compareIndigo")) {
-            ClientLifecycleEvents.CLIENT_STARTED.register(client -> com.meakaandre.brimstone.frapi.IndigoComparison.install());
-            ClientLifecycleEvents.CLIENT_STOPPING.register(client -> com.meakaandre.brimstone.frapi.IndigoComparison.summary());
-        }
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             try {
                 capabilities = CapabilityProbe.run();
