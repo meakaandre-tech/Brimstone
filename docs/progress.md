@@ -2,11 +2,28 @@
 
 ## Where things stand
 
-**For Andre (2026-10-26):** package 3 merged as `143defe` (main CI green: https://github.com/meakaandre-tech/Brimstone/actions/runs/40197881761;
-`latest` rebuilt from it). Package 4 (Fabric Renderer API): in progress on branch `package-4`, not to be merged
-before your review; its status is in its own section on that branch.
+**For Andre (2026-10-26), tracks:**
 
-Decisions made on your behalf while you were away (each also in its section):
+| track | branch | status |
+|---|---|---|
+| package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
+| quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
+| package 4 (Fabric Renderer API) | `package-4` | in progress (review fixes, rebase on main); not to be merged before your review |
+| package 7 (GUI and text) | `package-7` | in progress; not to be merged before your review |
+| package 8 (effects) | `package-8` | in progress; not to be merged before your review |
+
+**Quick CI** (decisions on your behalf): quick mode compares Brimstone old-GPU with vanilla-a (vanilla's GL 3.3 and
+4.5 pictures differ no more than vanilla a and b do) using the full mode's limits, the strict check on the pixels where
+vanilla a and b agree; the measure-run gates are skipped in quick mode and the report says so. Main's logs are on
+`ci-logs-main`, the old `ci-logs` branch is no longer written. A quick run takes 15-25 minutes, not 10 (the core
+client runs alone take about 15). siftec/mam is gated against vanilla on the median (its Vulkan average failed on
+runner speed with equal medians on the branch's first full run; your rule). Full-mode equivalence: the new
+compare.py gave identical failures, data and reports to the old one on real and injected results.
+**Smallest thing each scene must catch** is in `docs/ci-limits.md`; existing limits larger than it (not changed,
+for you): spawn (a section at mid distance), flythrough, water_glass (both also covered by exact per-frame checks),
+mobs (a chicken), factory (one ladder strip), hub and mam (a text line, an item icon; package 7 works on these).
+
+Decisions made on your behalf while you were away, package 3 (each also in its section):
 1. **Strict extras measured on medians:** extra = median of five 16-byte runs minus median of five runs before the
    switch, largest over the profiles (not the largest single run, which carried run-wide noise that vanilla shows
    too; that would have raised spawn by 2,834 and hub by 1,638). Every run passes the new limits (`docs/ci-limits.md`).
