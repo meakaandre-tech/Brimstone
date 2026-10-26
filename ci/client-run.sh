@@ -42,7 +42,7 @@ case "$RUN" in brimstone-old|measure-old) client_jvm="-Dbrimstone.debug.forceInt
 # ci/compare.py fails on any miss). TRANSLUCENCY_DRY_RUN=1 leaves translucent terrain with vanilla (noise collection only).
 # and every Brimstone run runs the renderer's self-test once in the world (package 4; ci/compare.py requires "passed").
 if [ $measure = 1 ]; then
-  client_jvm="$client_jvm -Dbrimstone.ci.measureOnly=true"
+  client_jvm="$client_jvm -Dbrimstone.ci.measureOnly=true -Dbrimstone.debug.compareIndigo=true"
   echo "measure run JVM properties:$client_jvm"
 elif [ $brim = 1 ]; then
   client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true"

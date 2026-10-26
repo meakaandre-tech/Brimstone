@@ -248,7 +248,9 @@ def main():
                     sess_opts = session_options(suite)
                     for f in sorted(glob.glob(os.path.join(d, "client-*.log"))):
                         st, sess = open(f, errors="replace").read(), os.path.basename(f)
-                        m_n = re.match(r"client-(\d+)\.log", sess)
+                        m_n = re.fullmatch(r"client-(\d+)\.log", sess)
+                        if not m_n:
+                            continue  # client-gradle-<n>.log: the same session's Gradle output
                         off = bool(m_n) and int(m_n.group(1)) <= len(sess_opts) and "brimstone.block-renderer=off" in sess_opts[int(m_n.group(1)) - 1]
                         if not r.startswith("measure"):
                             if off and "Brimstone block renderer: off" not in st:
