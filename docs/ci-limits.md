@@ -477,7 +477,10 @@ vanilla: their screenshots go through the same 8/255 and strict limits against v
 (compare.py's "Measure runs" table); run 40180107484 attempt 2: every measure run inside every limit. CI also
 checks that a measure run really is vanilla: both modules' "measureOnly is set" log lines and no "on" line, every
 bench with terrain off ("measure only (CI)") and visibility off, no Brimstone arena and no layer taken, and the same
-profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag).
+profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag). Since package 4 they also draw blocks
+and items with Fabric's Indigo, as the vanilla runs do: CI takes `fabric-renderer-api-v1:contains_renderer` out of
+the measure run's copy of the jar and Brimstone does not register its renderer when measureOnly is set; CI requires
+Indigo's registration line and Brimstone's "Brimstone renderer: off" line, and no Brimstone registration.
 
 **Draw calls.** In every scene, Brimstone's draw calls per frame against the measure run of its profile, on the
 per-frame average **and** the median: the translucent scenes (`ci/vanilla-draw-calls.json`: water_glass,
