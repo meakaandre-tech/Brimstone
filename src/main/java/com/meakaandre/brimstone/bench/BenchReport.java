@@ -96,6 +96,7 @@ final class BenchReport {
         out.add("terrainGpu", TerrainGpuMemory.json());
         out.add("effects", EffectsStats.json(n));
         out.add("animation", com.meakaandre.brimstone.animation.Animation.json());
+        out.add("gui", com.meakaandre.brimstone.gui.GuiStats.json());
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
         CounterAudit.missing().forEach(missing::add);
@@ -187,6 +188,7 @@ final class BenchReport {
         line(b, "renderer", com.meakaandre.brimstone.frapi.RendererStats.line(o.getAsJsonObject("renderer")));
         line(b, "effects", EffectsStats.line(o.getAsJsonObject("effects")));
         line(b, "animation", com.meakaandre.brimstone.animation.Animation.line(o.getAsJsonObject("animation")));
+        line(b, "gui", com.meakaandre.brimstone.gui.GuiStats.line(o.getAsJsonObject("gui")));
         JsonObject cnt = o.getAsJsonObject("counters");
         line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")
             + ", not loaded (backend not in use) " + cnt.get("notLoaded"));

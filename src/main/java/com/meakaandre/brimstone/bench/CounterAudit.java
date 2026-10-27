@@ -31,6 +31,8 @@ public final class CounterAudit implements IMixinConfigPlugin {
             "brimstone$writeToTexture", "brimstone$writeToTextureEnd"));
         EXPECTED.put("com.mojang.renderpearl.frontend.FrontendGpuDevice", List.of("brimstone$createBuffer", "brimstone$createBufferEnd"));
         EXPECTED.put("com.mojang.renderpearl.frontend.FrontendGpuSurface", List.of("brimstone$present"));
+        EXPECTED.put("net.minecraft.client.gui.render.GuiRenderer", List.of("brimstone$guiRender", "brimstone$guiRenderEnd", "brimstone$guiDraw",
+            "brimstone$guiDrawEnd"));
         List<String> transientMemory = new java.util.ArrayList<>();
         for (String n : List.of("allocateStaging", "allocateGpuMapped", "uploadStaging", "uploadGpu", "multiUploadStaging", "multiUploadGpu")) {
             transientMemory.add("brimstone$" + n);

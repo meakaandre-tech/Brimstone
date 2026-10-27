@@ -54,9 +54,22 @@ if grep -q 'Done (' server.log; then
   # around 0,0 and the MAM platform), so every client run loads the same saved chunks instead of generating them
   echo "execute in the_sift:the_sift run forceload add -128 -128 127 127" >&3
   echo "execute in minecraft:overworld run forceload add 2128 -2064 2271 -1937" >&3
-  sleep 150
+  # package 7: the map scene's area round 300 -200 (what the fullscreen map shows at its scale, with room), so its
+  # terrain is the same saved chunks in every run instead of generated (and recorded by SIFTEC's map) in each
+  echo "execute in minecraft:overworld run forceload add 96 -400 255 -1" >&3
+  echo "execute in minecraft:overworld run forceload add 256 -400 415 -1" >&3
+  echo "execute in minecraft:overworld run forceload add 416 -400 511 -1" >&3
+  sleep 210
   echo "execute in the_sift:the_sift run forceload remove all" >&3
   echo "execute in minecraft:overworld run forceload remove 2128 -2064 2271 -1937" >&3
+  echo "execute in minecraft:overworld run forceload remove 96 -400 255 -1" >&3
+  echo "execute in minecraft:overworld run forceload remove 256 -400 415 -1" >&3
+  echo "execute in minecraft:overworld run forceload remove 416 -400 511 -1" >&3
+  # package 7: no random ticks and no mob griefing in the CI world (water freezing over, grass and leaves changing at
+  # random, sheep eating grass: one of the map's pixels changed colour in one run), in vanilla's runs as much as
+  # Brimstone's, so what each scene shows doesn't depend on how long a run has been going
+  echo "gamerule random_tick_speed 0" >&3
+  echo "gamerule mob_griefing false" >&3
   echo "save-all flush" >&3
   sleep 20
   echo "stop" >&3

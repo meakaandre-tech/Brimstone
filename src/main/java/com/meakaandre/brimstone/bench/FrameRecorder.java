@@ -28,6 +28,7 @@ public final class FrameRecorder {
         com.meakaandre.brimstone.terrain.TranslucencyStats.startWindow();
         com.meakaandre.brimstone.animation.Animation.startWindow();
         EffectsStats.startWindow();
+        com.meakaandre.brimstone.gui.GuiStats.startWindow();
         FRAME_NANOS.clear();
         DRAWS.clear();
         UPLOADS.clear();
@@ -48,6 +49,7 @@ public final class FrameRecorder {
         EffectsStats.stopWindow();
         GpuCounters.enabled = false;
         endPhase = lastPhase;
+        com.meakaandre.brimstone.gui.GuiStats.stopWindow();
         endDraws = lastDraws;
         endUploads = lastUploads;
         endBytes = lastBytes;
@@ -56,6 +58,7 @@ public final class FrameRecorder {
     /** Called from the frontend surface's present, on the render thread. */
     public static void onPresent() {
         GpuCounters.resetDepth();
+        com.meakaandre.brimstone.gui.GuiStats.frameEnd();
         if (!recording) return;
         long now = System.nanoTime();
         long[] d = GpuCounters.snapshot(GpuCounters.DRAWS);

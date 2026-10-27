@@ -1,5 +1,9 @@
 {
   "core": {
+    "animated_items": 10,
+    "animation": 10,
+    "animation.behind": 10,
+    "animation.front": 10,
     "flat_plants": 350,
     "flythrough": 6020,
     "mobs": 600,
@@ -16,6 +20,10 @@
     "occlusion_move.x2297": 10,
     "occlusion_move.x2305": 10,
     "occlusion_move.x2309": 32,
+    "outline": 10,
+    "outline.bare": 10,
+    "particles": 4,
+    "particles.bare": 4,
     "renderer_off": 10,
     "spawn": 18057,
     "translucent_move": 13,
@@ -33,21 +41,18 @@
     "translucent_move_oit.x2414": 10,
     "translucent_move_oit.x2424": 15,
     "water_glass": 25508,
-    "water_glass_oit": 57,
-    "particles": 4,
-    "particles.bare": 4,
-    "animation": 10,
-    "animation.behind": 10,
-    "animation.front": 10,
-    "animated_items": 10
+    "water_glass_oit": 57
   },
   "siftec": {
     "create_ct": 10,
     "factory": 500,
     "factory_flat": 40,
     "hologram": 413,
-    "hub": 12506,
-    "mam": 155106,
+    "hub": 10,
+    "hud": 400,
+    "mam": 10,
+    "map": 10,
+    "ponder": 10,
     "sift": 100
   }
 }

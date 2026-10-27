@@ -153,6 +153,34 @@
       ]
     },
     {
+      "id": "outline",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate (frames that line up with a game tick draw more). Run 40266027605, Vulkan: Brimstone 127.0 average / 127 median at 16.42 fps, vanilla's measure run 101.35 / 127 at 25.57 fps (limit x 1.10 + 2: 113.48); full in the same run 127.0 / 127 against 125.0 / 127. Gated against vanilla on the median (Andre's rule, as for water_glass and mobs).",
+      "title": "The crosshair's block outline round a stone block on a smooth stone floor (package 7)",
+      "renderDistance": 8,
+      "settleSeconds": 10,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2680.5 200 -1984.5 180 25",
+        "#wait 6",
+        "fill 2670 190 -2000 2690 210 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2670,y=190,z=-2000,dx=20,dy=20,dz=24] 2680.5 -200 -1990.5",
+        "fill 2670 199 -2000 2690 199 -1976 minecraft:smooth_stone",
+        "setblock 2680 200 -1988 minecraft:stone",
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2680.5 200 -1984.5 180 25"
+      ],
+      "ciShots": [
+        {
+          "name": "bare",
+          "commands": [
+            "gamemode adventure @a"
+          ]
+        }
+      ],
+      "ciNote": "CI's pin mod leaves the crosshair's block outline out of every scene (it moves by a pixel row between frames on GL 3.3, in vanilla's runs too) except round this scene's stone block at 2680 200 -1988, so the outline is still checked here (package 7). Creative mode, as the game draws no outline in spectator; the bare shot is the same view in adventure mode (no outline round a block the empty hand cannot break; hearts and food shown), to measure what the outline covers."
+    },
+    {
       "id": "occlusion",
       "title": "Mobs, chests, a banner and signs behind a stone wall and under a stone floor, some seen through a glass window, a doorway and a glass floor (package 2)",
       "renderDistance": 8,

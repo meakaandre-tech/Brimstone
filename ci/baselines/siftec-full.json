@@ -74,6 +74,18 @@
     "uploadBytesPerFrame": 47032,
     "uploadsPerFrame": 14
   },
+  "ponder": {
+    "directBuffersMB": 8.24,
+    "drawCallsPerFrame": 181.05,
+    "heapUsedAfterGcMB": 463.81,
+    "runs": [
+      40273668937,
+      40276630375,
+      40288414898
+    ],
+    "uploadBytesPerFrame": 52248,
+    "uploadsPerFrame": 14
+  },
   "sift": {
     "directBuffersMB": 5.87,
     "drawCallsPerFrame": 155.82,
