@@ -89,3 +89,46 @@ Paste every block, and say which instance it came from and the max memory you se
 `.minecraft/brimstone/bench/*.json` if a block is easier to send as a file.
 
 If a scene says it stopped (for example "the HubScreen screen was not opened within 2 minutes"), paste that line too.
+
+## Vanilla, Sodium and Brimstone side by side (package 4b)
+
+One plain instance, three mod sets, the same seed and scenes, so the three logs compare directly. The **bench-only
+jar** (`brimstone-bench-26.3.jar`, in the same `latest` release as `brimstone-26.3.jar`) is `/brimstone bench`, its
+counters and its scenes with every Brimstone module left out: it changes nothing, so with it the game draws as vanilla
+does (or as Sodium does, next to Sodium). Brimstone itself has the same bench built in.
+
+| run | mods folder (besides Fabric API) |
+|---|---|
+| vanilla | `brimstone-bench-26.3.jar` |
+| Sodium | `brimstone-bench-26.3.jar` and Sodium **0.9.2** for 26.3 (Prism: Download mods, Modrinth, "Sodium", pick 0.9.2) |
+| Brimstone | `brimstone-26.3.jar` only |
+
+Never put the bench-only jar next to Brimstone, or Brimstone next to Sodium: the game refuses to start (each says so).
+
+1. Make the plain instance as in "Instance 1: plain" above (steps 1-5: Fabric 26.3, loader 0.19.5, Fabric API, Java 25,
+   1280 x 720, Max Framerate Unlimited, VSync Off, GUI Scale 2). Then copy it twice in Prism (right-click, **Copy
+   Instance**) and name the three copies `bench-vanilla`, `bench-sodium`, `bench-brimstone`. Put the mods from the table
+   in each. Sodium has its own video settings screen: set the same Max Framerate, VSync and GUI Scale there, leave the
+   rest on Sodium's defaults.
+2. In each instance, one after the other (not at the same time), with the charger in and nothing else open:
+   **Create New World**, Creative, Allow Commands On, **Seed 12345**, World Type Default. Wait 30 seconds, then run one at
+   a time, waiting for "[Brimstone] Bench ... done" each time:
+
+   ```
+   /brimstone bench flythrough confirm
+   /brimstone bench spawn confirm
+   /brimstone bench water_glass confirm
+   /brimstone bench nether confirm
+   /brimstone bench mobs confirm
+   ```
+
+   `flythrough` first, in a new world each time: it flies over terrain that was never generated, which is where
+   upload spikes and stutter show. Quit to the title screen after the last one.
+3. Paste back the five bench blocks of each instance from `logs/latest.log` (or send the JSON files from
+   `brimstone/bench/`), saying which instance each came from.
+
+What to compare: `fps` (average and 1% low), `frame time ms` (p99 and frames over 50 ms; the floor is 1% lows of at least
+30 FPS), `upload bytes/frame` (its max is the largest upload in one frame), and `heap MB`. In the Brimstone instance the
+`backFaces` and `uploadBudget` lines say how many triangles were left out and how many sections waited for a later frame.
+Draw calls are counted where the game draws through its own graphics layer (renderpearl); a mod that draws past it would
+show fewer draw calls than it makes, so for Sodium compare frame times and FPS first.

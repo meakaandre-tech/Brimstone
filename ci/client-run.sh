@@ -49,7 +49,9 @@ if [ $measure = 1 ]; then
   echo "measure run JVM properties:$client_jvm"
 elif [ $brim = 1 ]; then
   # package 8: the animation module logs each animated sprite's first use outside terrain, with where it came from
-  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true"
+  # package 4b: the terrain upload budget logs when meshes wait for a later frame and when it has caught up, so
+  # drive.py takes no screenshot while a section is still waiting (vanilla uploads at once and logs nothing)
+  client_jvm="$client_jvm -Dbrimstone.debug.logUploadQueue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true"
   if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
   if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
   echo "Brimstone run JVM properties:$client_jvm"

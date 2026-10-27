@@ -98,8 +98,19 @@ final class UploadBudget {
         return (visible ? 0 : 1e12) + d;
     }
 
+    /**
+     * Debug (CI): one log line each time meshes start waiting for a later frame and each time the queue is empty again,
+     * so CI's screenshots wait until Brimstone has caught up (the steady-shot check alone can't see one late section).
+     */
+    static final boolean DEBUG_LOG = Boolean.getBoolean("brimstone.debug.logUploadQueue");
+    private static boolean wasWaiting;
+
     /** One frame's upload, for the bench: bytes and meshes put in, exempt ones among them, meshes left waiting. */
     static void frame(long bytes, int meshes, int exempt, int waiting, long budget, long nanos) {
+        if (DEBUG_LOG && (waiting > 0) != wasWaiting) {
+            wasWaiting = waiting > 0;
+            com.meakaandre.brimstone.BrimstoneClient.LOG.info(wasWaiting ? "Brimstone uploads: waiting ({} meshes)" : "Brimstone uploads: caught up", waiting);
+        }
         if (!GpuCounters.enabled) return;
         windowFrames++;
         windowBytes += bytes;
