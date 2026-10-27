@@ -30,6 +30,13 @@ final class UploadBudget {
     static final long MIN_BYTES = 256L << 10;
     static final long MAX_BYTES = 2L << 20;
     static final long MIN_TIME_NANOS = 1_000_000L, MAX_TIME_NANOS = 6_000_000L;
+    /**
+     * A section in the visible list never waits more than this many frames once it is visible: then its mesh goes in
+     * whatever the budget (review S4: the wait for visible sections is bounded and measured).
+     */
+    static final int MAX_VISIBLE_WAIT_FRAMES = 15;
+    /** Staged meshes are CPU memory: past this many bytes waiting, the budget grows by the excess. */
+    static final long STAGED_CAP = 64L << 20;
     /** Debug: everything staged goes in at once, as before package 4b. */
     static final boolean DEBUG_OFF = Boolean.getBoolean("brimstone.debug.noUploadBudget");
 
@@ -39,10 +46,13 @@ final class UploadBudget {
     private static int camSX, camSY, camSZ;
     private static long lastUpload;
     private static double frameMs = 16.7;
+    /** Frames counted at each end-of-frame upload. */
+    private static int frame;
 
     // measuring window (render thread)
     private static long windowFrames, windowBytes, windowMaxBytes, windowMeshes, windowExempt, windowWaitingSum, windowWaitingMax,
-        windowFramesHolding, windowBudgetSum, windowNanos, windowMaxNanos;
+        windowFramesHolding, windowBudgetSum, windowNanos, windowMaxNanos, windowVisibleWaitMax, windowVisibleWaited, windowForced,
+        windowStagedMaxBytes;
 
     private UploadBudget() {
     }
@@ -67,6 +77,23 @@ final class UploadBudget {
             frameMs += (ms - frameMs) * 0.125;
         }
         lastUpload = now;
+        frame++;
+    }
+
+    static int frameNumber() {
+        return frame;
+    }
+
+    /** Whether a section (origin in blocks) is in this frame's visible list. */
+    static boolean visible(int x, int y, int z) {
+        return VISIBLE.contains(SectionPos.asLong(x >> 4, y >> 4, z >> 4));
+    }
+
+    /** A visible section's mesh went in after waiting {@code frames} frames since it was first seen visible. */
+    static void visibleWait(int frames) {
+        if (!GpuCounters.enabled) return;
+        windowVisibleWaitMax = Math.max(windowVisibleWaitMax, frames);
+        if (frames > 0) windowVisibleWaited++;
     }
 
     static long bytes() {
@@ -106,6 +133,13 @@ final class UploadBudget {
     private static boolean wasWaiting;
 
     /** One frame's upload, for the bench: bytes and meshes put in, exempt ones among them, meshes left waiting. */
+    /** Meshes put in past the budget because a visible section had waited too long, and bytes staged this frame. */
+    static void forced(int meshes, long stagedBytes) {
+        if (!GpuCounters.enabled) return;
+        windowForced += meshes;
+        windowStagedMaxBytes = Math.max(windowStagedMaxBytes, stagedBytes);
+    }
+
     static void frame(long bytes, int meshes, int exempt, int waiting, long budget, long nanos) {
         if (DEBUG_LOG && (waiting > 0) != wasWaiting) {
             wasWaiting = waiting > 0;
@@ -128,6 +162,7 @@ final class UploadBudget {
     static void startWindow() {
         windowFrames = windowBytes = windowMaxBytes = windowMeshes = windowExempt = windowWaitingSum = windowWaitingMax = 0;
         windowFramesHolding = windowBudgetSum = windowNanos = windowMaxNanos = 0;
+        windowVisibleWaitMax = windowVisibleWaited = windowForced = windowStagedMaxBytes = 0;
     }
 
     public static JsonObject json() {
@@ -144,6 +179,11 @@ final class UploadBudget {
         o.addProperty("sectionsWaitingAvg", round((double) windowWaitingSum / f));
         o.addProperty("sectionsWaitingMax", windowWaitingMax);
         o.addProperty("framesWithSectionsWaiting", windowFramesHolding);
+        o.addProperty("visibleWaitFramesMax", windowVisibleWaitMax);
+        o.addProperty("visibleMeshesThatWaited", windowVisibleWaited);
+        o.addProperty("maxVisibleWaitFramesAllowed", MAX_VISIBLE_WAIT_FRAMES);
+        o.addProperty("meshesForcedPastBudget", windowForced);
+        o.addProperty("stagedMBMax", round(windowStagedMaxBytes / 1048576.0));
         o.addProperty("uploadMsAvg", round(windowNanos / 1e6 / f));
         o.addProperty("uploadMsMax", round(windowMaxNanos / 1e6));
         o.addProperty("note", "Brimstone's terrain uploads at the end of each measured frame: bytes copied into its arenas, meshes put in"

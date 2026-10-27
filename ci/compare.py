@@ -166,6 +166,16 @@ def gpu_errors(text):
     return len(GPU_ERROR.findall(text))
 
 
+def drive_upload_timeouts(run_dir):
+    """Package 4b: shots whose wait for Brimstone's upload queue timed out (ci/drive.py records -1)."""
+    out = []
+    for f in glob.glob(os.path.join(run_dir, "drive-*.json")):
+        for e in json.load(open(f)):
+            if -1 in (e.get("uploadWaits") or []):
+                out.append(e["scene"])
+    return out
+
+
 def drive_skips(run_dir):
     out = {}
     for f in glob.glob(os.path.join(run_dir, "drive-*.json")):
@@ -264,6 +274,8 @@ def main():
                 failures.append(f"{name}: run {r} produced no results")
         # vanilla's own profile line, and Brimstone's probe line
         for r, d in runs.items():
+            for sid in drive_upload_timeouts(d):
+                failures.append(f"{name}/{r}/{sid}: a screenshot was taken while Brimstone's terrain uploads were still waiting (the wait timed out)")
             t = logs(d)
             if os.path.isdir(d) and "brimstone_ci_pin" not in t:
                 failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift, the particle and animation areas, banner sway) is not among the loaded mods")
@@ -456,6 +468,9 @@ def main():
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: triangles per frame not down ({bf.get('trianglesPerFrame')} of {bf.get('trianglesAllFacesPerFrame')} with every face)")
                                 if ub.get("state") != "on" or not ub.get("cameraKnown"):
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: upload budget {ub.get('state')}, camera known {ub.get('cameraKnown')}")
+                                # a visible section's mesh waits a bounded number of frames under the budget (review S4)
+                                if ub.get("visibleWaitFramesMax", 0) > ub.get("maxVisibleWaitFramesAllowed", 0):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: a visible section's mesh waited {ub.get('visibleWaitFramesMax')} frames (at most {ub.get('maxVisibleWaitFramesAllowed')})")
                             an = bj.get("animation")
                             if an is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no animation report")
@@ -770,8 +785,8 @@ def main():
                 cell = lambda k: f"{g.get(k)} / {vg.get(k, '-')}"
                 lines.append(f"| {sc['id']} | {cell('drawCallsPerFrame')} | {cell('prepareDrawCallsPerFrame')} | {cell('elementsPerFrame')} | {cell('statesPerFrame')} (pipelines {g.get('pipelinesPerFrame')}, textures {g.get('textureSetupsPerFrame')}, scissors {g.get('scissorAreasPerFrame')}) | {cell('reorderedDrawsPerFrame')} ({cell('reorderedIgnoringTextPerFrame')}) |")
             lines.append("")
-    lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     bench_only(res, failures, lines)
+    lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
     json.dump({"failures": failures, "suites": data}, open(os.path.join(rep, "report.json"), "w"), indent=2)
     print("\n".join(lines))

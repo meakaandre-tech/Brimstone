@@ -217,6 +217,8 @@ public final class TerrainStore {
     /** Meshes whose translucent layer Brimstone held and which vanilla has let go of since: a late sort of one is dropped. */
     private static final Set<CompiledSectionMesh> RELEASED_TRANSLUCENT = java.util.Collections.newSetFromMap(new WeakHashMap<>());
     private static final List<Staged> STAGED = new ArrayList<>();
+    /** Staged meshes of sections seen in the visible list while waiting: the upload frame they were first seen in. */
+    private static final Map<CompiledSectionMesh, Integer> VISIBLE_SINCE = new IdentityHashMap<>();
     private static long liveVertices;
     private static final List<GpuBuffer> PENDING_CLOSE = new ArrayList<>();
     /** Bumped whenever the store is emptied or a section dispatcher comes or goes: older staged meshes are dropped. */
@@ -451,6 +453,13 @@ public final class TerrainStore {
             }
             Arrays.sort(order, (a, b) -> Double.compare(key[a], key[b])); // stable: staging order on ties
             long budget = UploadBudget.bytes(), time = UploadBudget.nanos();
+            long staged = 0;
+            for (List<Staged> g : groups) for (Staged st : g) staged += st.bytes();
+            // staged meshes are CPU memory: past the cap the budget takes the excess too (review N3)
+            if (staged > UploadBudget.STAGED_CAP) budget = Math.max(budget, staged - UploadBudget.STAGED_CAP);
+            int frame = UploadBudget.frameNumber();
+            boolean full = false;
+            int forced = 0;
             List<Staged> done = new ArrayList<>(all.size());
             Set<Staged> left = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
             Set<Staged> processed = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
@@ -473,13 +482,25 @@ public final class TerrainStore {
                     List<Staged> g = groups.get(order[k]);
                     Staged f = g.get(0);
                     boolean camera = UploadBudget.exempt(f.x, f.y, f.z);
+                    // a visible section waits at most MAX_VISIBLE_WAIT_FRAMES frames from when it was first seen visible
+                    boolean visible = UploadBudget.visible(f.x, f.y, f.z);
+                    int waited = 0;
+                    if (visible) {
+                        Integer since = VISIBLE_SINCE.putIfAbsent(f.mesh, frame);
+                        waited = since == null ? 0 : frame - since;
+                    }
+                    boolean overdue = visible && waited >= UploadBudget.MAX_VISIBLE_WAIT_FRAMES;
                     long gb = 0;
                     for (Staged s : g) gb += s.bytes();
-                    if (!camera && tookOne && (bytes + gb > budget || System.nanoTime() - t0 > time)) {
-                        // over this frame's budget: this mesh and every later one wait (camera sections come first)
-                        for (int r = k; r < n; r++) left.addAll(groups.get(order[r]));
-                        break;
+                    if (!full && !camera && tookOne && (bytes + gb > budget || System.nanoTime() - t0 > time)) full = true;
+                    if (full && !camera && !overdue) {
+                        // over this frame's budget: this mesh waits (camera sections and overdue visible ones still go in)
+                        left.addAll(g);
+                        continue;
                     }
+                    if (full && overdue) forced++;
+                    VISIBLE_SINCE.remove(f.mesh);
+                    if (visible) UploadBudget.visibleWait(waited);
                     for (Staged s : g) {
                         current = s;
                         if (s.indicesOnly()) {
@@ -515,6 +536,7 @@ public final class TerrainStore {
             }
             // what waits goes back in staging order (new meshes staged later come after it)
             for (Staged s : all) if (left.contains(s)) STAGED.add(s);
+            UploadBudget.forced(forced, staged);
             UploadBudget.frame(bytes, meshes, exempt, groupsWaiting(), budget, System.nanoTime() - t0);
             uploaded(done);
         }
@@ -609,6 +631,7 @@ public final class TerrainStore {
                 });
             }
             if (!DROPPED.isEmpty()) DROPPED.removeIf(s -> s.mesh == mesh);
+            VISIBLE_SINCE.remove(mesh);
         }
     }
 
@@ -663,6 +686,7 @@ public final class TerrainStore {
                 if (!s.indicesOnly()) DROPPED.add(s);
             }
             STAGED.clear();
+            VISIBLE_SINCE.clear();
             generation++;
             droppedGeneration = generation;
         }
@@ -762,6 +786,7 @@ public final class TerrainStore {
         synchronized (LOCK) {
             for (Staged s : STAGED) s.free();
             STAGED.clear();
+            VISIBLE_SINCE.clear();
             DROPPED.clear();
             ENTRIES.clear();
             RELEASED_TRANSLUCENT.clear();

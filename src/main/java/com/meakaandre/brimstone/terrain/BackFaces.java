@@ -31,6 +31,12 @@ final class BackFaces {
 
     private static volatile double camX, camY, camZ;
     private static volatile boolean cameraSeen;
+    /** Set by the camera hook, cleared by each frame that reads it: a frame without a new position draws every group. */
+    private static volatile boolean cameraFresh;
+    /** Set when a frame was drawn with vanilla's wireframe view: the next frames draw every group (a debug view). */
+    private static volatile boolean wireframe;
+    /** Set when leaving groups out would have split a draw on this device's multi-draw limit: off for the session. */
+    private static volatile String limitHit;
     // render thread: this frame's camera and margin, and the last frame's camera
     private static double fx, fy, fz, margin;
     private static double lastX, lastY, lastZ;
@@ -47,13 +53,29 @@ final class BackFaces {
         camY = y;
         camZ = z;
         cameraSeen = true;
+        cameraFresh = true;
+    }
+
+    /** Render thread: this frame drew terrain in vanilla's wireframe view (or not). */
+    static void wireframeFrame(boolean on) {
+        wireframe = on;
+    }
+
+    /**
+     * Render thread: leaving groups out would make a draw list longer than the device takes in one multi-draw, so
+     * draw calls could rise: from now on every group is drawn (one log line).
+     */
+    static void drawLimitHit(String what) {
+        if (limitHit != null) return;
+        limitHit = what;
+        com.meakaandre.brimstone.BrimstoneClient.LOG.warn("Brimstone terrain: facing groups are drawn whole from now on: {}", what);
     }
 
     static boolean cameraSeen() {
         return cameraSeen;
     }
 
-    /** This frame's camera, or NaN if unknown (upload order). */
+    /** This frame's camera, or null if unknown (upload order). */
     static double[] frameCamera() {
         return cameraSeen ? new double[] {camX, camY, camZ} : null;
     }
@@ -76,6 +98,25 @@ final class BackFaces {
             lastValid = false;
             return false;
         }
+        boolean fresh = cameraFresh;
+        cameraFresh = false;
+        if (!fresh) {
+            // the hook did not run for this frame (another mod skipped it?): an old position could leave out faces
+            // that face the camera now
+            off = "camera position not updated this frame";
+            lastValid = false;
+            return false;
+        }
+        if (limitHit != null) {
+            off = "draw lists would be longer than this device's multi-draw limit (" + limitHit + ")";
+            return false;
+        }
+        if (wireframe) {
+            off = "vanilla's wireframe view";
+            lastValid = false;
+            return false;
+        }
+        // Brimstone's own solid and cutout pipelines (made like the game's terrain pipelines) must cull back faces
         if (!culls(solid) || !culls(cutout)) {
             off = "the terrain pipelines do not cull back faces";
             return false;

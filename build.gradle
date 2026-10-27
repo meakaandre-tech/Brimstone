@@ -46,7 +46,8 @@ jar {
 // Package 4b: the bench-only jar (brimstone-bench): /brimstone bench, its counters, the capability probe and the
 // scenes, and none of Brimstone's modules, so it runs on plain Fabric or next to Sodium and measures them the same way.
 // Built from the same classes as the full jar; its own mod id and mixin config name, so it can never be mistaken for
-// Brimstone (and it declares that it breaks Brimstone: only one of the two belongs in an instance).
+// Brimstone (and it declares that it breaks Brimstone: only one of the two belongs in an instance). It holds no
+// Indigo-derived code, so no NOTICE; its counters mixin config is copied as is (26.3 is unobfuscated, no refmap).
 def benchClasses = [
     'com/meakaandre/brimstone/BrimstoneClient.class',
     'com/meakaandre/brimstone/bench/**',

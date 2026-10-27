@@ -78,6 +78,8 @@ public final class TerrainStats {
         o.addProperty("trianglesLeftOutPct", windowTrianglesWhole == 0 ? 0 : round(100.0 * (windowTrianglesWhole - windowTriangles) / windowTrianglesWhole));
         o.addProperty("rangesPerSectionLayer", windowLayers == 0 ? 0 : round((double) windowRanges / windowLayers));
         o.addProperty("framesAllFacesAfterJump", windowJumpFrames);
+        // since start-up: layers kept in vanilla's order because an unaligned quad lies in an aligned quad's plane
+        o.addProperty("layersKeptInVanillaOrder", CompactVertex.UNGROUPED_LAYERS.get());
         o.addProperty("note", "Brimstone's terrain triangles per frame (solid and cutout after leaving out facing groups that face away"
             + " from the camera, plus translucent whole); trianglesAllFacesPerFrame is the same frames with every layer drawn whole, as"
             + " before package 4b");

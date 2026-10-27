@@ -71,6 +71,8 @@ public final class TerrainRenderer {
         int[] counts = new int[16];
         int[] bases = new int[16];
         int n;
+        /** Section layers in this region's list (each may be several index ranges since package 4b). */
+        int layers;
 
         RegionDraw(TerrainStore.Region region) {
             this.region = region;
@@ -95,6 +97,8 @@ public final class TerrainRenderer {
         final List<DynamicGpuData.IndexedDraw> commands = new ArrayList<>();
         /** Where this list's commands start in the frame's one Brimstone command list. */
         int commandStart;
+        /** Section layers in this list (each may be several index ranges since package 4b). */
+        int sectionLayers;
 
         ArenaDraws(TerrainStore.Arena arena) {
             this.arena = arena;
@@ -318,6 +322,8 @@ public final class TerrainRenderer {
                             if (plain) rd.add(count, base);
                             else ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, base, instance));
                         }
+                        ad.sectionLayers++;
+                        if (rd != null) rd.layers++;
                         if (audit) TerrainStats.layerTriangles(drawn / 3, whole / 3, ranges);
                     }
                 }
@@ -328,6 +334,7 @@ public final class TerrainRenderer {
                     TL_INSTANCES.add(instance);
                 }
             }
+            if (skipBackFaces) checkDrawLimits(device);
             buildTranslucentRuns(plain);
             if (TranslucencyCheck.ENABLED) {
                 List<CompiledSectionMesh> drawnMeshes = new ArrayList<>(TL_MESHES.size());
@@ -349,6 +356,25 @@ public final class TerrainRenderer {
         if (maxIndexCount > 0) RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS).requestIndexCount(maxIndexCount);
         if (audit) VisibilityStats.terrainFrame(audited, missingFromVanilla());
         translucentOthers();
+    }
+
+    /**
+     * Package 4b: a list whose index ranges are more than the device takes in one multi-draw (and whose whole layers
+     * would not be) would split into more draw calls; then facing groups are drawn whole from the next frame on.
+     */
+    private static void checkDrawLimits(GpuDevice device) {
+        var limits = device.getDeviceInfo().limits();
+        if (path == Path.INDIRECT) {
+            int max = Math.max(1, limits.maxDrawIndirectDrawCount());
+            for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) {
+                if (ad.commands.size() > max && ad.sectionLayers <= max) BackFaces.drawLimitHit("indirect multi-draw limit " + max);
+            }
+        } else if (path == Path.PLAIN_INTERLEAVED) {
+            int max = Math.max(1, limits.maxMultiDrawDirectInterleavedDrawCount());
+            for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) for (RegionDraw rd : ad.regions) {
+                if (rd.n > max && rd.layers <= max) BackFaces.drawLimitHit("interleaved multi-draw limit " + max);
+            }
+        }
     }
 
     /**
@@ -581,6 +607,8 @@ public final class TerrainRenderer {
             return;
         }
         boolean wireframe = override != null || overrideMultidraw != null;
+        // package 4b: the wireframe view draws back faces' edges too, so the next frames draw every facing group
+        if (li == 0) BackFaces.wireframeFrame(wireframe);
         if (FRAME[li].isEmpty()) return;
         try {
             TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
@@ -601,10 +629,7 @@ public final class TerrainRenderer {
                 pass.setPipeline(pipeline);
                 pass.setIndexBuffer(indexBuffer, quads.type());
                 draws += plain ? drawPlain(pass, list) : drawIndirect(pass, list);
-                for (ArenaDraws ad : list) {
-                    sectionLayers += ad.commands.size();
-                    for (RegionDraw rd : ad.regions) sectionLayers += rd.n;
-                }
+                for (ArenaDraws ad : list) sectionLayers += ad.sectionLayers;
             }
             lastPath = path;
             TerrainStats.drew(draws, sectionLayers);

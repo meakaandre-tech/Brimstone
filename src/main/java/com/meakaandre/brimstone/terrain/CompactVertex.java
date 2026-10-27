@@ -127,6 +127,9 @@ public final class CompactVertex {
      * As {@link #convert(ByteBuffer, int)}; with {@code group} (solid and cutout layers, never translucent, whose index
      * lists name vanilla's vertex order) the quads are stored grouped by facing ({@link Faces}).
      */
+    /** Solid and cutout layers kept in vanilla's order because an unaligned quad lies in an aligned quad's plane. */
+    static final java.util.concurrent.atomic.AtomicLong UNGROUPED_LAYERS = new java.util.concurrent.atomic.AtomicLong();
+
     static Converted convert(ByteBuffer src, int slot, boolean group) {
         int bytes = src.remaining();
         if (bytes == 0 || bytes % (4 * VANILLA_BYTES) != 0) return null;
@@ -137,16 +140,30 @@ public final class CompactVertex {
         // where each quad goes: in vanilla's order, or grouped by facing (stable inside a group)
         int[] dest = null;
         Faces faces = null;
+        byte[] g = null;
+        int[] plane = null, count = null;
         if (group) {
-            byte[] g = new byte[quads];
-            int[] plane = new int[quads];
-            int[] count = new int[GROUPS];
+            g = new byte[quads];
+            plane = new int[quads];
+            count = new int[GROUPS];
+            // unaligned quads that are flat (within one grid step) on an axis: axis + 1 (0: none), and that extent
+            byte[] flatAxis = new byte[quads];
+            int[] flatLo = new int[quads], flatHi = new int[quads];
             for (int q = 0; q < quads; q++) {
                 long base = in + (long) q * 4 * VANILLA_BYTES;
-                int k = classify(base, plane, q);
+                int k = classify(base, plane, q, flatAxis, flatLo, flatHi);
                 g[q] = (byte) k;
                 count[k]++;
             }
+            if (count[UNALIGNED] > 0 && count[UNALIGNED] < quads && coplanar(g, plane, flatAxis, flatLo, flatHi)) {
+                // an unaligned quad lies in (or within a step of) a plane an aligned quad uses: grouping would draw it
+                // before that quad and could change which wins where they overlap at equal depth, so the layer keeps
+                // vanilla's order (every quad drawn, as before package 4b)
+                group = false;
+                UNGROUPED_LAYERS.incrementAndGet();
+            }
+        }
+        if (group) {
             int[] start = new int[GROUPS + 1];
             for (int k = 0; k < GROUPS; k++) start[k + 1] = start[k] + count[k];
             float[] min = new float[GROUPS], max = new float[GROUPS];
@@ -181,11 +198,45 @@ public final class CompactVertex {
      * The facing group of the quad whose first vanilla vertex is at {@code base}, from its positions on the stored grid
      * (exactly what the GPU draws); for an axis group the plane's stored step goes to {@code plane[q]}.
      */
-    private static int classify(long base, int[] plane, int q) {
+    private static int classify(long base, int[] plane, int q, byte[] flatAxis, int[] flatLo, int[] flatHi) {
         int[] s = new int[12];
         for (int c = 0; c < 4; c++) {
             for (int k = 0; k < 3; k++) s[c * 3 + k] = positionStep(MemoryUtil.memGetFloat(base + (long) c * VANILLA_BYTES + 4L * k));
         }
+        int g = facing(s, plane, q);
+        if (g == UNALIGNED) {
+            for (int k = 0; k < 3; k++) {
+                int lo = Math.min(Math.min(s[k], s[3 + k]), Math.min(s[6 + k], s[9 + k]));
+                int hi = Math.max(Math.max(s[k], s[3 + k]), Math.max(s[6 + k], s[9 + k]));
+                if (hi - lo <= 1) {
+                    flatAxis[q] = (byte) (k + 1);
+                    flatLo[q] = lo;
+                    flatHi[q] = hi;
+                    break;
+                }
+            }
+        }
+        return g;
+    }
+
+    /**
+     * Whether an unaligned quad that is flat on an axis lies within one grid step of a plane that an aligned quad of
+     * the same axis uses (then reordering by group could change which of the two wins at equal depth).
+     */
+    private static boolean coplanar(byte[] g, int[] plane, byte[] flatAxis, int[] flatLo, int[] flatHi) {
+        it.unimi.dsi.fastutil.ints.IntOpenHashSet[] planes = new it.unimi.dsi.fastutil.ints.IntOpenHashSet[3];
+        for (int k = 0; k < 3; k++) planes[k] = new it.unimi.dsi.fastutil.ints.IntOpenHashSet();
+        for (int q = 0; q < g.length; q++) if (g[q] != UNALIGNED) planes[axis(g[q])].add(plane[q]);
+        for (int q = 0; q < g.length; q++) {
+            int a = flatAxis[q] - 1;
+            if (a < 0) continue;
+            for (int p = flatLo[q] - 1; p <= flatHi[q] + 1; p++) if (planes[a].contains(p)) return true;
+        }
+        return false;
+    }
+
+    /** The facing group of a quad's four stored corner positions ({@code s}: x, y, z per corner). */
+    private static int facing(int[] s, int[] plane, int q) {
         int axis = -1;
         for (int k = 0; k < 3; k++) {
             if (s[k] == s[3 + k] && s[k] == s[6 + k] && s[k] == s[9 + k]) {

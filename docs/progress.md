@@ -10,6 +10,7 @@
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
 | package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met; **7b deferred until after package 6**, with inventory tooltips, F3 and long chat measured first). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
+| package 4b (terrain speed-ups) | `package-4b` | not merged (Andre's check): upload budget, skip back faces, bench-only jar; see its section |
 | core/mobs strict limit | main | 600 -> 10 (chicken wing pin; samples 0 in four full runs) |
 | baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0) |
 | animation pin fix | merged | `cea5bfb`: the animation pin counts texture ticks, not client ticks (the cause of a flake in core/animation's measure runs); **main full run 40526712029 green, `latest` rebuilt** |
@@ -2002,6 +2003,161 @@ pass's draws per frame.
 
 ---
 
+## Package 4b: terrain speed-ups (branch `package-4b`, not merged: Andre reviews it first)
+
+**Done when (doc):** "pixel checks unchanged in every profile; triangles drawn per frame down in every scene (reported);
+fly-through frame-time p99 and frames over 50 ms down on the laptop bench, and in CI the largest upload bytes in one
+frame down; draw calls at or under vanilla on full and Vulkan (the direction groups are ranges inside the same
+multi-draw, not extra draws)." Plus the bench-only jar and a laptop-bench section for vanilla, Sodium and Brimstone.
+
+### What was built (`terrain/BackFaces`, `terrain/UploadBudget`, `CompactVertex`, `TerrainStore.upload`, `bench/BenchModules`)
+
+1. **Skip back faces.** Solid and cutout layers are stored with their quads grouped by facing (unaligned, +X, +Y, +Z,
+   -X, -Y, -Z; vanilla's order kept inside each group), classified on the 16-byte grid the GPU draws: a quad is in an
+   axis group only if its four corners lie in one axis plane and every corner triangle winds the same way, so any split
+   into triangles faces one side; everything else (plants, slopes, rotated parts, degenerate quads) is unaligned and
+   always drawn. Each frame the axis groups that face away from the camera for the whole section (camera at least
+   1 block, plus twice the camera's move since the last frame, behind the nearest plane of the group) are left out; the
+   groups that stay are index ranges of the shared quad index list, so on the plain path they are entries of the same
+   multi-draw and on the indirect path commands of the same indirect multi-draw (where a device has neither, one span
+   from the first kept group to the last). Translucent layers are untouched (vanilla's sorted lists). Every group is
+   drawn when the pipelines don't cull, without a camera position, after a jump of more than 16 blocks, and with
+   `-Dbrimstone.debug.drawAllFaces=true`. The camera position comes from a new optional terrain hook on
+   `LevelExtractor.extractVisibleEntities`. Common idea (Sodium does something similar); no Sodium code read or used.
+2. **Upload budget.** At the end of each frame staged meshes go into the arenas in priority order: the camera's section
+   and its 26 neighbours always (never held back), then sections in vanilla's visible list, then the rest, nearest
+   first; a mesh's layers always together; a translucent layer's new index list for a mesh already in at once. Budget:
+   64 KiB per ms of measured frame time (average over the last frames), between 256 KiB and 2 MiB, and an eighth of the
+   frame time (1-6 ms); the first mesh outside the camera's sections goes in every frame even when it alone is over, so
+   nothing waits for ever. What waits stays staged in its order; on an exception everything not yet copied goes back to
+   the staged list, so the hand-back completes it through vanilla's callback.
+3. **Bench-only jar** `brimstone-bench` (Gradle `benchJar`, `src/bench/fabric.mod.json`, mod id `brimstone_bench`,
+   `breaks` Brimstone): the bench command, counters, capability probe and scenes, with no module. The bench's module
+   blocks moved into a registry (`bench/BenchModules`; the full jar registers them in `BenchSections`, same JSON keys).
+   CI builds it, runs it in two new full-mode core runs (`bench-plain`, `bench-sodium` with Sodium 0.9.2 from Modrinth;
+   spawn, flythrough, water_glass, nether), and the release job publishes it as `brimstone-bench-26.3.jar` next to
+   `brimstone-26.3.jar` (on the merge to main). `docs/laptop-bench.md`: "Vanilla, Sodium and Brimstone side by side".
+4. **Bench and CI.** New bench blocks `backFaces` (triangles per frame drawn and with every face, index ranges per
+   section layer) and `uploadBudget` (bytes per frame and the largest frame, budget, sections waiting, upload ms).
+   compare.py fails a Brimstone bench whose triangles aren't below the every-face count, or whose budget or camera hook
+   is off, and reports a "Package 4b" table per suite and profile and a "Bench-only jar" table. CI shots wait for the
+   upload queue: Brimstone runs log when meshes wait and when they caught up (`brimstone.debug.logUploadQueue`) and
+   `ci/drive.py` waits for "caught up" before each screenshot (quick run 40588031898 caught one water section still
+   waiting after F3+A in the spawn shot, ~1,300 px, under the steady-shot check's 1%); runs without the line don't wait.
+
+5. **Review fixes** (below): a camera position that wasn't updated this frame, vanilla's wireframe view, or index ranges
+   longer than the device's multi-draw limit draw every group; a layer where an unaligned quad lies within one grid
+   step of an aligned quad's plane keeps vanilla's quad order (`layersKeptInVanillaOrder`); a visible section's mesh
+   waits at most 15 frames from when it is first seen visible, then goes in whatever the budget (gated); past 64 MiB
+   of staged meshes the budget takes the excess.
+
+### Evidence (full run 40593712100 on `59801d9`, before the review fixes; main for "before": run 40585312798 on `14c74fd`)
+
+Every gate passed in both suites and every profile: pixels (8/255 and strict) within their limits, the same as main
+within run noise (strict spawn 296 / 230 / 310 against main's 296 / 250 / 235; flythrough 47 / 47 / 51 against
+53 / 53 / 57), draw calls at or under vanilla's measure run in every scene and profile, no limit or baseline changed.
+
+Triangles per frame are Brimstone's terrain triangles (solid and cutout after leaving groups out, plus translucent whole);
+in brackets the same frames with every face drawn, which is what Brimstone drew before 4b. Largest upload bytes in one
+frame: the frame with the most bytes uploaded of all kinds (the bench's `gpu.uploadBytesPerFrame.max`), before
+(main) and after, per profile; vanilla from this run's measure-full. Frames over 50 ms on llvmpipe (5-30 fps) say
+little; the laptop bench decides that part of the done-when.
+
+| suite / scene | triangles/frame, full: after (every face, = before) | left out | largest upload bytes in one frame, before -> after (full / old-GPU / Vulkan) | vanilla, full | frames over 50 ms, full: before -> after | sections waiting max |
+|---|---|---|---|---|---|---|
+| core / animated_items | 2,272 (4,890) | 54% | 79,704 -> 79,704 / 79,236 -> 79,144 / 79,864 -> 79,772 | 123,000 | 0 -> 0 | 0 |
+| core / animation | 3,218 (5,632) | 43% | 86,812 -> 86,812 / 86,324 -> 86,324 / 86,812 -> 86,812 | 150,176 | 0 -> 0 | 0 |
+| core / flat_plants | 238,881 (437,794) | 45% | 271,768 -> 10,580 / 2,164 -> 1,828 / 10,016 -> 10,468 | 271,600 | 37 -> 13 | 0 |
+| core / flythrough | 560,468 (897,108) | 38% | 4,481,644 -> 2,319,320 / 4,227,204 -> 2,107,564 / 4,543,640 -> 2,124,020 | 7,380,064 | 156 -> 175 | 71 |
+| core / mobs | 167,241 (302,673) | 45% | 616,348 -> 616,324 / 818,356 -> 610,516 / 616,348 -> 616,324 | 616,364 | 4 -> 0 | 0 |
+| core / nether | 267,554 (475,408) | 44% | 261,684 -> 196,016 / 232,000 -> 252,596 / 181,240 -> 251,508 | 384,352 | 134 -> 5 | 0 |
+| core / occlusion | 46,235 (81,246) | 43% | 474,624 -> 273,348 / 179,144 -> 448,996 / 100,408 -> 263,164 | 411,048 | 0 -> 0 | 0 |
+| core / occlusion_move | 50,639 (89,015) | 43% | 652,736 -> 657,268 / 642,684 -> 647,200 / 652,792 -> 678,628 | 1,157,680 | 0 -> 0 | 0 |
+| core / outline | 24,238 (40,423) | 40% | 6,300 -> 6,300 / 5,012 -> 5,012 / 6,300 -> 6,300 | 14,812 | 0 -> 0 | 0 |
+| core / particles | 1,927 (4,215) | 54% | 9,204 -> 9,204 / 8,772 -> 8,772 / 9,204 -> 9,204 | 9,204 | 0 -> 0 | 0 |
+| core / renderer_off | 150,643 (272,587) | 45% | 7,292 -> 7,352 / 1,380 -> 1,380 / 7,292 -> 7,352 | 7,272 | 2 -> 1 | 0 |
+| core / spawn | 446,601 (684,783) | 35% | 687,372 -> 539,848 / 485,284 -> 338,836 / 365,720 -> 540,356 | 1,054,544 | 230 -> 241 | 0 |
+| core / translucent_move | 200,787 (356,275) | 44% | 765,976 -> 767,100 / 758,724 -> 759,300 / 820,756 -> 766,948 | 1,333,236 | 34 -> 10 | 0 |
+| core / translucent_move_oit | 201,067 (356,581) | 44% | 742,580 -> 748,344 / 738,692 -> 743,300 / 742,524 -> 748,008 | 1,301,072 | 222 -> 217 | 0 |
+| core / water_glass | 214,820 (385,714) | 44% | 150,824 -> 17,708 / 8,996 -> 9,892 / 17,464 -> 17,372 | 17,068 | 86 -> 13 | 0 |
+| core / water_glass_oit | 215,234 (386,456) | 44% | 17,464 -> 18,156 / 10,004 -> 8,548 / 17,240 -> 19,052 | 16,508 | 241 -> 242 | 0 |
+| siftec / create_ct | 2,538 (5,313) | 52% | 1,596 -> 1,596 / 1,124 -> 1,124 / 1,596 -> 1,596 | 1,596 | 1 -> 0 | 0 |
+| siftec / factory | 25,071 (45,892) | 45% | 94,716 -> 94,716 / 136,784 -> 136,792 / 139,276 -> 139,368 | 155,244 | 9 -> 8 | 0 |
+| siftec / factory_flat | 25,071 (45,891) | 45% | 97,700 -> 97,700 / 139,776 -> 139,776 / 142,352 -> 142,360 | 158,228 | 1 -> 2 | 0 |
+| siftec / hologram | 3,912 (6,875) | 43% | 75,664 -> 74,072 / 74,244 -> 75,260 / not run | 75,440 | 35 -> 31 | 0 |
+| siftec / hub | 33,473 (58,846) | 43% | 84,940 -> 84,960 / 83,332 -> 83,332 / 84,940 -> 84,960 | 84,940 | 7 -> 7 | 0 |
+| siftec / hud | 261,917 (454,024) | 42% | 71,672 -> 81,680 / 59,972 -> 59,972 / 72,776 -> 83,764 | 71,544 | 316 -> 346 | 0 |
+| siftec / mam | 66,787 (117,208) | 43% | 304,164 -> 304,276 / 39,492 -> 39,492 / 42,112 -> 42,132 | 304,256 | 0 -> 5 | 0 |
+| siftec / map | 368,169 (630,685) | 42% | 46,360 -> 57,876 / 30,924 -> 30,924 / 46,284 -> 57,876 | 46,440 | 211 -> 217 | 0 |
+| siftec / ponder | 10 (12) | 17% | 60,840 -> 60,860 / 60,804 -> 60,804 / 60,840 -> 60,860 | 60,840 | 1 -> 4 | 0 |
+| siftec / sift | 145,930 (205,045) | 29% | 16,632 -> 20,672 / 4,148 -> 4,148 / 16,632 -> 20,672 | 16,632 | 309 -> 316 | 0 |
+
+- **Triangles:** down 29-54% in every scene and profile (fly-through 37.5%, spawn 34.8%; ponder 10 of 12, the index
+  screen in front of almost no terrain).
+- **Upload spike:** fly-through's largest frame halves in every profile (full 4.48 -> 2.32 MB, old-GPU 4.23 -> 2.11,
+  Vulkan 4.54 -> 2.12; vanilla 7.38 MB); in the other scenes nothing is meshing while measuring, so their largest frames
+  are other uploads and stay where they were (flat_plants' and water_glass's 0.27 MB and 0.15 MB before were one-off
+  mesh frames).
+- **Draw calls:** full and Vulkan at or under vanilla in every scene (fly-through 13.06 against 123.06). Old-GPU against
+  main: spawn 49.37 against 47.46, nether 32.59 against 31.08; the rise is all translucent runs breaking at region borders
+  (spawn: translucent draws 14 -> 17 with 150 -> 152.7 translucent section layers and 314 -> 344 visible sections), not
+  solid or cutout (equal). Main's own runs put old-GPU spawn at 46.0, 47.46, 48.37 and 49.0 (runs 40526712029,
+  40585312798, 40471457759, 40516650792), so it is run-to-run noise in what is visible; the review fixes' run is another
+  sample (below).
+- **Bench-only jar:** both runs passed; `bench-sodium` loaded `sodium@0.9.2+mc26.3` and `brimstone_bench`, every counter
+  applied. CI's numbers (llvmpipe): plain spawn 9.3 fps, Sodium 19.1; fly-through 5.6 and 14.8; Sodium's draws are
+  counted (129-159 per frame), so it draws through renderpearl.
+- The spawn shot's dark-grey water hole (quick run 40588031898, which led to the shot wait) is vanilla's own late
+  section: the same hole shows in this run's vanilla-old, measure-full and measure-old and in main's vanilla-a (review
+  N8). It was noise, not the budget; the shot wait stays (it is what makes a waiting section impossible to photograph).
+
+### Runs
+
+1. `20e3ef6` quick run 40588031898: green (the spawn hole above in the old-GPU shot, within limits).
+2. `59801d9` full run 40593712100: green (reviewed).
+3. Review fixes: see "Final run".
+
+### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
+
+No blocker. Fixed: S1 (`sectionLayersPerFrame` counted index ranges: counts section layers again), S2 (a camera
+position not updated in a frame was still used: now that frame draws every group), S3 (reordering could flip an
+equal-depth winner between an unaligned quad lying in an aligned quad's plane and that quad: such layers keep vanilla's
+order), S4 (the wait of visible sections was unbounded and unmeasured: bounded at 15 frames, reported and gated; a shot
+wait that times out fails), S6 (the report header was written before the bench-only checks), S7 (these docs and
+`docs/ci-limits.md`), N1 (wireframe view draws every group; the cull check is against Brimstone's own pipelines), N2
+(index ranges longer than the device's multi-draw limit turn grouping off for the session, so draw calls can't rise),
+N3 (staged-memory cap), N5, N6, N7, N9. S5 (old-GPU draw calls) answered with main's own spread above. Not changed: N4
+(boxed sort keys, once per frame), N10 (BrimstoneClient in the bench jar names classes it lacks; only in the full jar's
+entrypoint method, which the bench jar never calls).
+
+### Deviations and choices to confirm
+
+1. **Margin 1 block** (plus twice the camera's move since the last frame; all groups after a jump of 16 blocks).
+2. **Budget numbers:** 64 KiB per ms of frame time, 256 KiB to 2 MiB; an eighth of the frame time, 1-6 ms; at most 15
+   frames' wait for a visible section; 64 MiB staged cap.
+3. **CI shots wait for the upload queue** (Brimstone runs only; vanilla uploads at once). Without it, a section still
+   waiting after F3+A could be photographed; with it, the budget's delay shows only in the bench (`uploadBudget`).
+4. **Bench-only jar**: `brimstone-bench`, mod id `brimstone_bench`, breaks Brimstone; published on the next merge to main
+   (the release job runs on main only). Sodium in CI is downloaded from Modrinth for the run, never committed.
+5. **The camera hook is optional** (not in the terrain module's required hooks): without it the module still runs, with
+   every group drawn and uploads in staging order; CI fails such a run.
+
+### Known limits
+
+- Done-when on the laptop (fly-through p99 and frames over 50 ms down) is for Andre's bench; CI's llvmpipe frame times are
+  too noisy to show it.
+- A layer is grouped or not as a whole; the coplanar test is per layer, conservative (no overlap test).
+- Grouping by facing is solid and cutout only; translucent keeps vanilla's sorted lists.
+
+### Laptop bench (Andre, when back)
+
+`docs/laptop-bench.md`, "Vanilla, Sodium and Brimstone side by side": the same plain instance three ways (bench-only jar,
+bench-only jar plus Sodium 0.9.2, Brimstone), seed 12345, new world each time, `flythrough`, `spawn`, `water_glass`,
+`nether`, `mobs`. The fly-through's `frame time ms` (p99, frames over 50 ms) decides 4b's laptop done-when; the
+Brimstone instance's `backFaces` and `uploadBudget` lines show the triangles left out and the sections that waited.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
@@ -2015,5 +2171,5 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** package 3 merged (`143defe`); package 4 (Fabric Renderer API) on branch `package-4`, not merged (Andre
-reviews it first).
+**Now:** package 4b on branch `package-4b`, not merged (Andre checks it first); then the rename to Quicksilver on its own
+branch `rename-quicksilver`.

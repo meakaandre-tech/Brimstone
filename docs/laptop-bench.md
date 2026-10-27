@@ -106,7 +106,8 @@ does (or as Sodium does, next to Sodium). Brimstone itself has the same bench bu
 Never put the bench-only jar next to Brimstone, or Brimstone next to Sodium: the game refuses to start (each says so).
 
 1. Make the plain instance as in "Instance 1: plain" above (steps 1-5: Fabric 26.3, loader 0.19.5, Fabric API, Java 25,
-   1280 x 720, Max Framerate Unlimited, VSync Off, GUI Scale 2). Then copy it twice in Prism (right-click, **Copy
+   1280 x 720, Max Framerate Unlimited, VSync Off, GUI Scale 2), but add only the jars in the table above, not step 2's
+   `brimstone-26.3.jar` in every copy. Then copy it twice in Prism (right-click, **Copy
    Instance**) and name the three copies `bench-vanilla`, `bench-sodium`, `bench-brimstone`. Put the mods from the table
    in each. Sodium has its own video settings screen: set the same Max Framerate, VSync and GUI Scale there, leave the
    rest on Sodium's defaults.
@@ -122,8 +123,8 @@ Never put the bench-only jar next to Brimstone, or Brimstone next to Sodium: the
    /brimstone bench mobs confirm
    ```
 
-   `flythrough` first, in a new world each time: it flies over terrain that was never generated, which is where
-   upload spikes and stutter show. Quit to the title screen after the last one.
+   A new world each time, in every instance, so all three start from the same freshly generated terrain; `flythrough`
+   first: it flies over terrain that was never generated, which is where upload spikes and stutter show. Quit to the title screen after the last one.
 3. Paste back the five bench blocks of each instance from `logs/latest.log` (or send the JSON files from
    `brimstone/bench/`), saying which instance each came from.
 
