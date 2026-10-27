@@ -9,7 +9,8 @@
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
-| package 7 (GUI and text) | `package-7` | **done after review fixes, not merged (your review)**: code `64b7865` (head `c9dd79a`, docs), rebased on main, full run 40297472649 green. No GUI batcher: vanilla 26.3 already batches (reordering would save at most 2 draws); hub/mam/map noise pinned, strict limits down to 10; block outline scene back; Ponder index scene (gated on average and median, limits from 3 runs). For you: "Batched GUI" is not delivered as code: confirm, or ask for a follow-up (an atlas for per-item textures such as Create's Ponder boxes, ~70 of its 83 GUI draws; heavy GUIs unmeasured) |
+| package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met, 7b plan in its section). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
+| baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0). Main's run 40487515684 then failed on a flake in core/animation's measure runs (vanilla stand-ins, one interpolation step off); being fixed on `fix-animation-flake` |
 | package 8 (effects) | merged | `478fd69` (squash of `package-8`, with your four additions), main full run 40432198119 green, `latest` rebuilt |
 
 **Quick CI** (decisions on your behalf): quick mode compares Brimstone old-GPU with vanilla-a (vanilla's GL 3.3 and
