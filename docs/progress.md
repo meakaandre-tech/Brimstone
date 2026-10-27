@@ -9,7 +9,8 @@
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
-| package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met, 7b plan in its section). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
+| package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met; **7b deferred until after package 6**, with inventory tooltips, F3 and long chat measured first). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
+| core/mobs strict limit | main | 600 -> 10 (chicken wing pin; samples 0 in four full runs) |
 | baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0) |
 | animation pin fix | merged | `cea5bfb`: the animation pin counts texture ticks, not client ticks (the cause of a flake in core/animation's measure runs); **main full run 40526712029 green, `latest` rebuilt** |
 | package 8 (effects) | merged | `478fd69` (squash of `package-8`, with your four additions), main full run 40432198119 green, `latest` rebuilt |
@@ -1870,7 +1871,12 @@ So no GUI batching code was written (the brief: keep it minimal when vanilla lea
 (reported, not gated). Andre's decision (2026-10-27): this branch merges as "7a: GUI measurement"; batching is the
 "7b" plan below.
 
-### 7b: GUI batching (plan only; Andre decides from the numbers, not built)
+### 7b: GUI batching (deferred, not built)
+
+**Deferred (Andre, 2026-10-28): revisit after package 6**, with three heavy GUIs measured first: the inventory with
+tooltips, the F3 overlay and a long chat history (scenes for each, vanilla's numbers from the measure runs). Until
+then nothing below is built.
+
 
 Where the GUI pass's draws go, from the `gui` counters (Brimstone and vanilla equal within 0.03 draws per frame; full
 profile; whole-frame draws are vanilla's median per frame; with package 8's animated textures Brimstone's whole frames

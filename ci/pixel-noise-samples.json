@@ -65,7 +65,54 @@
       8,
       10
     ],
-    "samples": 19
+    "samples": 19,
+    "strictThreshold": 2,
+    "strictVanillaBA": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictMeasureRuns": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictBrimstone": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strictLimit": 10,
+    "strictRuns": [
+      40471457759,
+      40481430766,
+      40516650792,
+      40526712029
+    ],
+    "strictNote": "With the chicken wing pin (ChickenFlapMixin), threshold >2/255: vanilla b/a 0/0, every measure run and every Brimstone run 0 in all four full runs (recomputed from the PNGs for the last three). Package 2's finer rule: largest sample x 1.5 rounded up to 10, at least 10 = 10, below a chicken (~480 px). Was 600."
   },
   "core/nether": {
     "all": [

@@ -43,7 +43,7 @@ square of its edge in pixels at the subject's distance). Other gates that catch 
 | core/flythrough | a missing or stale section while moving | a section at mid distance (blocks ~3 px): ~2,300 | 6,020 | **no** (the visibility pop-in check gates missing section layers exactly) |
 | core/water_glass | a wrong water, glass or translucent block | one block face (~44 px edge): ~1,900 | 25,508 | **no** (the per-frame translucency check gates order and sort exactly) |
 | core/nether | a wrong block or light on a netherrack face | one block face (~50 px): ~2,500 | 905 | yes |
-| core/mobs | a missing or wrongly drawn mob | a pig ~1,200; a chicken ~480 | 600 | pig yes; chicken **no** |
+| core/mobs | a missing or wrongly drawn mob | a pig ~1,200; a chicken ~480 | 10 (was 600; 2026-10-28, chicken wing pin) | yes, a chicken too |
 | core/occlusion | a wrongly hidden entity or block entity | the iron golem in the doorway ~200 (package 2) | 22 | yes |
 | core/occlusion_move (+ shots) | a wrongly hidden object while moving | each object larger than its shot's limit, measured with the bare shots (package 2) | 10 to 110 | yes |
 | core/translucent_move (+ shots) | a stained-glass block out of order | one pane block face (~34 px): ~1,150 | 13 to 41 | yes |
@@ -193,7 +193,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/flythrough | 1487/492, 672/3877, 342/1100 | 906 | 5900 |
 | core/water_glass | 2566/16964, 12740/1330, 4798/1040 | 1336 | 25500 |
 | core/nether | after the lightmap pin: 230/80; before it, on the side where the flicker matched: 216, 27, 96, 339, 26, 549, 36, 250 | 4 | 900 |
-| core/mobs | 304/268, 382/126, 30/104 | 105 | 600 |
+| core/mobs | 304/268, 382/126, 30/104; with the chicken wing pin 0/0 in runs 40471457759, 40481430766, 40516650792, 40526712029 | 105; with the pin 0 (every Brimstone and measure run, all four runs) | **10** (was 600; finer rule, 2026-10-28) |
 | core/occlusion (package 2) | 0/0 in runs 40079570978, 40081970862, 40083026856 | 0 (dry run, all three profiles) | 20 (was 100; lowered in package 2's review fixes) |
 | core/occlusion_move (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.x2297 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
@@ -721,8 +721,11 @@ profiles' baselines were already 8.24 and 8.29.
 
 `core/mobs` strict noise: the chickens' wing flap (their last ticks of falling) made two vanilla runs differ by up
 to 718 strict pixels (vanilla's measure run on Vulkan, run 40463682395, limit 600). CI's pin mod now holds the wings
-at rest in every run, vanilla and Brimstone alike; with it every mobs sample is 0 (run 40471457759). The limit (600)
-can come down to the rule's floor after three runs with the pin, so a chicken (about 480 px) is caught.
+at rest in every run, vanilla and Brimstone alike; with it every mobs sample is 0 (run 40471457759). **Lowered
+2026-10-28: 600 -> 10.** Four full runs with the pin (40471457759, 40481430766, 40516650792 and main's 40526712029;
+the last three recomputed from their PNGs): vanilla b/a 0/0 and every Brimstone and measure run 0 in each, so by
+package 2's finer rule (largest sample x 1.5, rounded up to 10, at least 10) the limit is 10, below a chicken (about
+480 px). Samples in `ci/pixel-noise-samples.json`.
 
 ### The animation pin's flake (main's run 40487515684) and its fix
 
