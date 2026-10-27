@@ -706,6 +706,24 @@ draws per frame in the core scenes and 94-140 in SIFTEC's, against Brimstone's 0
 so every draw-call baseline now has that much room. They are left as they are so the lead can merge packages 4, 7
 and 8 by hand; lowering them is listed for Andre (docs/progress.md, package 8).
 
+### Draw-call baselines after packages 4, 7a and 8 (2026-10-27)
+
+Every scene's `drawCallsPerFrame` baseline lowered to the highest value in three clean runs of the merged build
+(main's run 40463682395 on `7597832`, package 7a's run 40459438787 on the same code, and run 40471457759 with the
+chicken pin), as the rule allows after a real improvement: package 8 (animated textures only when seen) took
+70-130 draws per frame of texture animation out of every scene, e.g. core spawn 123.09 to 13.0 (full), SIFTEC sift
+670.27 to 41.0 (old-GPU), ponder 181.05 to 87.25. 66 baselines lowered; none raised; the other counts unchanged.
+
+`siftec/create_ct` direct buffers, full profile: 4.24 to 10.24 MB, re-collected by the noise rule (standing rules):
+the JVM's direct pool grows in 2 MB steps at a moment that varies by run, and vanilla's own measure run showed 10.12
+in the same run (40463682395) where Brimstone's showed 10.24; Brimstone's samples 10.24, 6.06, 5.99, 8.24; the other
+profiles' baselines were already 8.24 and 8.29.
+
+`core/mobs` strict noise: the chickens' wing flap (their last ticks of falling) made two vanilla runs differ by up
+to 718 strict pixels (vanilla's measure run on Vulkan, run 40463682395, limit 600). CI's pin mod now holds the wings
+at rest in every run, vanilla and Brimstone alike; with it every mobs sample is 0 (run 40471457759). The limit (600)
+can come down to the rule's floor after three runs with the pin, so a chicken (about 480 px) is caught.
+
 ## Counter audit
 
 The counting mixins have their own config (not required, `defaultRequire: 0`), so a counter that no longer fits the

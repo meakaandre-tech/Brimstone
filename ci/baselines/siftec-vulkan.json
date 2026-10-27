@@ -1,7 +1,7 @@
 {
   "create_ct": {
     "directBuffersMB": 8.29,
-    "drawCallsPerFrame": 100.16,
+    "drawCallsPerFrame": 6.67,
     "heapUsedAfterGcMB": 475.26,
     "runs": 2,
     "uploadBytesPerFrame": 1596,
@@ -9,7 +9,7 @@
   },
   "factory": {
     "directBuffersMB": 3.71,
-    "drawCallsPerFrame": 111.25,
+    "drawCallsPerFrame": 14.22,
     "heapUsedAfterGcMB": 420.23,
     "runs": [
       "40156711337 attempts 1-3"
@@ -19,7 +19,7 @@
   },
   "factory_flat": {
     "directBuffersMB": 3.46,
-    "drawCallsPerFrame": 107.27,
+    "drawCallsPerFrame": 22.31,
     "heapUsedAfterGcMB": 421.17,
     "runs": 3,
     "uploadBytesPerFrame": 50904,
@@ -27,7 +27,7 @@
   },
   "hub": {
     "directBuffersMB": 4.23,
-    "drawCallsPerFrame": 136.98,
+    "drawCallsPerFrame": 21.55,
     "heapUsedAfterGcMB": 450.49,
     "runs": [
       10,
@@ -50,7 +50,7 @@
   },
   "mam": {
     "directBuffersMB": 5.46,
-    "drawCallsPerFrame": 171.53,
+    "drawCallsPerFrame": 22.52,
     "heapUsedAfterGcMB": 462.56,
     "runs": [
       10,
@@ -61,7 +61,7 @@
   },
   "map": {
     "directBuffersMB": 8.23,
-    "drawCallsPerFrame": 177.0,
+    "drawCallsPerFrame": 30.0,
     "heapUsedAfterGcMB": 504.09,
     "runs": [
       "40156711337 attempts 1 and 3"
@@ -71,7 +71,7 @@
   },
   "ponder": {
     "directBuffersMB": 8.23,
-    "drawCallsPerFrame": 180.89,
+    "drawCallsPerFrame": 87.24,
     "heapUsedAfterGcMB": 462.87,
     "runs": [
       40273668937,
@@ -83,7 +83,7 @@
   },
   "sift": {
     "directBuffersMB": 4.23,
-    "drawCallsPerFrame": 150.31,
+    "drawCallsPerFrame": 23.0,
     "heapUsedAfterGcMB": 439.9,
     "runs": [
       10,
