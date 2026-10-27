@@ -414,13 +414,34 @@ every Brimstone and measure run 0 strict pixels and 0% over 8/255, 99.69% of the
 (not used for the limits): 3-5 pixels of the minimap in every Brimstone and measure run, the same in measure runs.
 Limits by the finer rule: **10** strict; 8/255 by package 0's rule: **0.25**.
 
+**The HUD scene** (SIFTEC `hud`, after the rebase on main): normal play in creative with nine hotbar items, the chat
+open (its last 6 lines, `chatHeightFocused:0.25`), SIFTEC's compass strip and minimap, on a gray concrete platform high
+above 400 -110 facing a gray concrete wall. Pins for it: the pin mod holds a focused text box's cursor on; drive.py
+clears the chat before the setup (`ciClearChat`; bench messages had moved the chat's scrollbar, 48 pixels) and after
+the fills reloads all chunks and clears the chat again (the `#chunks` step; a vanilla stand-in run once showed a hole
+in the wall, 4,080 pixels, run 40450860976); SIFTEC's map setup runs once per world, so the map markers it places are
+not doubled by the benches (they showed twice on the compass of later scenes and sessions). Samples: vanilla b/a and
+a/b 0/0 and every Brimstone and measure run 0 in runs 40436256016, 40444035980, 40454752063 (run 40450860976: the
+hole, before the `#chunks` step). Limits by the finer rule: strict **10**, 8/255 **0.25**. Coverage: the strict check
+sees 44% of the frame (minimap 86%, hotbar 92%, chat 51%, compass 41%): Vulkan shades the concrete wall in fine rings
+that differ from OpenGL's by 1-2/255 (fog or interpolation; with a textured wall it differed on most pixels, run
+40414693058, and with the sky behind on the sun's glow, run 40404251173); the 8/255 check covers the whole frame.
+
 **Count baselines** (highest clean value, runs 40254531258, 40260765722, 40260847921; gated as every scene):
 
 | suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
 |---|---|---|---|---|---|---|
-| core-full | outline | 127.0 | 18 | 13588 | 271.21 | 4.24 |
-| core-old-gpu | outline | 138.0 | 16 | 5012 | 271.02 | 3.99 |
-| core-vulkan | outline | 127.0 | 18 | 13736 | 271.55 | 4.23 |
+| core-full | outline | 10.72 (was 127.0) | 18 | 6356 | 264.69 | 5.48 |
+| core-old-gpu | outline | 19.67 (was 138.0) | 16 | 5012 | 264.41 | 3.73 |
+| core-vulkan | outline | 10.67 (was 127.0) | 18 | 6356 | 264.58 | 3.71 |
+| siftec-full | hud | 31.0 | 16 | 71636 | 494.92 | 8.24 |
+| siftec-old-gpu | hud | 58.0 | 14 | 59972 | 493.56 | 8.18 |
+| siftec-vulkan | hud | 31.0 | 16 | 72908 | 490.43 | 8.16 |
+
+Outline and hud since the rebase on main after packages 4 and 8 (runs 40444035980, 40450860976, 40454752063): the
+outline scene moved to x 2680 (clear of package 4's flat_plants) and package 8's animated textures took most of its
+draws, so its baselines went down to the values above (highest clean value; first set from runs 40254531258,
+40260765722, 40260847921 at x 2500 before package 8).
 
 The `ponder` scene is gated like hub, on the per-frame average and median (its average is flat at about 30 fps:
 180.57-181.12 in every run, against a 227 median), baselines on the average from the three runs of its final setup

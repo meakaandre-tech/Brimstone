@@ -1925,6 +1925,10 @@ these scenes, every GUI scene's strict picture unchanged (limits 10).
    scrollbar; drive.py presses a screen's key again every 15 s while a bench waits for it (one measure run's key press
    was lost). Placement: the map scene's markers (doubled in bench runs) stay off the minimap and, facing south, the
    compass; concrete because Vulkan samples a textured wall differently from GL.
+   GUI numbers there (Brimstone / vanilla, every profile, runs 40436256016 to 40454752063): 23 / 23 GUI draws per frame,
+   279 elements, 11 distinct states: 6 pipelines, 7 texture setups, 2 scissor areas; reordering leaves 23 (13 with
+   text as overlapping nothing). Whole frame: Brimstone 31, vanilla 171 (package 8's animated textures). Limits 10
+   (strict) and 0.25 (8/255); the strict check sees 44% of this frame (Vulkan shades the wall differently).
 7. **Rebased on main after packages 4 and 8** (squashed first; the history is on the local branch
    `package-7-presquash`). Shared CI files hand-merged keeping all three packages' additions; the core `outline`
    scene moved from x 2500 to x 2680 (package 4's flat_plants clears 2483-2517 there, and the pin mod's outline block

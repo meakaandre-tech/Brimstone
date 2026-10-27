@@ -92,15 +92,15 @@
     "uploadsPerFrame": 15
   },
   "outline": {
-    "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 127.0,
-    "heapUsedAfterGcMB": 271.21,
+    "directBuffersMB": 5.48,
+    "drawCallsPerFrame": 10.72,
+    "heapUsedAfterGcMB": 264.69,
     "runs": [
-      40254531258,
-      40260765722,
-      40260847921
+      40444035980,
+      40450860976,
+      40454752063
     ],
-    "uploadBytesPerFrame": 13588,
+    "uploadBytesPerFrame": 6356,
     "uploadsPerFrame": 18
   },
   "particles": {

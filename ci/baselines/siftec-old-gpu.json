@@ -52,9 +52,11 @@
   "hud": {
     "directBuffersMB": 8.18,
     "drawCallsPerFrame": 58.0,
-    "heapUsedAfterGcMB": 493.09,
+    "heapUsedAfterGcMB": 493.56,
     "runs": [
-      40436256016
+      40444035980,
+      40450860976,
+      40454752063
     ],
     "uploadBytesPerFrame": 59972,
     "uploadsPerFrame": 14
