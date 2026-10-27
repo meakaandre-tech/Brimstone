@@ -1,0 +1,56 @@
+[
+  {
+    "scene": "factory",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "ponder",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "map",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "hologram",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "hud",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  },
+  {
+    "scene": "create_ct",
+    "steadyAfter": 1,
+    "shot": true,
+    "bench": "done"
+  }
+]

@@ -1,0 +1,94 @@
+suite=siftec run=brimstone-full
+Brimstone run JVM properties: -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true
+total 62968
+-rw-r--r-- 1 runner runner  3486296 Oct 27 06:11 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   370225 Oct 27 06:11 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 27 06:11 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 27 06:11 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 27 06:11 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 27 06:11 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 27 06:11 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 27 06:11 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 27 06:11 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 27 06:11 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 27 06:11 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 27 06:11 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 27 06:11 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 27 06:11 travelersbackpack.jar
+total 60424
+-rw-r--r-- 1 runner runner  3486296 Oct 27 06:22 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   370225 Oct 27 06:22 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 27 06:22 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    15191 Oct 27 06:22 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 27 06:22 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 27 06:22 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 27 06:22 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 27 06:22 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 27 06:22 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 27 06:22 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 27 06:22 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 27 06:22 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 27 06:22 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 27 06:22 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene ponder: setting up
+scene ponder: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: setting up
+scene hologram: bench done
+scene hud: setting up
+scene hud: bench done
+scene create_ct: setting up
+scene create_ct: bench done
+session 2 client options: ao=false
+scene factory_flat: setting up
+scene factory_flat: bench done
+/tmp/out/siftec-brimstone-full:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-brimstone-full/bench:
+20261027-062739-factory.json
+20261027-062912-sift.json
+20261027-063023-hub.json
+20261027-063134-mam.json
+20261027-063248-ponder.json
+20261027-063548-map.json
+20261027-063711-hologram.json
+20261027-063849-hud.json
+20261027-064027-create_ct.json
+20261027-064333-factory_flat.json
+
+/tmp/out/siftec-brimstone-full/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png
