@@ -579,7 +579,7 @@ limits are the rules' floors.
 | core/particles.bare | 40271672678, 40275109388 (full), 40293774852 (full) | all 0.0; strict all 0 | 0.25 | **4** |
 | core/animation, .front | 40263318499, 40267202902 (full), 40271672678, 40275109388 (full) | vanilla a/b 0.0, Brimstone 0.0001 (every profile); strict vanilla 0/0, Brimstone 1, measure runs 0 | 0.25 | 10 |
 | core/animation.behind | the same | all 0.0; strict all 0 | 0.25 | 10 |
-| core/animated_items (Andre's follow-up) | 40404276347 (quick), 40418xxxxxx | all 0.0; strict all 0 | 0.25 | 10 |
+| core/animated_items (Andre's follow-up) | 40404276347 (quick), 40412755923 (full) | all 0.0; strict all 0 | 0.25 | 10 |
 
 Limit = max(2 x largest, largest + 0.25, 0.1) rounded up to 0.05 (0.25); strict = largest x 1.5 rounded up to 10, at
 least 10 (10), except the particle scene's: **4** (Andre, 2026-10-27), below its smallest particle (9 pixels), as its
@@ -588,7 +588,8 @@ model's off-grid coordinates rounded by the 16-byte vertex (package 3, Andre's d
 profile and run, and not in the measure runs. Earlier runs of the animation scene (before its blocks behind the camera
 moved two sections back, `5db4432`) are not counted.
 
-**Counts.** Baselines for both scenes from runs 40267202902 and 40275109388 (`ci/baselines/core-*.json`, the rule: the highest clean
+**Counts.** core/animated_items (Andre's follow-up): baselines from run 40412755923, its draw calls gated on the
+median like the animation scene's (60 in every profile, average 46.7). Baselines for the other two scenes from runs 40267202902 and 40275109388 (`ci/baselines/core-*.json`, the rule: the highest clean
 value). The animation scene's bench lets animation run freely (the pin's marker block), so its draws per frame follow
 the runner's frame rate (vanilla redraws changed sprites once per client tick): it is gated on the median from the
 start (`ciDrawCallGate`, Andre's rule for such scenes): 44 in every profile (average 33.3), raised to 49 when the

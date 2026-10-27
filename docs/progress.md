@@ -1728,6 +1728,18 @@ changes": F1 must be fixed, F2 documented, F3 and F4 cheap to fix. What was done
   `ci/client-run.sh` (both debug properties), `BenchReport` (renderer, effects and animation lines), `fabric.mod.json`
   (both mixin configs), the core baselines and `core.json` (main's entries plus package 8's three scenes).
 
+**Package 4's block renderer stays inside the not-a-use scope** (full run 40412755923 on the rebased branch, `7059fbe`;
+Brimstone's block renderer on in every Brimstone session, e.g. 1.9-3.6 million blocks meshed by it per session, 0 by
+vanilla's): animated sprites "used outside terrain" stay at 0-1 in every terrain scene (as before the rebase), so no
+terrain sprite leaks out of the scope; Brimstone's animation draws per frame (vanilla's in brackets, full profile):
+spawn 5.0 (115.0), flythrough 5.0 (115.0), nether 10.0 (97.0), water_glass, mobs, occlusion, translucent_move, the OIT
+scenes, flat_plants, renderer_off and particles 0.0 (76.6-115.0); the animation scene with animation running while
+measuring 32.3 (136.4), the same as before the rebase (32.3 in run 40293774852); animated_items 28.0 (136.4), with 9
+sprites used outside terrain (the scene's own). That run failed only on compare's renderer-registration check reading a
+truncated copy of one client log (core brimstone-full session 5's `client-5.log` holds only the last 34 lines; that
+session's console log shows the renderer registered and its self-test passed) and on the then missing baselines of
+animated_items, added from it.
+
 ### For package 6's plan (Andre, 2026-10-27)
 
 CI now holds banner sway still in every run (`BannerSwayMixin`, package 8), so banner animation is untested: package 6

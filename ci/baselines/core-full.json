@@ -1,4 +1,12 @@
 {
+  "animated_items": {
+    "directBuffersMB": 5.99,
+    "drawCallsPerFrame": 60,
+    "heapUsedAfterGcMB": 239.81,
+    "runs": 1,
+    "uploadBytesPerFrame": 21940,
+    "uploadsPerFrame": 23
+  },
   "animation": {
     "directBuffersMB": 5.99,
     "drawCallsPerFrame": 49,
