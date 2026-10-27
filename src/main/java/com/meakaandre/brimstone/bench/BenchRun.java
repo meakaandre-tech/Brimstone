@@ -88,6 +88,8 @@ public final class BenchRun {
                     waitUntil = now + (scene == null ? 0 : scene.settleSeconds) * 1_000_000_000L;
                 } else if (next.startsWith("#wait ")) {
                     waitUntil = now + (long) (Double.parseDouble(next.substring(6).trim()) * 1e9);
+                } else if (next.startsWith("#")) {
+                    // a step for CI's driver only (e.g. "#chunks"): nothing to send
                 } else {
                     player.connection.sendCommand(next);
                 }

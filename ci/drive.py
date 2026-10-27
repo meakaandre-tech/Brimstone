@@ -56,6 +56,18 @@ def main():
     def send(cmd):
         if cmd.startswith("#wait "):
             time.sleep(float(cmd[6:]))
+        elif cmd == "#chunks":
+            # package 7: F3+A (reload all chunks, so a section changed by the setup's fills is not left stale or
+            # missing: the hud scene's wall once had a hole in a measure run) and F3+D (clear the chat, which F3+A
+            # writes to), the same in every run; the bench skips this line
+            xdo("keydown", "F3")
+            xdo("key", "a")
+            xdo("keyup", "F3")
+            time.sleep(3)
+            xdo("keydown", "F3")
+            xdo("key", "d")
+            xdo("keyup", "F3")
+            time.sleep(1)
         else:
             console.write(cmd + "\n")
             time.sleep(0.3)
