@@ -1871,7 +1871,8 @@ So no GUI batching code was written (the brief: keep it minimal when vanilla lea
 ### 7b: GUI batching (plan only; Andre decides from the numbers, not built)
 
 Where the GUI pass's draws go, from the `gui` counters (Brimstone and vanilla equal within 0.03 draws per frame; full
-profile; whole-frame draws are each scene's median):
+profile; whole-frame draws are vanilla's median per frame; with package 8's animated textures Brimstone's whole frames
+are smaller, e.g. hud 31 against vanilla's 171, run 40444035980):
 
 | scene | whole frame | GUI pass | elements | states (pipelines / texture setups / scissor areas) | reordered (text as overlapping nothing) |
 |---|---|---|---|---|---|
@@ -1879,7 +1880,7 @@ profile; whole-frame draws are each scene's median):
 | hub | 161 | 13.9 | 572 | 6 (6 / 5 / 1) | 13.9 (8) |
 | mam | 162 | 13.9 | 110 | 7 (6 / 6 / 1) | 13.9 (8) |
 | map | 170 | 23 | 317 | 12 (5 / 6 / 3) | 21 (15) |
-| hud (hotbar with items, open chat, compass, minimap) | 171 | 23 | 279 | 11 (6 / 7 / 2) | 23 (13) |
+| hud (hotbar with items, open chat, compass, minimap; runs 40436256016, 40444035980) | 171 | 23 | 279 | 11 (6 / 7 / 2) | 23 (13) |
 | ponder (Create's Ponder index) | 227 | 82.6 | 203 | 73 (6 / 72 / 1) | 81.6 (75) |
 
 Where batching would actually save draws, roughly:
