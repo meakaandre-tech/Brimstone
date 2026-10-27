@@ -1,0 +1,95 @@
+suite=siftec run=measure-full
+measure run JVM properties: -Dbrimstone.ci.measureOnly=true
+measure run: contains_renderer taken out of the jar's fabric.mod.json (Indigo draws)
+total 62964
+-rw-r--r-- 1 runner runner  3486296 Oct 27 13:59 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   367135 Oct 27 13:59 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 27 13:59 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 27 13:59 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 27 13:59 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 27 13:59 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 27 13:59 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 27 13:59 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 27 13:59 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 27 13:59 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 27 13:59 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 27 13:59 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 27 13:59 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 27 13:59 travelersbackpack.jar
+total 60424
+-rw-r--r-- 1 runner runner  3486296 Oct 27 14:01 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   367135 Oct 27 14:01 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 27 14:01 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16787 Oct 27 14:01 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 27 14:01 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 27 14:01 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 27 14:01 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 27 14:01 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 27 14:01 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 27 14:01 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 27 14:01 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 27 14:01 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 27 14:01 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 27 14:01 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene ponder: setting up
+scene ponder: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: setting up
+scene hologram: bench done
+scene hud: setting up
+scene hud: bench done
+scene create_ct: setting up
+scene create_ct: bench done
+session 2 client options: ao=false
+scene factory_flat: setting up
+scene factory_flat: bench done
+/tmp/out/siftec-measure-full:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-measure-full/bench:
+20261027-140621-factory.json
+20261027-140755-sift.json
+20261027-140907-hub.json
+20261027-141018-mam.json
+20261027-141132-ponder.json
+20261027-141432-map.json
+20261027-141555-hologram.json
+20261027-141733-hud.json
+20261027-141911-create_ct.json
+20261027-142233-factory_flat.json
+
+/tmp/out/siftec-measure-full/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png

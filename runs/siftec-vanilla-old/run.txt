@@ -1,0 +1,72 @@
+suite=siftec run=vanilla-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+total 62604
+-rw-r--r-- 1 runner runner  3486296 Oct 27 14:00 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 27 14:00 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 27 14:00 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 27 14:00 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 27 14:00 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 27 14:00 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 27 14:00 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 27 14:00 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 27 14:00 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 27 14:00 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 27 14:00 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 27 14:00 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 27 14:00 travelersbackpack.jar
+total 60064
+-rw-r--r-- 1 runner runner  3486296 Oct 27 14:23 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 27 14:23 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16787 Oct 27 14:23 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 27 14:23 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 27 14:23 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 27 14:23 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 27 14:23 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 27 14:23 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 27 14:23 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 27 14:23 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 27 14:23 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 27 14:23 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1511186 Oct 27 14:23 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene sift: setting up
+scene hub: setting up
+scene mam: setting up
+scene ponder: setting up
+scene map: setting up
+scene hologram: setting up
+scene hud: setting up
+scene create_ct: setting up
+session 2 client options: ao=false
+scene factory_flat: setting up
+/tmp/out/siftec-vanilla-old:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-vanilla-old/bench:
+
+/tmp/out/siftec-vanilla-old/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png
