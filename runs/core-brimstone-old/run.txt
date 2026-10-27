@@ -1,0 +1,125 @@
+suite=core run=brimstone-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+old-GPU Brimstone run: -Dbrimstone.debug.forceIntelMdiIssue=true
+Brimstone run JVM properties:-Dbrimstone.debug.forceIntelMdiIssue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true
+core server and world: from the core-world job
+total 2912
+-rw-r--r-- 1 runner runner  360089 Oct 27 00:23 brimstone.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 27 00:23 fabric-api.jar
+total 368
+-rw-r--r-- 1 runner runner 360089 Oct 27 00:24 brimstone.jar
+-rw-r--r-- 1 runner runner  14112 Oct 27 00:24 ci-pin.jar
+sessions: 8|-|spawn,water_glass,nether,mobs,occlusion,occlusion_move,translucent_move,particles,animation,animated_items 8|ao=false|flat_plants 8|ao=false,brimstone.block-renderer=off|renderer_off 8|improvedTransparency=true|water_glass_oit,translucent_move_oit 12|-|flythrough
+scene spawn: setting up
+scene spawn: bench done
+scene water_glass: setting up
+scene water_glass: bench done
+scene nether: setting up
+scene nether: bench done
+scene mobs: setting up
+scene mobs: bench done
+scene occlusion: setting up
+scene occlusion: bench done
+scene occlusion_move: setting up
+scene occlusion_move: bench done
+scene translucent_move: setting up
+scene translucent_move: bench done
+scene particles: setting up
+scene particles: bench done
+scene animation: setting up
+scene animation: bench done
+scene animated_items: setting up
+scene animated_items: bench done
+session 2 client options: ao=false
+scene flat_plants: setting up
+scene flat_plants: bench done
+session 3 client options: ao=false,brimstone.block-renderer=off
+scene renderer_off: setting up
+scene renderer_off: bench done
+session 4 client options: improvedTransparency=true
+scene water_glass_oit: setting up
+scene water_glass_oit: bench done
+scene translucent_move_oit: setting up
+scene translucent_move_oit: bench done
+scene flythrough: setting up
+scene flythrough: bench done
+/tmp/out/core-brimstone-old:
+bench
+client-1.log
+client-2.log
+client-3.log
+client-4.log
+client-5.log
+client-gradle-1.log
+client-gradle-2.log
+client-gradle-3.log
+client-gradle-4.log
+client-gradle-5.log
+drive-flat_plants.json
+drive-flythrough.json
+drive-renderer_off.json
+drive-spawn-water_glass-nether-mobs-occlusion-occlusion_move-translucent_move-particles-animation-animated_items.json
+drive-water_glass_oit-translucent_move_oit.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+joined-3.txt
+joined-4.txt
+joined-5.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-brimstone-old/bench:
+20261027-002630-spawn.json
+20261027-002803-water_glass.json
+20261027-002923-nether.json
+20261027-003117-mobs.json
+20261027-003257-occlusion.json
+20261027-003602-occlusion_move.json
+20261027-003832-translucent_move.json
+20261027-004042-particles.json
+20261027-004244-animation.json
+20261027-004423-animated_items.json
+20261027-004723-flat_plants.json
+20261027-005017-renderer_off.json
+20261027-005308-water_glass_oit.json
+20261027-005540-translucent_move_oit.json
+20261027-005818-flythrough.json
+
+/tmp/out/core-brimstone-old/shots:
+animated_items.png
+animation.behind.png
+animation.front.png
+animation.png
+flat_plants.png
+flythrough.png
+mobs.png
+nether.png
+occlusion.png
+occlusion_move.bare_open.png
+occlusion_move.bare_x2297.png
+occlusion_move.bare_x2300.png
+occlusion_move.bare_x2305.png
+occlusion_move.bare_x2309.png
+occlusion_move.closed.png
+occlusion_move.open.png
+occlusion_move.png
+occlusion_move.x2297.png
+occlusion_move.x2305.png
+occlusion_move.x2309.png
+particles.bare.png
+particles.png
+renderer_off.png
+spawn.png
+translucent_move.back.png
+translucent_move.bare_back.png
+translucent_move.low.png
+translucent_move.png
+translucent_move.x2404.png
+translucent_move.x2414.png
+translucent_move.x2424.png
+translucent_move_oit.back.png
+translucent_move_oit.bare_back.png
+translucent_move_oit.low.png
