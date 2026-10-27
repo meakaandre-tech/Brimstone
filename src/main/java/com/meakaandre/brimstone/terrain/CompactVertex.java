@@ -40,11 +40,46 @@ public final class CompactVertex {
         .addAttribute("BrimTexel", GpuFormat.RG16_UINT)
         .build();
 
-    /** One layer, converted, in a memAlloc'd buffer; how many of its vertices had a position or UV rounded. */
-    record Converted(ByteBuffer data, int vertices, int positionsRounded, int uvsRounded) {
+    /**
+     * One layer, converted, in a memAlloc'd buffer; how many of its vertices had a position or UV rounded. For a solid
+     * or cutout layer, {@code faces} says how its quads are grouped by facing (null: one group in vanilla's order).
+     */
+    record Converted(ByteBuffer data, int vertices, int positionsRounded, int uvsRounded, Faces faces) {
         void free() {
             MemoryUtil.memFree(data);
         }
+    }
+
+    /**
+     * Facing groups (package 4b, skip back faces): a solid or cutout layer's quads stored grouped by the direction they
+     * face, each group a contiguous range of quads in the layer (so one index range of the shared quad index list),
+     * groups in the order {@link #UNALIGNED}, +X, +Y, +Z, -X, -Y, -Z. Inside a group the quads keep vanilla's order.
+     *
+     * <p>A quad is in an axis group only if, on the 16-byte format's stored grid (what the GPU draws), all four corners
+     * lie in one plane {@code axis = p} and every corner's triangle (0-1-2, 1-2-3, 2-3-0, 3-0-1) that has an area winds
+     * the same way, so whichever way the quad is split into triangles, every triangle faces the same side. Everything
+     * else (plants, slopes, rotated model parts, degenerate quads) is unaligned and always drawn. The side is the
+     * right-hand normal of the corners in order, which is the side the GPU treats as the front (vanilla's blocks wind
+     * their outward faces that way). For each axis group, {@code planeMin}/{@code planeMax} are the lowest and highest
+     * plane positions of its quads, in blocks from the section origin, as the shader decodes them.
+     */
+    record Faces(int[] start, float[] planeMin, float[] planeMax) {
+        /** Quads in group {@code g}; group {@code g} starts at quad {@code start[g]}, {@code start[GROUPS]} is the layer's quad count. */
+        int quads(int g) {
+            return start[g + 1] - start[g];
+        }
+    }
+
+    static final int GROUPS = 7, UNALIGNED = 0;
+
+    /** Axis (0 x, 1 y, 2 z) of an axis group 1-6. */
+    static int axis(int g) {
+        return (g - 1) % 3;
+    }
+
+    /** Whether an axis group faces the positive direction of its axis (groups 1-3). */
+    static boolean positive(int g) {
+        return g <= 3;
     }
 
     private CompactVertex() {
@@ -85,20 +120,94 @@ public final class CompactVertex {
      * (position or UV out of range, alpha other than 255).
      */
     static Converted convert(ByteBuffer src, int slot) {
+        return convert(src, slot, false);
+    }
+
+    /**
+     * As {@link #convert(ByteBuffer, int)}; with {@code group} (solid and cutout layers, never translucent, whose index
+     * lists name vanilla's vertex order) the quads are stored grouped by facing ({@link Faces}).
+     */
+    static Converted convert(ByteBuffer src, int slot, boolean group) {
         int bytes = src.remaining();
         if (bytes == 0 || bytes % (4 * VANILLA_BYTES) != 0) return null;
         int vertices = bytes / VANILLA_BYTES;
         long in = MemoryUtil.memAddress(src);
         for (int v = 0; v < vertices; v++) if (!storable(in + (long) v * VANILLA_BYTES)) return null;
+        int quads = vertices / 4;
+        // where each quad goes: in vanilla's order, or grouped by facing (stable inside a group)
+        int[] dest = null;
+        Faces faces = null;
+        if (group) {
+            byte[] g = new byte[quads];
+            int[] plane = new int[quads];
+            int[] count = new int[GROUPS];
+            for (int q = 0; q < quads; q++) {
+                long base = in + (long) q * 4 * VANILLA_BYTES;
+                int k = classify(base, plane, q);
+                g[q] = (byte) k;
+                count[k]++;
+            }
+            int[] start = new int[GROUPS + 1];
+            for (int k = 0; k < GROUPS; k++) start[k + 1] = start[k] + count[k];
+            float[] min = new float[GROUPS], max = new float[GROUPS];
+            java.util.Arrays.fill(min, Float.POSITIVE_INFINITY);
+            java.util.Arrays.fill(max, Float.NEGATIVE_INFINITY);
+            int[] next = java.util.Arrays.copyOf(start, GROUPS);
+            dest = new int[quads];
+            for (int q = 0; q < quads; q++) {
+                int k = g[q];
+                dest[q] = next[k]++;
+                if (k != UNALIGNED) {
+                    float p = decodePosition(plane[q]);
+                    if (p < min[k]) min[k] = p;
+                    if (p > max[k]) max[k] = p;
+                }
+            }
+            faces = new Faces(start, min, max);
+        }
         ByteBuffer out = MemoryUtil.memAlloc(vertices * BYTES);
         long o = MemoryUtil.memAddress(out);
         int positions = 0, uvs = 0;
         for (int v = 0; v < vertices; v++) {
-            int r = pack(in + (long) v * VANILLA_BYTES, o + (long) v * BYTES, slot);
+            int to = dest == null ? v : dest[v >> 2] * 4 + (v & 3);
+            int r = pack(in + (long) v * VANILLA_BYTES, o + (long) to * BYTES, slot);
             if ((r & 1) != 0) positions++;
             if ((r & 2) != 0) uvs++;
         }
-        return new Converted(out, vertices, positions, uvs);
+        return new Converted(out, vertices, positions, uvs, faces);
+    }
+
+    /**
+     * The facing group of the quad whose first vanilla vertex is at {@code base}, from its positions on the stored grid
+     * (exactly what the GPU draws); for an axis group the plane's stored step goes to {@code plane[q]}.
+     */
+    private static int classify(long base, int[] plane, int q) {
+        int[] s = new int[12];
+        for (int c = 0; c < 4; c++) {
+            for (int k = 0; k < 3; k++) s[c * 3 + k] = positionStep(MemoryUtil.memGetFloat(base + (long) c * VANILLA_BYTES + 4L * k));
+        }
+        int axis = -1;
+        for (int k = 0; k < 3; k++) {
+            if (s[k] == s[3 + k] && s[k] == s[6 + k] && s[k] == s[9 + k]) {
+                if (axis >= 0) return UNALIGNED; // flat on two axes: a line or a point
+                axis = k;
+            }
+        }
+        if (axis < 0) return UNALIGNED;
+        // the two other axes, in the cyclic order that makes their 2D cross product the normal's component on axis
+        int u = (axis + 1) % 3, w = (axis + 2) % 3;
+        int sign = 0;
+        for (int c = 0; c < 4; c++) {
+            int a = c * 3, b = ((c + 1) & 3) * 3, d = ((c + 2) & 3) * 3;
+            long n = (long) (s[b + u] - s[a + u]) * (s[d + w] - s[a + w]) - (long) (s[b + w] - s[a + w]) * (s[d + u] - s[a + u]);
+            if (n == 0) continue;
+            int sg = n > 0 ? 1 : -1;
+            if (sign != 0 && sg != sign) return UNALIGNED; // twisted: its triangles face both ways
+            sign = sg;
+        }
+        if (sign == 0) return UNALIGNED; // no area
+        plane[q] = s[axis];
+        return sign > 0 ? 1 + axis : 4 + axis;
     }
 
     /** Whether any vertex of a layer has a colour alpha other than 255 (Brimstone's vertex has no alpha byte). */

@@ -42,3 +42,34 @@ jar {
     from("NOTICE") { rename { "NOTICE_brimstone" } }
     from("LICENSE-APACHE-2.0") { rename { "LICENSE-APACHE-2.0_brimstone" } }
 }
+
+// Package 4b: the bench-only jar (brimstone-bench): /brimstone bench, its counters, the capability probe and the
+// scenes, and none of Brimstone's modules, so it runs on plain Fabric or next to Sodium and measures them the same way.
+// Built from the same classes as the full jar; its own mod id and mixin config name, so it can never be mistaken for
+// Brimstone (and it declares that it breaks Brimstone: only one of the two belongs in an instance).
+def benchClasses = [
+    'com/meakaandre/brimstone/BrimstoneClient.class',
+    'com/meakaandre/brimstone/bench/**',
+    'com/meakaandre/brimstone/probe/**',
+    'com/meakaandre/brimstone/gui/**',
+    'com/meakaandre/brimstone/mixin/counters/**',
+    'brimstone/scenes/**',
+]
+def benchJar = tasks.register("benchJar", Jar) {
+    archiveBaseName = "brimstone-bench"
+    dependsOn tasks.named("classes")
+    from(sourceSets.main.output) { include benchClasses }
+    from("src/main/resources") {
+        include "brimstone.counters.mixins.json"
+        rename { "brimstone_bench.counters.mixins.json" }
+    }
+    def version = project.version
+    inputs.property "version", version
+    from("src/bench") {
+        include "fabric.mod.json"
+        expand "version": version
+    }
+    from("LICENSE") { rename { "LICENSE_brimstone_bench" } }
+    from("COPYING") { rename { "COPYING_brimstone_bench" } }
+}
+tasks.named("assemble") { dependsOn benchJar }

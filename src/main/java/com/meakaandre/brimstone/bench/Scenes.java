@@ -83,7 +83,8 @@ public final class Scenes {
     public static synchronized List<Suite> suites() {
         if (loaded == null) {
             List<Suite> out = new ArrayList<>();
-            Path dir = FabricLoader.getInstance().getModContainer("brimstone").flatMap(m -> m.findPath("brimstone/scenes")).orElse(null);
+            Path dir = FabricLoader.getInstance().getModContainer(BenchModules.jar.equals("brimstone") ? "brimstone" : "brimstone_bench")
+                .flatMap(m -> m.findPath("brimstone/scenes")).orElse(null);
             if (dir != null) {
                 try (Stream<Path> files = Files.list(dir)) {
                     for (Path p : files.filter(f -> f.toString().endsWith(".json")).sorted().toList()) {

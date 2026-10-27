@@ -317,7 +317,8 @@ public final class Terrain {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;
             }
-            CompactVertex.Converted split = CompactVertex.convert(vertices, CompactVertex.sectionIndex(x, y, z));
+            // solid and cutout: quads grouped by facing, so groups facing away from the camera can be left out (package 4b)
+            CompactVertex.Converted split = CompactVertex.convert(vertices, CompactVertex.sectionIndex(x, y, z), true);
             if (split == null) {
                 TerrainStats.LAYERS_KEPT_BY_VANILLA.incrementAndGet();
                 return false;

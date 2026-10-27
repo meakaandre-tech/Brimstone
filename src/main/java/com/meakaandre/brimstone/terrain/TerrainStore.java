@@ -128,12 +128,15 @@ public final class TerrainStore {
         final TlsfAllocator.Allocation allocation;
         final int baseVertex;
         final int vertices;
+        /** Solid and cutout: the layer's quads grouped by facing (package 4b); null for translucent. */
+        final CompactVertex.Faces faces;
 
-        Part(Arena arena, TlsfAllocator.Allocation allocation, int vertices) {
+        Part(Arena arena, TlsfAllocator.Allocation allocation, int vertices, CompactVertex.Faces faces) {
             this.arena = arena;
             this.allocation = allocation;
             this.baseVertex = (int) (allocation.getOffsetFromHeap() / CompactVertex.BYTES);
             this.vertices = vertices;
+            this.faces = faces;
         }
 
         int indexCount() {
@@ -194,6 +197,11 @@ public final class TerrainStore {
 
         boolean indicesOnly() {
             return split == null;
+        }
+
+        /** Bytes this copies into an arena (vertices and index list). */
+        long bytes() {
+            return (split == null ? 0 : split.data().remaining()) + (indices == null ? 0 : indices.remaining());
         }
     }
 
@@ -310,7 +318,8 @@ public final class TerrainStore {
     }
 
     /** A solid or cutout layer: into the region's arena for that layer, another arena of that layer, or a new one. */
-    private static Part allocate(GpuDevice device, CommandEncoder encoder, Region region, int layer, ByteBuffer data, int vertices) {
+    private static Part allocate(GpuDevice device, CommandEncoder encoder, Region region, int layer, ByteBuffer data, int vertices,
+                                 CompactVertex.Faces faces) {
         int stride = CompactVertex.BYTES;
         int bytes = data.remaining();
         Arena pref = region.preferred[layer];
@@ -332,7 +341,7 @@ public final class TerrainStore {
             if (a == null) throw new IllegalStateException("a fresh terrain arena refused " + bytes + " bytes");
         }
         if (pref == null || pref.closed || region.live <= 1) region.preferred[layer] = arena;
-        return write(encoder, arena, a, data, vertices);
+        return write(encoder, arena, a, data, vertices, faces);
     }
 
     private static Arena newArena(GpuDevice device, int layer) {
@@ -341,7 +350,8 @@ public final class TerrainStore {
         return arena;
     }
 
-    private static Part write(CommandEncoder encoder, Arena arena, TlsfAllocator.Allocation a, ByteBuffer data, int vertices) {
+    private static Part write(CommandEncoder encoder, Arena arena, TlsfAllocator.Allocation a, ByteBuffer data, int vertices,
+                              CompactVertex.Faces faces) {
         try {
             arena.ensure(encoder, a.getOffsetFromHeap() + a.getSize());
             encoder.writeToBuffer(arena.buffer.slice(a.getOffsetFromHeap(), data.remaining()), data);
@@ -350,7 +360,7 @@ public final class TerrainStore {
             throw t;
         }
         arena.used += a.getSize();
-        return new Part(arena, a, vertices);
+        return new Part(arena, a, vertices, faces);
     }
 
     /**
@@ -376,7 +386,7 @@ public final class TerrainStore {
                 }
                 Part p;
                 try {
-                    p = write(encoder, arena, va, vertices, vertexCount);
+                    p = write(encoder, arena, va, vertices, vertexCount, null);
                 } catch (Throwable t) {
                     arena.allocator.free(ia);
                     throw t;
@@ -397,67 +407,169 @@ public final class TerrainStore {
         throw new IllegalStateException("a fresh terrain arena refused a translucent layer of " + (vbytes + ibytes) + " bytes");
     }
 
-    /** Render thread, end of frame (inside vanilla's terrain upload): copies staged meshes into the arenas. */
+    /**
+     * Render thread, end of frame (inside vanilla's terrain upload): copies staged meshes into the arenas, under the
+     * frame's upload budget ({@link UploadBudget}, package 4b): meshes in priority order until the budget is spent;
+     * the rest stay staged for the next frame, in their staging order. New index lists for translucent layers already
+     * in are written at once.
+     */
     static void upload() {
         synchronized (LOCK) {
-            if (STAGED.isEmpty()) return;
-            List<Staged> done = new ArrayList<>(STAGED);
+            UploadBudget.tick();
+            if (STAGED.isEmpty()) {
+                UploadBudget.frame(0, 0, 0, 0, UploadBudget.bytes(), 0);
+                return;
+            }
+            long t0 = System.nanoTime();
+            List<Staged> all = new ArrayList<>(STAGED);
             STAGED.clear();
-            int next = 0;
+            // one group per mesh: its layers, then its new index lists, in staging order; index lists for meshes
+            // already in go at once
+            Map<CompiledSectionMesh, List<Staged>> byMesh = new IdentityHashMap<>();
+            List<List<Staged>> groups = new ArrayList<>();
+            List<Staged> loose = new ArrayList<>();
+            for (Staged s : all) {
+                List<Staged> g = byMesh.get(s.mesh);
+                if (g == null) {
+                    if (s.indicesOnly()) {
+                        loose.add(s);
+                        continue;
+                    }
+                    g = new ArrayList<>(2);
+                    byMesh.put(s.mesh, g);
+                    groups.add(g);
+                }
+                g.add(s);
+            }
+            int n = groups.size();
+            double[] key = new double[n];
+            Integer[] order = new Integer[n];
+            for (int i = 0; i < n; i++) {
+                Staged f = groups.get(i).get(0);
+                key[i] = UploadBudget.priority(f.x, f.y, f.z);
+                order[i] = i;
+            }
+            Arrays.sort(order, (a, b) -> Double.compare(key[a], key[b])); // stable: staging order on ties
+            long budget = UploadBudget.bytes(), time = UploadBudget.nanos();
+            List<Staged> done = new ArrayList<>(all.size());
+            Set<Staged> left = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+            Set<Staged> processed = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+            long bytes = 0;
+            int meshes = 0, exempt = 0;
+            boolean tookOne = false;
+            Staged current = null;
             try {
                 GpuDevice device = RenderSystem.getDevice();
                 CommandEncoder encoder = device.createCommandEncoder();
-                for (; next < done.size(); next++) {
-                    Staged s = done.get(next);
-                    if (s.indicesOnly()) {
-                        rewriteIndices(device, encoder, s);
-                        s.free();
-                        continue;
-                    }
-                    long key = regionKey(s.x, s.y, s.z);
-                    Region region = REGIONS.get(key);
-                    if (region == null) {
-                        region = new Region(key, s.x & ~127, s.y & ~63, s.z & ~127);
-                        REGIONS.put(key, region);
-                    }
-                    Entry e = new Entry(region, CompactVertex.sectionIndex(s.x, s.y, s.z), s.x, s.y, s.z);
-                    region.live++;
-                    Entry[] es = ENTRIES.computeIfAbsent(s.mesh, k -> new Entry[LAYERS]);
-                    int li = layerIndex(s.layer);
-                    if (es[li] != null) free(es[li]);
-                    es[li] = e;
-                    ByteBuffer v = s.split.data();
-                    int count = s.split.vertices();
-                    if (s.indices != null) {
-                        allocateTranslucent(device, encoder, region, e, v, count, s.indices, s.indexType, s.indexCount);
-                        e.sorted = s.sorted;
-                    } else {
-                        e.part = allocate(device, encoder, region, li, v, count);
-                    }
-                    liveVertices += count;
+                for (Staged s : loose) {
+                    current = s;
+                    bytes += s.bytes();
+                    rewriteIndices(device, encoder, s);
                     s.free();
+                    processed.add(s);
+                    current = null;
                 }
-            } finally {
-                // whatever wasn't copied (an exception part-way) is freed, never leaked
-                for (int i = next; i < done.size(); i++) done.get(i).free();
-            }
-            // vanilla's own "uploaded" callback, which swaps the section's new mesh in once all its layers are there
-            // and releases the old one (that re-enters this lock on this thread). A mesh vanilla let go of meanwhile
-            // (a cancelled task) gets no callback, as vanilla skips its own uploads for it. A new index list only
-            // replaces the one a live mesh already has: vanilla's own callback for it changes nothing then.
-            for (Staged s : done) {
-                if (s.indicesOnly()) continue;
-                Entry[] es = ENTRIES.get(s.mesh);
-                if (es == null || es[layerIndex(s.layer)] == null) continue;
-                RenderSectionInvoker section = (RenderSectionInvoker) s.section;
-                if (s.section.getSectionMesh().getCompileTaskStartTime() > s.mesh.getCompileTaskStartTime()) {
-                    // a newer mesh of this section is already in: this one must not replace it, it just goes
-                    section.brimstone$releaseSectionMesh(s.mesh);
-                    continue;
+                for (int k = 0; k < n; k++) {
+                    List<Staged> g = groups.get(order[k]);
+                    Staged f = g.get(0);
+                    boolean camera = UploadBudget.exempt(f.x, f.y, f.z);
+                    long gb = 0;
+                    for (Staged s : g) gb += s.bytes();
+                    if (!camera && tookOne && (bytes + gb > budget || System.nanoTime() - t0 > time)) {
+                        // over this frame's budget: this mesh and every later one wait (camera sections come first)
+                        for (int r = k; r < n; r++) left.addAll(groups.get(order[r]));
+                        break;
+                    }
+                    for (Staged s : g) {
+                        current = s;
+                        if (s.indicesOnly()) {
+                            rewriteIndices(device, encoder, s);
+                        } else {
+                            copyIn(device, encoder, s);
+                            done.add(s);
+                        }
+                        s.free();
+                        processed.add(s);
+                        current = null;
+                    }
+                    bytes += gb;
+                    meshes++;
+                    if (camera) exempt++;
+                    else tookOne = true;
                 }
-                section.brimstone$vertexBufferUploaded(s.mesh, s.layer);
+            } catch (Throwable t) {
+                // the item that failed is freed (its allocations were released where they failed); everything not yet
+                // copied goes back to the staged list, so the module's hand-back completes it through vanilla's callback
+                if (current != null) current.free();
+                for (Staged s : all) {
+                    if (s != current && !processed.contains(s)) left.add(s);
+                }
+                for (Staged s : all) if (left.contains(s)) STAGED.add(s);
+                // the layers fully copied in are complete: vanilla's callback for them, as on success
+                try {
+                    uploaded(done);
+                } catch (Throwable u) {
+                    t.addSuppressed(u);
+                }
+                throw t;
             }
+            // what waits goes back in staging order (new meshes staged later come after it)
+            for (Staged s : all) if (left.contains(s)) STAGED.add(s);
+            UploadBudget.frame(bytes, meshes, exempt, groupsWaiting(), budget, System.nanoTime() - t0);
+            uploaded(done);
         }
+    }
+
+    /**
+     * Vanilla's own "uploaded" callback for each layer copied in, which swaps the section's new mesh in once all its
+     * layers are there and releases the old one (that re-enters the lock on this thread). A mesh vanilla let go of
+     * meanwhile (a cancelled task) gets no callback, as vanilla skips its own uploads for it.
+     */
+    private static void uploaded(List<Staged> done) {
+        for (Staged s : done) {
+            Entry[] es = ENTRIES.get(s.mesh);
+            if (es == null || es[layerIndex(s.layer)] == null) continue;
+            RenderSectionInvoker section = (RenderSectionInvoker) s.section;
+            if (s.section.getSectionMesh().getCompileTaskStartTime() > s.mesh.getCompileTaskStartTime()) {
+                // a newer mesh of this section is already in: this one must not replace it, it just goes
+                section.brimstone$releaseSectionMesh(s.mesh);
+                continue;
+            }
+            section.brimstone$vertexBufferUploaded(s.mesh, s.layer);
+        }
+    }
+
+    /** Meshes still staged (under the lock). */
+    private static int groupsWaiting() {
+        if (STAGED.isEmpty()) return 0;
+        Set<CompiledSectionMesh> meshes = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Staged s : STAGED) if (!s.indicesOnly()) meshes.add(s.mesh);
+        return meshes.size();
+    }
+
+    /** One staged layer into the arenas (under the lock, render thread). */
+    private static void copyIn(GpuDevice device, CommandEncoder encoder, Staged s) {
+        long key = regionKey(s.x, s.y, s.z);
+        Region region = REGIONS.get(key);
+        if (region == null) {
+            region = new Region(key, s.x & ~127, s.y & ~63, s.z & ~127);
+            REGIONS.put(key, region);
+        }
+        Entry e = new Entry(region, CompactVertex.sectionIndex(s.x, s.y, s.z), s.x, s.y, s.z);
+        region.live++;
+        Entry[] es = ENTRIES.computeIfAbsent(s.mesh, k -> new Entry[LAYERS]);
+        int li = layerIndex(s.layer);
+        if (es[li] != null) free(es[li]);
+        es[li] = e;
+        ByteBuffer v = s.split.data();
+        int count = s.split.vertices();
+        if (s.indices != null) {
+            allocateTranslucent(device, encoder, region, e, v, count, s.indices, s.indexType, s.indexCount);
+            e.sorted = s.sorted;
+        } else {
+            e.part = allocate(device, encoder, region, layerIndex(s.layer), v, count, s.split.faces());
+        }
+        liveVertices += count;
     }
 
     /** A new index list for a translucent layer Brimstone holds: written over the old one (same size), in its place. */

@@ -144,6 +144,10 @@ public final class TerrainRenderer {
 
     // this frame
     private static Path path;
+    /** Whether this frame leaves out facing groups that face away from the camera (package 4b). */
+    private static boolean skipBackFaces;
+    /** One layer's index ranges ({@link BackFaces#ranges}): quad counts and first quads; render thread only. */
+    private static final int[] RANGE_COUNT = new int[CompactVertex.GROUPS], RANGE_FIRST = new int[CompactVertex.GROUPS];
     /** This frame's translucent draws, in vanilla's order, and whether vanilla sorts translucent this frame. */
     private static final List<TRun> TRUNS = new ArrayList<>();
     private static boolean sortTranslucent;
@@ -187,6 +191,11 @@ public final class TerrainRenderer {
         if (f.multiDrawDirectSeparate()) return Path.PLAIN_SEPARATE;
         if (f.multiDrawDirectInterleaved() && info.limits().maxMultiDrawDirectInterleavedDrawCount() > 1) return Path.PLAIN_INTERLEAVED;
         return Path.PLAIN_SINGLE;
+    }
+
+    /** The camera position of the frame being extracted (render thread); see {@link BackFaces}. */
+    public static void camera(double x, double y, double z) {
+        BackFaces.camera(x, y, z);
     }
 
     static String plainPathName() {
@@ -251,6 +260,8 @@ public final class TerrainRenderer {
         long now = Util.getMillis();
         long fadeMs = Util.toMillis(fadeSeconds);
         List<TerrainStore.Region> touched = new ArrayList<>();
+        skipBackFaces = BackFaces.beginFrame(TerrainPipelines.pipeline(plain, false), TerrainPipelines.pipeline(plain, true));
+        UploadBudget.frameVisible(visible);
 
         boolean audit = GpuCounters.enabled;
         int audited = 0;
@@ -286,22 +297,32 @@ public final class TerrainRenderer {
                         TerrainStore.Part part = e.part;
                         if (part == null) continue;
                         ArenaDraws ad = arenaDraws(li, part.arena);
-                        int count = part.indexCount();
-                        maxIndexCount = Math.max(maxIndexCount, count);
+                        int whole = part.indexCount();
+                        maxIndexCount = Math.max(maxIndexCount, whole);
+                        // the layer's quads as index ranges: the facing groups that may face the camera (package 4b)
+                        int ranges = BackFaces.ranges(part, e, skipBackFaces, path == Path.PLAIN_SINGLE, RANGE_COUNT, RANGE_FIRST);
+                        int drawn = 0;
+                        RegionDraw rd = null;
                         if (plain) {
-                            RegionDraw rd = ad.byRegion.get(e.region);
+                            rd = ad.byRegion.get(e.region);
                             if (rd == null) {
                                 rd = new RegionDraw(e.region);
                                 ad.byRegion.put(e.region, rd);
                                 ad.regions.add(rd);
                             }
-                            rd.add(count, part.baseVertex);
-                        } else {
-                            ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, part.baseVertex, instance));
                         }
+                        for (int r = 0; r < ranges; r++) {
+                            int count = RANGE_COUNT[r] * 6;
+                            int base = part.baseVertex + RANGE_FIRST[r] * 4;
+                            drawn += count;
+                            if (plain) rd.add(count, base);
+                            else ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, base, instance));
+                        }
+                        if (audit) TerrainStats.layerTriangles(drawn / 3, whole / 3, ranges);
                     }
                 }
                 if (tl != null && tl.index != null && mesh instanceof CompiledSectionMesh cm) {
+                    if (audit && tl.part != null) TerrainStats.layerTriangles(tl.index.count / 3, tl.index.count / 3, 1);
                     TL_ENTRIES.add(tl);
                     TL_MESHES.add(cm);
                     TL_INSTANCES.add(instance);

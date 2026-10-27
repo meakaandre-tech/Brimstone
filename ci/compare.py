@@ -145,6 +145,15 @@ def bench_results(run_dir):
             "gui": j.get("gui"),
             "frames": j["fps"]["frames"],
             "fps": j["fps"].get("average"),
+            # package 4b
+            "backFaces": j.get("backFaces"),
+            "uploadBudget": j.get("uploadBudget"),
+            "maxUploadBytes": g["uploadBytesPerFrame"].get("max"),
+            "over50ms": j["frameTime"].get("over50ms"),
+            "p99ms": j["frameTime"].get("p99ms"),
+            "jar": j.get("jar", "brimstone"),
+            "counters": j.get("counters"),
+            "mods": (j.get("mods") or {}).get("list", []),
         }
     return out
 
@@ -183,6 +192,53 @@ def logs(run_dir):
     for f in sorted(glob.glob(os.path.join(run_dir, "client-*.log"))):
         text += open(f, errors="replace").read()
     return text
+
+
+BENCH_ONLY = ("bench-plain", "bench-sodium")
+BENCH_ONLY_SCENES = ("spawn", "flythrough", "water_glass", "nether")
+
+
+def bench_only(res, failures, lines):
+    """Package 4b: the bench-only jar (brimstone-bench) on plain Fabric and next to Sodium (full mode, core suite): it
+    loads, benches its scenes with every counter applied, carries no Brimstone module, and Sodium is really there."""
+    if QUICK:
+        return
+    lines.append("## Bench-only jar (brimstone-bench)\n")
+    lines.append("| run | scene | fps avg | frame time p99 ms | frames over 50 ms | draw calls/frame (median) | largest upload bytes in one frame | counters missing |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for r in BENCH_ONLY:
+        d = os.path.join(res, f"core-{r}")
+        if not os.path.isdir(d):
+            failures.append(f"core/{r}: run produced no results")
+            continue
+        t = logs(d)
+        if "Brimstone bench-only jar" not in t:
+            failures.append(f"core/{r}: the bench-only jar did not start (no 'Brimstone bench-only jar' line)")
+        if re.search(r"Brimstone (terrain|visibility|animation|renderer|block renderer)[: ]", t):
+            failures.append(f"core/{r}: a Brimstone module logged in a bench-only run")
+        got = bench_results(d)
+        for sid in BENCH_ONLY_SCENES:
+            c = got.get(sid)
+            if c is None:
+                failures.append(f"core/{r}: no bench result for {sid}")
+                continue
+            miss = (c.get("counters") or {}).get("missing")
+            if c.get("jar") != "brimstone-bench":
+                failures.append(f"core/{r}/{sid}: bench written by {c.get('jar')}, not the bench-only jar")
+            if c.get("terrain") is not None or c.get("visibility") is not None or c.get("animation") is not None:
+                failures.append(f"core/{r}/{sid}: a Brimstone module reported in the bench-only jar")
+            if miss is None or miss:
+                failures.append(f"core/{r}/{sid}: counters that did not apply: {miss}")
+            if c.get("frames", 0) == 0:
+                failures.append(f"core/{r}/{sid}: measured no frames")
+            mods = c.get("mods") or []
+            has_sodium = any(m.startswith("sodium@") for m in mods)
+            if (r == "bench-sodium") != has_sodium:
+                failures.append(f"core/{r}/{sid}: Sodium {'missing' if r == 'bench-sodium' else 'loaded'} (mods: {len(mods)})")
+            if any(m.startswith("brimstone@") for m in mods):
+                failures.append(f"core/{r}/{sid}: Brimstone itself is loaded next to the bench-only jar")
+            lines.append(f"| {r} | {sid} | {c.get('fps')} | {c.get('p99ms')} | {c.get('over50ms')} | {c.get('drawCallsPerFrameMedian')} | {c.get('maxUploadBytes')} | {miss} |")
+    lines.append("")
 
 
 def main():
@@ -388,6 +444,18 @@ def main():
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Brimstone's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
                             elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
+                            # package 4b: facing groups that face away from the camera are left out in every scene (fewer triangles
+                            # than drawing every layer whole), and terrain uploads go through the budget
+                            bf, ub = bj.get("backFaces"), bj.get("uploadBudget")
+                            if bf is None or ub is None:
+                                failures.append(f"{name}/{r}: bench {bj['scene']} has no backFaces or uploadBudget report")
+                            else:
+                                if bf.get("state") != "on":
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: back faces drawn ({bf.get('reason')})")
+                                elif not (bf.get("trianglesPerFrame", 0) < bf.get("trianglesAllFacesPerFrame", 0)):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: triangles per frame not down ({bf.get('trianglesPerFrame')} of {bf.get('trianglesAllFacesPerFrame')} with every face)")
+                                if ub.get("state") != "on" or not ub.get("cameraKnown"):
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: upload budget {ub.get('state')}, camera known {ub.get('cameraKnown')}")
                             an = bj.get("animation")
                             if an is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no animation report")
@@ -620,6 +688,24 @@ def main():
                 lines.append("")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
+            # package 4b: triangles drawn against every face, and the upload spike against vanilla in the same run
+            van4b = bench_results(runs[MEASURE[prof]]) if not QUICK else {}
+            lines.append("")
+            lines.append(f"Package 4b, {name} {prof}: Brimstone's terrain triangles per frame (with every face, as before 4b), and the"
+                         " largest upload bytes in one frame (all of the frame's uploads), frames over 50 ms and sections waiting"
+                         + ("" if QUICK else f"; vanilla from {MEASURE[prof]}") + ":\n")
+            lines.append("| scene | triangles/frame (every face) | left out % | ranges per section layer | largest upload bytes in one frame: Brimstone"
+                         + ("" if QUICK else " / vanilla") + " | Brimstone terrain bytes, largest frame (budget avg) | frames over 50 ms: Brimstone"
+                         + ("" if QUICK else " / vanilla") + " | sections waiting avg / max |")
+            lines.append("|---|---|---|---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None:
+                    continue
+                bf, ub, vc = c.get("backFaces") or {}, c.get("uploadBudget") or {}, van4b.get(sc["id"]) or {}
+                lines.append(f"| {sc['id']} | {bf.get('trianglesPerFrame')} ({bf.get('trianglesAllFacesPerFrame')}) | {bf.get('trianglesLeftOutPct')} | {bf.get('rangesPerSectionLayer')} | "
+                             f"{c.get('maxUploadBytes')}{'' if QUICK else ' / ' + str(vc.get('maxUploadBytes'))} | {ub.get('maxBytesInOneFrame')} ({ub.get('budgetBytesPerFrame')}) | "
+                             f"{c.get('over50ms')}{'' if QUICK else ' / ' + str(vc.get('over50ms'))} | {ub.get('sectionsWaitingAvg')} / {ub.get('sectionsWaitingMax')} |")
             lines.append("")
             lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
             lines.append("| scene | path | Brimstone draws/frame | section layers/frame | bytes per vertex | live vertices | % vertices with a position / UV rounded | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
@@ -685,6 +771,7 @@ def main():
                 lines.append(f"| {sc['id']} | {cell('drawCallsPerFrame')} | {cell('prepareDrawCallsPerFrame')} | {cell('elementsPerFrame')} | {cell('statesPerFrame')} (pipelines {g.get('pipelinesPerFrame')}, textures {g.get('textureSetupsPerFrame')}, scissors {g.get('scissorAreasPerFrame')}) | {cell('reorderedDrawsPerFrame')} ({cell('reorderedIgnoringTextPerFrame')}) |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
+    bench_only(res, failures, lines)
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
     json.dump({"failures": failures, "suites": data}, open(os.path.join(rep, "report.json"), "w"), indent=2)
     print("\n".join(lines))

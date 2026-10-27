@@ -23,10 +23,7 @@ public final class FrameRecorder {
     }
 
     static void start() {
-        com.meakaandre.brimstone.terrain.TerrainStats.startWindow();
-        com.meakaandre.brimstone.visibility.VisibilityStats.startWindow();
-        com.meakaandre.brimstone.terrain.TranslucencyStats.startWindow();
-        com.meakaandre.brimstone.animation.Animation.startWindow();
+        for (BenchModules.Section sec : BenchModules.all()) sec.startWindow();
         EffectsStats.startWindow();
         com.meakaandre.brimstone.gui.GuiStats.startWindow();
         FRAME_NANOS.clear();
