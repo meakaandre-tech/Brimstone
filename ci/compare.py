@@ -211,6 +211,11 @@ def main():
             t = logs(d)
             if os.path.isdir(d) and "brimstone_ci_pin" not in t:
                 failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift, the particle and animation areas, banner sway) is not among the loaded mods")
+            # the animation scenes test animation only if the pin really ran its fixed number of texture ticks there
+            # (fix-animation-flake: a pin mixin that did not apply left them on frame 0 and still passed)
+            if os.path.isdir(d) and any(s["id"] == "animation" and not s.get("skip") for s in scenes) \
+                    and "texture ticks of animation done" not in t:
+                failures.append(f"{name}/{r}: the animation pin never ran its texture ticks (no 'texture ticks of animation done' line in the client log)")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
             probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)

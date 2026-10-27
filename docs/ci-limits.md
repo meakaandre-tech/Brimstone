@@ -674,7 +674,7 @@ Both scenes are made the same in every run, vanilla and Brimstone alike, by the 
 docs/progress.md, package 8): in the particle scene's area particles take their random numbers from where and what
 they are, are not ticked and are drawn at partial tick 0 while the player is there, and are removed when the player
 leaves; in the animation scene's area every animated texture starts again from frame 0 when the player enters, runs
-exactly 70 ticks and is held. Vanilla's runs agree exactly on both (vanilla b/a 0 strict pixels in every run), so the
+exactly 70 texture ticks and is held (counted per texture tick since the animation flake fix, see below). Vanilla's runs agree exactly on both (vanilla b/a 0 strict pixels in every run), so the
 limits are the rules' floors.
 
 | scene / shot | runs | samples (8/255 %: vanilla a/b, Brimstone; strict: vanilla b/a, Brimstone, measure runs) | limit % | strict limit |
@@ -723,6 +723,18 @@ profiles' baselines were already 8.24 and 8.29.
 to 718 strict pixels (vanilla's measure run on Vulkan, run 40463682395, limit 600). CI's pin mod now holds the wings
 at rest in every run, vanilla and Brimstone alike; with it every mobs sample is 0 (run 40471457759). The limit (600)
 can come down to the rule's floor after three runs with the pin, so a chicken (about 480 px) is caught.
+
+### The animation pin's flake (main's run 40487515684) and its fix
+
+Main's full run 40487515684 failed core/animation, animation.front (2,573 strict pixels) and animation.behind (450)
+in two measure runs (measure-full, measure-old), every difference at most 8/255: an interpolated animation one blend
+step off. Cause: the pin counted its 70-tick run in client ticks, but the game ticks its textures once per frame that
+runs at least one client tick (`Minecraft.runTick`: one `TextureManager.tick` before the frame's client ticks), so a
+run whose frames fell behind (catching up two client ticks in one frame) advanced its textures fewer times. The pin
+now decides run and hold at the start of each texture tick and counts 70 texture ticks; its log line gives the client
+ticks they took. Not noise: no limit changed. compare.py now also fails a run whose client log lacks the pin's "texture
+ticks of animation done" line (the fix's first run, 40496751536, passed with the new mixin missing from the pin's
+config: animation never ran, the scenes showed frame 0 in every run alike).
 
 ## Counter audit
 
