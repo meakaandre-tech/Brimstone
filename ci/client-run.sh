@@ -145,9 +145,15 @@ for g in $groups; do
   rd=${g%%|*}; rest=${g#*|}; opts=${rest%%|*}; ids=$(echo "${rest#*|}" | tr ',' ' ')
   # clouds off: their position follows elapsed game time, which differs between runs, so they would only add noise
   # no version line: the file is datafixed from the oldest layout, where key codes are LWJGL2 numbers (22 = U)
+  # glintSpeed 0 (package 7): the enchantment glint's texture offset follows the wall clock, so a glinting item (the MAM's
+  # selected tab) was caught in a different phase in every run; at speed 0 it is still drawn, but holds still
+  # menuBackgroundBlurriness 0 (package 7): the menu blur behind screens such as Create's Ponder index came out
+  # differently on Vulkan than on OpenGL (433,000 pixels apart), which left the strict check blind on 63% of that screen
+  # chatHeightFocused 0.25 (package 7): the open chat shows its last 6 lines only, so the SIFTEC hud scene's chat shows
+  # its own lines and not the bench messages earlier scenes leave in Brimstone runs
   # glDebugVerbosity 1 (the game's default, set explicitly): the GPU's high-severity debug messages, errors among them,
   # go to the log in every run alike; ci/compare.py compares their counts between Brimstone and vanilla
-  printf 'pauseOnLostFocus:false\nglDebugVerbosity:1\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nkey_key.use:22\n' "$rd" > run/options.txt
+  printf 'pauseOnLostFocus:false\nglDebugVerbosity:1\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nglintSpeed:0.0\nmenuBackgroundBlurriness:0\nchatHeightFocused:0.25\nkey_key.use:22\n' "$rd" > run/options.txt
   # package 4: "brimstoneConfig" entries (brimstone.<key>=<value>) go to Brimstone's config file, the rest to options.txt
   mkdir -p run/config; rm -f run/config/brimstone.properties
   if [ "$opts" != "-" ]; then
@@ -162,8 +168,11 @@ for g in $groups; do
   rm -f run/logs/latest.log
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)
+  # --username (package 7): the dev launcher otherwise names the player Player<random digits>, and the offline UUID
+  # made from the name picks the default skin, so the first-person arm and SIFTEC's company name ("<player>'s
+  # Company" on the HUB and MAM screens) differed between runs; one fixed name in every run
   (env -u CI JAVA_TOOL_OPTIONS="${client_jvm# }" timeout 2400 ./gradlew runClient --no-daemon -Dorg.gradle.console=plain -x compileJava -x processResources -x classes \
-     --args="--quickPlayMultiplayer localhost --width 1280 --height 720 $extra_args" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
+     --args="--quickPlayMultiplayer localhost --width 1280 --height 720 --username BrimstoneCI $extra_args" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
   for i in $(seq 1 150); do
     now=$(grep -c 'joined the game' server/server.log)
     if [ "$now" -gt "$before" ] || grep -q '^EXIT' "$OUT/client-gradle-$n.log"; then break; fi

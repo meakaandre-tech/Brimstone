@@ -59,7 +59,7 @@ PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "
 VANILLA_RUNS = ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk")
 SUITES = None  # every suite
 # scenes allowed to opt out of the strict gate ("ciNoStrict"), each by a decision recorded in docs/ci-limits.md
-NO_STRICT_ALLOWED = {"siftec/map"}
+NO_STRICT_ALLOWED = set()  # siftec/map was the only one; strict-gated since package 7
 RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "brimstone-full", "brimstone-old", "brimstone-vk",
         "measure-full", "measure-old", "measure-vk"]
 # per profile, the run that measures vanilla's own counts (Brimstone loaded, every module off; package 3)
@@ -142,6 +142,7 @@ def bench_results(run_dir):
             "terrainGpu": j.get("terrainGpu"),
             "effects": j.get("effects"),
             "animation": j.get("animation"),
+            "gui": j.get("gui"),
             "frames": j["fps"]["frames"],
             "fps": j["fps"].get("average"),
         }
@@ -661,6 +662,22 @@ def main():
                 d, p = e.get("drawCallsPerFrame", {}), e.get("particles", {})
                 both = lambda k: f"{ve.get(k, '-')} / {d.get(k)}"
                 lines.append(f"| {sc['id']} | {both('animation')} | {both('particles')} | {both('sky')} | {both('weather')} | {both('clouds')} | {p.get('aliveAvg')} / {p.get('drawnPerFrame')} | {p.get('tickMsPerTick')} / {p.get('extractMsPerFrame')} | {a.get('sprites')} ({a.get('usedOutsideTerrain')}) | {a.get('changedPerTick')} / {a.get('redrawnPerTick')} / {a.get('skippedPerTick')} | {a.get('catchUps')} / {a.get('late')} | {a.get('seenPerFrame')} |")
+            lines.append("")
+            # package 7: the game's GUI pass, Brimstone's run and vanilla's (the measure run) side by side (reported)
+            van_gui = {} if QUICK else bench_results(runs[MEASURE[prof]])
+            lines.append(f"GUI pass, {name} {prof} (package 7, reported): draw calls/frame of the game's GUI pass (preparation: item atlas,"
+                         " picture-in-picture), elements, distinct states (fewest possible draws), draws if reordered without changing"
+                         " the picture (text counted as overlapping everything; in brackets as overlapping nothing, an upper bound);"
+                         " Brimstone / vanilla (measure run):\n")
+            lines.append("| scene | GUI draws/frame | preparation draws/frame | elements/frame | states/frame | reordered draws/frame |")
+            lines.append("|---|---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None or not c.get("gui"):
+                    continue
+                g, vg = c["gui"], ((van_gui.get(sc["id"]) or {}).get("gui") or {})
+                cell = lambda k: f"{g.get(k)} / {vg.get(k, '-')}"
+                lines.append(f"| {sc['id']} | {cell('drawCallsPerFrame')} | {cell('prepareDrawCallsPerFrame')} | {cell('elementsPerFrame')} | {cell('statesPerFrame')} (pipelines {g.get('pipelinesPerFrame')}, textures {g.get('textureSetupsPerFrame')}, scissors {g.get('scissorAreasPerFrame')}) | {cell('reorderedDrawsPerFrame')} ({cell('reorderedIgnoringTextPerFrame')}) |")
             lines.append("")
     lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")

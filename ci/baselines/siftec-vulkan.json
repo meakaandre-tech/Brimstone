@@ -36,6 +36,18 @@
     "uploadBytesPerFrame": 67484,
     "uploadsPerFrame": 18
   },
+  "hud": {
+    "directBuffersMB": 8.16,
+    "drawCallsPerFrame": 31.0,
+    "heapUsedAfterGcMB": 490.43,
+    "runs": [
+      40444035980,
+      40450860976,
+      40454752063
+    ],
+    "uploadBytesPerFrame": 72908,
+    "uploadsPerFrame": 16
+  },
   "mam": {
     "directBuffersMB": 5.46,
     "drawCallsPerFrame": 171.53,
@@ -55,6 +67,18 @@
       "40156711337 attempts 1 and 3"
     ],
     "uploadBytesPerFrame": 47072,
+    "uploadsPerFrame": 14
+  },
+  "ponder": {
+    "directBuffersMB": 8.23,
+    "drawCallsPerFrame": 180.89,
+    "heapUsedAfterGcMB": 462.87,
+    "runs": [
+      40273668937,
+      40276630375,
+      40288414898
+    ],
+    "uploadBytesPerFrame": 52248,
     "uploadsPerFrame": 14
   },
   "sift": {

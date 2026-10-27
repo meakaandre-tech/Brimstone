@@ -41,6 +41,7 @@ public final class GpuCounters {
         if (enabled) {
             DRAWS[kind.ordinal()].increment();
             PHASE_DRAWS[phase.ordinal()].increment();
+            com.meakaandre.brimstone.gui.GuiStats.onDraw();
         }
     }
 

@@ -54,9 +54,11 @@ square of its edge in pixels at the subject's distance). Other gates that catch 
 | core/animated_items | an animated sprite outside terrain (hotbar, held block, item frame, block display, fire on a mob) showing another frame than vanilla's | the item frame's magma block (~20 px square, ~400) | 10 | yes |
 | siftec/factory | a wrongly drawn Create machine part | a machine ~4,800; one ladder strip ~320 | 500 | machine yes; one ladder strip alone **no** |
 | siftec/sift | a wrong block or light in the Sift terrain | a block face at mid distance (~24 px): ~580 | 100 | yes |
-| siftec/hub | a wrong GUI element or text line (package 7) | a line of text ~2,000 | 12,506 | **no** |
-| siftec/mam | a wrong item icon or GUI element (package 7) | one item icon (32 px): ~1,000 | 155,106 | **no** |
-| siftec/map | (not strict-gated, Andre's decision: its noise is larger than anything it could show) | | not gated | |
+| siftec/hub | a wrong GUI element or text line (package 7) | a line of text ~2,000; one glyph ~20-40 | 10 (was 12,506) | yes |
+| siftec/mam | a wrong item icon or GUI element (package 7) | one item icon (32 px): ~1,000 | 10 (was 155,106) | yes |
+| siftec/map | a wrong map pixel, icon or text (package 7) | one map pixel (12 x 12): 144; an icon (22 px): ~300 | 10 (was not gated) | yes |
+| siftec/ponder | a wrong item icon or text on Create's Ponder index (package 7) | one item icon (32 px): ~1,000 | 10 | yes |
+| core/outline (+ bare) | a missing or wrong crosshair block outline (package 7) | the outline: 2,318 pixels; one edge ~200-400 | 10 | yes |
 | siftec/hologram | a missing or wrong outline line | one outline edge ~1,200 | 413 | yes |
 | core/flat_plants (package 4) | a plant kind lit wrongly with smooth lighting off | one row of one plant kind ~1,500 or more; one flower ~150 | 350 | row yes; one flower **no** (a wrong light rule hits every plant of a kind) |
 | core/renderer_off (package 4) | a block drawn wrongly with the block renderer off | one block face (~35 px): ~1,200 | 10 | yes |
@@ -64,8 +66,8 @@ square of its edge in pixels at the subject's distance). Other gates that catch 
 | siftec/create_ct (package 4) | a wrong connected-texture border | one block's border strip (~38 px by 3): ~110 | 10 | yes |
 
 The **no** rows are limits already set (by the rule and Andre's earlier decisions) that are larger than the smallest
-thing the scene shows; they are listed for Andre, not changed. They matter most for package 7 (hub and mam are its
-GUI scenes) and should be re-collected or the scenes made quieter there.
+thing the scene shows; they are listed for Andre, not changed. Package 7 made the hub and mam scenes quiet and gave
+the map a strict gate (see "GUI scenes, the block outline and Ponder" below).
 
 ## Pixel limits (`ci/pixel-limits.json`)
 
@@ -90,9 +92,11 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | core/spawn | 12 | 4 | 5.0239 | 10.05 |
 | core/water_glass | 4, 5, 6, 7, 8, 10 | 19 | 3.2233 | 6.45 |
 | siftec/factory | 5, 6, 7 | 9 | 0.0344 | 0.3 |
-| siftec/hub | 10 | 4 | 4.36 | 8.75 |
-| siftec/mam | 4, 5, 6, 7, 10 | 16 | 4.6265 | 9.3 |
-| siftec/map | 6, 7 | 6 | 5.6602 | 11.35 |
+| siftec/hub | 10 (package 7: 40254531258, 40260765722, 40260847921) | 4 (package 7: 12, all 0) | 4.36 (package 7: 0) | 8.75 (package 7: **0.25**) |
+| siftec/mam | 4, 5, 6, 7, 10 (package 7: as hub) | 16 (package 7: 12, all 0) | 4.6265 (package 7: 0) | 9.3 (package 7: **0.25**) |
+| siftec/map | 6, 7 (package 7: as hub) | 6 (package 7: 12, all 0) | 5.6602 (package 7: 0) | 11.35 (package 7: **0.25**) |
+| siftec/ponder (package 7; its final setup) | 40273668937, 40276630375, 40288414898 | 12 | 0 | 0.25 |
+| core/outline, outline.bare (package 7) | 40254531258, 40260765722, 40260847921 (bare: 40260847921) | 12 (bare 4) | 0 | 0.25 |
 | siftec/sift | 7, 8, 10 | 10 | 0.5553 | 1.15 |
 | core/occlusion (package 2) | 40079570978 | 4 | 0.0 | 0.25 |
 | core/occlusion_move (package 2) | 40091787069 | 4 | 0.0 | 0.25 |
@@ -148,11 +152,13 @@ The core occlusion scene (package 2) was sampled in run 40079570978 with Brimsto
 (deciding and counting but hiding nothing, so Brimstone drew exactly vanilla's set): vanilla a/b and all three
 Brimstone profiles differed on 0.0% of pixels, so the rule's floor applies (0 + 0.25).
 
-The SIFTEC factory and map limits come from earlier runs; both scenes are skipped while SIFTEC's test commands are
-missing from its release (they need the `siftec_selftest` mod), so they aren't checked now.
+The SIFTEC factory and map limits come from earlier runs; both scenes were skipped while SIFTEC's test commands were
+missing from its release (they need the `siftec_selftest` mod). They run again since 2026-10-25 (see below); the map's
+limits were re-collected in package 7.
 
 Where the noise comes from: animated water and kelp (fly-through, spawn, water and glass; their animation phase
-differs per run), the HUB and MAM screens (fade-in timing). Clouds are turned off in CI's client options because
+differs per run), the HUB and MAM screens (fade-in timing, it was thought; package 7 found the player's random name
+and skin and the MAM tab's glint). Clouds are turned off in CI's client options because
 their position follows elapsed game time, which differs between runs. To keep the picture steady CI also: pins time
 and weather in each dimension (The Sift has its own clock and weather), uses mobs without random variants,
 pregenerates the SIFTEC areas the scenes look at, loads every core run from one world generated once per CI run
@@ -209,14 +215,16 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/water_glass_oit (package 3) | 23/14 | 15 (dry run) | 40 |
 | SIFTEC/hologram (package 3) | over eleven shots in run 40155387068: 221-234 / 9-22 (the largest, 234, is mostly SIFTEC's minimap); earlier 7/4 (run 40139105024), 15/10 (run 40123696828, before the pin) | 63 (dry run, eleven shots, run 40155387068) | 360 (21840 before the batch order pin; 30 from the first, under-sampled re-collection) |
 | SIFTEC/factory (strict limit from 2026-10-25) | 0/0 in most runs; **315/0** (run 40156711337 attempt 2: a vanilla-only flip, see below) | 2 (dry run); real runs 0 or 313-315 | 500 (100 from the first, single-run collection) |
-| SIFTEC/map | 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190) | 3168 (dry run) | **not gated** (`ciNoStrict`, see below) |
+| SIFTEC/map | before package 7's pins: 6960/8712, 17712/5856, 13276/6048, 8352/4028, 22532/6288 (runs 40155387068 to 40162905190); with them 0/0 in runs 40254531258, 40260765722, 40260847921 | 3168 (dry run); with the pins 0 (measure runs 0; 144 in run 40249146134's measure-old run, before mob griefing was turned off) | **10** (package 7; not gated before, `ciNoStrict`) |
 | SIFTEC/sift | with the Sift particle pin, threshold >2/255: 0/0, 0/0, 0/0 (runs 40185974374, 40187878826, 40189806229); before: 530/323, 547/723, 805/965, 793/991, 2218/3223, 2963/29, 800/40, 379/3072 (threshold 0) | 55-61 (16-byte vertex: the rounding extra, not noise) | 100 (4900 before the pin) |
-| SIFTEC/hub | 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832 | 1536 | 12500 |
-| SIFTEC/mam | 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832 | 95075 | 155100 |
+| SIFTEC/hub | before package 7's pins: 40/8030, 17/1679, 8244/40, 52/1205, 56/8, 2450/1692, 8280/36, 8276/832; with them 0/0 in runs 40249146134, 40254531258, 40260765722, 40260847921 | 1536; with the pins 0 (measure runs 0) | **10** (package 7; was 12500, then 12506) |
+| SIFTEC/mam | before package 7's pins: 40/8012, 17/1177, 6566/86, 52/1204, 56/8, 1386/49, 103392/36, 8258/832; with them 0/0 in the same four runs | 95075; with the pins 0 (measure runs 0) | **10** (package 7; was 155100, then 155106) |
 | core/flat_plants (package 4) | 0/0 in runs 40274749083, 40279156080, 40287221751 | 225 / 225 / 217 (full / old-GPU / Vulkan) in each of the three; quick run 40270542386 old-GPU 248; measure runs 0 | 350 (finer rule: 10 for the noise, plus 1.5 x the rounding extra 225, rounded up to 10) |
 | core/renderer_off (package 4) | 0/0 in the same three | 0 | 10 |
 | SIFTEC/factory_flat (package 4) | 0/0, 0/26, 0/0 (runs 40274749083, 40279156080, 40287221751) | 0 | 40 (26 x 1.5, rounded up to 10) |
 | SIFTEC/create_ct (package 4; the GUI hidden from 40279156080 on) | 0/0, 0/0 (runs 40279156080, 40287221751; the third run is the branch's final run); before: 32/167 (minimap) | 0 | 10 (floor) |
+| SIFTEC/ponder (package 7) | final setup: 0/0 in runs 40273668937, 40276630375, 40288414898 (earlier placements: 0/0) | final setup: 0 in every Brimstone and measure run of those three runs (earlier placements: 3-5 pixels of the minimap in every Brimstone and measure run, 425 and 578 once; see below) | **10** |
+| core/outline, outline.bare (package 7) | 0/0 in runs 40249146134 to 40260847921 (bare: 40260847921) | 0 (measure runs 0) | **10** |
 
 Package 3's shots use package 2's finer rule (largest sample x 1.5, rounded up to 10 pixels, at least 10). The
 smallest translucent element tested there, the single ice block in front of the stained-glass stripes, covers
@@ -262,10 +270,11 @@ Two attempts to make it steady from the client side (Andre's time box) did not: 
 were identical (run 40161774743: every run steady at once, vanilla runs still 37-44k pixels apart) and standing 60 s
 in the area before opening (run 40162905190: 35-58k apart). So, as Andre decided (fallback (b)), the map has **no
 strict gate** (`"ciNoStrict"` on the scene; compare.py reports its counts); its 8/255 limit (11.35%) stays.
-**Package 7 (GUI) must give the map real strict coverage.**
+**Package 7 (GUI) must give the map real strict coverage.** Done: see "GUI scenes, the block outline and Ponder" below.
 
-Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), the screen
-fade of SIFTEC's HUB and MAM screens (MAM shows two fade states about 95,000 pixels apart), and, in the nether until
+Where the strict noise comes from: water and lava animation phase (spawn, fly-through, water and glass), what was
+thought to be the screen fade of SIFTEC's HUB and MAM screens (MAM showed two states about 95,000 pixels apart;
+package 7 found the player's random name and skin and the MAM tab's glint, now pinned), and, in the nether until
 package 1, the lightmap's block-light flicker. The flicker is random per tick and shifts every block-lit pixel by one
 colour level, and lava lights most of the nether scene: vanilla runs disagreed with each other on up to 349,419 of
 those pixels (vanilla b against a). Since package 1, CI's lightmap pin (`ci/pin-mod`, a CI-only mod loaded in every
@@ -343,7 +352,8 @@ passes the new limits. (The agent chose the median while Andre was away; recorde
 | siftec/mam | 155100 | 4 (vulkan: 24 before, 28 after) | 575 | **155106** |
 
 Scenes not listed kept their limits (extra 0 or below: mobs, factory, every `occlusion_move` shot but `x2309`,
-`translucent_move_oit.x2414`). The map stays ungated (`ciNoStrict`).
+`translucent_move_oit.x2414`). The map stayed ungated (`ciNoStrict`) until package 7 gave it a strict limit (see "GUI scenes, the block outline and
+Ponder").
 
 **sift** (re-collected, Andre's decision): its strict noise was the Sift dimension's floating note particles
 (`the_sift:sift_note`, random places in every run, vanilla's too); mob spawning off plus sending the mobs away did not
@@ -352,6 +362,96 @@ under >2/255 with the pin, runs 40185974374, 40187878826 and 40189806229: vanill
 runs 0, so vanilla's noise is 0; Brimstone 55 / 55 / 61 (full / old-GPU / Vulkan) in each, the 16-byte vertex's
 rounding (decision 3's extra). Limit = noise + 1.5 x that extra = 91.5, rounded up to 100 pixels as for the other
 SIFTEC scenes: **100** (was 4,900). Samples in `ci/pixel-noise-samples.json`.
+
+### GUI scenes, the block outline and Ponder (package 7, 2026-10-26)
+
+**Where the hub and mam noise came from** (vanilla a against b, run 40260847921 of package 4's branch and package 7's
+first run): the dev launcher names the player `Player<random digits>`. The offline UUID made from that name picks the
+default skin, so the first-person arm in the lower right was a different skin in every run (about 40,000 pixels),
+and SIFTEC prints the name on both screens (`<player>'s Company`; a different number of digits moves the rest of the
+line). The MAM's selected tab carries an enchantment glint, whose texture offset follows the wall clock (about 450
+pixels). The "two fade states" seen earlier were these. **Pins** (`ci/client-run.sh`, every client run, vanilla and
+Brimstone alike): `--username BrimstoneCI`, `glintSpeed:0.0` (the glint is still drawn, but holds still).
+
+**The map.** Its tiles differed pixel by pixel (one map pixel is 4 x 4 blocks, 12 x 12 screen pixels): the area round
+300 -200 was generated during each run, and SIFTEC's map records a chunk's top blocks when it loads, so trees at chunk
+borders (which depend on generation order) and whatever loaded in time differed; the markers SIFTEC's test command
+places sit relative to where `spreadplayers` landed the player, a block either way. **Pins:** the CI world
+(`ci/siftec-world.sh`) pre-generates blocks 96..511 x -400..-1 (what the map shows at its scale, with room); the scene
+puts the player on the ground at 300.5 -199.5; the CI world has random ticks off (`random_tick_speed 0`: water freezing
+over, grass and leaves changing) and mob griefing off (`mob_griefing false`: one map pixel changed colour in run
+40249146134's measure-old run, a mob changing a block there).
+
+**Samples** (strict, >2/255): vanilla b/a and a/b 0/0 for hub, mam, map and outline in all four runs with the pins
+(40249146134, 40254531258, 40260765722, 40260847921); vanilla a, b and GL 3.3 identical pixel for pixel on these four
+scenes; every Brimstone and measure run 0. The strict check needs all four vanilla runs to agree: on hub and map the
+Vulkan run agrees on 99.8% and 99.99% of the frame; on mam on 88-99.8% (Vulkan and some GL runs differ by 1/255 on
+the sky and floor behind the screen, never on the screen itself). **Limits** by package 2's finer rule (the smallest
+thing here, a glyph, covers a few dozen pixels): largest sample x 1.5, rounded up to 10, at least 10: **10** for hub
+(was 12,506), mam (was 155,106), map (was not gated; `ciNoStrict` removed and compare.py's allow-list emptied),
+outline and outline.bare. 8/255 limits by package 0's rule (max(2 x largest, largest + 0.25, 0.1)): **0.25** (hub
+was 8.75, mam 9.3, map 11.35). All lowered or new.
+
+**The block outline** (core scene `outline`): CI's pin mod (`BlockOutlineMixin`) leaves the crosshair outline out of
+every scene except round the scene's stone block at 2680 200 -1988, so CI checks it again. Creative mode (no outline
+in spectator); the `bare` shot is the same view in adventure mode, where the empty hand cannot break stone and the
+game draws no outline: the outline covers 2,318 pixels (every one over 8/255; one edge about 200-400), Vulkan draws
+its back edge a row off (163 pixels the strict check leaves out). The old-GPU row flicker that led to the pin did not
+show in any of the four runs.
+
+**Ponder** (SIFTEC scene `ponder`): Create's Ponder index, opened with Create's client command (`/ponder index`, typed
+in chat by drive.py in every run: `ciChat`). The Ponder scenes themselves keep moving (belts, kinetics, the nixie
+scene's dancing parrot), so the index is what CI checks. Pins: `menuBackgroundBlurriness:0` in every run (the menu
+blur came out differently on Vulkan: 433,312 pixels over 2/255 against GL, which agreed exactly; Vulkan also darkens
+the world behind the index differently, so with the world behind it the strict check saw 42% of the frame); the camera
+looks straight up at the sky (above the HUB platform), with one stone block above it so Brimstone has terrain to draw
+(CI requires that in every scene), so only sky and that block are behind the screen (99.3% of the frame covered,
+run 40266027605). The scene runs before the map scene, so SIFTEC's minimap and map markers are not on yet: after it,
+each Brimstone and measure run showed the map scene's markers twice (each bench sets the map up again: 578 pixels in
+run 40266027605), and over the HUB platform the minimap's east edge showed tiles of chunks generated during the run
+(425 pixels in run 40260847921's old-GPU run). Samples of the final setup (from `0dd5438`: runs 40273668937, 40276630375, 40288414898): vanilla b/a and a/b 0/0,
+every Brimstone and measure run 0 strict pixels and 0% over 8/255, 99.69% of the frame covered. Earlier placements
+(not used for the limits): 3-5 pixels of the minimap in every Brimstone and measure run, the same in measure runs.
+Limits by the finer rule: **10** strict; 8/255 by package 0's rule: **0.25**.
+
+**The HUD scene** (SIFTEC `hud`, after the rebase on main): normal play in creative with nine hotbar items, the chat
+open (its last 6 lines, `chatHeightFocused:0.25`), SIFTEC's compass strip and minimap, on a gray concrete platform high
+above 400 -110 facing a gray concrete wall. Pins for it: the pin mod holds a focused text box's cursor on; drive.py
+clears the chat before the setup (`ciClearChat`; bench messages had moved the chat's scrollbar, 48 pixels) and after
+the fills reloads all chunks and clears the chat again (the `#chunks` step; a vanilla stand-in run once showed a hole
+in the wall, 4,080 pixels, run 40450860976); SIFTEC's map setup runs once per world, so the map markers it places are
+not doubled by the benches (they showed twice on the compass of later scenes and sessions). Samples: vanilla b/a and
+a/b 0/0 and every Brimstone and measure run 0 in runs 40436256016, 40444035980, 40454752063 (run 40450860976: the
+hole, before the `#chunks` step). Limits by the finer rule: strict **10**, 8/255 **0.25**. Coverage: the strict check
+sees 44% of the frame (minimap 86%, hotbar 92%, chat 51%, compass 41%): Vulkan shades the concrete wall in fine rings
+that differ from OpenGL's by 1-2/255 (fog or interpolation; with a textured wall it differed on most pixels, run
+40414693058, and with the sky behind on the sun's glow, run 40404251173); the 8/255 check covers the whole frame.
+
+**Count baselines** (highest clean value, runs 40254531258, 40260765722, 40260847921; gated as every scene):
+
+| suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
+|---|---|---|---|---|---|---|
+| core-full | outline | 10.72 (was 127.0) | 18 | 6356 | 264.69 | 5.48 |
+| core-old-gpu | outline | 19.67 (was 138.0) | 16 | 5012 | 264.41 | 3.73 |
+| core-vulkan | outline | 10.67 (was 127.0) | 18 | 6356 | 264.58 | 3.71 |
+| siftec-full | hud | 31.0 | 16 | 71636 | 494.92 | 8.24 |
+| siftec-old-gpu | hud | 58.0 | 14 | 59972 | 493.56 | 8.18 |
+| siftec-vulkan | hud | 31.0 | 16 | 72908 | 490.43 | 8.16 |
+
+Outline and hud since the rebase on main after packages 4 and 8 (runs 40444035980, 40450860976, 40454752063): the
+outline scene moved to x 2680 (clear of package 4's flat_plants) and package 8's animated textures took most of its
+draws, so its baselines went down to the values above (highest clean value; first set from runs 40254531258,
+40260765722, 40260847921 at x 2500 before package 8).
+
+The `ponder` scene is gated like hub, on the per-frame average and median (its average is flat at about 30 fps:
+180.57-181.12 in every run, against a 227 median), baselines on the average from the three runs of its final setup
+(40273668937, 40276630375, 40288414898):
+
+| suite-profile | scene | draw calls/frame (avg) | uploads/frame (median) | bytes/frame (median) | heap after GC MB | direct MB |
+|---|---|---|---|---|---|---|
+| siftec-full | ponder | 181.05 | 14 | 52248 | 463.81 | 8.24 |
+| siftec-old-gpu | ponder | 180.81 | 12 | 52212 | 463.76 | 8.24 |
+| siftec-vulkan | ponder | 180.89 | 14 | 52248 | 462.87 | 8.23 |
 
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 
@@ -523,7 +623,11 @@ Exceptions, each by Andre's rule:
   18.93 fps against 102.5 / 121 at 23.63 fps (all three run 40180107484 attempt 2); translucent_move 124.0 / 124 at
   15.57 fps against 123.4 / 124 at 19.28 fps; mobs 134.0 / 134 at 18.81 fps against 115.65 / 134 at 23.72 fps (both
   run 40193520268, and attempt 2 above). The reasons are on the scenes. Gated on both average and median: spawn,
-  flythrough, occlusion, occlusion_move, translucent_move_oit, factory, hub, map.
+  flythrough, occlusion, occlusion_move, translucent_move_oit, factory, hub, map, ponder (package 7: its average is
+  flat at about 30 fps, 180.57-181.12 in every run).
+- `core/outline` (package 7): median only, by the same rule. Run 40266027605, Vulkan: Brimstone 127.0 average / 127
+  median at 16.42 fps against vanilla's measure run 101.35 / 127 at 25.57 fps (limit 113.48); and the other way round
+  in run 40276630375, Vulkan: Brimstone 98.66 / 127 at 26.42 fps against 127.0 / 127 at 16.04 fps.
 - `siftec/mam`: median only, by the same rule (2026-10-26). Run 40238316211 (the ci-quick branch, main's code),
   Vulkan: Brimstone 132.6 average / 162 median at 25.17 fps against vanilla's measure run 117.94 / 162 at 29.31 fps
   (limit x 1.10 + 2: 131.73); full in the same run 116.03 / 162 against 116.48 / 162, both at 29.83 fps.

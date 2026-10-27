@@ -56,12 +56,32 @@ def main():
     def send(cmd):
         if cmd.startswith("#wait "):
             time.sleep(float(cmd[6:]))
+        elif cmd == "#chunks":
+            # package 7: F3+A (reload all chunks, so a section changed by the setup's fills is not left stale or
+            # missing: the hud scene's wall once had a hole in a measure run) and F3+D (clear the chat, which F3+A
+            # writes to), the same in every run; the bench skips this line
+            xdo("keydown", "F3")
+            xdo("key", "a")
+            xdo("keyup", "F3")
+            time.sleep(3)
+            xdo("keydown", "F3")
+            xdo("key", "d")
+            xdo("keyup", "F3")
+            time.sleep(1)
         else:
             console.write(cmd + "\n")
             time.sleep(0.3)
 
     def xdo(*args):
         subprocess.run(["xdotool", *args], check=False)
+
+    def chat(text):
+        # a client command typed in chat (package 7: a screen only a client command opens, e.g. Create's /ponder)
+        xdo("key", "slash")
+        time.sleep(1.5)
+        xdo("type", "--delay", "40", text)
+        time.sleep(0.5)
+        xdo("key", "Return")
 
     runnable = [i for i in ids if not scenes[i].get("skip") and not (scenes[i].get("requiresMod") and loaded is not None and scenes[i]["requiresMod"] not in loaded)]
     if suite.get("prepare") and runnable and (not suite.get("prepareFor") or suite["prepareFor"] in runnable):
@@ -84,12 +104,21 @@ def main():
             print(f"scene {sid}: skipped ({sc['skip']})", flush=True)
             continue
         print(f"scene {sid}: setting up", flush=True)
+        if sc.get("ciClearChat"):
+            # F3+D before the setup (package 7: the hud scene's open chat): the chat then holds only the setup's own
+            # lines in every run (Brimstone and measure runs' benches add messages, which moved its scrollbar)
+            xdo("keydown", "F3")
+            xdo("key", "d")
+            xdo("keyup", "F3")
+            time.sleep(1)
         for cmd in suite["preamble"] + sc["setup"]:
             send(cmd)
         time.sleep(sc.get("settleSeconds", 20))
         screen = sc.get("screen")
         if screen and screen.get("ciKey"):
             xdo("key", screen["ciKey"])
+        elif screen and screen.get("ciChat"):
+            chat(screen["ciChat"])
         if screen:
             # park the mouse where no screen draws a tooltip, the same in every run
             xdo("mousemove", "1", "1")
@@ -138,17 +167,23 @@ def main():
             xdo("key", "Return")
             waits = sum(float(c[6:]) for c in sc["setup"] if c.startswith("#wait "))
             budget = time.time() + waits + sc.get("settleSeconds", 20) + int(bench_seconds) + 240
-            pressed = False
+            pressed = 0.0
             result = "timeout"
             while time.time() < budget:
                 time.sleep(2)
                 with open(latest, errors="replace") as f:
                     f.seek(start)
                     tail = f.read()
-                if screen and screen.get("ciKey") and not pressed and f"BRIMSTONE BENCH WAITING FOR SCREEN scene={sid}" in tail:
+                # the scene's screen key (or chat command) once the bench waits for it; again every 15 s while the bench
+                # still waits (package 7: one measure run's chat key press was lost and the bench gave up)
+                waiting = f"BRIMSTONE BENCH WAITING FOR SCREEN scene={sid}" in tail and f"BRIMSTONE BENCH MEASURING scene={sid}" not in tail
+                if screen and (screen.get("ciKey") or screen.get("ciChat")) and waiting and time.time() >= pressed:
                     time.sleep(1)
-                    xdo("key", screen["ciKey"])
-                    pressed = True
+                    if screen.get("ciKey"):
+                        xdo("key", screen["ciKey"])
+                    else:
+                        chat(screen["ciChat"])
+                    pressed = time.time() + 15
                 if f"BRIMSTONE BENCH END scene={sid}" in tail:
                     result = "done"
                     break

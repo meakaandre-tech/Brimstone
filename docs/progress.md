@@ -1786,6 +1786,214 @@ does for textures) and check Brimstone's banners against vanilla there.
 
 ---
 
+## Package 7a: GUI measurement
+
+**Branch** `package-7` (not merged; Andre: merges after packages 4 and 8 as "7a: GUI measurement", its counters and
+scenes, without claiming GUI batching). **CI logs:** `ci-logs-package-7`.
+
+**Package 7's done-when (doc) is NOT met:** "Batched GUI, text and item icons; SIFTEC's HUD, map, HUB, MAM and Ponder
+screens unchanged." The screens are unchanged and now checked strictly, but nothing is batched: no GUI batching code
+was written. 7a delivers the measurement (the `gui` bench block) and the CI scenes; batching is the separate plan "7b"
+below, for Andre to decide from the numbers.
+
+Original scope:
+Fewer draw calls for GUI, text and item icons with an identical picture; the GUI scenes able to see a wrong GUI
+element (strict limit below the smallest thing each must catch, `docs/ci-limits.md`); the map strict-gated if its
+noise can be pinned; the block outline checked in CI again.
+
+### Plan
+
+1. **Measure first.** Vanilla 26.3's `GuiRenderer` already does much of what a GUI batcher does: every element goes
+   into one vertex buffer, elements are put into layers by overlap and sorted by scissor, pipeline and texture inside a
+   layer, runs of the same state merge into one draw, and item icons are drawn once into an item atlas and blitted.
+   A count-only mixin on `GuiRenderer` adds a `gui` block to the bench (both in Brimstone and measure runs, so vanilla's
+   numbers come from the same run): the GUI pass's draw calls per frame, its preparation draws (item atlas,
+   picture-in-picture), elements, distinct states (the fewest draws any reordering could reach) and the draws a
+   batcher would leave if each element joined the latest earlier draw of its state that nothing in between overlaps
+   (what Brimstone could realistically win). If that leaves little, report it with the numbers and keep the package
+   minimal (brief: ask the lead before building something large).
+2. **Make the GUI scenes able to see a GUI element.** Sources found in the package-4 run's screenshots (vanilla a
+   against b): the dev launcher's random player name (`Player<digits>`), which picks the default skin (the
+   first-person arm, ~40,000 pixels) and is printed on the HUB and MAM screens (`<player>'s Company`); the MAM's
+   selected tab has an enchantment glint whose phase follows the wall clock (~450 pixels). Pins, the same in every
+   run: `--username BrimstoneCI`, `glintSpeed:0.0`. Then re-collect hub and mam by the standing rule.
+3. **Map.** Its tiles differ pixel by pixel between runs: the area round 300 -200 is generated in each run (SIFTEC's
+   map records chunks as they load) and the markers sit relative to a `spreadplayers` landing that varies by a block.
+   Pins: that area is pre-generated in the SIFTEC CI world (`ci/siftec-world.sh`), the player is put on the ground at
+   a fixed spot, random ticks are off in the CI world (water freezing, grass spreading). If the vanilla runs then
+   agree, give the map a strict limit by the rule.
+4. **Block outline.** CI's pin mod draws it again round one block (a new core scene, `outline`), so it is checked; its
+   old-GPU row flicker is noise to be sampled.
+5. **Ponder.** A scene only if it can be made deterministic (Create's `/ponder <item>` client command opens it; most
+   scenes keep moving: belts, kinetics, the nixie scene's dancing parrot).
+
+**Risks:** vanilla leaves too little to batch (then the package is mostly CI coverage); the map's server-side tiles
+may still differ; new pins change the core and SIFTEC pictures for vanilla and Brimstone alike (limits re-collected
+only by the rule).
+
+### Outcome: in the measured scenes vanilla already groups GUI draws; no batcher built
+
+The `gui` bench block (count-only `GuiRendererMixin`, `gui/GuiStats.java`; reported by compare.py next to vanilla's
+numbers from the measure runs) on run 40254531258, full profile (Brimstone and vanilla equal within 0.03 draws per
+frame in every profile and run):
+
+| scene | all draw calls/frame (median) | GUI pass draws/frame | item atlas / PiP draws | elements | distinct states (floor) | reordered without changing the picture (text as overlapping nothing) |
+|---|---|---|---|---|---|---|
+| core scenes (HUD in spectator) | 121-135 | 1 | 0 | 1 | 1 | 1 (1) |
+| core outline (creative HUD) | 127 | 3 | 0 | 4 | 3 | 3 (3) |
+| siftec factory, sift | 151-153 | 5 | 0 | 20-21 | 3 | 5 (3) |
+| siftec hub | 161 | 13.87 | 0 | 571 | 6 | 13.87 (8) |
+| siftec mam | 162 | 13.86 | 1 | 110 | 7 | 13.86 (8) |
+| siftec map | 170 | 23 | 0 | 317 | 12 | 21 (15) |
+| siftec hologram | 173 | 18 | 0 | 128 | 12 | 18 (12) |
+| siftec ponder (Create's Ponder index; run 40273668937) | 227 | 82.6 | 0.1 | 203 | 73 | 81.6 (75) |
+
+Vanilla 26.3's `GuiRenderer` already does much of what a GUI batcher (ImmediatelyFast's job in older versions) did:
+one vertex buffer for every element, elements placed into layers by overlap and sorted by scissor, pipeline and
+texture inside a layer, runs of one state merged into one draw, item icons drawn once into an item atlas and blitted,
+text as glyph quads in the same buffer. What was measured, and only that: **reordering** (joining each element to the
+latest earlier draw of its state that nothing in between overlaps) saves 2 draws per frame in the map (of 170) and 1
+in the Ponder index (of 227), none elsewhere. If text glyphs carried bounds (they do not), up to about 6 more in hub
+and mam (13.9 -> 8, about 3.7% of 161) and 8 in the map would be reachable.
+
+**Gaps, not measured or not modelled** (review of `5ee7696`):
+- The Ponder index's 73 states differ almost only by **texture**: 72 distinct texture setups per frame for 6 pipelines
+  and 1 scissor area (run 40288414898): Create draws each item box from a texture of its own. A batcher that put those
+  into one atlas could merge up to about 70 of its 83 GUI draws; that technique (and dropping scissors for quads
+  wholly inside them) is not modelled here.
+- Heavy GUIs are not in CI: the F3 overlay, a full inventory or creative tab with tooltips, chat history, item-list
+  mods.
+
+So no GUI batching code was written (the brief: keep it minimal when vanilla leaves little); the `gui` block stays
+(reported, not gated). Andre's decision (2026-10-27): this branch merges as "7a: GUI measurement"; batching is the
+"7b" plan below.
+
+### 7b: GUI batching (plan only; Andre decides from the numbers, not built)
+
+Where the GUI pass's draws go, from the `gui` counters (Brimstone and vanilla equal within 0.03 draws per frame; full
+profile; whole-frame draws are vanilla's median per frame; with package 8's animated textures Brimstone's whole frames
+are smaller, e.g. hud 31 against vanilla's 171, run 40444035980):
+
+| scene | whole frame | GUI pass | elements | states (pipelines / texture setups / scissor areas) | reordered (text as overlapping nothing) |
+|---|---|---|---|---|---|
+| core scenes, spectator HUD | 121-135 | 1 | 1 | 1 (1 / 1 / 1) | 1 (1) |
+| hub | 161 | 13.9 | 572 | 6 (6 / 5 / 1) | 13.9 (8) |
+| mam | 162 | 13.9 | 110 | 7 (6 / 6 / 1) | 13.9 (8) |
+| map | 170 | 23 | 317 | 12 (5 / 6 / 3) | 21 (15) |
+| hud (hotbar with items, open chat, compass, minimap; runs 40436256016, 40444035980) | 171 | 23 | 279 | 11 (6 / 7 / 2) | 23 (13) |
+| ponder (Create's Ponder index) | 227 | 82.6 | 203 | 73 (6 / 72 / 1) | 81.6 (75) |
+
+Where batching would actually save draws, roughly:
+1. **Per-item textures (Create's Ponder index): about 70 draws per frame.** Its 73 states are 72 texture setups:
+   each item box is drawn from a texture of its own. Copying those into one atlas (or drawing them through the game's
+   item atlas) would let the boxes merge into a few draws: 82.6 -> about 12 GUI draws, about 30% of that frame's 227.
+   The biggest and the only large win measured; it touches Create's (Ponder's) own rendering path, so it needs a
+   Ponder-specific hook that falls back to vanilla's path.
+2. **Text-aware reordering: up to about 6-10 draws per frame** in screens that alternate panels and text (hud 23 ->
+   13, map 21 -> 15, hub and mam 13.9 -> 8). Glyphs carry no bounds today; a batcher would need each text run's
+   bounds (from the game's text render state) to move text past panels it does not overlap. About 4-6% of those
+   frames.
+3. **Plain reordering: 0-2 draws** (map 2, Ponder 1, nothing elsewhere). Not worth code on its own.
+4. **Not measured yet:** the F3 overlay (alternating fills and text per line), a full inventory or creative tab with
+   tooltips, a long chat history, item-list mods (none in SIFTEC's pack). A 7b would add scenes for these first; they
+   are the classic cases where older versions needed a GUI batcher.
+
+On real hardware a GUI draw is cheap next to terrain and entities, so outside Ponder the frame-time gain would be
+small; the laptop bench would tell. 7b's done-when would be the doc's: fewer GUI draws per frame against vanilla in
+these scenes, every GUI scene's strict picture unchanged (limits 10).
+
+### What was built
+
+1. **`gui` bench block** (above).
+2. **CI pins** (every client run, vanilla and Brimstone alike): `--username BrimstoneCI` (the random dev name picked
+   the arm's skin and was printed on the HUB and MAM screens), `glintSpeed:0.0` (the MAM tab's glint),
+   `menuBackgroundBlurriness:0` (the menu blur behind the Ponder index differs between Vulkan and OpenGL); in the
+   SIFTEC CI world: the map scene's area pre-generated, `random_tick_speed 0`, `mob_griefing false`; the map scene's
+   player put at a fixed spot (was `spreadplayers`).
+3. **Strict limits** (`docs/ci-limits.md`, "GUI scenes, the block outline and Ponder"): hub 12,506 -> **10**, mam
+   155,106 -> **10**, map not gated -> **10** (`ciNoStrict` removed), 8/255 limits 8.75 / 9.3 / 11.35 -> **0.25**.
+   Samples with the pins: vanilla b/a and a/b 0/0, every Brimstone and measure run 0.
+4. **Block outline back in CI:** core scene `outline` (the pin mod draws the crosshair outline round its one stone
+   block only) with a `bare` shot in adventure mode (no outline): the outline covers 2,318 pixels; limit 10.
+5. **Ponder:** SIFTEC scene `ponder`, Create's Ponder index opened with `/ponder index` typed in chat (drive.py
+   `ciChat`); the Ponder scenes themselves keep moving, so the index is what is checked. Limit 10.
+6. **HUD scene** (SIFTEC `hud`, after the hologram scene, before create_ct which hides the GUI): normal play in creative
+   with nine hotbar items, the chat open with its last 6 lines (eight `tellraw` lines; `chatHeightFocused:0.25` in CI),
+   SIFTEC's compass strip and minimap, on a gray concrete platform high above 400 -110 facing a gray concrete wall.
+   Pins: the pin mod holds a focused text box's cursor on (`EditBoxCursorMixin`); drive.py clears the chat (F3+D,
+   `ciClearChat`) before the setup, so Brimstone and measure runs (whose benches add chat messages) show the same
+   scrollbar; drive.py presses a screen's key again every 15 s while a bench waits for it (one measure run's key press
+   was lost). Placement: the map scene's markers (doubled in bench runs) stay off the minimap and, facing south, the
+   compass; concrete because Vulkan samples a textured wall differently from GL.
+   GUI numbers there (Brimstone / vanilla, every profile, runs 40436256016 to 40454752063): 23 / 23 GUI draws per frame,
+   279 elements, 11 distinct states: 6 pipelines, 7 texture setups, 2 scissor areas; reordering leaves 23 (13 with
+   text as overlapping nothing). Whole frame: Brimstone 31, vanilla 171 (package 8's animated textures). Limits 10
+   (strict) and 0.25 (8/255); the strict check sees 44% of this frame (Vulkan shades the wall differently).
+7. **Rebased on main after packages 4 and 8** (squashed first; the history is on the local branch
+   `package-7-presquash`). Shared CI files hand-merged keeping all three packages' additions; the core `outline`
+   scene moved from x 2500 to x 2680 (package 4's flat_plants clears 2483-2517 there, and the pin mod's outline block
+   could have been under its crosshair).
+
+### Decisions made on Andre's behalf
+
+- No GUI batcher: reordering wins at most 2 draws/frame (map) and 1 (Ponder index); the texture gap in Ponder and the
+  heavy GUIs are open (above).
+- The finer limit rule (largest sample x 1.5, rounded up to 10, at least 10) for the GUI scenes and the outline, as a
+  wrong glyph covers only a few dozen pixels; all samples were 0 (ponder 0-5).
+- 8/255 limits of hub, mam and map re-collected by package 0's rule (0.25), lowered.
+- CI world pins (random ticks and mob griefing off, map area pre-generated) and client pins (fixed player name, glint
+  speed 0, menu blur 0); each the same for vanilla and Brimstone.
+- `outline` gated against vanilla on the median (it failed only on the average at a different frame rate, equal
+  medians; Andre's rule). `ponder` is gated on average and median like hub.
+- Ponder: the index screen, not a Ponder scene (scenes keep animating); it runs before the map scene and looks up.
+
+### Evidence and runs
+
+**Full run after the review fixes: https://github.com/meakaandre-tech/Brimstone/actions/runs/40297472649 on `64b7865`:
+green**; before the review: run 40276630375 on `2801baa`, green, every profile and both suites. Strict counts there: hub, mam, map, ponder, outline, outline.bare
+0 in every Brimstone and measure run, vanilla b/a and a/b 0/0; the GUI pass counts identical between Brimstone and
+vanilla in every scene.
+
+**Final full run, rebased on main after packages 4 and 8 (with the HUD scene):
+https://github.com/meakaandre-tech/Brimstone/actions/runs/40459438787 on `d30b966`: green.** Runs since the rebase:
+40436256016 (failed: factory_flat showed the map markers twice), 40444035980 (green), 40450860976 (failed: a hole in
+the hud wall in a measure run), 40454752063 (green), 40459438787 (green, final). The branch was rebased once more on
+main's docs-only `57a02bc` after it (no code change).
+
+Runs: 40249146134 (measurement + pins: green), 40254531258 (mob griefing off, ponder and outline.bare added: green),
+40260765722 (menu blur off: green), 40260847921 (outline.bare in adventure; failed on ponder's provisional limit: the
+minimap edge), 40266027605 (limits; failed on ponder (map markers twice in bench runs) and outline's Vulkan average),
+40269199055 (ponder moved; failed: no terrain in view), 40273668937 (green), 40276630375 (green, reviewed),
+40288414898 (review fixes: green), 40297472649 (green).
+
+### Review
+
+Independent review (fresh agent, of `5ee7696`; `scratchpad/rv7/review-package-7.md`): the Brimstone code only counts,
+the counters agree with vanilla's own draw list, the pins apply to every run alike, every limit and baseline went down
+or is new. Fixed: B1 (ponder was gated median-only without a frame-rate swing: now average and median, like hub), S1
+(ponder's limits and baselines re-derived from the three runs of its final setup), S2 (the batching claim limited to
+what was measured, gaps named, `gui` reports distinct pipelines, textures and scissors), S3 (stale docs), N1 (the
+per-element hook is gone: the elements are read once per frame and only while a bench measures; outside it nothing is
+allocated), N2 (the `gui` note says the menu blur's draws count as GUI draws), N3 (render-thread comment). Recorded,
+not changed: N4 (typing in chat can misfire into keybinds; it would fail the scene, never pass it), N5 (the CI world's
+gamerules are only in the world-build artifact, not ci-logs), N6 (not tested: the menu blur and the glint's motion),
+N7 (hub and mam count baselines are loose from earlier packages: for the lead), N8 (outline flicker, below).
+
+### Known limits
+
+- The old-GPU crosshair-outline row flicker (why the pin exists) did not show in eight runs; if it shows in the
+  outline scene, its limit of 10 fails on vanilla noise and must be re-collected (still far below the 2,318-pixel
+  outline).
+- mam's strict check covers 88-98% of the frame (vanilla runs differ by 1/255 on the sky and floor behind the screen);
+  the screen itself is covered.
+
+### Laptop bench (Andre, when back)
+
+Nothing new to bench for speed (no rendering change). The `gui` line of any `/brimstone bench` block shows the GUI
+pass's draws per frame.
+
+---
+
 ## Hand-off
 
 Working notes for a new chat picking this up: read this file, then `docs/backend.md`, `docs/ci-limits.md`,
