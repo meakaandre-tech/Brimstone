@@ -207,6 +207,8 @@
         "fill 378 200 -116 423 216 -92 minecraft:air",
         "fill 378 200 -116 423 200 -92 minecraft:gray_concrete",
         "fill 378 201 -93 423 216 -93 minecraft:gray_concrete",
+        "#wait 3",
+        "#chunks",
         "item replace entity @a hotbar.0 with minecraft:diamond_sword",
         "item replace entity @a hotbar.1 with minecraft:iron_pickaxe",
         "item replace entity @a hotbar.2 with minecraft:oak_log 32",
@@ -233,7 +235,7 @@
         "prompt": "Press T (open the chat)",
         "ciKey": "t"
       },
-      "ciNote": "The chat is open (its lines fade with time otherwise, and an open chat shows them in full); chatHeightFocused 0.25 in CI shows the last 6 lines, all this scene's, and CI's pin mod holds the input box's cursor on. The spot (400 -110, in the CI world's pre-generated, explored map area) keeps the map scene's markers off the minimap, and facing south keeps them off the compass: each Brimstone and measure run sets the map up again in its bench, which doubles the markers (578 pixels in run 40266027605). A gray concrete platform high above the ground with a gray concrete wall 16 blocks in front (no sun, no mob in view; Brimstone draws the terrain). Concrete is one flat colour: Vulkan sampled a stone-brick wall's texture differently from GL on most pixels (runs 40414693058 and 40426298065), which left the strict check blind under the compass and the chat. drive.py clears the chat (F3+D) before the setup, so it holds only the setup's lines in every run (bench messages in Brimstone and measure runs moved the chat's scrollbar: 48 pixels in run 40404251173). Runs after the hologram scene and before create_ct, which hides the GUI (F1) for the rest of the session."
+      "ciNote": "The chat is open (its lines fade with time otherwise, and an open chat shows them in full); chatHeightFocused 0.25 in CI shows the last 6 lines, all this scene's, and CI's pin mod holds the input box's cursor on. The spot (400 -110, in the CI world's pre-generated, explored map area) keeps the map scene's markers off the minimap, and facing south keeps them off the compass: each Brimstone and measure run sets the map up again in its bench, which doubles the markers (578 pixels in run 40266027605). A gray concrete platform high above the ground with a gray concrete wall 16 blocks in front (no sun, no mob in view; Brimstone draws the terrain). Concrete is one flat colour: Vulkan sampled a stone-brick wall's texture differently from GL on most pixels (runs 40414693058 and 40426298065), which left the strict check blind under the compass and the chat. After the fills, the #chunks step makes drive.py reload all chunks (F3+A; the wall once had a hole, a section not rebuilt in time, in run 40450860976's measure-full run) and clear the chat. drive.py also clears the chat (F3+D) before the setup, so it holds only the setup's lines in every run (bench messages in Brimstone and measure runs moved the chat's scrollbar: 48 pixels in run 40404251173). Runs after the hologram scene and before create_ct, which hides the GUI (F1) for the rest of the session."
     },
     {
       "id": "create_ct",
