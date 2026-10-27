@@ -17,7 +17,7 @@
   },
   "flat_plants": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 137.98,
+    "drawCallsPerFrame": 33.0,
     "heapUsedAfterGcMB": 248.11,
     "runs": 3,
     "uploadBytesPerFrame": 1716,
@@ -25,7 +25,7 @@
   },
   "flythrough": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 1041.63,
+    "drawCallsPerFrame": 67.41,
     "heapUsedAfterGcMB": 324.79,
     "runs": [
       4,
@@ -41,7 +41,7 @@
   },
   "mobs": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 410.19,
+    "drawCallsPerFrame": 28.97,
     "heapUsedAfterGcMB": 268.23,
     "runs": [
       4,
@@ -57,7 +57,7 @@
   },
   "nether": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 640.77,
+    "drawCallsPerFrame": 33.79,
     "heapUsedAfterGcMB": 272.57,
     "runs": [
       4,
@@ -73,7 +73,7 @@
   },
   "occlusion": {
     "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 106.62,
+    "drawCallsPerFrame": 22.67,
     "heapUsedAfterGcMB": 264.64,
     "runs": [
       "40079570978 (dry run)"
@@ -83,7 +83,7 @@
   },
   "occlusion_move": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 106.56,
+    "drawCallsPerFrame": 24.05,
     "heapUsedAfterGcMB": 265.66,
     "runs": [
       "40091787069 (dry run; memory gated only)"
@@ -105,7 +105,7 @@
   },
   "particles": {
     "directBuffersMB": 4.24,
-    "drawCallsPerFrame": 11.67,
+    "drawCallsPerFrame": 10.72,
     "heapUsedAfterGcMB": 261.4,
     "runs": 2,
     "uploadBytesPerFrame": 16164,
@@ -113,7 +113,7 @@
   },
   "renderer_off": {
     "directBuffersMB": 5.87,
-    "drawCallsPerFrame": 107.98,
+    "drawCallsPerFrame": 17.77,
     "heapUsedAfterGcMB": 240.73,
     "runs": 3,
     "uploadBytesPerFrame": 1380,
@@ -121,7 +121,7 @@
   },
   "spawn": {
     "directBuffersMB": 3.73,
-    "drawCallsPerFrame": 844.2,
+    "drawCallsPerFrame": 49.0,
     "heapUsedAfterGcMB": 256.29,
     "runs": [
       12
@@ -131,7 +131,7 @@
   },
   "translucent_move": {
     "directBuffersMB": 3.73,
-    "drawCallsPerFrame": 141.14,
+    "drawCallsPerFrame": 18.0,
     "heapUsedAfterGcMB": 268.19,
     "runs": [
       40115084815
@@ -141,7 +141,7 @@
   },
   "translucent_move_oit": {
     "directBuffersMB": 3.73,
-    "drawCallsPerFrame": 161.0,
+    "drawCallsPerFrame": 25.53,
     "heapUsedAfterGcMB": 248.15,
     "runs": [
       40115084815
@@ -151,7 +151,7 @@
   },
   "water_glass": {
     "directBuffersMB": 5.99,
-    "drawCallsPerFrame": 457.8,
+    "drawCallsPerFrame": 20.0,
     "heapUsedAfterGcMB": 249.83,
     "runs": [
       4,
@@ -167,7 +167,7 @@
   },
   "water_glass_oit": {
     "directBuffersMB": 3.73,
-    "drawCallsPerFrame": 154.0,
+    "drawCallsPerFrame": 25.0,
     "heapUsedAfterGcMB": 245.78,
     "runs": [
       40115084815
