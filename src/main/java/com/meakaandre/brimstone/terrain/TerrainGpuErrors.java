@@ -10,8 +10,8 @@ import java.util.Locale;
  * which the game fills from OpenGL's debug output when its GL debug verbosity is on, the default). Brimstone takes a
  * mark before it draws or uploads and asks afterwards whether an error message arrived meanwhile.
  */
-final class TerrainGpuErrors {
-    record Mark(List<String> messages) {
+public final class TerrainGpuErrors {
+    public record Mark(List<String> messages) {
     }
 
     private static final Mark NONE = new Mark(List.of());
@@ -32,14 +32,14 @@ final class TerrainGpuErrors {
         }
     }
 
-    static Mark mark() {
+    public static Mark mark() {
         GpuDevice d = RenderSystem.getDevice();
         if (!d.isDebuggingEnabled()) return NONE;
         return new Mark(List.copyOf(d.getLastDebugMessages()));
     }
 
     /** The first error message that arrived since the mark, or null. */
-    static String since(Mark mark) {
+    public static String since(Mark mark) {
         GpuDevice d = RenderSystem.getDevice();
         if (!d.isDebuggingEnabled()) return null;
         List<String> now = d.getLastDebugMessages();

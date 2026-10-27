@@ -1,0 +1,26 @@
+package com.meakaandre.brimstone.mixin.counters;
+
+import com.meakaandre.brimstone.bench.GpuCounters;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/**
+ * Package 8: draws made while an atlas redraws its animated sprites (once per client tick) count as animation draws in
+ * the bench. Count only. When Brimstone's animation module draws instead (it cancels vanilla's method), it sets and
+ * clears the phase itself.
+ */
+@Mixin(TextureAtlas.class)
+public abstract class EffectsAnimationMixin {
+    @Inject(method = "uploadAnimationFrames", at = @At("HEAD"))
+    private void brimstone$animationStart(CallbackInfo ci) {
+        GpuCounters.phase(GpuCounters.Phase.ANIMATION);
+    }
+
+    @Inject(method = "uploadAnimationFrames", at = @At("RETURN"))
+    private void brimstone$animationEnd(CallbackInfo ci) {
+        GpuCounters.phase(GpuCounters.Phase.OTHER);
+    }
+}

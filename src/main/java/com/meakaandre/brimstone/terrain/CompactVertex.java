@@ -51,7 +51,7 @@ public final class CompactVertex {
     }
 
     /** Null if vanilla's terrain vertex is what this transcoder reads; otherwise what differs. */
-    static String checkVanillaFormat() {
+    public static String checkVanillaFormat() {
         VertexFormat f = DefaultVertexFormat.BLOCK;
         if (f.getVertexSize() != VANILLA_BYTES) return "BLOCK vertex is " + f.getVertexSize() + " bytes";
         String bad = element(f, "Position", 0, GpuFormat.RGB32_FLOAT);

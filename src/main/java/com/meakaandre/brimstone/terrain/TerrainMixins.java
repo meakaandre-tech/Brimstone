@@ -57,6 +57,16 @@ public final class TerrainMixins implements IMixinConfigPlugin {
         return missing.isEmpty() ? null : "hooks that did not apply: " + String.join(", ", missing);
     }
 
+    /** Whether a hook of this config landed in its target (package 8: the animation module reads meshes in brimstone$take). */
+    public static boolean applied(String target, String handler) {
+        try {
+            Class.forName(target, false, TerrainMixins.class.getClassLoader());
+        } catch (Throwable t) {
+            return false;
+        }
+        return APPLIED.getOrDefault(target, Set.of()).contains(handler);
+    }
+
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         List<String> expected = EXPECTED.get(targetClassName);

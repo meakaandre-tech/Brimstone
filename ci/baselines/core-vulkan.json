@@ -1,4 +1,20 @@
 {
+  "animated_items": {
+    "directBuffersMB": 5.98,
+    "drawCallsPerFrame": 60,
+    "heapUsedAfterGcMB": 239.74,
+    "runs": 1,
+    "uploadBytesPerFrame": 21940,
+    "uploadsPerFrame": 23
+  },
+  "animation": {
+    "directBuffersMB": 5.98,
+    "drawCallsPerFrame": 49,
+    "heapUsedAfterGcMB": 260.68,
+    "runs": 2,
+    "uploadBytesPerFrame": 2056,
+    "uploadsPerFrame": 15
+  },
   "flat_plants": {
     "directBuffersMB": 5.98,
     "drawCallsPerFrame": 124.0,
@@ -58,6 +74,14 @@
       "40091787069 (dry run; memory gated only)"
     ],
     "uploadBytesPerFrame": 104756,
+    "uploadsPerFrame": 15
+  },
+  "particles": {
+    "directBuffersMB": 5.98,
+    "drawCallsPerFrame": 10.67,
+    "heapUsedAfterGcMB": 261.4,
+    "runs": 2,
+    "uploadBytesPerFrame": 17128,
     "uploadsPerFrame": 15
   },
   "renderer_off": {

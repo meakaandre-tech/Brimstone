@@ -634,6 +634,207 @@
         "block-renderer": "off"
       },
       "ciNote": "CI's check of Brimstone's block-renderer=off config option (package 4): this scene's session starts with it off (ci/client-run.sh writes config/brimstone.properties), so every block and item, the block display included, is drawn by vanilla's own code; the pictures are gated against the vanilla runs like every scene's. Smooth lighting is off because vanilla's own smooth lighting is not Indigo's (Indigo's flat lighting of these cube-shaped blocks is vanilla's). Besides the picture, CI checks the bench's renderer report in this session: no block and no API mesh quad went Brimstone's way, and blocks went vanilla's (in every other session, no block went vanilla's). The self-test checks, quad by quad, that this vanilla path hands vanilla's output on unchanged for tinted, cutout and light-emitting blocks."
+    },
+    {
+      "id": "particles",
+      "title": "About 65 kinds of particle at fixed places 3 blocks in front of the camera, before a stone wall, the same in every run (package 8)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2820.5 204.38 -1987.5 180 0",
+        "#wait 6",
+        "fill 2808 190 -2004 2833 215 -1980 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2808,y=190,z=-2004,dx=25,dy=25,dz=24] 2820.5 -200 -2000.5",
+        "fill 2808 199 -2004 2833 199 -1980 minecraft:smooth_stone",
+        "fill 2808 200 -1992 2833 212 -1992 minecraft:smooth_stone",
+        "execute in minecraft:overworld run tp @a 2820.5 204.38 -1987.5 180 0",
+        "#wait 2",
+        "particle minecraft:flame 2817.5 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:soul_fire_flame 2818.1 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:small_flame 2818.7 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:copper_fire_flame 2819.3 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:end_rod 2819.9 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:glow 2820.5 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:electric_spark 2821.1 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:wax_on 2821.7 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:wax_off 2822.3 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:scrape 2822.9 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:enchanted_hit 2823.5 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:smoke 2817.5 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:large_smoke 2818.1 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:white_smoke 2818.7 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:cloud 2819.3 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:poof 2819.9 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sculk_charge_pop 2820.5 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:pale_oak_leaves 2821.1 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sneeze 2821.7 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:spit 2822.3 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:ash 2822.9 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:white_ash 2823.5 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:heart 2817.5 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:angry_villager 2818.1 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:happy_villager 2818.7 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:note 2819.3 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:crit 2819.9 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:composter 2820.5 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dolphin 2821.1 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:mycelium 2821.7 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:nautilus 2822.3 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:portal 2822.9 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:enchant 2823.5 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dust{color:[1.0,0.0,0.0],scale:2.0} 2817.5 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dust_color_transition{from_color:[0.0,0.0,1.0],to_color:[1.0,1.0,0.0],scale:2.0} 2818.1 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:block{block_state:\"minecraft:diamond_ore\"} 2818.7 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:falling_dust{block_state:\"minecraft:red_sand\"} 2819.3 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:item{item:{id:\"minecraft:apple\"}} 2819.9 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:totem_of_undying 2820.5 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:witch 2821.1 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:firework 2821.7 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:damage_indicator 2822.3 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sweep_attack 2822.9 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sculk_soul 2823.5 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dripping_water 2817.5 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:falling_lava 2818.1 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:snowflake 2818.7 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:spore_blossom_air 2819.3 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:cherry_leaves 2819.9 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:soul 2820.5 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:reverse_portal 2821.1 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:bubble 2821.7 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:bubble_pop 2822.3 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:splash 2822.9 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:rain 2823.5 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:underwater 2817.5 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:lava 2818.1 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:falling_honey 2818.7 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:egg_crack 2819.3 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:infested 2819.9 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dust_plume 2820.5 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:firefly 2821.1 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dripping_obsidian_tear 2821.7 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:crimson_spore 2822.3 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:warped_spore 2822.9 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:item_slime 2823.5 204.5 -1990.5 0 0 0 0 0 force @a"
+      ],
+      "ciNote": "The CI pin mod (ci/pin-mod, Pins) makes every particle made in this area the same in every run, vanilla and Brimstone alike: its random numbers come from where and what it is, it is not ticked and is drawn at partial tick 0 while the player is here, and it is removed when the player leaves. The bench sets the scene up again after the bare shot has removed the first set, so it measures one of each particle too. The 'bare' shot steps out of the area and back, so the pin removes every particle: the same view without them, which measures each particle's area on screen.",
+      "ciShots": [
+        {
+          "name": "bare",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2790.5 204.38 -1987.5 180 0",
+            "#wait 2",
+            "execute in minecraft:overworld run tp @a 2820.5 204.38 -1987.5 180 0"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "animation",
+      "title": "Animated blocks in front of the camera and 34 blocks behind it, with animation run for a fixed number of ticks in every run (package 8)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2630.5 204.38 -1987.5 180 0",
+        "#wait 6",
+        "setblock 2635 205 -1995 minecraft:air",
+        "setblock 2633 205 -1953 minecraft:air",
+        "fill 2618 190 -2004 2643 215 -1946 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2618,y=190,z=-2004,dx=25,dy=25,dz=58] 2630.5 -200 -2000.5",
+        "setblock 2630 194 -2000 minecraft:stone",
+        "fill 2618 199 -2004 2643 199 -1946 minecraft:smooth_stone",
+        "fill 2618 200 -1996 2643 212 -1996 minecraft:smooth_stone",
+        "fill 2618 200 -1950 2643 212 -1950 minecraft:smooth_stone",
+        "setblock 2625 204 -1995 minecraft:sea_lantern",
+        "setblock 2627 204 -1995 minecraft:magma_block",
+        "setblock 2629 204 -1995 minecraft:command_block[facing=south]",
+        "setblock 2631 204 -1995 minecraft:warped_stem",
+        "setblock 2633 204 -1995 minecraft:sculk",
+        "setblock 2635 204 -1995 minecraft:stone",
+        "setblock 2635 205 -1995 minecraft:lantern",
+        "setblock 2625 207 -1995 minecraft:sea_lantern",
+        "setblock 2629 207 -1995 minecraft:magma_block",
+        "setblock 2633 207 -1995 minecraft:command_block[facing=south]",
+        "setblock 2625 204 -1953 minecraft:chain_command_block[facing=north]",
+        "setblock 2627 204 -1953 minecraft:repeating_command_block[facing=north]",
+        "setblock 2629 204 -1953 minecraft:crimson_stem",
+        "setblock 2631 204 -1953 minecraft:stonecutter",
+        "setblock 2633 204 -1953 minecraft:stone",
+        "setblock 2633 205 -1953 minecraft:soul_lantern",
+        "setblock 2635 204 -1953 minecraft:sculk_sensor",
+        "setblock 2627 207 -1953 minecraft:crimson_stem",
+        "setblock 2631 207 -1953 minecraft:chain_command_block[facing=north]",
+        "execute in minecraft:overworld run tp @a 2630.5 204.38 -1987.5 180 0",
+        "#wait 2",
+        "particle minecraft:block{block_state:\"minecraft:repeating_command_block\"} 2630.5 206.5 -1991.5 0 0 0 0 0 force @a"
+      ],
+      "measureSteps": [
+        {
+          "at": 1.0,
+          "command": "setblock 2630 194 -2000 minecraft:redstone_block"
+        },
+        {
+          "at": 4.0,
+          "command": "particle minecraft:block{block_state:\"minecraft:chain_command_block\"} 2629.5 206.5 -1991.5 0 0 0 0 0 force @a"
+        },
+        {
+          "at": 8.0,
+          "command": "setblock 2627 205 -1995 minecraft:repeating_command_block[facing=south]"
+        }
+      ],
+      "ciShots": [
+        {
+          "name": "behind",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2630.5 204.38 -1961.5 0 0"
+          ]
+        },
+        {
+          "name": "front",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2630.5 204.38 -1987.5 180 0"
+          ]
+        }
+      ],
+      "ciRequiresAnimationSkip": true,
+      "ciNote": "The CI pin mod (ci/pin-mod, Pins) sends every animated texture back to its first frame when the player enters this area, lets it run exactly 70 ticks and holds it, in every run, vanilla and Brimstone alike. Everything here is built after those ticks, so Brimstone left every changed sprite out and must redraw each one before it is drawn: the front blocks when their sections first show, the block particle (a command block sprite seen nowhere else) on its first use outside terrain, and the blocks 34 blocks behind the camera (other sprites, two sections behind it, outside vanilla's visible sections) when the 'behind' shot turns around and walks there. During the bench a marker block under the floor lets animation run freely (vanilla's animation work against Brimstone's); its screenshots are taken before that. While measuring, its steps check the module's three catch-up paths again with animation running: a block particle of the chain command block (a sprite only the far blocks show, so stale) at 4 s, and a repeating command block facing the camera (its front sprite only on the far blocks) at 8 s; compare.py requires sprites left out, a redraw before terrain and a redraw on first use inside the measured window.",
+      "ciDrawCallGate": "median",
+      "ciDrawCallGateReason": "While measuring, animation runs freely: vanilla redraws changed sprites once per client tick, so the per-frame average follows the runner's frame rate (more frames per tick, fewer draws per frame) while the draws per tick stay the same. Run 40267202902, full: average 33.35, median 44 at 30 fps. Gated on the median from the start (Andre's rule for such scenes, design doc, Testing)."
+    },
+    {
+      "id": "animated_items",
+      "title": "Animated block sprites outside terrain: a hotbar with a magma block, a sea lantern, prismarine and buckets, an item frame and a block display with a magma block, a burning cow; animation run a fixed number of ticks (package 8)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2730.5 200 -1986.5 180 15",
+        "#wait 6",
+        "fill 2718 190 -2004 2743 215 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2718,y=190,z=-2004,dx=25,dy=25,dz=28] 2730.5 -200 -2000.5",
+        "setblock 2730 194 -2000 minecraft:stone",
+        "fill 2718 199 -2004 2743 199 -1976 minecraft:smooth_stone",
+        "fill 2718 200 -1996 2743 212 -1996 minecraft:smooth_stone",
+        "summon minecraft:item_frame 2728 202 -1995 {Facing:3b,Fixed:1b,Item:{id:\"minecraft:magma_block\",count:1}}",
+        "summon minecraft:block_display 2730 200 -1993 {block_state:\"minecraft:magma_block\"}",
+        "summon minecraft:cow 2734.5 200 -1992.5 {Fire:32767s,Invulnerable:1b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "gamemode creative @a",
+        "clear @a",
+        "item replace entity @a hotbar.0 with minecraft:magma_block",
+        "item replace entity @a hotbar.1 with minecraft:sea_lantern",
+        "item replace entity @a hotbar.2 with minecraft:prismarine",
+        "item replace entity @a hotbar.3 with minecraft:lava_bucket",
+        "item replace entity @a hotbar.4 with minecraft:water_bucket",
+        "execute in minecraft:overworld run tp @a 2730.5 200 -1986.5 180 15",
+        "#wait 2"
+      ],
+      "measureSteps": [
+        {
+          "at": 1.0,
+          "command": "setblock 2730 194 -2000 minecraft:redstone_block"
+        }
+      ],
+      "ciDrawCallGate": "median",
+      "ciDrawCallGateReason": "While measuring, animation runs freely (as in the animation scene): vanilla redraws changed sprites once per client tick, so the per-frame average follows the runner's frame rate. Gated on the median from the start (Andre's rule for such scenes).",
+      "ciNote": "Andre's follow-up for package 8: every animated block sprite here is shown only outside terrain (the hotbar and the held block, the item frame, the block display, the fire on the cow), so each is redrawn by Brimstone on its first use outside terrain. The CI pin mod sends every animated texture back to frame 0 when the player enters this area, runs 70 ticks and holds it, in every run, vanilla and Brimstone alike; everything is placed after those ticks, so every one of those sprites is stale at its first use. CI fails on any late redraw (here and in every scene). During the bench a marker block under the floor lets animation run freely; its screenshot is taken before that. The player is in creative mode here (for the hotbar); the next scenes set spectator again."
     }
   ]
 }

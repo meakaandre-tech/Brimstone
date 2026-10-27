@@ -41,6 +41,14 @@ public final class CounterAudit implements IMixinConfigPlugin {
         EXPECTED.put("com.mojang.renderpearl.backend.vulkan.VulkanTransientMemory", transientMemory);
         EXPECTED.put("com.mojang.renderpearl.backend.opengl.GlBuffer$Direct", List.of("brimstone$map", "brimstone$mapEnd"));
         EXPECTED.put("com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer$Direct", List.of("brimstone$map", "brimstone$mapEnd"));
+        // package 8: what vanilla's effects draw and how many particles it keeps (bench "effects" block)
+        EXPECTED.put("net.minecraft.client.renderer.SkyRenderer", List.of("brimstone$skyStart", "brimstone$skyEnd"));
+        EXPECTED.put("net.minecraft.client.renderer.WeatherEffectRenderer", List.of("brimstone$weatherStart", "brimstone$weatherEnd"));
+        EXPECTED.put("net.minecraft.client.renderer.CloudRenderer", List.of("brimstone$cloudsStart", "brimstone$cloudsEnd"));
+        EXPECTED.put("net.minecraft.client.renderer.feature.QuadParticleFeatureRenderer", List.of("brimstone$particlesStart", "brimstone$particlesEnd"));
+        EXPECTED.put("net.minecraft.client.renderer.texture.TextureAtlas", List.of("brimstone$animationStart", "brimstone$animationEnd"));
+        EXPECTED.put("net.minecraft.client.particle.ParticleEngine", List.of("brimstone$tickStart", "brimstone$tickEnd",
+            "brimstone$extractStart", "brimstone$extractEnd"));
     }
 
     /** Handlers found in each transformed target. */

@@ -45,6 +45,7 @@ if grep -q 'Done (' server.log; then
     area minecraft:overworld 1824 -2160 2287 -1808       # water and glass, mobs (2000/2100 -1985, 8 chunks)
     area minecraft:the_nether -176 -176 175 175          # nether (0 0, 8 chunks)
     area minecraft:overworld -6224 -6224 -5777 -5777     # fly-through start (-6000 -6000, 12 chunks)
+    area minecraft:overworld 2496 -2160 2959 -1808       # animation, animated items, particles (2630/2730/2820 -1987, 8 chunks; package 8)
   } > /tmp/out/core-world-commands.txt
   while read -r line; do echo "$line" >&3; sleep 0.3; done < /tmp/out/core-world-commands.txt
   sleep 300

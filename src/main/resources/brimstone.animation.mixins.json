@@ -1,0 +1,20 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.brimstone.mixin.animation",
+  "plugin": "com.meakaandre.brimstone.animation.AnimationMixins",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AnimationStateMixin",
+    "BakedQuadMixin",
+    "CompiledSectionMeshMixin",
+    "LevelRendererMixin",
+    "SectionCompilerMixin",
+    "SpriteFinderNodeMixin",
+    "TextureAtlasMixin",
+    "TextureAtlasSpriteMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
