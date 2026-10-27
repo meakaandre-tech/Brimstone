@@ -1740,6 +1740,13 @@ truncated copy of one client log (core brimstone-full session 5's `client-5.log`
 session's console log shows the renderer registered and its self-test passed) and on the then missing baselines of
 animated_items, added from it.
 
+**Green full run on the rebased branch: 40425375596** (`eb3db84`, on main `ccf4750` with package 4): every gate in both
+suites. Brimstone's animation draws per frame (full / old-GPU / Vulkan): spawn and flythrough 5.0 / 5.0 / 5.0, nether
+9.9 / 10.0 / 10.0, every other pinned scene (package 4's flat_plants and renderer_off included) 0.0, against vanilla's
+76.6-115.0; animation (animation running) 32.3 in every profile against 136.4; animated_items 28.0 against 136.4-136.6,
+identical to vanilla (0 strict pixels in every profile), 0 late redraws. SIFTEC's factory: the lava tank's sprite is
+read by Create's fluid renderer on the render thread (logged as a use outside terrain), 0 strict pixels, 0 late.
+
 ### For package 6's plan (Andre, 2026-10-27)
 
 CI now holds banner sway still in every run (`BannerSwayMixin`, package 8), so banner animation is untested: package 6
