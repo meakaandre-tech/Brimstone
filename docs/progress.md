@@ -1954,6 +1954,12 @@ green**; before the review: run 40276630375 on `2801baa`, green, every profile a
 0 in every Brimstone and measure run, vanilla b/a and a/b 0/0; the GUI pass counts identical between Brimstone and
 vanilla in every scene.
 
+**Final full run, rebased on main after packages 4 and 8 (with the HUD scene):
+https://github.com/meakaandre-tech/Brimstone/actions/runs/40459438787 on `d30b966`: green.** Runs since the rebase:
+40436256016 (failed: factory_flat showed the map markers twice), 40444035980 (green), 40450860976 (failed: a hole in
+the hud wall in a measure run), 40454752063 (green), 40459438787 (green, final). The branch was rebased once more on
+main's docs-only `57a02bc` after it (no code change).
+
 Runs: 40249146134 (measurement + pins: green), 40254531258 (mob griefing off, ponder and outline.bare added: green),
 40260765722 (menu blur off: green), 40260847921 (outline.bare in adventure; failed on ponder's provisional limit: the
 minimap edge), 40266027605 (limits; failed on ponder (map markers twice in bench runs) and outline's Vulkan average),
