@@ -10,7 +10,8 @@
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
 | package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met, 7b plan in its section). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
-| baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0). Main's run 40487515684 then failed on a flake in core/animation's measure runs (vanilla stand-ins, one interpolation step off); being fixed on `fix-animation-flake` |
+| baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0) |
+| animation pin fix | merged | `cea5bfb`: the animation pin counts texture ticks, not client ticks (the cause of a flake in core/animation's measure runs); **main full run 40526712029 green, `latest` rebuilt** |
 | package 8 (effects) | merged | `478fd69` (squash of `package-8`, with your four additions), main full run 40432198119 green, `latest` rebuilt |
 
 **Quick CI** (decisions on your behalf): quick mode compares Brimstone old-GPU with vanilla-a (vanilla's GL 3.3 and
