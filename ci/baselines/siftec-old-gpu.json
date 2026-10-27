@@ -49,6 +49,16 @@
     "uploadBytesPerFrame": 66484,
     "uploadsPerFrame": 17
   },
+  "hud": {
+    "directBuffersMB": 8.18,
+    "drawCallsPerFrame": 58.0,
+    "heapUsedAfterGcMB": 493.09,
+    "runs": [
+      40436256016
+    ],
+    "uploadBytesPerFrame": 59972,
+    "uploadsPerFrame": 14
+  },
   "mam": {
     "directBuffersMB": 5.99,
     "drawCallsPerFrame": 222.38,

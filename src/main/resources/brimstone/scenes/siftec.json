@@ -148,14 +148,15 @@
         "#wait 5",
         "execute in minecraft:overworld positioned 300.5 0 -199.5 positioned over motion_blocking run tp @a ~ ~ ~",
         "#wait 5",
-        "siftec worldtest map setup",
+        "execute in minecraft:overworld unless block 300 -63 -200 minecraft:emerald_block run siftec worldtest map setup",
+        "execute in minecraft:overworld run setblock 300 -63 -200 minecraft:emerald_block",
         "#wait 40",
         "gamemode spectator @a",
         "execute in minecraft:overworld run tp @a 300.5 150 -199.5 0 0",
         "#wait 3",
         "siftec worldtest map open 1.5"
       ],
-      "ciNote": "Strict-gated since package 7: its area is pre-generated in the CI world (and so recorded by SIFTEC's map there), the player is put at a fixed spot (spreadplayers landed a block either way, and the markers sit relative to it), random ticks and mob griefing are off in the CI world. Before, vanilla runs differed by up to 22,532 strict pixels here.",
+      "ciNote": "Strict-gated since package 7: its area is pre-generated in the CI world (and so recorded by SIFTEC's map there), the player is put at a fixed spot (spreadplayers landed a block either way, and the markers sit relative to it), random ticks and mob griefing are off in the CI world. Before, vanilla runs differed by up to 22,532 strict pixels here. SIFTEC's map setup (unlock, radar sweep, two markers) runs once per world: an emerald block deep under the spot marks it done, so a Brimstone or measure run's bench (which sets the scene up again) no longer adds the markers a second time; with one player name in every session the markers show on the compass in later scenes and sessions (factory_flat: 328 pixels in run 40436256016).",
       "screen": {
         "expect": "MapScreen"
       },
