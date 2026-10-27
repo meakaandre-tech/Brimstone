@@ -732,7 +732,9 @@ step off. Cause: the pin counted its 70-tick run in client ticks, but the game t
 runs at least one client tick (`Minecraft.runTick`: one `TextureManager.tick` before the frame's client ticks), so a
 run whose frames fell behind (catching up two client ticks in one frame) advanced its textures fewer times. The pin
 now decides run and hold at the start of each texture tick and counts 70 texture ticks; its log line gives the client
-ticks they took. Not noise: no limit changed.
+ticks they took. Not noise: no limit changed. compare.py now also fails a run whose client log lacks the pin's "texture
+ticks of animation done" line (the fix's first run, 40496751536, passed with the new mixin missing from the pin's
+config: animation never ran, the scenes showed frame 0 in every run alike).
 
 ## Counter audit
 
