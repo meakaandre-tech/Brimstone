@@ -796,3 +796,26 @@ Scene clean-up (since the fix on main after package 2): scenes that clear an are
 world (`tp` to y=-200) instead of killing them, so no death animation or dropped loot is left to bob in view at a
 time that depends on how fast the runner is. The object-free `occlusion_move.bare_x2297` shot reached 72 strict
 pixels against 70 in the Vulkan run on a dropped item from the clean-up; the limit was not raised.
+
+## Package 4b: back faces, the upload budget and the bench-only jar
+
+New gates in every Brimstone run (`ci/compare.py`), none of them a limit or baseline (no file in `ci/*.json` changed):
+- **Back faces:** each bench's `backFaces` block must be `on`, and its triangles per frame below the same frames'
+  count with every face drawn (`trianglesAllFacesPerFrame`, what Brimstone drew before 4b).
+- **Upload budget:** `uploadBudget` must be `on` with the camera known, and no visible section's mesh may have waited
+  more than `maxVisibleWaitFramesAllowed` (15) frames since it was first seen visible (past that it goes in whatever the
+  budget).
+- **Screenshots:** Brimstone runs set `brimstone.debug.logUploadQueue` and `ci/drive.py` waits, before each shot, until
+  the client's last "Brimstone uploads:" line is "caught up" (runs without the line don't wait: vanilla, measure and
+  bench-only runs). Each scene's drive JSON records the seconds waited per shot (`uploadWaits`); a timeout (-1, after
+  120 s) fails the run.
+- Reported, not gated: a "Package 4b" table per suite and profile (triangles per frame and with every face, index ranges
+  per section layer, the largest upload bytes in one frame against vanilla's measure run, Brimstone's own largest
+  terrain upload and the average budget, frames over 50 ms, sections waiting).
+
+**Bench-only jar runs** (full mode, core suite only): `bench-plain` (Fabric API and `brimstone-bench`) and `bench-sodium`
+(the same plus Sodium 0.9.2 for 26.3, downloaded from Modrinth in the run), benching spawn, flythrough, water_glass and
+nether. compare.py requires the bench-only jar's start-up line, a bench per scene written by `brimstone-bench`, no
+Brimstone module block or log line, no counter missing, Sodium loaded in `bench-sodium` only, and Brimstone itself not
+loaded. Their pictures are not compared (Sodium draws its own way); the "Bench-only jar" table reports fps, frame-time
+p99, frames over 50 ms, draw calls and the largest upload per frame.

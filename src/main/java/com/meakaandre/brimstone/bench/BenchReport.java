@@ -5,9 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.meakaandre.brimstone.BrimstoneClient;
 import com.meakaandre.brimstone.probe.Capabilities;
-import com.meakaandre.brimstone.terrain.TerrainStats;
-import com.meakaandre.brimstone.terrain.TranslucencyStats;
-import com.meakaandre.brimstone.visibility.VisibilityStats;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
@@ -62,7 +59,8 @@ final class BenchReport {
         out.addProperty("title", scene == null ? "where the player stood" : scene.title);
         out.addProperty("seconds", seconds);
         out.addProperty("time", LocalDateTime.now().toString());
-        out.addProperty("brimstone", version("brimstone"));
+        out.addProperty("jar", BenchModules.jar);
+        out.addProperty("brimstone", version(BenchModules.jar.equals("brimstone") ? "brimstone" : "brimstone_bench"));
         out.addProperty("minecraft", version("minecraft"));
 
         JsonObject fps = new JsonObject();
@@ -88,14 +86,11 @@ final class BenchReport {
         gpu.add("uploadsByKind", byKind(GpuCounters.Upload.values(), FrameRecorder.startUploads, FrameRecorder.endUploads, n));
         gpu.add("uploadBytesByKind", byKind(GpuCounters.Upload.values(), FrameRecorder.startBytes, FrameRecorder.endBytes, n));
         out.add("gpu", gpu);
-        out.add("meshing", TerrainStats.meshingJson());
-        out.add("terrain", TerrainStats.terrainJson(n));
-        out.add("visibility", VisibilityStats.json());
-        out.add("translucency", TranslucencyStats.json());
-        out.add("renderer", com.meakaandre.brimstone.frapi.RendererStats.json());
+        // Brimstone's modules (none in the bench-only jar), then what the bench itself counts
+        for (BenchModules.Section sec : BenchModules.all()) out.add(sec.key(), sec.json(n));
+        if (BenchModules.all().isEmpty()) out.addProperty("modules", "none: the bench-only jar (brimstone-bench) measures, it changes nothing");
         out.add("terrainGpu", TerrainGpuMemory.json());
         out.add("effects", EffectsStats.json(n));
-        out.add("animation", com.meakaandre.brimstone.animation.Animation.json());
         out.add("gui", com.meakaandre.brimstone.gui.GuiStats.json());
         JsonObject counters = new JsonObject();
         JsonArray missing = new JsonArray(), notLoaded = new JsonArray(), applied = new JsonArray();
@@ -154,7 +149,7 @@ final class BenchReport {
         StringBuilder b = new StringBuilder();
         b.append(BEGIN).append('\n');
         line(b, "scene", o.get("scene").getAsString() + " (" + o.get("title").getAsString() + "), " + o.get("seconds").getAsInt() + " s");
-        line(b, "versions", "brimstone " + o.get("brimstone").getAsString() + ", minecraft " + o.get("minecraft").getAsString());
+        line(b, "versions", o.get("jar").getAsString() + " " + o.get("brimstone").getAsString() + ", minecraft " + o.get("minecraft").getAsString());
         line(b, "fps", String.format(Locale.ROOT, "avg %s, 1%% low %s, 0.1%% low %s (%d frames)",
             fps.get("average"), fps.get("low1pct"), fps.get("low01pct"), fps.get("frames").getAsInt()));
         line(b, "frame time ms", String.format(Locale.ROOT, "p50 %s, p95 %s, p99 %s, max %s, frames over 50 ms %s",
@@ -174,20 +169,13 @@ final class BenchReport {
         line(b, "display", disp.get("width") + "x" + disp.get("height") + ", render distance " + disp.get("renderDistance")
             + " (effective " + disp.get("effectiveRenderDistance") + "), max fps " + disp.get("maxFps") + ", vsync " + disp.get("vsync"));
         line(b, "mods", mods.get("count") + " mods, list hash " + mods.get("hash").getAsString());
-        JsonObject mesh = o.getAsJsonObject("meshing"), ter = o.getAsJsonObject("terrain");
-        line(b, "meshing", mesh.get("sections") + " sections, ms per section avg " + mesh.get("msPerSection") + " (vanilla mesher avg "
-            + mesh.get("compileMsAvg") + ", p95 " + mesh.get("compileMsP95") + "; transcode per layer " + mesh.get("transcodeMsPerLayer") + ")");
-        line(b, "terrain", ter.get("state").getAsString() + " (" + ter.get("reason").getAsString() + "), fallbacks " + ter.get("fallbacks")
-            + ", " + ter.get("vertexBytes") + "-byte vertices (vanilla " + ter.get("vanillaVertexBytes")
-            + "; " + ter.get("positionRoundedPct") + "% with a position rounded to the grid), path " + ter.get("lastDrawPath").getAsString()
-            + ", draws/frame " + ter.get("drawCallsPerFrame") + " for " + ter.get("sectionLayersPerFrame") + " section layers, " + ter.get("regions")
-            + " regions in " + ter.get("arenas") + " arenas (" + ter.get("usedMB") + " of " + ter.get("arenaMB") + " MB used; vanilla's format would need "
-            + ter.get("vanillaEquivalentMB") + " MB), layers taken " + ter.get("layersTaken") + ", kept by vanilla " + ter.get("layersKeptByVanilla"));
-        line(b, "visibility", VisibilityStats.line(o.getAsJsonObject("visibility")));
-        line(b, "translucency", TranslucencyStats.line(o.getAsJsonObject("translucency")));
-        line(b, "renderer", com.meakaandre.brimstone.frapi.RendererStats.line(o.getAsJsonObject("renderer")));
+        for (BenchModules.Section sec : BenchModules.all()) {
+            if (!(o.get(sec.key()) instanceof JsonObject so)) continue;
+            String l = sec.line(so);
+            if (l != null) line(b, sec.key(), l);
+        }
+        if (o.has("modules")) line(b, "modules", o.get("modules").getAsString());
         line(b, "effects", EffectsStats.line(o.getAsJsonObject("effects")));
-        line(b, "animation", com.meakaandre.brimstone.animation.Animation.line(o.getAsJsonObject("animation")));
         line(b, "gui", com.meakaandre.brimstone.gui.GuiStats.line(o.getAsJsonObject("gui")));
         JsonObject cnt = o.getAsJsonObject("counters");
         line(b, "counters", cnt.getAsJsonArray("applied").size() + " applied, missing " + cnt.get("missing")

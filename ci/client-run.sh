@@ -24,6 +24,9 @@ fapi=$(grep '^fabric_version' gradle.properties | sed 's/.*= *//')
 suitefile=src/main/resources/brimstone/scenes/$SUITE.json
 
 case "$RUN" in brimstone-*|measure-*) brim=1;; *) brim=0;; esac
+# package 4b: bench-plain / bench-sodium load only the bench-only jar (brimstone-bench, every Brimstone module out),
+# on plain Fabric or next to Sodium, and bench the scenes in BENCH_SCENES; the server has no Brimstone
+case "$RUN" in bench-*) benchonly=1;; *) benchonly=0;; esac
 case "$RUN" in measure-*) measure=1;; *) measure=0;; esac
 case "$RUN" in *-old)
   export MESA_EXTENSION_OVERRIDE="-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage"
@@ -46,7 +49,9 @@ if [ $measure = 1 ]; then
   echo "measure run JVM properties:$client_jvm"
 elif [ $brim = 1 ]; then
   # package 8: the animation module logs each animated sprite's first use outside terrain, with where it came from
-  client_jvm="$client_jvm -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true"
+  # package 4b: the terrain upload budget logs when meshes wait for a later frame and when it has caught up, so
+  # drive.py takes no screenshot while a section is still waiting (vanilla uploads at once and logs nothing)
+  client_jvm="$client_jvm -Dbrimstone.debug.logUploadQueue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true"
   if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
   if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
   echo "Brimstone run JVM properties:$client_jvm"
@@ -109,6 +114,21 @@ lvp=$(ls /usr/share/vulkan/icd.d/lvp_icd*.json 2>/dev/null | head -1)
 case "$RUN" in *-vk) [ -n "$lvp" ] && export VK_DRIVER_FILES="$lvp" VK_ICD_FILENAMES="$lvp";; esac
 mkdir -p run/mods
 for j in server/mods/*.jar; do case "$j" in *fabric-api*) ;; *) cp "$j" run/mods/;; esac; done
+if [ $benchonly = 1 ]; then
+  [ -f dist/brimstone-bench.jar ] || { echo "dist/brimstone-bench.jar missing"; exit 1; }
+  cp dist/brimstone-bench.jar run/mods/
+  if [ "$RUN" = bench-sodium ]; then
+    # Sodium 0.9.2 for this Minecraft version, from Modrinth (a runtime test only: nothing of Sodium's is in the repo)
+    surl=$(curl -fsSL "https://api.modrinth.com/v2/project/sodium/version?loaders=%5B%22fabric%22%5D&game_versions=%5B%22$mc%22%5D" | python3 -c "
+import json,sys
+vs=[v for v in json.load(sys.stdin) if '0.9.2' in v['version_number']]
+print(vs[0]['files'][0]['url'] if vs else '')
+for v in vs[:1]: print(v['version_number'], file=sys.stderr)")
+    if [ -z "$surl" ]; then echo "no Sodium 0.9.2 build for Minecraft $mc on Modrinth"; exit 1; fi
+    curl -fsSL -o run/mods/sodium.jar "$surl" || { echo "could not download Sodium from $surl"; exit 1; }
+    echo "Sodium: $surl"
+  fi
+fi
 # every run, vanilla and Brimstone alike: CI's lightmap pin (ci/pin-mod), which holds the block-light flicker still
 if [ -f ci-pin/ci-pin.jar ]; then cp ci-pin/ci-pin.jar run/mods/; else echo "ci-pin.jar missing"; exit 1; fi
 ls -l run/mods
@@ -143,6 +163,12 @@ n=0
 for g in $groups; do
   n=$((n+1))
   rd=${g%%|*}; rest=${g#*|}; opts=${rest%%|*}; ids=$(echo "${rest#*|}" | tr ',' ' ')
+  if [ $benchonly = 1 ]; then
+    keep=""
+    for id in $ids; do case " $BENCH_SCENES " in *" $id "*) keep="$keep $id";; esac; done
+    ids=$(echo $keep)
+    if [ -z "$ids" ]; then echo "session $n: no scene of BENCH_SCENES, not started"; continue; fi
+  fi
   # clouds off: their position follows elapsed game time, which differs between runs, so they would only add noise
   # no version line: the file is datafixed from the oldest layout, where key codes are LWJGL2 numbers (22 = U)
   # glintSpeed 0 (package 7): the enchantment glint's texture offset follows the wall clock, so a glinting item (the MAM's
@@ -165,7 +191,7 @@ for g in $groups; do
     done
     echo "session $n client options: $opts"
   fi
-  rm -f run/logs/latest.log
+  rm -f run/logs/latest.log run/logs/*.log.gz
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)
   # --username (package 7): the dev launcher otherwise names the player Player<random digits>, and the offline UUID
@@ -182,13 +208,18 @@ for g in $groups; do
     echo "op @a" >&3
     sleep 40
     xdotool mousemove 640 360
-    python3 -I ci/drive.py "$suitefile" server/in.fifo "$OUT" run/logs/latest.log "$([ $brim = 1 ] && echo brimstone || echo vanilla)" "$BENCH_SECONDS" $ids
+    python3 -I ci/drive.py "$suitefile" server/in.fifo "$OUT" run/logs/latest.log "$([ $brim = 1 ] || [ $benchonly = 1 ] && echo brimstone || echo vanilla)" "$BENCH_SECONDS" $ids
   else
     echo "client did not join (session $n)"
     import -window root "$OUT/no-join-$n.png"
   fi
   pkill -f KnotClient; sleep 8
-  cp run/logs/latest.log "$OUT/client-$n.log" 2>/dev/null
+  # the game rolls latest.log over at midnight (UTC on the runners) into a dated .log.gz: keep the session's rolled
+  # parts in front of it, so client-$n.log is the whole session (run 40605316942 crossed midnight and lost them)
+  # (one session is one game start: only the text from its last "Loading Minecraft" line on, since the game may also
+  # archive a previous session's log into a .log.gz when it starts)
+  { for z in $(ls run/logs/*.log.gz 2>/dev/null | sort); do zcat "$z"; done; cat run/logs/latest.log 2>/dev/null; } \
+    | awk '/Loading Minecraft .* with Fabric Loader/ {n++} {l[NR]=$0; s[NR]=n} END {for (i=1;i<=NR;i++) if (s[i]==n) print l[i]}' > "$OUT/client-$n.log"
   cp -r run/crash-reports "$OUT/client-crash-reports" 2>/dev/null
 done
 mkdir -p "$OUT/bench" && cp run/brimstone/bench/*.json "$OUT/bench/" 2>/dev/null

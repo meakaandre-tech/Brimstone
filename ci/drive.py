@@ -18,12 +18,39 @@ def capture(path):
     subprocess.run(["import", "-window", "root", path], check=False)
 
 
+LATEST = None
+WAITS = []
+
+
+def wait_uploads(timeout=120):
+    """Package 4b: Brimstone's terrain uploads go under a per-frame budget, so after F3+A a section can wait a few
+    frames for its mesh. In Brimstone runs (brimstone.debug.logUploadQueue) the client logs "Brimstone uploads:
+    waiting" and "... caught up"; wait until the last such line is "caught up". Runs without the line (vanilla, measure
+    runs, the bench-only jar) don't wait. Returns the seconds waited, -1 on a timeout. It only sees waits already
+    logged: meshes that F3+A has not staged yet are left to steady_shot's own check, as in every run."""
+    if LATEST is None or not os.path.exists(LATEST):
+        return 0
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        if not os.path.exists(LATEST):
+            time.sleep(1)
+            continue
+        with open(LATEST, errors="replace") as f:
+            text = f.read()
+        w, c = text.rfind("Brimstone uploads: waiting"), text.rfind("Brimstone uploads: caught up")
+        if w < 0 or c > w:
+            return round(time.time() - t0, 1)
+        time.sleep(1)
+    return -1
+
+
 def steady_shot(path, tries=12, gap=4.0, pct=1.0):
     """Waits until two captures `gap` seconds apart differ on under `pct`% of pixels (chunks, lighting and map
     tiles have caught up), then keeps the second. Animated scenes (water) may never get there: after `tries` it
     keeps the last capture. Returns how many pairs it took, or -1 if it gave up. Same procedure in every run."""
     import numpy as np
     from PIL import Image
+    WAITS.append(wait_uploads())
     tmp = path + ".prev.png"
     capture(tmp)
     for i in range(tries):
@@ -45,6 +72,8 @@ def steady_shot(path, tries=12, gap=4.0, pct=1.0):
 
 def main():
     suite_file, fifo, out, latest, mode, bench_seconds = sys.argv[1:7]
+    global LATEST
+    LATEST = latest
     ids = sys.argv[7:]
     suite = json.load(open(suite_file))
     loaded = set(open(os.environ["MOD_IDS"]).read().split()) if os.environ.get("MOD_IDS") else None
@@ -142,6 +171,7 @@ def main():
             xdo("key", "d")
             xdo("keyup", "F3")
             time.sleep(1)
+        WAITS.clear()
         shot = os.path.join(out, "shots", sid + ".png")
         entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)
@@ -153,6 +183,8 @@ def main():
             time.sleep(3)
             p = os.path.join(out, "shots", sid + "." + extra["name"] + ".png")
             entry.setdefault("extraShots", {})[extra["name"]] = steady_shot(p)
+        # seconds each shot waited for Brimstone's upload queue; -1: timed out (compare.py fails on it)
+        entry["uploadWaits"] = list(WAITS)
         if screen:
             # every run closes the scene's screen the same way before going on
             xdo("key", "Escape")
@@ -171,6 +203,9 @@ def main():
             result = "timeout"
             while time.time() < budget:
                 time.sleep(2)
+                # the game rolls latest.log over at midnight: a file shorter than where this bench started is a new one
+                if os.path.getsize(latest) < start:
+                    start = 0
                 with open(latest, errors="replace") as f:
                     f.seek(start)
                     tail = f.read()

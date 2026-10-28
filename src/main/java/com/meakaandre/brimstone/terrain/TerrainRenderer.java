@@ -71,6 +71,8 @@ public final class TerrainRenderer {
         int[] counts = new int[16];
         int[] bases = new int[16];
         int n;
+        /** Section layers in this region's list (each may be several index ranges since package 4b). */
+        int layers;
 
         RegionDraw(TerrainStore.Region region) {
             this.region = region;
@@ -95,6 +97,8 @@ public final class TerrainRenderer {
         final List<DynamicGpuData.IndexedDraw> commands = new ArrayList<>();
         /** Where this list's commands start in the frame's one Brimstone command list. */
         int commandStart;
+        /** Section layers in this list (each may be several index ranges since package 4b). */
+        int sectionLayers;
 
         ArenaDraws(TerrainStore.Arena arena) {
             this.arena = arena;
@@ -144,6 +148,10 @@ public final class TerrainRenderer {
 
     // this frame
     private static Path path;
+    /** Whether this frame leaves out facing groups that face away from the camera (package 4b). */
+    private static boolean skipBackFaces;
+    /** One layer's index ranges ({@link BackFaces#ranges}): quad counts and first quads; render thread only. */
+    private static final int[] RANGE_COUNT = new int[CompactVertex.GROUPS], RANGE_FIRST = new int[CompactVertex.GROUPS];
     /** This frame's translucent draws, in vanilla's order, and whether vanilla sorts translucent this frame. */
     private static final List<TRun> TRUNS = new ArrayList<>();
     private static boolean sortTranslucent;
@@ -187,6 +195,11 @@ public final class TerrainRenderer {
         if (f.multiDrawDirectSeparate()) return Path.PLAIN_SEPARATE;
         if (f.multiDrawDirectInterleaved() && info.limits().maxMultiDrawDirectInterleavedDrawCount() > 1) return Path.PLAIN_INTERLEAVED;
         return Path.PLAIN_SINGLE;
+    }
+
+    /** The camera position of the frame being extracted (render thread); see {@link BackFaces}. */
+    public static void camera(double x, double y, double z) {
+        BackFaces.camera(x, y, z);
     }
 
     static String plainPathName() {
@@ -237,6 +250,7 @@ public final class TerrainRenderer {
         path = indirect ? Path.INDIRECT : plainPath(device.getDeviceInfo());
         boolean plain = path != Path.INDIRECT;
         for (List<ArenaDraws> l : FRAME) l.clear();
+        PENDING.clear();
         TRUNS.clear();
         TL_ENTRIES.clear();
         TL_MESHES.clear();
@@ -251,6 +265,8 @@ public final class TerrainRenderer {
         long now = Util.getMillis();
         long fadeMs = Util.toMillis(fadeSeconds);
         List<TerrainStore.Region> touched = new ArrayList<>();
+        skipBackFaces = BackFaces.beginFrame(TerrainPipelines.pipeline(plain, false), TerrainPipelines.pipeline(plain, true));
+        UploadBudget.frameVisible(visible);
 
         boolean audit = GpuCounters.enabled;
         int audited = 0;
@@ -286,27 +302,54 @@ public final class TerrainRenderer {
                         TerrainStore.Part part = e.part;
                         if (part == null) continue;
                         ArenaDraws ad = arenaDraws(li, part.arena);
-                        int count = part.indexCount();
-                        maxIndexCount = Math.max(maxIndexCount, count);
+                        int whole = part.indexCount();
+                        maxIndexCount = Math.max(maxIndexCount, whole);
+                        // the layer's quads as index ranges: the facing groups that may face the camera (package 4b)
+                        // one span per section layer where each range would cost something: a draw call (one draw per
+                        // section) or an indirect command uploaded every frame (20 bytes each; ranges there raised upload
+                        // bytes per frame by about 20 KB in spawn, run 40619534606); on the plain multi-draw paths the
+                        // ranges are CPU-side entries of the same call and cost nothing to upload
+                        boolean span = path == Path.PLAIN_SINGLE || path == Path.INDIRECT;
+                        int ranges = BackFaces.ranges(part, e, skipBackFaces, span, RANGE_COUNT, RANGE_FIRST);
+                        if (path == Path.INDIRECT) {
+                            // decided after the loop, in this order: a few layers may get their full ranges (EXTRA_COMMANDS)
+                            Pending pd = new Pending(ad, instance, part, whole, RANGE_COUNT[0], ranges == 0 ? 0 : RANGE_FIRST[0], ranges);
+                            pd.multi = BackFaces.ranges(part, e, skipBackFaces, false, pd.count, pd.first);
+                            PENDING.add(pd);
+                            ad.sectionLayers++;
+                            continue;
+                        }
+                        int drawn = 0;
+                        RegionDraw rd = null;
                         if (plain) {
-                            RegionDraw rd = ad.byRegion.get(e.region);
+                            rd = ad.byRegion.get(e.region);
                             if (rd == null) {
                                 rd = new RegionDraw(e.region);
                                 ad.byRegion.put(e.region, rd);
                                 ad.regions.add(rd);
                             }
-                            rd.add(count, part.baseVertex);
-                        } else {
-                            ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, part.baseVertex, instance));
                         }
+                        for (int r = 0; r < ranges; r++) {
+                            int count = RANGE_COUNT[r] * 6;
+                            int base = part.baseVertex + RANGE_FIRST[r] * 4;
+                            drawn += count;
+                            if (plain) rd.add(count, base);
+                            else ad.commands.add(new DynamicGpuData.IndexedDraw(count, 1, 0, base, instance));
+                        }
+                        ad.sectionLayers++;
+                        if (rd != null) rd.layers++;
+                        if (audit) TerrainStats.layerTriangles(drawn / 3, whole / 3, ranges);
                     }
                 }
                 if (tl != null && tl.index != null && mesh instanceof CompiledSectionMesh cm) {
+                    if (audit && tl.part != null) TerrainStats.layerTriangles(tl.index.count / 3, tl.index.count / 3, 1);
                     TL_ENTRIES.add(tl);
                     TL_MESHES.add(cm);
                     TL_INSTANCES.add(instance);
                 }
             }
+            if (!PENDING.isEmpty()) emitPending(audit);
+            if (skipBackFaces) checkDrawLimits(device);
             buildTranslucentRuns(plain);
             if (TranslucencyCheck.ENABLED) {
                 List<CompiledSectionMesh> drawnMeshes = new ArrayList<>(TL_MESHES.size());
@@ -328,6 +371,104 @@ public final class TerrainRenderer {
         if (maxIndexCount > 0) RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS).requestIndexCount(maxIndexCount);
         if (audit) VisibilityStats.terrainFrame(audited, missingFromVanilla());
         translucentOthers();
+    }
+
+    /**
+     * Indirect path, package 4b: a section layer is one command (one span of its kept facing groups), except that up to
+     * {@link #EXTRA_COMMANDS} more commands per frame go to the layers whose full ranges leave out the most quads per
+     * extra command. Each command is 20 bytes uploaded every frame, so this caps what back-face skipping adds to the
+     * frame's uploads at about 2.5 KB.
+     */
+    static final int EXTRA_COMMANDS = 128;
+
+    private static final class Pending {
+        final ArenaDraws ad;
+        final int instance, whole, spanCount, spanFirst, spanRanges;
+        final TerrainStore.Part part;
+        final int[] count = new int[CompactVertex.GROUPS], first = new int[CompactVertex.GROUPS];
+        int multi;
+        boolean useMulti;
+
+        Pending(ArenaDraws ad, int instance, TerrainStore.Part part, int whole, int spanCount, int spanFirst, int spanRanges) {
+            this.ad = ad;
+            this.instance = instance;
+            this.part = part;
+            this.whole = whole;
+            this.spanCount = spanCount;
+            this.spanFirst = spanFirst;
+            this.spanRanges = spanRanges;
+        }
+
+        int multiQuads() {
+            int q = 0;
+            for (int r = 0; r < multi; r++) q += count[r];
+            return q;
+        }
+
+        /** Quads the full ranges leave out beyond the span, per extra command. */
+        double gain() {
+            int extra = multi - Math.max(1, spanRanges);
+            return extra <= 0 ? 0 : (double) ((spanRanges == 0 ? 0 : spanCount) - multiQuads()) / extra;
+        }
+    }
+
+    private static final List<Pending> PENDING = new ArrayList<>();
+
+    private static void emitPending(boolean audit) {
+        int n = PENDING.size();
+        Integer[] order = new Integer[n];
+        double[] gain = new double[n];
+        for (int i = 0; i < n; i++) {
+            order[i] = i;
+            gain[i] = PENDING.get(i).gain();
+        }
+        Arrays.sort(order, (a, b) -> Double.compare(gain[b], gain[a]));
+        int left = EXTRA_COMMANDS;
+        for (int i : order) {
+            Pending pd = PENDING.get(i);
+            int extra = pd.multi - Math.max(1, pd.spanRanges);
+            if (gain[i] <= 0 || extra > left) continue;
+            pd.useMulti = true;
+            left -= extra;
+        }
+        // in the order the layers were listed
+        for (Pending pd : PENDING) {
+            int drawn = 0, ranges;
+            if (pd.useMulti) {
+                ranges = pd.multi;
+                for (int r = 0; r < ranges; r++) {
+                    pd.ad.commands.add(new DynamicGpuData.IndexedDraw(pd.count[r] * 6, 1, 0, pd.part.baseVertex + pd.first[r] * 4, pd.instance));
+                    drawn += pd.count[r] * 6;
+                }
+            } else {
+                ranges = pd.spanRanges;
+                if (ranges > 0) {
+                    pd.ad.commands.add(new DynamicGpuData.IndexedDraw(pd.spanCount * 6, 1, 0, pd.part.baseVertex + pd.spanFirst * 4, pd.instance));
+                    drawn = pd.spanCount * 6;
+                }
+            }
+            if (audit) TerrainStats.layerTriangles(drawn / 3, pd.whole / 3, ranges);
+        }
+        PENDING.clear();
+    }
+
+    /**
+     * Package 4b: a list whose index ranges are more than the device takes in one multi-draw (and whose whole layers
+     * would not be) would split into more draw calls; then facing groups are drawn whole from the next frame on.
+     */
+    private static void checkDrawLimits(GpuDevice device) {
+        var limits = device.getDeviceInfo().limits();
+        if (path == Path.INDIRECT) {
+            int max = Math.max(1, limits.maxDrawIndirectDrawCount());
+            for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) {
+                if (ad.commands.size() > max && ad.sectionLayers <= max) BackFaces.drawLimitHit("indirect multi-draw limit " + max);
+            }
+        } else if (path == Path.PLAIN_INTERLEAVED) {
+            int max = Math.max(1, limits.maxMultiDrawDirectInterleavedDrawCount());
+            for (List<ArenaDraws> l : FRAME) for (ArenaDraws ad : l) for (RegionDraw rd : ad.regions) {
+                if (rd.n > max && rd.layers <= max) BackFaces.drawLimitHit("interleaved multi-draw limit " + max);
+            }
+        }
     }
 
     /**
@@ -560,6 +701,8 @@ public final class TerrainRenderer {
             return;
         }
         boolean wireframe = override != null || overrideMultidraw != null;
+        // package 4b: the wireframe view draws back faces' edges too, so the next frames draw every facing group
+        if (li == 0) BackFaces.wireframeFrame(wireframe);
         if (FRAME[li].isEmpty()) return;
         try {
             TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();
@@ -580,10 +723,7 @@ public final class TerrainRenderer {
                 pass.setPipeline(pipeline);
                 pass.setIndexBuffer(indexBuffer, quads.type());
                 draws += plain ? drawPlain(pass, list) : drawIndirect(pass, list);
-                for (ArenaDraws ad : list) {
-                    sectionLayers += ad.commands.size();
-                    for (RegionDraw rd : ad.regions) sectionLayers += rd.n;
-                }
+                for (ArenaDraws ad : list) sectionLayers += ad.sectionLayers;
             }
             lastPath = path;
             TerrainStats.drew(draws, sectionLayers);

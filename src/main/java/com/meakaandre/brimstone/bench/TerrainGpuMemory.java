@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.meakaandre.brimstone.mixin.counters.SectionRenderDispatcherAccessor;
 import com.meakaandre.brimstone.mixin.counters.SectionUberBuffersAccessor;
 import com.meakaandre.brimstone.mixin.counters.UberGpuBufferAccessor;
-import com.meakaandre.brimstone.terrain.TerrainStore;
 import com.mojang.blaze3d.vertex.TlsfAllocator;
 import com.mojang.blaze3d.vertex.UberGpuBuffer;
 import net.minecraft.client.Minecraft;
@@ -41,13 +40,14 @@ public final class TerrainGpuMemory {
                 d.unlock();
             }
         }
-        TerrainStore.Snapshot s = TerrainStore.snapshot();
+        java.util.function.Supplier<long[]> arenas = BenchModules.arenas;
+        long[] a = arenas == null ? new long[2] : arenas.get();
         o.addProperty("vanillaHeapsReservedMB", problem == null ? round(vReserved / MB) : null);
         o.addProperty("vanillaHeapsUsedMB", problem == null ? round(vUsed / MB) : null);
-        o.addProperty("brimstoneArenasReservedMB", round(s.arenaBytes() / MB));
-        o.addProperty("brimstoneArenasUsedMB", round(s.usedBytes() / MB));
-        o.addProperty("reservedMB", problem == null ? round((vReserved + s.arenaBytes()) / MB) : null);
-        o.addProperty("usedMB", problem == null ? round((vUsed + s.usedBytes()) / MB) : null);
+        o.addProperty("brimstoneArenasReservedMB", round(a[0] / MB));
+        o.addProperty("brimstoneArenasUsedMB", round(a[1] / MB));
+        o.addProperty("reservedMB", problem == null ? round((vReserved + a[0]) / MB) : null);
+        o.addProperty("usedMB", problem == null ? round((vUsed + a[1]) / MB) : null);
         if (problem != null) o.addProperty("problem", "vanilla's terrain heaps could not be read: " + problem);
         return o;
     }

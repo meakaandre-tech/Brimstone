@@ -28,6 +28,17 @@ public final class BrimstoneClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // what each module reports in the bench (package 4b: the bench-only jar has the bench without them)
+        BenchSections.register();
+        init();
+        // CI: the renderer's self-test, once in a world (package 4)
+        if (Boolean.getBoolean("brimstone.debug.verifyRenderer")) {
+            ClientTickEvents.END_CLIENT_TICK.register(com.meakaandre.brimstone.frapi.RendererSelfTest::tick);
+        }
+    }
+
+    /** The probe, the bench command and its tick: everything the bench-only jar runs too. */
+    public static void init() {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             try {
                 capabilities = CapabilityProbe.run();
@@ -38,9 +49,5 @@ public final class BrimstoneClient implements ClientModInitializer {
         });
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> BenchCommand.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(BenchRun::tick);
-        // CI: the renderer's self-test, once in a world (package 4)
-        if (Boolean.getBoolean("brimstone.debug.verifyRenderer")) {
-            ClientTickEvents.END_CLIENT_TICK.register(com.meakaandre.brimstone.frapi.RendererSelfTest::tick);
-        }
     }
 }

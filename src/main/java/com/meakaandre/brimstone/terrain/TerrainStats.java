@@ -25,6 +25,8 @@ public final class TerrainStats {
     private static final AtomicLong TRANSCODE_NANOS = new AtomicLong();
     private static final AtomicLong TRANSCODED_LAYERS = new AtomicLong();
     static long windowDraws, windowSectionLayers;
+    // package 4b: triangles Brimstone's terrain draws, against what drawing every layer whole (before 4b) would be
+    private static long windowTriangles, windowTrianglesWhole, windowRanges, windowLayers, windowJumpFrames;
     private static final ThreadLocal<long[]> COMPILE_START = ThreadLocal.withInitial(() -> new long[1]);
 
     private TerrainStats() {
@@ -39,6 +41,49 @@ public final class TerrainStats {
         TRANSCODED_LAYERS.set(0);
         windowDraws = 0;
         windowSectionLayers = 0;
+        windowTriangles = 0;
+        windowTrianglesWhole = 0;
+        windowRanges = 0;
+        windowLayers = 0;
+        windowJumpFrames = 0;
+        UploadBudget.startWindow();
+    }
+
+    /** One section layer prepared for drawing while measuring (render thread): triangles drawn, whole, index ranges. */
+    static void layerTriangles(long drawn, long whole, int ranges) {
+        windowTriangles += drawn;
+        windowTrianglesWhole += whole;
+        windowRanges += ranges;
+        windowLayers++;
+    }
+
+    /** A frame that drew every facing group because the camera jumped (render thread). */
+    static void backFaceFrameSkipped() {
+        if (GpuCounters.enabled) windowJumpFrames++;
+    }
+
+    /** The upload budget's measuring window (package 4b). */
+    public static JsonObject uploadBudgetJson() {
+        return UploadBudget.json();
+    }
+
+    /** Back-face skipping and triangles per measured frame (package 4b). */
+    public static JsonObject backFacesJson(int frames) {
+        JsonObject o = new JsonObject();
+        String off = BackFaces.off();
+        o.addProperty("state", off == null ? "on" : "off");
+        o.addProperty("reason", off == null ? "on" : off);
+        o.addProperty("trianglesPerFrame", frames == 0 ? 0 : round((double) windowTriangles / frames));
+        o.addProperty("trianglesAllFacesPerFrame", frames == 0 ? 0 : round((double) windowTrianglesWhole / frames));
+        o.addProperty("trianglesLeftOutPct", windowTrianglesWhole == 0 ? 0 : round(100.0 * (windowTrianglesWhole - windowTriangles) / windowTrianglesWhole));
+        o.addProperty("rangesPerSectionLayer", windowLayers == 0 ? 0 : round((double) windowRanges / windowLayers));
+        o.addProperty("framesAllFacesAfterJump", windowJumpFrames);
+        // since start-up: layers kept in vanilla's order because an unaligned quad lies in an aligned quad's plane
+        o.addProperty("layersKeptInVanillaOrder", CompactVertex.UNGROUPED_LAYERS.get());
+        o.addProperty("note", "Brimstone's terrain triangles per frame (solid and cutout after leaving out facing groups that face away"
+            + " from the camera, plus translucent whole); trianglesAllFacesPerFrame is the same frames with every layer drawn whole, as"
+            + " before package 4b");
+        return o;
     }
 
     /** Start of vanilla's SectionCompiler.compile (worker threads, or the render thread for nearby sections). */
