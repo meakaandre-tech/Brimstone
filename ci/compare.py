@@ -3,41 +3,41 @@
 
 usage: compare.py RESULTS_DIR REPORT_DIR
 
-RESULTS_DIR holds one directory per run, named <suite>-<run> (run: vanilla-a, vanilla-b, vanilla-old, brimstone-full,
-brimstone-old), as written by ci/client-run.sh. Per suite:
+RESULTS_DIR holds one directory per run, named <suite>-<run> (run: vanilla-a, vanilla-b, vanilla-old, quicksilver-full,
+quicksilver-old), as written by ci/client-run.sh. Per suite:
   - noise: vanilla-a against vanilla-b, scene by scene;
-  - picture: brimstone-full against vanilla-a, brimstone-old against vanilla-old; over ci/pixel-limits.json fails;
-  - probe: Brimstone's capability line must show each profile (full: both extensions; old: neither, GL 3.3);
+  - picture: quicksilver-full against vanilla-a, quicksilver-old against vanilla-old; over ci/pixel-limits.json fails;
+  - probe: Quicksilver's capability line must show each profile (full: both extensions; old: neither, GL 3.3);
   - counts (draw calls: per-frame average, as frames that line up with a game tick draw more and the median flips;
     a scene with "ciDrawCallGate": "median" is gated on the per-frame median instead, as its average follows the
     runner's frame rate (design doc, Testing: "Counts that follow the runner's speed"); uploads and bytes: per-frame
-    median, as chunk uploads come in bursts; heap after GC; direct buffers): each Brimstone profile's bench results
+    median, as chunk uploads come in bursts; heap after GC; direct buffers): each Quicksilver profile's bench results
     against ci/baselines/<suite>-<profile>.json; a rise over 10% fails. The current numbers are written to
-    REPORT_DIR/baselines/ for committing; against vanilla measured in the same run (the measure-* runs: Brimstone
-    loaded with every module off), Brimstone's draw calls per frame (average and median; the median alone for scenes
+    REPORT_DIR/baselines/ for committing; against vanilla measured in the same run (the measure-* runs: Quicksilver
+    loaded with every module off), Quicksilver's draw calls per frame (average and median; the median alone for scenes
     marked so) must be at or under vanilla's in the translucent scenes listed in ci/vanilla-draw-calls.json and under
-    vanilla's x 1.10 + 2 in the others, and the terrain GPU memory reserved in a Brimstone run at or under vanilla's in
+    vanilla's x 1.10 + 2 in the others, and the terrain GPU memory reserved in a Quicksilver run at or under vanilla's in
     every scene (package 3);
-  - server: Brimstone runs also load Brimstone on the server; its log must list it and show no Brimstone error.
+  - server: Quicksilver runs also load Quicksilver on the server; its log must list it and show no Quicksilver error.
 A diff is the share of pixels whose largest channel difference is over 8 (of 255): small enough to catch a wrong
 block or shade, large enough to ignore rounding.
-  - visibility (package 2): every Brimstone bench must show the visibility module on with no fallback, no section
+  - visibility (package 2): every Quicksilver bench must show the visibility module on with no fallback, no section
     layer of vanilla's visible list left undrawn in any measured frame (terrain pop-in), and no hidden entity or block
     entity that a ray from the camera still reaches on screen (entity pop-in; every hidden object is checked);
     scenes with "ciRequiresCulling" must hide some entities and block entities;
-  - translucency (package 3): every Brimstone bench must show its per-frame translucency check on with no miss (section
+  - translucency (package 3): every Quicksilver bench must show its per-frame translucency check on with no miss (section
     order, latest sort, back to front), no measured frame where vanilla still drew translucent sections next to
-    Brimstone's, no dry run; scenes with "ciRequiresTranslucent" must have Brimstone draw translucent sections, scenes
+    Quicksilver's, no dry run; scenes with "ciRequiresTranslucent" must have Quicksilver draw translucent sections, scenes
     with "ciRequiresOit" must be drawn with Improved Transparency in every measured frame and the others never;
   - strict picture: on the pixels where all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly, the
-    number of pixels where a Brimstone run differs from its own profile's vanilla run by more than STRICT_THRESHOLD
+    number of pixels where a Quicksilver run differs from its own profile's vanilla run by more than STRICT_THRESHOLD
     (2/255 in any channel: Andre's decision, 2026-10-25, as the 16-byte vertex's rounding moves interpolated colours by
     1-2/255; the count at any difference is reported next to it); over
     ci/strict-pixel-limits.json fails (see docs/ci-limits.md); a scene with "ciNoStrict" (a reason) is reported, not
     gated, on this check.
-  - animation (package 8): every Brimstone run must show the animation module on with no fallback and no late redraw
+  - animation (package 8): every Quicksilver run must show the animation module on with no fallback and no late redraw
     (a stale animated sprite redrawn only after something may have drawn from it); measure runs must show it off;
-    scenes with "ciRequiresAnimationSkip" must have Brimstone leave out changed sprites and redraw stale ones.
+    scenes with "ciRequiresAnimationSkip" must have Quicksilver leave out changed sprites and redraw stale ones.
 """
 import glob
 import json
@@ -55,25 +55,25 @@ RISE = 1.10
 SLACK = {"drawCallsPerFrame": 2.0, "uploadsPerFrame": 1.0, "uploadBytesPerFrame": 16384.0,
          "heapUsedAfterGcMB": 16.0, "directBuffersMB": 4.0}
 GATED = list(SLACK)
-PAIRS = {"full": ("brimstone-full", "vanilla-a"), "old-gpu": ("brimstone-old", "vanilla-old"), "vulkan": ("brimstone-vk", "vanilla-vk")}
+PAIRS = {"full": ("quicksilver-full", "vanilla-a"), "old-gpu": ("quicksilver-old", "vanilla-old"), "vulkan": ("quicksilver-vk", "vanilla-vk")}
 VANILLA_RUNS = ("vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk")
 SUITES = None  # every suite
 # scenes allowed to opt out of the strict gate ("ciNoStrict"), each by a decision recorded in docs/ci-limits.md
 NO_STRICT_ALLOWED = set()  # siftec/map was the only one; strict-gated since package 7
-RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "brimstone-full", "brimstone-old", "brimstone-vk",
+RUNS = ["vanilla-a", "vanilla-b", "vanilla-old", "vanilla-vk", "quicksilver-full", "quicksilver-old", "quicksilver-vk",
         "measure-full", "measure-old", "measure-vk"]
-# per profile, the run that measures vanilla's own counts (Brimstone loaded, every module off; package 3)
+# per profile, the run that measures vanilla's own counts (Quicksilver loaded, every module off; package 3)
 MEASURE = {"full": "measure-full", "old-gpu": "measure-old", "vulkan": "measure-vk"}
 # Quick mode (CI_MODE=quick, branch pushes; design doc, Quick CI): the core suite only, with vanilla a, vanilla b and
-# Brimstone on the old-GPU profile. Brimstone's old-GPU run is compared with vanilla a (vanilla's GL 3.3 and GL 4.5
+# Quicksilver on the old-GPU profile. Quicksilver's old-GPU run is compared with vanilla a (vanilla's GL 3.3 and GL 4.5
 # pictures differ no more than vanilla a and b do), the strict check uses the pixels where vanilla a and b agree, and
 # the gates that need a run quick mode leaves out (the measure runs: same-run draw calls, terrain GPU memory, the
 # measure runs' own pictures; the other profiles) are skipped and said so in the report. Every limit is the full mode's.
 QUICK = os.environ.get("CI_MODE") == "quick"
 if QUICK:
-    PAIRS = {"old-gpu": ("brimstone-old", "vanilla-a")}
+    PAIRS = {"old-gpu": ("quicksilver-old", "vanilla-a")}
     VANILLA_RUNS = ("vanilla-a", "vanilla-b")
-    RUNS = ["vanilla-a", "vanilla-b", "brimstone-old"]
+    RUNS = ["vanilla-a", "vanilla-b", "quicksilver-old"]
     SUITES = {"core"}
 
 
@@ -95,7 +95,7 @@ def load(path):
 
 
 def strict(shot, out_prefix, skip_runs=(), pairs=None):
-    """Per Brimstone profile: pixels where all vanilla runs agree exactly but the Brimstone run differs by more than
+    """Per Quicksilver profile: pixels where all vanilla runs agree exactly but the Quicksilver run differs by more than
     STRICT_THRESHOLD, and (reported only) by anything at all. Runs a scene skips ("ciSkipRuns", package 3) are left out
     of both the agreement and the counts."""
     v = {r: load(shot(r)) for r in VANILLA_RUNS if r not in skip_runs}
@@ -151,7 +151,7 @@ def bench_results(run_dir):
             "maxUploadBytes": g["uploadBytesPerFrame"].get("max"),
             "over50ms": j["frameTime"].get("over50ms"),
             "p99ms": j["frameTime"].get("p99ms"),
-            "jar": j.get("jar", "brimstone"),
+            "jar": j.get("jar", "quicksilver"),
             "counters": j.get("counters"),
             "mods": (j.get("mods") or {}).get("list", []),
         }
@@ -167,7 +167,7 @@ def gpu_errors(text):
 
 
 def drive_upload_timeouts(run_dir):
-    """Package 4b: shots whose wait for Brimstone's upload queue timed out (ci/drive.py records -1)."""
+    """Package 4b: shots whose wait for Quicksilver's upload queue timed out (ci/drive.py records -1)."""
     out = []
     for f in glob.glob(os.path.join(run_dir, "drive-*.json")):
         for e in json.load(open(f)):
@@ -187,11 +187,11 @@ def drive_skips(run_dir):
 
 def session_options(suite):
     """Each client session's options in client-run.sh's order (client-<n>.log is session n): per render distance and
-    set of client options and Brimstone config entries (brimstone.<key>=<value>)."""
+    set of client options and Quicksilver config entries (quicksilver.<key>=<value>)."""
     rd = {}
     for x in suite["scenes"]:
         o = dict(x.get("clientOptions") or {})
-        o.update({"brimstone." + k: v for k, v in (x.get("brimstoneConfig") or {}).items()})
+        o.update({"quicksilver." + k: v for k, v in (x.get("quicksilverConfig") or {}).items()})
         opts = ",".join(k + "=" + str(v) for k, v in sorted(o.items()))
         rd.setdefault((x.get("renderDistance", 8), opts), []).append(x["id"])
     return [k[1] for k in sorted(rd)]
@@ -209,11 +209,11 @@ BENCH_ONLY_SCENES = ("spawn", "flythrough", "water_glass", "nether")
 
 
 def bench_only(res, failures, lines):
-    """Package 4b: the bench-only jar (brimstone-bench) on plain Fabric and next to Sodium (full mode, core suite): it
-    loads, benches its scenes with every counter applied, carries no Brimstone module, and Sodium is really there."""
+    """Package 4b: the bench-only jar (quicksilver-bench) on plain Fabric and next to Sodium (full mode, core suite): it
+    loads, benches its scenes with every counter applied, carries no Quicksilver module, and Sodium is really there."""
     if QUICK:
         return
-    lines.append("## Bench-only jar (brimstone-bench)\n")
+    lines.append("## Bench-only jar (quicksilver-bench)\n")
     lines.append("| run | scene | fps avg | frame time p99 ms | frames over 50 ms | draw calls/frame (median) | largest upload bytes in one frame | counters missing |")
     lines.append("|---|---|---|---|---|---|---|---|")
     for r in BENCH_ONLY:
@@ -222,10 +222,10 @@ def bench_only(res, failures, lines):
             failures.append(f"core/{r}: run produced no results")
             continue
         t = logs(d)
-        if "Brimstone bench-only jar" not in t:
-            failures.append(f"core/{r}: the bench-only jar did not start (no 'Brimstone bench-only jar' line)")
-        if re.search(r"Brimstone (terrain|visibility|animation|renderer|block renderer)[: ]", t):
-            failures.append(f"core/{r}: a Brimstone module logged in a bench-only run")
+        if "Quicksilver bench-only jar" not in t:
+            failures.append(f"core/{r}: the bench-only jar did not start (no 'Quicksilver bench-only jar' line)")
+        if re.search(r"Quicksilver (terrain|visibility|animation|renderer|block renderer)[: ]", t):
+            failures.append(f"core/{r}: a Quicksilver module logged in a bench-only run")
         got = bench_results(d)
         for sid in BENCH_ONLY_SCENES:
             c = got.get(sid)
@@ -233,10 +233,10 @@ def bench_only(res, failures, lines):
                 failures.append(f"core/{r}: no bench result for {sid}")
                 continue
             miss = (c.get("counters") or {}).get("missing")
-            if c.get("jar") != "brimstone-bench":
+            if c.get("jar") != "quicksilver-bench":
                 failures.append(f"core/{r}/{sid}: bench written by {c.get('jar')}, not the bench-only jar")
             if c.get("terrain") is not None or c.get("visibility") is not None or c.get("animation") is not None:
-                failures.append(f"core/{r}/{sid}: a Brimstone module reported in the bench-only jar")
+                failures.append(f"core/{r}/{sid}: a Quicksilver module reported in the bench-only jar")
             if miss is None or miss:
                 failures.append(f"core/{r}/{sid}: counters that did not apply: {miss}")
             if c.get("frames", 0) == 0:
@@ -245,8 +245,8 @@ def bench_only(res, failures, lines):
             has_sodium = any(m.startswith("sodium@") for m in mods)
             if (r == "bench-sodium") != has_sodium:
                 failures.append(f"core/{r}/{sid}: Sodium {'missing' if r == 'bench-sodium' else 'loaded'} (mods: {len(mods)})")
-            if any(m.startswith("brimstone@") for m in mods):
-                failures.append(f"core/{r}/{sid}: Brimstone itself is loaded next to the bench-only jar")
+            if any(m.startswith("quicksilver@") for m in mods):
+                failures.append(f"core/{r}/{sid}: Quicksilver itself is loaded next to the bench-only jar")
             lines.append(f"| {r} | {sid} | {c.get('fps')} | {c.get('p99ms')} | {c.get('over50ms')} | {c.get('drawCallsPerFrameMedian')} | {c.get('maxUploadBytes')} | {miss} |")
     lines.append("")
 
@@ -259,7 +259,7 @@ def main():
     strict_limits = json.load(open("ci/strict-pixel-limits.json")) if os.path.exists("ci/strict-pixel-limits.json") else None
     vanilla_draws = json.load(open("ci/vanilla-draw-calls.json")) if os.path.exists("ci/vanilla-draw-calls.json") else {}
     failures, lines, data = [], [], {}
-    for sfile in sorted(glob.glob("src/main/resources/brimstone/scenes/*.json")):
+    for sfile in sorted(glob.glob("src/main/resources/quicksilver/scenes/*.json")):
         suite = json.load(open(sfile))
         name = suite["suite"]
         if SUITES is not None and name not in SUITES:
@@ -272,12 +272,12 @@ def main():
         for r, d in runs.items():
             if not os.path.isdir(d):
                 failures.append(f"{name}: run {r} produced no results")
-        # vanilla's own profile line, and Brimstone's probe line
+        # vanilla's own profile line, and Quicksilver's probe line
         for r, d in runs.items():
             for sid in drive_upload_timeouts(d):
-                failures.append(f"{name}/{r}/{sid}: a screenshot was taken while Brimstone's terrain uploads were still waiting (the wait timed out)")
+                failures.append(f"{name}/{r}/{sid}: a screenshot was taken while Quicksilver's terrain uploads were still waiting (the wait timed out)")
             t = logs(d)
-            if os.path.isdir(d) and "brimstone_ci_pin" not in t:
+            if os.path.isdir(d) and "quicksilver_ci_pin" not in t:
                 failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift, the particle and animation areas, banner sway) is not among the loaded mods")
             # the animation scenes test animation only if the pin really ran its fixed number of texture ticks there
             # (fix-animation-flake: a pin mixin that did not apply left them on frame 0 and still passed)
@@ -286,7 +286,7 @@ def main():
                 failures.append(f"{name}/{r}: the animation pin never ran its texture ticks (no 'texture ticks of animation done' line in the client log)")
             m = re.search(r"Using graphics backend (\S+), using drivers: ([^\n]*)", t)
             ext = re.search(r"Using graphics device extensions: ([^\n]*)", t)
-            probe = re.search(r"Brimstone capabilities: ([^\n]*)", t)
+            probe = re.search(r"Quicksilver capabilities: ([^\n]*)", t)
             lines.append(f"- {r}: backend `{m.group(1) if m else '?'}` drivers `{m.group(2).strip() if m else '?'}`")
             if probe:
                 lines.append(f"  - probe: `{probe.group(1).strip()}`")
@@ -303,9 +303,9 @@ def main():
                 failures.append(f"{name}/{r}: vanilla still lists a hidden extension")
             if r.startswith("vanilla") and os.path.isdir(d) and "[Indigo] Registering Indigo renderer" not in t:
                 failures.append(f"{name}/{r}: the vanilla run did not draw with Fabric's Indigo renderer")
-            if r.startswith(("brimstone", "measure")):
+            if r.startswith(("quicksilver", "measure")):
                 if not probe:
-                    failures.append(f"{name}/{r}: no Brimstone capability line")
+                    failures.append(f"{name}/{r}: no Quicksilver capability line")
                 else:
                     p = probe.group(1)
                     if vk:
@@ -320,9 +320,9 @@ def main():
                             failures.append(f"{name}/{r}: probe does not show gl=3.3")
                         if old and "vanilla.mdiKnownIssues=yes" not in p:
                             failures.append(f"{name}/{r}: vanilla's Intel multi-draw-indirect flag is not forced on")
-                    # package 4: Brimstone's Fabric Renderer API implementation draws in every Brimstone run, never falling
+                    # package 4: Quicksilver's Fabric Renderer API implementation draws in every Quicksilver run, never falling
                     # back; measure runs stand in for vanilla, so Indigo draws there as in the vanilla runs
-                    # checked per client session (each is its own game start); a session whose scenes switch Brimstone's
+                    # checked per client session (each is its own game start); a session whose scenes switch Quicksilver's
                     # block renderer off must start with it off and draw (its pictures are gated like every scene's)
                     sess_opts = session_options(suite)
                     for f in sorted(glob.glob(os.path.join(d, "client-*.log"))):
@@ -330,68 +330,68 @@ def main():
                         m_n = re.fullmatch(r"client-(\d+)\.log", sess)
                         if not m_n:
                             continue  # client-gradle-<n>.log: the same session's Gradle output
-                        off = bool(m_n) and int(m_n.group(1)) <= len(sess_opts) and "brimstone.block-renderer=off" in sess_opts[int(m_n.group(1)) - 1]
+                        off = bool(m_n) and int(m_n.group(1)) <= len(sess_opts) and "quicksilver.block-renderer=off" in sess_opts[int(m_n.group(1)) - 1]
                         if not r.startswith("measure"):
-                            if off and "Brimstone block renderer: off" not in st:
-                                failures.append(f"{name}/{r}/{sess}: the session with block-renderer=off did not start with Brimstone's block renderer off")
-                            if not off and "Brimstone block renderer: off" in st:
-                                failures.append(f"{name}/{r}/{sess}: Brimstone's block renderer was off in a session that does not switch it off")
+                            if off and "Quicksilver block renderer: off" not in st:
+                                failures.append(f"{name}/{r}/{sess}: the session with block-renderer=off did not start with Quicksilver's block renderer off")
+                            if not off and "Quicksilver block renderer: off" in st:
+                                failures.append(f"{name}/{r}/{sess}: Quicksilver's block renderer was off in a session that does not switch it off")
                         if r.startswith("measure"):
                             if "[Indigo] Registering Indigo renderer" not in st:
                                 failures.append(f"{name}/{r}/{sess}: the measure run did not draw with Fabric's Indigo renderer")
-                            if "Brimstone renderer: off, brimstone.ci.measureOnly is set" not in st or "Fabric Renderer API implementation registered" in st:
-                                failures.append(f"{name}/{r}/{sess}: Brimstone's Fabric Renderer API implementation did not stay off for measuring")
+                            if "Quicksilver renderer: off, quicksilver.ci.measureOnly is set" not in st or "Fabric Renderer API implementation registered" in st:
+                                failures.append(f"{name}/{r}/{sess}: Quicksilver's Fabric Renderer API implementation did not stay off for measuring")
                         else:
                             if "Fabric Renderer API implementation registered" not in st:
-                                failures.append(f"{name}/{r}/{sess}: Brimstone's Fabric Renderer API implementation was not registered")
+                                failures.append(f"{name}/{r}/{sess}: Quicksilver's Fabric Renderer API implementation was not registered")
                             if "[Indigo] Registering Indigo renderer" in st:
-                                failures.append(f"{name}/{r}/{sess}: Indigo registered as the renderer next to Brimstone")
-                            nwarn = len(re.findall(r"Brimstone renderer fallback:", st))
+                                failures.append(f"{name}/{r}/{sess}: Indigo registered as the renderer next to Quicksilver")
+                            nwarn = len(re.findall(r"Quicksilver renderer fallback:", st))
                             if nwarn:
                                 failures.append(f"{name}/{r}/{sess}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")
-                            want_test = "Brimstone renderer self-test: not run (block renderer off)" if off else "Brimstone renderer self-test: passed"
-                            if want_test not in st or "Brimstone renderer self-test FAILED" in st:
+                            want_test = "Quicksilver renderer self-test: not run (block renderer off)" if off else "Quicksilver renderer self-test: passed"
+                            if want_test not in st or "Quicksilver renderer self-test FAILED" in st:
                                 failures.append(f"{name}/{r}/{sess}: the renderer self-test did not pass (see client log)")
                     if r.startswith("measure"):
-                        # a measure run stands in for vanilla only while every Brimstone module is off in it (package 3)
+                        # a measure run stands in for vanilla only while every Quicksilver module is off in it (package 3)
                         for mod in ("terrain", "visibility", "animation"):
-                            if f"Brimstone {mod}: off, brimstone.ci.measureOnly is set" not in t:
+                            if f"Quicksilver {mod}: off, quicksilver.ci.measureOnly is set" not in t:
                                 failures.append(f"{name}/{r}: the {mod} module did not stay off for measuring (no measure-only line in the client log)")
-                        if "Brimstone terrain: on " in t or "Brimstone visibility: on " in t or "Brimstone animation: on " in t:
-                            failures.append(f"{name}/{r}: a Brimstone module turned on in a measure run")
+                        if "Quicksilver terrain: on " in t or "Quicksilver visibility: on " in t or "Quicksilver animation: on " in t:
+                            failures.append(f"{name}/{r}: a Quicksilver module turned on in a measure run")
                         for f in glob.glob(os.path.join(d, "bench", "*.json")):
                             bj = json.load(open(f))
                             ter, vis, tg = bj.get("terrain") or {}, bj.get("visibility") or {}, bj.get("terrainGpu") or {}
                             if ter.get("state") != "off" or ter.get("reason") != "measure only (CI)" or vis.get("state") != "off":
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: modules not off for measuring (terrain {ter.get('state')} ({ter.get('reason')}), visibility {vis.get('state')})")
-                            if tg.get("brimstoneArenasReservedMB") != 0 or ter.get("layersTaken", 0) != 0:
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone held terrain in a measure run ({tg.get('brimstoneArenasReservedMB')} MB, {ter.get('layersTaken')} layers)")
+                            if tg.get("quicksilverArenasReservedMB") != 0 or ter.get("layersTaken", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver held terrain in a measure run ({tg.get('quicksilverArenasReservedMB')} MB, {ter.get('layersTaken')} layers)")
                             an = bj.get("animation") or {}
                             if an.get("state") != "off" or an.get("reason") != "measure only (CI)" or an.get("skippedSinceStart", 0) != 0:
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: animation module not off for measuring ({an.get('state')} ({an.get('reason')}), left out {an.get('skippedSinceStart')})")
                     else:
-                        # the terrain module must be on in every Brimstone run and must never have fallen back to vanilla
-                        if re.search(r"Brimstone terrain: (turned off|not used)", t):
+                        # the terrain module must be on in every Quicksilver run and must never have fallen back to vanilla
+                        if re.search(r"Quicksilver terrain: (turned off|not used)", t):
                             failures.append(f"{name}/{r}: the terrain module fell back to vanilla (see client log)")
-                        if "Brimstone terrain: on " not in t:
+                        if "Quicksilver terrain: on " not in t:
                             failures.append(f"{name}/{r}: the terrain module never turned on")
-                        if re.search(r"Brimstone visibility: turned off", t):
+                        if re.search(r"Quicksilver visibility: turned off", t):
                             failures.append(f"{name}/{r}: the visibility module fell back to vanilla (see client log)")
-                        if "Brimstone visibility: on " not in t:
+                        if "Quicksilver visibility: on " not in t:
                             failures.append(f"{name}/{r}: the visibility module never turned on")
                         if "DRY RUN (noise collection)" in t:
                             failures.append(f"{name}/{r}: visibility dry run (a noise collection run: hides nothing, never for merge)")
-                        nwarn = len(re.findall(r"Brimstone visibility check:", t))
+                        nwarn = len(re.findall(r"Quicksilver visibility check:", t))
                         if nwarn:
                             failures.append(f"{name}/{r}: pop-in: {nwarn} ray-check warnings in the client log (a hidden object was reachable from the camera)")
-                        nwarn = len(re.findall(r"Brimstone translucency check:", t))
+                        nwarn = len(re.findall(r"Quicksilver translucency check:", t))
                         if nwarn:
-                            failures.append(f"{name}/{r}: translucency: {nwarn} per-frame check misses in the client log (Brimstone's translucent draws differed from vanilla's order or latest sort)")
-                        if re.search(r"Brimstone visibility: deferring", t):
+                            failures.append(f"{name}/{r}: translucency: {nwarn} per-frame check misses in the client log (Quicksilver's translucent draws differed from vanilla's order or latest sort)")
+                        if re.search(r"Quicksilver visibility: deferring", t):
                             failures.append(f"{name}/{r}: the visibility module deferred to vanilla (see client log)")
-                        if re.search(r"Brimstone animation: turned off", t):
+                        if re.search(r"Quicksilver animation: turned off", t):
                             failures.append(f"{name}/{r}: the animation module fell back to vanilla (see client log)")
-                        if "Brimstone animation: on " not in t:
+                        if "Quicksilver animation: on " not in t:
                             failures.append(f"{name}/{r}: the animation module never turned on")
                         for f in glob.glob(os.path.join(d, "bench", "*.json")):
                             bj = json.load(open(f))
@@ -417,17 +417,17 @@ def main():
                                 if vis.get("unverifiedObjects", 0) != 0:
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: {vis.get('unverifiedObjects')} hidden objects were not ray-checked (check budget)")
                                 if scene_def.get("ciRequiresCulling") and not (vis.get("entitiesCulled", 0) > 0 and vis.get("blockEntitiesCulled", 0) > 0):
-                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver hid no entities ({vis.get('entitiesCulled')}) or no block entities ({vis.get('blockEntitiesCulled')}) where walls cover some")
                             # package 4: which path the blocks and API mesh quads took since the session started; with
-                            # block-renderer=off none may go Brimstone's way, else none to vanilla's block renderer
+                            # block-renderer=off none may go Quicksilver's way, else none to vanilla's block renderer
                             rs = bj.get("renderer")
-                            off_scene = (scene_def.get("brimstoneConfig") or {}).get("block-renderer") == "off"
+                            off_scene = (scene_def.get("quicksilverConfig") or {}).get("block-renderer") == "off"
                             if rs is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no renderer report")
-                            elif off_scene and not (rs.get("blockRendererOff") and rs.get("blocksBrimstone") == 0 and rs.get("meshQuadsBrimstone") == 0 and rs.get("blocksVanilla", 0) > 0):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: with block-renderer=off, blocks Brimstone/vanilla {rs.get('blocksBrimstone')}/{rs.get('blocksVanilla')}, mesh quads by Brimstone {rs.get('meshQuadsBrimstone')} (want 0/more than 0, 0)")
-                            elif not off_scene and (rs.get("blockRendererOff") or rs.get("blocksVanilla") != 0 or rs.get("blocksBrimstone", 0) == 0):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: blocks Brimstone/vanilla {rs.get('blocksBrimstone')}/{rs.get('blocksVanilla')} (want more than 0/0), block renderer off: {rs.get('blockRendererOff')}")
+                            elif off_scene and not (rs.get("blockRendererOff") and rs.get("blocksQuicksilver") == 0 and rs.get("meshQuadsQuicksilver") == 0 and rs.get("blocksVanilla", 0) > 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: with block-renderer=off, blocks Quicksilver/vanilla {rs.get('blocksQuicksilver')}/{rs.get('blocksVanilla')}, mesh quads by Quicksilver {rs.get('meshQuadsQuicksilver')} (want 0/more than 0, 0)")
+                            elif not off_scene and (rs.get("blockRendererOff") or rs.get("blocksVanilla") != 0 or rs.get("blocksQuicksilver", 0) == 0):
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: blocks Quicksilver/vanilla {rs.get('blocksQuicksilver')}/{rs.get('blocksVanilla')} (want more than 0/0), block renderer off: {rs.get('blockRendererOff')}")
                             tr = bj.get("translucency")
                             if tr is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no translucency report")
@@ -439,9 +439,9 @@ def main():
                                 if tr.get("violations", 0) != 0 or tr.get("violationsSinceStart", 0) != 0:
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: translucency check: {tr.get('violations')} misses while measuring, {tr.get('violationsSinceStart')} since start-up")
                                 if tr.get("mixedFrames", 0) != 0:
-                                    failures.append(f"{name}/{r}: bench {bj['scene']}: {tr.get('mixedFrames')} measured frames drew translucent sections of vanilla's own next to Brimstone's")
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: {tr.get('mixedFrames')} measured frames drew translucent sections of vanilla's own next to Quicksilver's")
                                 if scene_def.get("ciRequiresTranslucent") and not tr.get("dryRun") and not (tr.get("sectionLayersPerFrame", 0) > 0 and tr.get("entriesChecked", 0) > 0):
-                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no translucent sections (section layers/frame {tr.get('sectionLayersPerFrame')}, checked {tr.get('entriesChecked')})")
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver drew no translucent sections (section layers/frame {tr.get('sectionLayersPerFrame')}, checked {tr.get('entriesChecked')})")
                                 frames_measured = tr.get("framesMeasured", 0)
                                 if scene_def.get("ciRequiresOit") and not tr.get("dryRun") and tr.get("oitFrames", 0) < frames_measured:
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: Improved Transparency was not on in every measured frame ({tr.get('oitFrames')} stage draws for {frames_measured} frames)")
@@ -453,9 +453,9 @@ def main():
                             elif ter.get("state") != "active" or ter.get("fallbacks", 0) != 0:
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: terrain module {ter.get('state')}, fallbacks {ter.get('fallbacks')} ({ter.get('reason')})")
                             elif ter.get("alphaLayersKeptByVanilla", 0) or ter.get("translucentHandedBackForAlpha"):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Brimstone's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: {ter.get('alphaLayersKeptByVanilla')} terrain layers with a vertex alpha below 255 (Quicksilver's vertex has none; translucent handed back: {ter.get('translucentHandedBackForAlpha')})")
                             elif not (ter.get("layersTaken", 0) > 0 and ter.get("sectionLayersPerFrame", 0) > 0 and ter.get("drawCallsPerFrame", 0) > 0):
-                                failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver drew no terrain (layers taken {ter.get('layersTaken')}, section layers/frame {ter.get('sectionLayersPerFrame')}, draws/frame {ter.get('drawCallsPerFrame')})")
                             # package 4b: facing groups that face away from the camera are left out in every scene (fewer triangles
                             # than drawing every layer whole), and terrain uploads go through the budget
                             bf, ub = bj.get("backFaces"), bj.get("uploadBudget")
@@ -481,7 +481,7 @@ def main():
                                     failures.append(f"{name}/{r}: bench {bj['scene']}: {an.get('late')} stale animated sprites redrawn late while measuring, {an.get('lateSinceStart')} since start-up (something may have drawn from them first)")
                                 # counted inside this scene's measured window only (the scene's steps make each path run there)
                                 if scene_def.get("ciRequiresAnimationSkip") and not (an.get("skipped", 0) > 0 and an.get("catchUpsBeforeTerrain", 0) > 0 and an.get("catchUpsOnFirstUse", 0) > 0):
-                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Brimstone did not leave out and redraw animated sprites while measuring here (left out {an.get('skipped')}, redrawn before terrain {an.get('catchUpsBeforeTerrain')}, on first use {an.get('catchUpsOnFirstUse')})")
+                                    failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver did not leave out and redraw animated sprites while measuring here (left out {an.get('skipped')}, redrawn before terrain {an.get('catchUpsBeforeTerrain')}, on first use {an.get('catchUpsOnFirstUse')})")
                             miss = bj.get("counters", {}).get("missing")
                             if miss is None:
                                 failures.append(f"{name}/{r}: bench {bj['scene']} has no counter audit")
@@ -489,14 +489,14 @@ def main():
                                 failures.append(f"{name}/{r}: counters that did not apply: {', '.join(miss)}")
                 srv = os.path.join(d, "server.log")
                 st = open(srv, errors="replace").read() if os.path.exists(srv) else ""
-                if not re.search(r"\bbrimstone\b", st):
-                    failures.append(f"{name}/{r}: the server did not list Brimstone among its mods")
+                if not re.search(r"\bquicksilver\b", st):
+                    failures.append(f"{name}/{r}: the server did not list Quicksilver among its mods")
                 if re.search(r"(ERROR|Exception)[^\n]*[Bb]rimstone|[Bb]rimstone[^\n]*(ERROR|Exception)", st):
-                    failures.append(f"{name}/{r}: the server logged a Brimstone error")
+                    failures.append(f"{name}/{r}: the server logged a Quicksilver error")
         # GPU errors from the game's debug output (OpenGL debug messages of type ERROR, Vulkan validation errors):
-        # a Brimstone run must not log more than the vanilla run on the same GPU profile
+        # a Quicksilver run must not log more than the vanilla run on the same GPU profile
         lines.append("")
-        lines.append("GPU error messages in the client logs (Brimstone run / vanilla run of the same profile):\n")
+        lines.append("GPU error messages in the client logs (Quicksilver run / vanilla run of the same profile):\n")
         for prof, (b, v) in PAIRS.items():
             eb, ev = gpu_errors(logs(runs[b])), gpu_errors(logs(runs[v]))
             lines.append(f"- {prof}: {eb} / {ev}")
@@ -504,7 +504,7 @@ def main():
                 failures.append(f"{name}/{b}: {eb} GPU error messages in the client log, {ev} in {v}")
         lines.append("")
         if QUICK:
-            lines.append("**Quick mode** (core suite; vanilla a, vanilla b, Brimstone old-GPU against vanilla a): the measure-run"
+            lines.append("**Quick mode** (core suite; vanilla a, vanilla b, Quicksilver old-GPU against vanilla a): the measure-run"
                          " gates (same-run draw calls, terrain GPU memory, measure pictures) and the full and Vulkan profiles are"
                          " not run. A merge needs a full run.\n")
         lines.append("| scene | noise (vanilla a/b) % | limit % | " + " | ".join(PROFILE_NAMES[p] + " %" for p in PAIRS) + " |")
@@ -567,8 +567,8 @@ def main():
                         elif c > slimit:
                             failures.append(f"{name}/{sid}: {prof} differs from vanilla on {c} pixels where every vanilla run"
                                             f" agrees exactly, by more than {STRICT_THRESHOLD}/255 (strict limit {slimit})")
-                # the measure runs (Brimstone loaded, every module off) must look like vanilla within vanilla's own
-                # noise, the same 8/255 and strict limits as Brimstone's runs (package 3): they stand in for vanilla
+                # the measure runs (Quicksilver loaded, every module off) must look like vanilla within vanilla's own
+                # noise, the same 8/255 and strict limits as Quicksilver's runs (package 3): they stand in for vanilla
                 # in the draw-call and terrain memory gates
                 mpairs = {} if QUICK else {prof: (MEASURE[prof], v) for prof, (b, v) in PAIRS.items() if prof not in skipped_profiles}
                 mrow = {prof: diff(shot(mb), shot(v), os.path.join(rep, "diff", f"{name}-{sid}-{prof}-measure.png")) for prof, (mb, v) in mpairs.items()}
@@ -590,15 +590,15 @@ def main():
                 strict_lines.append(f"| {sid} | {agree} | {shown} | "
                                     + " | ".join(f"{counts.get(p)} ({counts_any.get(p)})" for p in PAIRS) + " |")
         lines.append("")
-        lines.append(f"Strict picture: pixels where {"all four" if len(VANILLA_RUNS) == 4 else "both"} vanilla runs agree exactly but the Brimstone run differs by more than"
+        lines.append(f"Strict picture: pixels where {"all four" if len(VANILLA_RUNS) == 4 else "both"} vanilla runs agree exactly but the Quicksilver run differs by more than"
                      f" {STRICT_THRESHOLD}/255 (in brackets: differs at all, reported only):\n")
         lines.append("| scene | vanilla runs agree on % of pixels | strict limit (pixels) | " + " | ".join(PROFILE_NAMES[p] for p in PAIRS) + " |")
         lines.append("|---|---|---|" + "---|" * len(PAIRS))
         lines.extend(strict_lines)
         lines.append("")
         if not QUICK:
-            lines.append("Measure runs (Brimstone loaded, every module off) against vanilla's run of the same profile: % of pixels over"
-                         f" 8/255 / strict pixels over {STRICT_THRESHOLD}/255; the same limits as Brimstone's runs:\n")
+            lines.append("Measure runs (Quicksilver loaded, every module off) against vanilla's run of the same profile: % of pixels over"
+                         f" 8/255 / strict pixels over {STRICT_THRESHOLD}/255; the same limits as Quicksilver's runs:\n")
             lines.append("| scene | full | old-GPU | Vulkan |")
             lines.append("|---|---|---|---|")
             lines.extend(measure_lines)
@@ -652,15 +652,15 @@ def main():
                     failures.append(f"{name}/{prof}/{sid}: no committed baseline entry in {base_file}")
                 lines.append(f"| {sid} | " + " | ".join(cells) + " |")
             # package 3 (Andre, 2026-10-25), against vanilla measured in the same run (MEASURE): in the translucent
-            # scenes (ci/vanilla-draw-calls.json) Brimstone's median draw calls per frame at most vanilla's median; in
-            # every scene the terrain GPU memory reserved (Brimstone's arenas and whatever vanilla's own heaps still
+            # scenes (ci/vanilla-draw-calls.json) Quicksilver's median draw calls per frame at most vanilla's median; in
+            # every scene the terrain GPU memory reserved (Quicksilver's arenas and whatever vanilla's own heaps still
             # hold) at most what vanilla's heaps reserve
             if not QUICK:
                 van = bench_results(runs[MEASURE[prof]])
                 lines.append("")
                 lines.append(f"Draw calls against vanilla measured in the same run ({MEASURE[prof]}), {name} {prof}: average and median per frame;"
                              " translucent scenes (ci/vanilla-draw-calls.json) at most vanilla's, the others at most vanilla's x 1.10 + 2:\n")
-                lines.append("| scene | Brimstone avg / median (fps) | vanilla avg / median (fps) | gated on |")
+                lines.append("| scene | Quicksilver avg / median (fps) | vanilla avg / median (fps) | gated on |")
                 lines.append("|---|---|---|---|")
                 translucent = set(vanilla_draws.get(name, []))
                 # a per-scene allowance on top of vanilla's (Andre's decisions only, each explained in the file)
@@ -686,8 +686,8 @@ def main():
                     lines.append(f"| {sid} | {c['drawCallsPerFrameAvg']} / {c['drawCallsPerFrameMedian']} ({c.get('fps')}) | {vc['drawCallsPerFrameAvg']} / {vc['drawCallsPerFrameMedian']} ({vc.get('fps')}) | "
                                  f"{' and '.join(l for l, _ in stats)}{(', at most vanilla + ' + str(allowance[name + '/' + prof + '/' + sid])) if sid in translucent and name + '/' + prof + '/' + sid in allowance else ', at most vanilla' if sid in translucent else ', x 1.10 + 2'} |")
                 lines.append("")
-                lines.append(f"Terrain GPU memory, {name} {prof} (MB; reserved in the Brimstone run must not be more than vanilla's):\n")
-                lines.append("| scene | Brimstone run reserved / used | of which Brimstone's arenas | of which vanilla's heaps | vanilla (measure run) reserved / used |")
+                lines.append(f"Terrain GPU memory, {name} {prof} (MB; reserved in the Quicksilver run must not be more than vanilla's):\n")
+                lines.append("| scene | Quicksilver run reserved / used | of which Quicksilver's arenas | of which vanilla's heaps | vanilla (measure run) reserved / used |")
                 lines.append("|---|---|---|---|---|")
                 for sc in scenes:
                     sid = sc["id"]
@@ -699,18 +699,18 @@ def main():
                         failures.append(f"{name}/{prof}/{sid}: terrain GPU memory missing ({tg.get('problem') or vg.get('problem') or 'no terrainGpu in a bench'})")
                     elif tg["reservedMB"] > vg["reservedMB"]:
                         failures.append(f"{name}/{prof}/{sid}: {tg['reservedMB']} MB of terrain GPU memory reserved, more than vanilla's {vg['reservedMB']} MB")
-                    lines.append(f"| {sid} | {tg.get('reservedMB')} / {tg.get('usedMB')} | {tg.get('brimstoneArenasReservedMB')} / {tg.get('brimstoneArenasUsedMB')} | {tg.get('vanillaHeapsReservedMB')} / {tg.get('vanillaHeapsUsedMB')} | {vg.get('reservedMB')} / {vg.get('usedMB')} |")
+                    lines.append(f"| {sid} | {tg.get('reservedMB')} / {tg.get('usedMB')} | {tg.get('quicksilverArenasReservedMB')} / {tg.get('quicksilverArenasUsedMB')} | {tg.get('vanillaHeapsReservedMB')} / {tg.get('vanillaHeapsUsedMB')} | {vg.get('reservedMB')} / {vg.get('usedMB')} |")
                 lines.append("")
             if base is None:
                 failures.append(f"{name}/{prof}: no committed baseline {base_file}")
             # package 4b: triangles drawn against every face, and the upload spike against vanilla in the same run
             van4b = bench_results(runs[MEASURE[prof]]) if not QUICK else {}
             lines.append("")
-            lines.append(f"Package 4b, {name} {prof}: Brimstone's terrain triangles per frame (with every face, as before 4b), and the"
+            lines.append(f"Package 4b, {name} {prof}: Quicksilver's terrain triangles per frame (with every face, as before 4b), and the"
                          " largest upload bytes in one frame (all of the frame's uploads), frames over 50 ms and sections waiting"
                          + ("" if QUICK else f"; vanilla from {MEASURE[prof]}") + ":\n")
-            lines.append("| scene | triangles/frame (every face) | left out % | ranges per section layer | largest upload bytes in one frame: Brimstone"
-                         + ("" if QUICK else " / vanilla") + " | Brimstone terrain bytes, largest frame (budget avg) | frames over 50 ms: Brimstone"
+            lines.append("| scene | triangles/frame (every face) | left out % | ranges per section layer | largest upload bytes in one frame: Quicksilver"
+                         + ("" if QUICK else " / vanilla") + " | Quicksilver terrain bytes, largest frame (budget avg) | frames over 50 ms: Quicksilver"
                          + ("" if QUICK else " / vanilla") + " | sections waiting avg / max |")
             lines.append("|---|---|---|---|---|---|---|---|")
             for sc in scenes:
@@ -723,7 +723,7 @@ def main():
                              f"{c.get('over50ms')}{'' if QUICK else ' / ' + str(vc.get('over50ms'))} | {ub.get('sectionsWaitingAvg')} / {ub.get('sectionsWaitingMax')} |")
             lines.append("")
             lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
-            lines.append("| scene | path | Brimstone draws/frame | section layers/frame | bytes per vertex | live vertices | % vertices with a position / UV rounded | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
+            lines.append("| scene | path | Quicksilver draws/frame | section layers/frame | bytes per vertex | live vertices | % vertices with a position / UV rounded | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
             lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
             for sc in scenes:
                 c = cur.get(sc["id"])
@@ -735,7 +735,7 @@ def main():
                 lines.append(f"| {sc['id']} | {t.get('lastDrawPath')} | {t.get('drawCallsPerFrame')} | {t.get('sectionLayersPerFrame')} | {t.get('vertexBytes')} (vanilla {t.get('vanillaVertexBytes')}) | {t.get('liveVertices')} | {t.get('positionRoundedPct')} / {round(100.0 * (t.get('verticesWithUvRounded') or 0) / max(1, t.get('verticesConverted') or 0), 3)} | {t.get('usedMB')} / {t.get('arenaMB')} | {t.get('vanillaEquivalentMB')} | {t.get('layersTaken')} / {t.get('layersKeptByVanilla')} | {mesh.get('msPerSection')} ({mesh.get('compileMsP95')}) |")
             lines.append("")
             lines.append(f"Translucency, {name} {prof} (package 3; the check, mixed frames and dry run gated above):\n")
-            lines.append("| scene | Brimstone's translucent section layers/frame | its draws/frame | vanilla's own layers/frame | mixed frames | OIT stage draws | sorts (ms avg / p95 / max; on render thread) | new index lists uploaded | check: entries / unchecked / misses |")
+            lines.append("| scene | Quicksilver's translucent section layers/frame | its draws/frame | vanilla's own layers/frame | mixed frames | OIT stage draws | sorts (ms avg / p95 / max; on render thread) | new index lists uploaded | check: entries / unchecked / misses |")
             lines.append("|---|---|---|---|---|---|---|---|---|")
             for sc in scenes:
                 c = cur.get(sc["id"])
@@ -754,10 +754,10 @@ def main():
                 v = c["visibility"]
                 lines.append(f"| {sc['id']}{' (dry run)' if v.get('dryRun') else ''} | {v.get('sectionsVisiblePerFrame')} | {v.get('entitiesPerFrame')} ({v.get('entitiesTestedPerFrame')}, {v.get('entitiesCulledPerFrame')}) | {v.get('blockEntitiesPerFrame')} ({v.get('blockEntitiesTestedPerFrame')}, {v.get('blockEntitiesCulledPerFrame')}) | {v.get('cullMsPerFrame')} ({v.get('cullMsMax')}; {v.get('framesOverBudget')}) | {v.get('sectionLayersMissing')} | {v.get('verifiedObjects')} / {v.get('verifiedRays')} / {v.get('violations')} / {v.get('unverifiedObjects')} |")
             lines.append("")
-            # package 8: what vanilla spends on effects (its measure run, every Brimstone module off) next to Brimstone
+            # package 8: what vanilla spends on effects (its measure run, every Quicksilver module off) next to Quicksilver
             van = {} if QUICK else bench_results(runs[MEASURE[prof]])
             lines.append(f"Effects, {name} {prof} (reported; draw calls per frame by what they draw for; vanilla = {MEASURE[prof] if not QUICK else 'no measure run in quick mode'}):\n")
-            lines.append("| scene | animation draws: vanilla / Brimstone | particles | sky | weather | clouds | particles alive / drawn per frame | particle tick ms / extract ms | animated sprites (used outside terrain) | per tick changed / redrawn / left out | caught up / late | seen per frame |")
+            lines.append("| scene | animation draws: vanilla / Quicksilver | particles | sky | weather | clouds | particles alive / drawn per frame | particle tick ms / extract ms | animated sprites (used outside terrain) | per tick changed / redrawn / left out | caught up / late | seen per frame |")
             lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
             for sc in scenes:
                 c = cur.get(sc["id"])
@@ -769,12 +769,12 @@ def main():
                 both = lambda k: f"{ve.get(k, '-')} / {d.get(k)}"
                 lines.append(f"| {sc['id']} | {both('animation')} | {both('particles')} | {both('sky')} | {both('weather')} | {both('clouds')} | {p.get('aliveAvg')} / {p.get('drawnPerFrame')} | {p.get('tickMsPerTick')} / {p.get('extractMsPerFrame')} | {a.get('sprites')} ({a.get('usedOutsideTerrain')}) | {a.get('changedPerTick')} / {a.get('redrawnPerTick')} / {a.get('skippedPerTick')} | {a.get('catchUps')} / {a.get('late')} | {a.get('seenPerFrame')} |")
             lines.append("")
-            # package 7: the game's GUI pass, Brimstone's run and vanilla's (the measure run) side by side (reported)
+            # package 7: the game's GUI pass, Quicksilver's run and vanilla's (the measure run) side by side (reported)
             van_gui = {} if QUICK else bench_results(runs[MEASURE[prof]])
             lines.append(f"GUI pass, {name} {prof} (package 7, reported): draw calls/frame of the game's GUI pass (preparation: item atlas,"
                          " picture-in-picture), elements, distinct states (fewest possible draws), draws if reordered without changing"
                          " the picture (text counted as overlapping everything; in brackets as overlapping nothing, an upper bound);"
-                         " Brimstone / vanilla (measure run):\n")
+                         " Quicksilver / vanilla (measure run):\n")
             lines.append("| scene | GUI draws/frame | preparation draws/frame | elements/frame | states/frame | reordered draws/frame |")
             lines.append("|---|---|---|---|---|---|")
             for sc in scenes:
@@ -786,7 +786,7 @@ def main():
                 lines.append(f"| {sc['id']} | {cell('drawCallsPerFrame')} | {cell('prepareDrawCallsPerFrame')} | {cell('elementsPerFrame')} | {cell('statesPerFrame')} (pipelines {g.get('pipelinesPerFrame')}, textures {g.get('textureSetupsPerFrame')}, scissors {g.get('scissorAreasPerFrame')}) | {cell('reorderedDrawsPerFrame')} ({cell('reorderedIgnoringTextPerFrame')}) |")
             lines.append("")
     bench_only(res, failures, lines)
-    lines.insert(0, "# Brimstone CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
+    lines.insert(0, "# Quicksilver CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
     json.dump({"failures": failures, "suites": data}, open(os.path.join(rep, "report.json"), "w"), indent=2)
     print("\n".join(lines))

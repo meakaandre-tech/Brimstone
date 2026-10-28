@@ -1,0 +1,868 @@
+{
+  "suite": "core",
+  "requiresMod": null,
+  "description": "A plain world: only Fabric API and Quicksilver. Coordinates assume nothing about the world but its seed (CI uses 12345).",
+  "preamble": [
+    "gamerule advance_time false",
+    "gamerule advance_weather false",
+    "gamerule send_command_feedback false",
+    "gamemode spectator @a",
+    "time set 6000",
+    "weather clear"
+  ],
+  "scenes": [
+    {
+      "id": "spawn",
+      "title": "World spawn of seed 12345, 8 chunks, daylight (fixed camera height above the terrain)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 96.5 165 -27.5 0 30"
+      ]
+    },
+    {
+      "id": "flythrough",
+      "title": "Fly-through over fresh terrain, 12 chunks, scripted path north at 10 blocks/s",
+      "renderDistance": 12,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a -6000.5 170 -6000.5 180 15"
+      ],
+      "velocity": [
+        0.0,
+        0.0,
+        -10.0
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciNote": "Against the committed baselines CI gates only memory here: upload volume and draw calls depend on how fast CI's server generates the new terrain. Its draw calls are gated against vanilla measured in the same run (package 3)."
+    },
+    {
+      "id": "water_glass",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40180107484 attempt 2, Vulkan: Quicksilver 124.0 average / 124 median at 18.57 fps, vanilla's measure run 103.78 / 124 at 24.15 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "Water, ice and stained glass in a glass tank",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35",
+        "#wait 6",
+        "fill 1990 199 -2010 2010 199 -1990 minecraft:smooth_stone",
+        "fill 1990 200 -2010 2010 208 -1990 minecraft:air",
+        "fill 1992 200 -2008 2008 205 -1992 minecraft:glass hollow",
+        "fill 1993 201 -2007 2007 204 -1993 minecraft:water",
+        "fill 1995 201 -2005 1997 203 -2003 minecraft:ice",
+        "fill 2002 201 -2005 2004 204 -2003 minecraft:light_blue_stained_glass",
+        "fill 1994 206 -1996 2006 206 -1996 minecraft:red_stained_glass_pane",
+        "fill 1990 200 -1990 2010 203 -1990 minecraft:white_stained_glass_pane",
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35"
+      ],
+      "ciRequiresTranslucent": true
+    },
+    {
+      "id": "nether",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40180107484 attempt 2, Vulkan: Quicksilver 120.73 / 121 at 18.93 fps, vanilla 102.5 / 121 at 23.63 fps (limit x 1.10 + 2: 114.75). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "The nether",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:the_nether run tp @a 0.5 40 0.5 45 10"
+      ]
+    },
+    {
+      "id": "mobs",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40193520268, Vulkan: Quicksilver 134.0 / 134 at 18.81 fps, vanilla 115.65 / 134 at 23.72 fps (limit x 1.10 + 2: 129.22; also run 40180107484 attempt 2: 114.99 / 134 at 23.83 fps against 95.79 / 134 at 29.78 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "A crowd of 64 mobs (no AI, fixed variants, so they hold still and look the same every run)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2100.5 208 -1985.5 180 30",
+        "#wait 6",
+        "fill 2090 199 -2010 2110 199 -1990 minecraft:grass_block",
+        "fill 2090 200 -2010 2110 207 -1990 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2090,y=199,z=-2010,dx=20,dy=8,dz=20] 2100.5 -200 -2000.5",
+        "summon minecraft:cow 2093 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2093 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2093 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2093 200 -2001 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2093 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2093 200 -1997 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2093 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2093 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2095 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2095 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2095 200 -2003 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2095 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2095 200 -1999 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2095 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2095 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2095 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2097 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2097 200 -2005 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2097 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2097 200 -2001 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2097 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2097 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2097 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2097 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2099 200 -2007 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2099 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2099 200 -2003 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2099 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2099 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2099 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2099 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2099 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2101 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2101 200 -2005 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2101 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2101 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2101 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2101 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2101 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2101 200 -1993 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2103 200 -2007 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2103 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2103 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2103 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2103 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2103 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2103 200 -1995 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2103 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2105 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2105 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2105 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2105 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2105 200 -1999 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2105 200 -1997 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2105 200 -1995 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2105 200 -1993 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:snow_golem 2107 200 -2007 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2107 200 -2005 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2107 200 -2003 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:chicken 2107 200 -2001 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2107 200 -1999 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2107 200 -1997 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:mooshroom 2107 200 -1995 {Type:\"red\",NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2107 200 -1993 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "execute in minecraft:overworld run tp @a 2100.5 208 -1985.5 180 30"
+      ]
+    },
+    {
+      "id": "outline",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate (frames that line up with a game tick draw more). Run 40266027605, Vulkan: Quicksilver 127.0 average / 127 median at 16.42 fps, vanilla's measure run 101.35 / 127 at 25.57 fps (limit x 1.10 + 2: 113.48); full in the same run 127.0 / 127 against 125.0 / 127. Gated against vanilla on the median (Andre's rule, as for water_glass and mobs).",
+      "title": "The crosshair's block outline round a stone block on a smooth stone floor (package 7)",
+      "renderDistance": 8,
+      "settleSeconds": 10,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2680.5 200 -1984.5 180 25",
+        "#wait 6",
+        "fill 2670 190 -2000 2690 210 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2670,y=190,z=-2000,dx=20,dy=20,dz=24] 2680.5 -200 -1990.5",
+        "fill 2670 199 -2000 2690 199 -1976 minecraft:smooth_stone",
+        "setblock 2680 200 -1988 minecraft:stone",
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2680.5 200 -1984.5 180 25"
+      ],
+      "ciShots": [
+        {
+          "name": "bare",
+          "commands": [
+            "gamemode adventure @a"
+          ]
+        }
+      ],
+      "ciNote": "CI's pin mod leaves the crosshair's block outline out of every scene (it moves by a pixel row between frames on GL 3.3, in vanilla's runs too) except round this scene's stone block at 2680 200 -1988, so the outline is still checked here (package 7). Creative mode, as the game draws no outline in spectator; the bare shot is the same view in adventure mode (no outline round a block the empty hand cannot break; hearts and food shown), to measure what the outline covers."
+    },
+    {
+      "id": "occlusion",
+      "title": "Mobs, chests, a banner and signs behind a stone wall and under a stone floor, some seen through a glass window, a doorway and a glass floor (package 2)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20",
+        "#wait 6",
+        "fill 2283 190 -2012 2317 212 -1980 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2300.5 -200 -2000.5",
+        "fill 2283 199 -2012 2317 199 -1980 minecraft:smooth_stone",
+        "fill 2302 199 -1995 2308 199 -1989 minecraft:glass",
+        "fill 2290 200 -1997 2310 208 -1996 minecraft:stone",
+        "fill 2297 201 -1997 2299 203 -1996 minecraft:glass",
+        "fill 2305 200 -1997 2305 202 -1996 minecraft:air",
+        "setblock 2293 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2298 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2302 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2308 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2304 200 -2002 minecraft:white_banner",
+        "setblock 2290 200 -2002 minecraft:oak_sign",
+        "setblock 2297 200 -2001 minecraft:oak_sign",
+        "setblock 2295 197 -1990 minecraft:chest[facing=south]",
+        "setblock 2305 197 -1992 minecraft:chest[facing=south]",
+        "summon minecraft:cow 2286.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2294.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2296.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2298.5 200 -2003.5 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2302.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2305.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2308.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2314.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2294.5 195 -1991.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2305.5 195 -1991.5 {Color:0b,NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2290.5 195 -1987.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
+      ],
+      "ciRequiresCulling": true,
+      "ciNote": "Quicksilver must hide some entities and block entities here (the ones the wall and the floor cover); the pixel gates catch any it hides wrongly (the ones seen through glass and the doorway)."
+    },
+    {
+      "id": "occlusion_move",
+      "title": "The occlusion layout with the camera sliding along the wall at 0.8 blocks/s while a pig is moved in and out of view and part of the wall is opened and closed again (package 2)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20",
+        "#wait 6",
+        "fill 2283 190 -2012 2317 212 -1980 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2300.5 -200 -2000.5",
+        "fill 2283 199 -2012 2317 199 -1980 minecraft:smooth_stone",
+        "fill 2302 199 -1995 2308 199 -1989 minecraft:glass",
+        "fill 2286 200 -1997 2314 209 -1996 minecraft:stone",
+        "fill 2297 201 -1997 2299 203 -1996 minecraft:glass",
+        "fill 2309 200 -1997 2310 202 -1996 minecraft:air",
+        "setblock 2290 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2298 200 -1999 minecraft:chest[facing=south]",
+        "setblock 2303 200 -2002 minecraft:chest[facing=south]",
+        "setblock 2292 200 -2002 minecraft:white_banner",
+        "setblock 2295 197 -1990 minecraft:chest[facing=south]",
+        "setblock 2305 197 -1992 minecraft:chest[facing=south]",
+        "summon minecraft:cow 2289.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2297.5 200 -2000.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2299.0 200 -2000.5 {Color:0b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2303.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:iron_golem 2309.9 200 -2001.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:villager 2312.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:cow 2294.5 195 -1991.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:sheep 2305.5 195 -1991.5 {Color:0b,NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2290.5 195 -1987.5 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "summon minecraft:pig 2306.5 200 -2003.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f],Tags:[\"brim_mover\"]}",
+        "execute in minecraft:overworld run tp @a 2293.5 203 -1984.5 180 20"
+      ],
+      "velocity": [
+        0.8,
+        0.0,
+        0.0
+      ],
+      "measureSteps": [
+        {
+          "at": 2.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5"
+        },
+        {
+          "at": 4.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5"
+        },
+        {
+          "at": 6.0,
+          "command": "fill 2301 200 -1997 2305 204 -1996 minecraft:air"
+        },
+        {
+          "at": 9.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5"
+        },
+        {
+          "at": 11.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2304.5 200 -2003.5"
+        },
+        {
+          "at": 13.0,
+          "command": "fill 2301 200 -1997 2305 204 -1996 minecraft:stone"
+        },
+        {
+          "at": 15.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5"
+        },
+        {
+          "at": 17.0,
+          "command": "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5"
+        }
+      ],
+      "ciShots": [
+        {
+          "name": "x2297",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2297.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "x2305",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2305.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "x2309",
+          "commands": [
+            "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5",
+            "execute in minecraft:overworld run tp @a 2309.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "open",
+          "commands": [
+            "fill 2301 200 -1997 2305 204 -1996 minecraft:air",
+            "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2304.5 200 -2003.5",
+            "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "closed",
+          "commands": [
+            "fill 2301 200 -1997 2305 204 -1996 minecraft:stone",
+            "tp @e[tag=brim_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5"
+          ]
+        },
+        {
+          "name": "bare_x2300",
+          "commands": [
+            "tp @e[type=!minecraft:player,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2300.5 -200 -2000.5",
+            "setblock 2290 200 -2002 minecraft:air",
+            "setblock 2298 200 -1999 minecraft:air",
+            "setblock 2303 200 -2002 minecraft:air",
+            "setblock 2292 200 -2002 minecraft:air",
+            "setblock 2295 197 -1990 minecraft:air",
+            "setblock 2305 197 -1992 minecraft:air"
+          ]
+        },
+        {
+          "name": "bare_x2297",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2297.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "bare_x2305",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2305.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "bare_x2309",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2309.5 203 -1984.5 180 20"
+          ]
+        },
+        {
+          "name": "bare_open",
+          "commands": [
+            "fill 2301 200 -1997 2305 204 -1996 minecraft:air",
+            "execute in minecraft:overworld run tp @a 2300.5 203 -1984.5 180 20"
+          ]
+        }
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciRequiresCulling": true,
+      "ciNote": "Moving pass: objects are hidden and come into view as the camera passes the window and doorway, as a pig is moved and as the wall opens. The per-frame ray check covers every frame of the bench; ciShots compare fixed points with vanilla under both gates (the bare_* shots, with every object removed, measure each object's on-screen area). Counts against the committed baselines: memory only (the mid-bench commands upload new meshes).; draw calls are gated against vanilla measured in the same run (package 3)."
+    },
+    {
+      "id": "translucent_move",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40193520268, Vulkan: Quicksilver 124.0 / 124 at 15.57 fps, vanilla 123.4 / 124 at 19.28 fps (also run 40180107484 attempt 2: 123.1 / 124 at 19.31 fps against 98.98 / 124 at 25.53 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "Water in a glass tank, a wall of stained glass in stripes of six colours, ice and glass panes, with the camera sliding past at 1.5 blocks/s (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25",
+        "#wait 6",
+        "fill 2384 190 -2022 2436 202 -1976 minecraft:air",
+        "fill 2384 203 -2022 2436 215 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2384,y=190,z=-2022,dx=52,dy=25,dz=46] 2410.5 -200 -2000.5",
+        "fill 2384 199 -2022 2436 199 -1976 minecraft:smooth_stone",
+        "fill 2390 200 -2016 2430 205 -2000 minecraft:glass hollow",
+        "fill 2391 201 -2015 2429 204 -2001 minecraft:water",
+        "fill 2396 201 -2012 2398 203 -2010 minecraft:ice",
+        "fill 2412 201 -2008 2414 204 -2006 minecraft:blue_stained_glass",
+        "fill 2421 202 -2013 2424 204 -2011 minecraft:ice",
+        "fill 2392 200 -1995 2393 207 -1995 minecraft:red_stained_glass",
+        "fill 2394 200 -1995 2395 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2396 200 -1995 2397 207 -1995 minecraft:lime_stained_glass",
+        "fill 2398 200 -1995 2399 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2400 200 -1995 2401 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2402 200 -1995 2403 207 -1995 minecraft:orange_stained_glass",
+        "fill 2404 200 -1995 2405 207 -1995 minecraft:red_stained_glass",
+        "fill 2406 200 -1995 2407 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2408 200 -1995 2409 207 -1995 minecraft:lime_stained_glass",
+        "fill 2410 200 -1995 2411 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2412 200 -1995 2413 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2414 200 -1995 2415 207 -1995 minecraft:orange_stained_glass",
+        "fill 2416 200 -1995 2417 207 -1995 minecraft:red_stained_glass",
+        "fill 2418 200 -1995 2419 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2420 200 -1995 2421 207 -1995 minecraft:lime_stained_glass",
+        "fill 2422 200 -1995 2423 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2424 200 -1995 2425 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2426 200 -1995 2427 207 -1995 minecraft:orange_stained_glass",
+        "fill 2390 200 -1988 2430 202 -1988 minecraft:white_stained_glass_pane",
+        "setblock 2410 201 -1992 minecraft:ice",
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+      ],
+      "velocity": [
+        1.5,
+        0.0,
+        0.0
+      ],
+      "ciShots": [
+        {
+          "name": "x2404",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2404.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2414",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2414.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2424",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2424.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "low",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2418.5 203 -1984.5 160 8"
+          ]
+        },
+        {
+          "name": "back",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "bare_back",
+          "commands": [
+            "setblock 2410 201 -1992 minecraft:air"
+          ]
+        }
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "Moving pass: vanilla re-sorts the translucent sections as the camera crosses blocks; Quicksilver must draw every one of them in vanilla's order with vanilla's latest sort (checked every frame of the bench). ciShots compare fixed points with vanilla under both gates, taken after the camera has moved there; 'back' returns to the start after the other points, and 'bare_back' (the single ice block in front of the stripes removed) measures the smallest translucent element's area on screen. Counts against the committed baselines: memory only (the moving camera makes vanilla re-sort and upload new index lists).; draw calls are gated against vanilla measured in the same run (package 3)."
+    },
+    {
+      "id": "water_glass_oit",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. run 40180107484 attempt 2, Vulkan: Quicksilver 129.01 / 129 at 9.86 fps, vanilla 129.0 / 129 at 13.46 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "Water, ice and stained glass in a glass tank, with Improved Transparency (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35",
+        "#wait 6",
+        "fill 1990 199 -2010 2010 199 -1990 minecraft:smooth_stone",
+        "fill 1990 200 -2010 2010 208 -1990 minecraft:air",
+        "fill 1992 200 -2008 2008 205 -1992 minecraft:glass hollow",
+        "fill 1993 201 -2007 2007 204 -1993 minecraft:water",
+        "fill 1995 201 -2005 1997 203 -2003 minecraft:ice",
+        "fill 2002 201 -2005 2004 204 -2003 minecraft:light_blue_stained_glass",
+        "fill 1994 206 -1996 2006 206 -1996 minecraft:red_stained_glass_pane",
+        "fill 1990 200 -1990 2010 203 -1990 minecraft:white_stained_glass_pane",
+        "execute in minecraft:overworld run tp @a 2000.5 209 -1984.5 180 35"
+      ],
+      "ciRequiresTranslucent": true,
+      "clientOptions": {
+        "improvedTransparency": "true"
+      },
+      "ciRequiresOit": true
+    },
+    {
+      "id": "translucent_move_oit",
+      "title": "Water in a glass tank, a wall of stained glass in stripes of six colours, ice and glass panes, with the camera sliding past at 1.5 blocks/s with Improved Transparency (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25",
+        "#wait 6",
+        "fill 2384 190 -2022 2436 202 -1976 minecraft:air",
+        "fill 2384 203 -2022 2436 215 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2384,y=190,z=-2022,dx=52,dy=25,dz=46] 2410.5 -200 -2000.5",
+        "fill 2384 199 -2022 2436 199 -1976 minecraft:smooth_stone",
+        "fill 2390 200 -2016 2430 205 -2000 minecraft:glass hollow",
+        "fill 2391 201 -2015 2429 204 -2001 minecraft:water",
+        "fill 2396 201 -2012 2398 203 -2010 minecraft:ice",
+        "fill 2412 201 -2008 2414 204 -2006 minecraft:blue_stained_glass",
+        "fill 2421 202 -2013 2424 204 -2011 minecraft:ice",
+        "fill 2392 200 -1995 2393 207 -1995 minecraft:red_stained_glass",
+        "fill 2394 200 -1995 2395 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2396 200 -1995 2397 207 -1995 minecraft:lime_stained_glass",
+        "fill 2398 200 -1995 2399 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2400 200 -1995 2401 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2402 200 -1995 2403 207 -1995 minecraft:orange_stained_glass",
+        "fill 2404 200 -1995 2405 207 -1995 minecraft:red_stained_glass",
+        "fill 2406 200 -1995 2407 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2408 200 -1995 2409 207 -1995 minecraft:lime_stained_glass",
+        "fill 2410 200 -1995 2411 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2412 200 -1995 2413 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2414 200 -1995 2415 207 -1995 minecraft:orange_stained_glass",
+        "fill 2416 200 -1995 2417 207 -1995 minecraft:red_stained_glass",
+        "fill 2418 200 -1995 2419 207 -1995 minecraft:yellow_stained_glass",
+        "fill 2420 200 -1995 2421 207 -1995 minecraft:lime_stained_glass",
+        "fill 2422 200 -1995 2423 207 -1995 minecraft:cyan_stained_glass",
+        "fill 2424 200 -1995 2425 207 -1995 minecraft:magenta_stained_glass",
+        "fill 2426 200 -1995 2427 207 -1995 minecraft:orange_stained_glass",
+        "fill 2390 200 -1988 2430 202 -1988 minecraft:white_stained_glass_pane",
+        "setblock 2410 201 -1992 minecraft:ice",
+        "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+      ],
+      "velocity": [
+        1.5,
+        0.0,
+        0.0
+      ],
+      "ciShots": [
+        {
+          "name": "x2404",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2404.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2414",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2414.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "x2424",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2424.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "low",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2418.5 203 -1984.5 160 8"
+          ]
+        },
+        {
+          "name": "back",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2394.5 206 -1980.5 180 25"
+          ]
+        },
+        {
+          "name": "bare_back",
+          "commands": [
+            "setblock 2410 201 -1992 minecraft:air"
+          ]
+        }
+      ],
+      "ciGatedCounts": [
+        "heapUsedAfterGcMB",
+        "directBuffersMB"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "The translucent_move scene with Improved Transparency: vanilla does not sort translucent terrain then (its order-independent passes need no order), so neither does Quicksilver; it draws each stage with the pipeline made from vanilla's for that stage.",
+      "clientOptions": {
+        "improvedTransparency": "true"
+      },
+      "ciRequiresOit": true
+    },
+    {
+      "id": "flat_plants",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: the slower a run, the more of its frames line up with a game tick and draw that tick's extra draws, so the average moves with fps while the median does not. run 40274749083, Vulkan: Quicksilver 121.34 average / 124 median at 20.36 fps, vanilla's measure run 103.03 / 124 at 24.41 fps (limit x 1.10 + 2: 115.33); full on the same run: 123.96 / 124 against 123.62 / 124 at 15.72 and 16.15 fps. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "A garden of plants with smooth lighting off (flat lighting): grass, ferns, flowers, berry bushes, saplings, pink petals, crops on farmland, sugar cane and lily pads by water, leaves, bamboo, azaleas, moss carpet and vines (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2500.5 207 -1980.5 180 40",
+        "#wait 6",
+        "gamerule random_tick_speed 0",
+        "fill 2483 196 -2010 2517 212 -1978 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2483,y=190,z=-2010,dx=34,dy=22,dz=32] 2500.5 -200 -1995.5",
+        "fill 2485 198 -2008 2515 198 -1983 minecraft:dirt",
+        "fill 2485 199 -2008 2515 199 -1983 minecraft:grass_block",
+        "fill 2487 200 -1987 2513 200 -1987 minecraft:short_grass",
+        "fill 2487 200 -1989 2513 200 -1989 minecraft:fern",
+        "fill 2487 200 -1991 2490 200 -1991 minecraft:poppy",
+        "fill 2491 200 -1991 2494 200 -1991 minecraft:dandelion",
+        "fill 2495 200 -1991 2498 200 -1991 minecraft:blue_orchid",
+        "fill 2499 200 -1991 2502 200 -1991 minecraft:allium",
+        "fill 2503 200 -1991 2506 200 -1991 minecraft:oxeye_daisy",
+        "fill 2507 200 -1991 2510 200 -1991 minecraft:cornflower",
+        "fill 2511 200 -1991 2513 200 -1991 minecraft:azure_bluet",
+        "fill 2487 200 -1993 2492 200 -1993 minecraft:sweet_berry_bush[age=3]",
+        "fill 2493 200 -1993 2496 200 -1993 minecraft:oak_sapling",
+        "fill 2497 200 -1993 2500 200 -1993 minecraft:birch_sapling",
+        "fill 2501 200 -1993 2507 200 -1993 minecraft:pink_petals[flower_amount=4]",
+        "fill 2508 200 -1993 2513 200 -1993 minecraft:lily_of_the_valley",
+        "fill 2487 199 -1996 2513 199 -1995 minecraft:farmland[moisture=7]",
+        "fill 2487 200 -1996 2495 200 -1995 minecraft:wheat[age=7]",
+        "fill 2496 200 -1996 2504 200 -1995 minecraft:carrots[age=7]",
+        "fill 2505 200 -1996 2513 200 -1995 minecraft:potatoes[age=7]",
+        "fill 2487 199 -1997 2513 199 -1997 minecraft:water",
+        "fill 2489 200 -1997 2511 200 -1997 minecraft:lily_pad",
+        "fill 2487 200 -1998 2513 200 -1998 minecraft:sugar_cane",
+        "fill 2487 201 -1998 2513 201 -1998 minecraft:sugar_cane",
+        "fill 2487 200 -2001 2495 201 -2001 minecraft:oak_leaves[persistent=true]",
+        "fill 2496 200 -2001 2500 202 -2001 minecraft:bamboo[age=1,leaves=large]",
+        "fill 2501 200 -2001 2504 200 -2001 minecraft:azalea",
+        "fill 2505 200 -2001 2508 200 -2001 minecraft:flowering_azalea",
+        "fill 2509 200 -2001 2513 200 -2001 minecraft:moss_carpet",
+        "fill 2487 200 -2005 2513 203 -2005 minecraft:oak_planks",
+        "fill 2487 200 -2004 2513 203 -2004 minecraft:vine[north=true]",
+        "execute in minecraft:overworld run tp @a 2500.5 207 -1980.5 180 40"
+      ],
+      "clientOptions": {
+        "ao": "false"
+      },
+      "ciNote": "Flat lighting of cross and angled plant models (package 4: Quicksilver lights blocks exactly as Indigo, the vanilla runs' renderer, does, flat lighting included). Random ticks are stopped so nothing grows, spreads or dries out. The gamerule stays at 0 for the rest of that game's server, in every run alike (the later sessions: renderer_off and the Improved Transparency scenes)."
+    },
+    {
+      "id": "renderer_off",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: the slower a run, the more of its frames line up with a game tick and draw that tick's extra draws, so the average moves with fps while the median does not. run 40279156080, Vulkan: Quicksilver 96.3 average / 123 median at 25.89 fps, vanilla's measure run 84.85 / 123 at 29.76 fps (limit x 1.10 + 2: 95.34); full on the same run: 95.72 / 123 against 97.05 / 123. Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "title": "A stone-brick hut with slabs, stairs, a glass window and a block display, with Quicksilver's block renderer switched off in its config and smooth lighting off (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2560.5 205 -1981.5 180 20",
+        "#wait 6",
+        "fill 2548 196 -2008 2572 212 -1978 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2548,y=190,z=-2008,dx=24,dy=22,dz=30] 2560.5 -200 -1995.5",
+        "fill 2550 199 -2005 2570 199 -1983 minecraft:smooth_stone",
+        "fill 2554 200 -2000 2566 204 -1992 minecraft:stone_bricks hollow",
+        "fill 2559 200 -1992 2561 202 -1992 minecraft:air",
+        "fill 2555 202 -1992 2557 203 -1992 minecraft:glass",
+        "fill 2554 205 -2000 2566 205 -1992 minecraft:oak_slab",
+        "fill 2552 200 -1990 2568 200 -1990 minecraft:oak_stairs[facing=north]",
+        "fill 2552 200 -1988 2556 200 -1986 minecraft:cobblestone",
+        "summon minecraft:block_display 2563 200 -1988 {block_state:{Name:\"minecraft:oak_log\"},transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.5f,1.5f,1.5f]}}",
+        "execute in minecraft:overworld run tp @a 2560.5 205 -1981.5 180 20"
+      ],
+      "clientOptions": {
+        "ao": "false"
+      },
+      "quicksilverConfig": {
+        "block-renderer": "off"
+      },
+      "ciNote": "CI's check of Quicksilver's block-renderer=off config option (package 4): this scene's session starts with it off (ci/client-run.sh writes config/quicksilver.properties), so every block and item, the block display included, is drawn by vanilla's own code; the pictures are gated against the vanilla runs like every scene's. Smooth lighting is off because vanilla's own smooth lighting is not Indigo's (Indigo's flat lighting of these cube-shaped blocks is vanilla's). Besides the picture, CI checks the bench's renderer report in this session: no block and no API mesh quad went Quicksilver's way, and blocks went vanilla's (in every other session, no block went vanilla's). The self-test checks, quad by quad, that this vanilla path hands vanilla's output on unchanged for tinted, cutout and light-emitting blocks."
+    },
+    {
+      "id": "particles",
+      "title": "About 65 kinds of particle at fixed places 3 blocks in front of the camera, before a stone wall, the same in every run (package 8)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2820.5 204.38 -1987.5 180 0",
+        "#wait 6",
+        "fill 2808 190 -2004 2833 215 -1980 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2808,y=190,z=-2004,dx=25,dy=25,dz=24] 2820.5 -200 -2000.5",
+        "fill 2808 199 -2004 2833 199 -1980 minecraft:smooth_stone",
+        "fill 2808 200 -1992 2833 212 -1992 minecraft:smooth_stone",
+        "execute in minecraft:overworld run tp @a 2820.5 204.38 -1987.5 180 0",
+        "#wait 2",
+        "particle minecraft:flame 2817.5 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:soul_fire_flame 2818.1 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:small_flame 2818.7 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:copper_fire_flame 2819.3 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:end_rod 2819.9 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:glow 2820.5 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:electric_spark 2821.1 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:wax_on 2821.7 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:wax_off 2822.3 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:scrape 2822.9 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:enchanted_hit 2823.5 207.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:smoke 2817.5 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:large_smoke 2818.1 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:white_smoke 2818.7 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:cloud 2819.3 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:poof 2819.9 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sculk_charge_pop 2820.5 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:pale_oak_leaves 2821.1 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sneeze 2821.7 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:spit 2822.3 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:ash 2822.9 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:white_ash 2823.5 206.9 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:heart 2817.5 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:angry_villager 2818.1 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:happy_villager 2818.7 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:note 2819.3 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:crit 2819.9 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:composter 2820.5 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dolphin 2821.1 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:mycelium 2821.7 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:nautilus 2822.3 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:portal 2822.9 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:enchant 2823.5 206.3 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dust{color:[1.0,0.0,0.0],scale:2.0} 2817.5 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dust_color_transition{from_color:[0.0,0.0,1.0],to_color:[1.0,1.0,0.0],scale:2.0} 2818.1 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:block{block_state:\"minecraft:diamond_ore\"} 2818.7 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:falling_dust{block_state:\"minecraft:red_sand\"} 2819.3 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:item{item:{id:\"minecraft:apple\"}} 2819.9 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:totem_of_undying 2820.5 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:witch 2821.1 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:firework 2821.7 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:damage_indicator 2822.3 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sweep_attack 2822.9 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:sculk_soul 2823.5 205.7 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dripping_water 2817.5 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:falling_lava 2818.1 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:snowflake 2818.7 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:spore_blossom_air 2819.3 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:cherry_leaves 2819.9 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:soul 2820.5 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:reverse_portal 2821.1 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:bubble 2821.7 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:bubble_pop 2822.3 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:splash 2822.9 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:rain 2823.5 205.1 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:underwater 2817.5 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:lava 2818.1 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:falling_honey 2818.7 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:egg_crack 2819.3 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:infested 2819.9 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dust_plume 2820.5 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:firefly 2821.1 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:dripping_obsidian_tear 2821.7 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:crimson_spore 2822.3 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:warped_spore 2822.9 204.5 -1990.5 0 0 0 0 0 force @a",
+        "particle minecraft:item_slime 2823.5 204.5 -1990.5 0 0 0 0 0 force @a"
+      ],
+      "ciNote": "The CI pin mod (ci/pin-mod, Pins) makes every particle made in this area the same in every run, vanilla and Quicksilver alike: its random numbers come from where and what it is, it is not ticked and is drawn at partial tick 0 while the player is here, and it is removed when the player leaves. The bench sets the scene up again after the bare shot has removed the first set, so it measures one of each particle too. The 'bare' shot steps out of the area and back, so the pin removes every particle: the same view without them, which measures each particle's area on screen.",
+      "ciShots": [
+        {
+          "name": "bare",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2790.5 204.38 -1987.5 180 0",
+            "#wait 2",
+            "execute in minecraft:overworld run tp @a 2820.5 204.38 -1987.5 180 0"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "animation",
+      "title": "Animated blocks in front of the camera and 34 blocks behind it, with animation run for a fixed number of ticks in every run (package 8)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2630.5 204.38 -1987.5 180 0",
+        "#wait 6",
+        "setblock 2635 205 -1995 minecraft:air",
+        "setblock 2633 205 -1953 minecraft:air",
+        "fill 2618 190 -2004 2643 215 -1946 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2618,y=190,z=-2004,dx=25,dy=25,dz=58] 2630.5 -200 -2000.5",
+        "setblock 2630 194 -2000 minecraft:stone",
+        "fill 2618 199 -2004 2643 199 -1946 minecraft:smooth_stone",
+        "fill 2618 200 -1996 2643 212 -1996 minecraft:smooth_stone",
+        "fill 2618 200 -1950 2643 212 -1950 minecraft:smooth_stone",
+        "setblock 2625 204 -1995 minecraft:sea_lantern",
+        "setblock 2627 204 -1995 minecraft:magma_block",
+        "setblock 2629 204 -1995 minecraft:command_block[facing=south]",
+        "setblock 2631 204 -1995 minecraft:warped_stem",
+        "setblock 2633 204 -1995 minecraft:sculk",
+        "setblock 2635 204 -1995 minecraft:stone",
+        "setblock 2635 205 -1995 minecraft:lantern",
+        "setblock 2625 207 -1995 minecraft:sea_lantern",
+        "setblock 2629 207 -1995 minecraft:magma_block",
+        "setblock 2633 207 -1995 minecraft:command_block[facing=south]",
+        "setblock 2625 204 -1953 minecraft:chain_command_block[facing=north]",
+        "setblock 2627 204 -1953 minecraft:repeating_command_block[facing=north]",
+        "setblock 2629 204 -1953 minecraft:crimson_stem",
+        "setblock 2631 204 -1953 minecraft:stonecutter",
+        "setblock 2633 204 -1953 minecraft:stone",
+        "setblock 2633 205 -1953 minecraft:soul_lantern",
+        "setblock 2635 204 -1953 minecraft:sculk_sensor",
+        "setblock 2627 207 -1953 minecraft:crimson_stem",
+        "setblock 2631 207 -1953 minecraft:chain_command_block[facing=north]",
+        "execute in minecraft:overworld run tp @a 2630.5 204.38 -1987.5 180 0",
+        "#wait 2",
+        "particle minecraft:block{block_state:\"minecraft:repeating_command_block\"} 2630.5 206.5 -1991.5 0 0 0 0 0 force @a"
+      ],
+      "measureSteps": [
+        {
+          "at": 1.0,
+          "command": "setblock 2630 194 -2000 minecraft:redstone_block"
+        },
+        {
+          "at": 4.0,
+          "command": "particle minecraft:block{block_state:\"minecraft:chain_command_block\"} 2629.5 206.5 -1991.5 0 0 0 0 0 force @a"
+        },
+        {
+          "at": 8.0,
+          "command": "setblock 2627 205 -1995 minecraft:repeating_command_block[facing=south]"
+        }
+      ],
+      "ciShots": [
+        {
+          "name": "behind",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2630.5 204.38 -1961.5 0 0"
+          ]
+        },
+        {
+          "name": "front",
+          "commands": [
+            "execute in minecraft:overworld run tp @a 2630.5 204.38 -1987.5 180 0"
+          ]
+        }
+      ],
+      "ciRequiresAnimationSkip": true,
+      "ciNote": "The CI pin mod (ci/pin-mod, Pins) sends every animated texture back to its first frame when the player enters this area, lets it run exactly 70 texture ticks (one per frame that runs a client tick) and holds it, in every run, vanilla and Quicksilver alike. Everything here is built after those ticks, so Quicksilver left every changed sprite out and must redraw each one before it is drawn: the front blocks when their sections first show, the block particle (a command block sprite seen nowhere else) on its first use outside terrain, and the blocks 34 blocks behind the camera (other sprites, two sections behind it, outside vanilla's visible sections) when the 'behind' shot turns around and walks there. During the bench a marker block under the floor lets animation run freely (vanilla's animation work against Quicksilver's); its screenshots are taken before that. While measuring, its steps check the module's three catch-up paths again with animation running: a block particle of the chain command block (a sprite only the far blocks show, so stale) at 4 s, and a repeating command block facing the camera (its front sprite only on the far blocks) at 8 s; compare.py requires sprites left out, a redraw before terrain and a redraw on first use inside the measured window.",
+      "ciDrawCallGate": "median",
+      "ciDrawCallGateReason": "While measuring, animation runs freely: vanilla redraws changed sprites once per client tick, so the per-frame average follows the runner's frame rate (more frames per tick, fewer draws per frame) while the draws per tick stay the same. Run 40267202902, full: average 33.35, median 44 at 30 fps. Gated on the median from the start (Andre's rule for such scenes, design doc, Testing)."
+    },
+    {
+      "id": "animated_items",
+      "title": "Animated block sprites outside terrain: a hotbar with a magma block, a sea lantern, prismarine and buckets, an item frame and a block display with a magma block, a burning cow; animation run a fixed number of ticks (package 8)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2730.5 200 -1986.5 180 15",
+        "#wait 6",
+        "fill 2718 190 -2004 2743 215 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2718,y=190,z=-2004,dx=25,dy=25,dz=28] 2730.5 -200 -2000.5",
+        "setblock 2730 194 -2000 minecraft:stone",
+        "fill 2718 199 -2004 2743 199 -1976 minecraft:smooth_stone",
+        "fill 2718 200 -1996 2743 212 -1996 minecraft:smooth_stone",
+        "summon minecraft:item_frame 2728 202 -1995 {Facing:3b,Fixed:1b,Item:{id:\"minecraft:magma_block\",count:1}}",
+        "summon minecraft:block_display 2730 200 -1993 {block_state:\"minecraft:magma_block\"}",
+        "summon minecraft:cow 2734.5 200 -1992.5 {Fire:32767s,Invulnerable:1b,NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+        "gamemode creative @a",
+        "clear @a",
+        "item replace entity @a hotbar.0 with minecraft:magma_block",
+        "item replace entity @a hotbar.1 with minecraft:sea_lantern",
+        "item replace entity @a hotbar.2 with minecraft:prismarine",
+        "item replace entity @a hotbar.3 with minecraft:lava_bucket",
+        "item replace entity @a hotbar.4 with minecraft:water_bucket",
+        "execute in minecraft:overworld run tp @a 2730.5 200 -1986.5 180 15",
+        "#wait 2"
+      ],
+      "measureSteps": [
+        {
+          "at": 1.0,
+          "command": "setblock 2730 194 -2000 minecraft:redstone_block"
+        }
+      ],
+      "ciDrawCallGate": "median",
+      "ciDrawCallGateReason": "While measuring, animation runs freely (as in the animation scene): vanilla redraws changed sprites once per client tick, so the per-frame average follows the runner's frame rate. Gated on the median from the start (Andre's rule for such scenes).",
+      "ciNote": "Andre's follow-up for package 8: every animated block sprite here is shown only outside terrain (the hotbar and the held block, the item frame, the block display, the fire on the cow), so each is redrawn by Quicksilver on its first use outside terrain. The CI pin mod sends every animated texture back to frame 0 when the player enters this area, runs 70 texture ticks and holds it, in every run, vanilla and Quicksilver alike; everything is placed after those ticks, so every one of those sprites is stale at its first use. CI fails on any late redraw (here and in every scene). During the bench a marker block under the floor lets animation run freely; its screenshot is taken before that. The player is in creative mode here (for the hotbar); the next scenes set spectator again."
+    }
+  ]
+}

@@ -1,4 +1,13 @@
-# Brimstone progress
+# Quicksilver progress
+
+**Renamed 2026-10-28: Brimstone is now Quicksilver** (Andre: "Brimstone" was taken on Modrinth). Mod id `quicksilver`,
+package `com.meakaandre.quicksilver`, mixin configs `quicksilver.*.mixins.json`, assets namespace `quicksilver`, command
+`/quicksilver` (alias `/qs`), config `config/quicksilver.properties`, bench output `<game dir>/quicksilver/bench/`, debug
+properties `quicksilver.debug.*` / `quicksilver.ci.*`, jars `quicksilver-26.3.jar` and `quicksilver-bench-26.3.jar`, CI
+runs `quicksilver-full|old|vk`, repo meakaandre-tech/Quicksilver. Everything below this note is history and keeps the
+old name (read Brimstone as Quicksilver); the other docs use the new names. Brimstone was never released, so nothing is
+migrated. The shader's attribute and uniform names (`BrimCell`, `BrimRegion`, ...) are internal and were left as they are.
+
 
 ## Where things stand
 

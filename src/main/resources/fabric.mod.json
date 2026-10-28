@@ -1,32 +1,32 @@
 {
   "schemaVersion": 1,
-  "id": "brimstone",
+  "id": "quicksilver",
   "version": "${version}",
-  "name": "Brimstone",
+  "name": "Quicksilver",
   "description": "An all-in-one optimisation mod, starting with a renderer rewrite. Draws exactly what vanilla draws.",
   "authors": [
     "Andre"
   ],
   "contact": {
-    "sources": "https://github.com/meakaandre-tech/Brimstone"
+    "sources": "https://github.com/meakaandre-tech/Quicksilver"
   },
   "license": "LGPL-3.0-only",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.meakaandre.brimstone.Brimstone"
+      "com.meakaandre.quicksilver.Quicksilver"
     ],
     "client": [
-      "com.meakaandre.brimstone.BrimstoneClient"
+      "com.meakaandre.quicksilver.QuicksilverClient"
     ]
   },
   "mixins": [
-    "brimstone.mixins.json",
-    "brimstone.counters.mixins.json",
-    "brimstone.terrain.mixins.json",
-    "brimstone.visibility.mixins.json",
-    "brimstone.frapi.mixins.json",
-    "brimstone.animation.mixins.json"
+    "quicksilver.mixins.json",
+    "quicksilver.counters.mixins.json",
+    "quicksilver.terrain.mixins.json",
+    "quicksilver.visibility.mixins.json",
+    "quicksilver.frapi.mixins.json",
+    "quicksilver.animation.mixins.json"
   ],
   "custom": {
     "fabric-renderer-api-v1:contains_renderer": true

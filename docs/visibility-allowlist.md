@@ -1,7 +1,7 @@
-# What Brimstone's visibility module may hide (package 2)
+# What Quicksilver's visibility module may hide (package 2)
 
-Brimstone hides an entity or block entity only when its occlusion test proves that a box around it can't be seen
-from the camera (`src/main/java/com/meakaandre/brimstone/visibility/Occlusion.java`). That is only correct if the box
+Quicksilver hides an entity or block entity only when its occlusion test proves that a box around it can't be seen
+from the camera (`src/main/java/com/meakaandre/quicksilver/visibility/Occlusion.java`). That is only correct if the box
 contains everything the object's renderer can draw. So only the types below are ever tested (`Visibility.ENTITY_MARGIN`,
 `Visibility.BLOCK_ENTITY_TYPES`); every other type, vanilla or modded, is drawn as vanilla decides. The object's own
 class and its renderer's class must also be vanilla's (`net.minecraft.`): a mod that replaces the renderer of a listed
@@ -93,5 +93,5 @@ Only full opaque cubes of the `minecraft` namespace (`BlockState.isSolidRender()
 only with their face toward the camera drawn, and only in sections that vanilla draws this frame, are fully faded in,
 and whose mesh is newer than the last change there. If any pack other than the game's own supplies a block texture,
 block model or blockstate in the `minecraft` namespace, the module hides nothing at all (`VisibilityResources`; log line
-`Brimstone visibility: deferring to vanilla ...`). In 26.3 a quad's draw layer follows its texture's transparency, so
+`Quicksilver visibility: deferring to vanilla ...`). In 26.3 a quad's draw layer follows its texture's transparency, so
 such a pack could make an "opaque" block see-through.

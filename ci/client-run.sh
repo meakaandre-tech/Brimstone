@@ -1,15 +1,15 @@
 #!/bin/bash
-# One CI client run: SUITE (core | siftec) x RUN (vanilla-a | vanilla-b | vanilla-old | vanilla-vk | brimstone-full |
-# brimstone-old | brimstone-vk | measure-full | measure-old | measure-vk). measure runs load Brimstone with every module
-# off (brimstone.ci.measureOnly): vanilla draws everything and Brimstone's bench measures it, in the same profile as the
-# Brimstone run of the same name (package 3).
+# One CI client run: SUITE (core | siftec) x RUN (vanilla-a | vanilla-b | vanilla-old | vanilla-vk | quicksilver-full |
+# quicksilver-old | quicksilver-vk | measure-full | measure-old | measure-vk). measure runs load Quicksilver with every module
+# off (quicksilver.ci.measureOnly): vanilla draws everything and Quicksilver's bench measures it, in the same profile as the
+# Quicksilver run of the same name (package 3).
 #
 # Starts the suite's server (core: a plain Fabric server with Fabric API, seed 12345, fresh world; siftec: SIFTEC's
 # server and CI world from the siftec-world job), then one dev client per render distance the suite's scenes use,
-# drives the scenes (ci/drive.py), and leaves everything in $OUT. Brimstone runs put the built jar in the client's and
-# the server's mods; vanilla runs have no Brimstone anywhere (the dev classpath's own copy is emptied out first).
-# old runs hide multi-draw indirect and buffer storage and force GL down to vanilla's minimum (3.3); the Brimstone old
-# run also sets brimstone.debug.forceIntelMdiIssue (vanilla's Intel multi-draw-indirect flag, the school laptop's path).
+# drives the scenes (ci/drive.py), and leaves everything in $OUT. Quicksilver runs put the built jar in the client's and
+# the server's mods; vanilla runs have no Quicksilver anywhere (the dev classpath's own copy is emptied out first).
+# old runs hide multi-draw indirect and buffer storage and force GL down to vanilla's minimum (3.3); the Quicksilver old
+# run also sets quicksilver.debug.forceIntelMdiIssue (vanilla's Intel multi-draw-indirect flag, the school laptop's path).
 # vk runs use Mesa's Vulkan driver (lavapipe) through the --graphicsBackend launch argument.
 set +e
 root=$PWD
@@ -21,11 +21,11 @@ echo "suite=$SUITE run=$RUN"
 mc=$(grep '^minecraft_version' gradle.properties | sed 's/.*= *//')
 loader=$(grep '^loader_version' gradle.properties | sed 's/.*= *//')
 fapi=$(grep '^fabric_version' gradle.properties | sed 's/.*= *//')
-suitefile=src/main/resources/brimstone/scenes/$SUITE.json
+suitefile=src/main/resources/quicksilver/scenes/$SUITE.json
 
-case "$RUN" in brimstone-*|measure-*) brim=1;; *) brim=0;; esac
-# package 4b: bench-plain / bench-sodium load only the bench-only jar (brimstone-bench, every Brimstone module out),
-# on plain Fabric or next to Sodium, and bench the scenes in BENCH_SCENES; the server has no Brimstone
+case "$RUN" in quicksilver-*|measure-*) brim=1;; *) brim=0;; esac
+# package 4b: bench-plain / bench-sodium load only the bench-only jar (quicksilver-bench, every Quicksilver module out),
+# on plain Fabric or next to Sodium, and bench the scenes in BENCH_SCENES; the server has no Quicksilver
 case "$RUN" in bench-*) benchonly=1;; *) benchonly=0;; esac
 case "$RUN" in measure-*) measure=1;; *) measure=0;; esac
 case "$RUN" in *-old)
@@ -37,24 +37,24 @@ esac
 extra_args=""
 client_jvm=""
 case "$RUN" in *-vk) extra_args="--graphicsBackend vulkan"; echo "Vulkan profile: --graphicsBackend vulkan on lavapipe";; esac
-case "$RUN" in brimstone-old|measure-old) client_jvm="-Dbrimstone.debug.forceIntelMdiIssue=true"; echo "old-GPU Brimstone run: $client_jvm";; esac
-# every Brimstone run: the visibility module checks each entity and block entity it hides with rays from the camera
+case "$RUN" in quicksilver-old|measure-old) client_jvm="-Dquicksilver.debug.forceIntelMdiIssue=true"; echo "old-GPU Quicksilver run: $client_jvm";; esac
+# every Quicksilver run: the visibility module checks each entity and block entity it hides with rays from the camera
 # (package 2's pop-in check; ci/compare.py fails on any violation). VISIBILITY_DRY_RUN=1 makes it decide and count but hide
-# nothing (used once to sample the new occlusion scene's noise with Brimstone drawing exactly vanilla's set).
-# every Brimstone run also checks its translucent draws each frame against vanilla's order and latest sort (package 3;
+# nothing (used once to sample the new occlusion scene's noise with Quicksilver drawing exactly vanilla's set).
+# every Quicksilver run also checks its translucent draws each frame against vanilla's order and latest sort (package 3;
 # ci/compare.py fails on any miss). TRANSLUCENCY_DRY_RUN=1 leaves translucent terrain with vanilla (noise collection only).
-# and every Brimstone run runs the renderer's self-test once in the world (package 4; ci/compare.py requires "passed").
+# and every Quicksilver run runs the renderer's self-test once in the world (package 4; ci/compare.py requires "passed").
 if [ $measure = 1 ]; then
-  client_jvm="$client_jvm -Dbrimstone.ci.measureOnly=true"
+  client_jvm="$client_jvm -Dquicksilver.ci.measureOnly=true"
   echo "measure run JVM properties:$client_jvm"
 elif [ $brim = 1 ]; then
   # package 8: the animation module logs each animated sprite's first use outside terrain, with where it came from
   # package 4b: the terrain upload budget logs when meshes wait for a later frame and when it has caught up, so
   # drive.py takes no screenshot while a section is still waiting (vanilla uploads at once and logs nothing)
-  client_jvm="$client_jvm -Dbrimstone.debug.logUploadQueue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true"
-  if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.visibilityDryRun=true"; fi
-  if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dbrimstone.debug.translucencyDryRun=true"; fi
-  echo "Brimstone run JVM properties:$client_jvm"
+  client_jvm="$client_jvm -Dquicksilver.debug.logUploadQueue=true -Dquicksilver.debug.verifyVisibility=true -Dquicksilver.debug.verifyTranslucency=true -Dquicksilver.debug.verifyRenderer=true -Dquicksilver.debug.animationUses=true"
+  if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dquicksilver.debug.visibilityDryRun=true"; fi
+  if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dquicksilver.debug.translucencyDryRun=true"; fi
+  echo "Quicksilver run JVM properties:$client_jvm"
 fi
 
 # ---- server
@@ -72,11 +72,11 @@ else
   curl -fsSL -o server/mods/fabric-api.jar "$fapiurl"
   echo "eula=true" > server/eula.txt
 fi
-if [ $brim = 1 ]; then cp dist/brimstone.jar server/mods/; fi
+if [ $brim = 1 ]; then cp dist/quicksilver.jar server/mods/; fi
 # measure runs stand in for vanilla, so Fabric's Indigo draws there as in the vanilla runs: their copy of the jar does
-# not declare fabric-renderer-api-v1:contains_renderer (and Brimstone does not register its renderer, measureOnly)
+# not declare fabric-renderer-api-v1:contains_renderer (and Quicksilver does not register its renderer, measureOnly)
 if [ $measure = 1 ]; then
-  python3 -I - server/mods/brimstone.jar <<'PY' || { echo "could not take contains_renderer out of the measure run's jar"; exit 1; }
+  python3 -I - server/mods/quicksilver.jar <<'PY' || { echo "could not take contains_renderer out of the measure run's jar"; exit 1; }
 import json, os, sys, zipfile
 jar = sys.argv[1]
 src = zipfile.ZipFile(jar)
@@ -115,8 +115,8 @@ case "$RUN" in *-vk) [ -n "$lvp" ] && export VK_DRIVER_FILES="$lvp" VK_ICD_FILEN
 mkdir -p run/mods
 for j in server/mods/*.jar; do case "$j" in *fabric-api*) ;; *) cp "$j" run/mods/;; esac; done
 if [ $benchonly = 1 ]; then
-  [ -f dist/brimstone-bench.jar ] || { echo "dist/brimstone-bench.jar missing"; exit 1; }
-  cp dist/brimstone-bench.jar run/mods/
+  [ -f dist/quicksilver-bench.jar ] || { echo "dist/quicksilver-bench.jar missing"; exit 1; }
+  cp dist/quicksilver-bench.jar run/mods/
   if [ "$RUN" = bench-sodium ]; then
     # Sodium 0.9.2 for this Minecraft version, from Modrinth (a runtime test only: nothing of Sodium's is in the repo)
     surl=$(curl -fsSL "https://api.modrinth.com/v2/project/sodium/version?loaders=%5B%22fabric%22%5D&game_versions=%5B%22$mc%22%5D" | python3 -c "
@@ -129,13 +129,13 @@ for v in vs[:1]: print(v['version_number'], file=sys.stderr)")
     echo "Sodium: $surl"
   fi
 fi
-# every run, vanilla and Brimstone alike: CI's lightmap pin (ci/pin-mod), which holds the block-light flicker still
+# every run, vanilla and Quicksilver alike: CI's lightmap pin (ci/pin-mod), which holds the block-light flicker still
 if [ -f ci-pin/ci-pin.jar ]; then cp ci-pin/ci-pin.jar run/mods/; else echo "ci-pin.jar missing"; exit 1; fi
 ls -l run/mods
 # mod ids the client loads (pack jars plus the dev classpath's Minecraft, loader and Fabric API), for scenes that need one
 (for j in run/mods/*.jar; do unzip -p "$j" fabric.mod.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])" 2>/dev/null; done; echo minecraft fabricloader fabric-api) > "$OUT/mod-ids.txt"
 export MOD_IDS="$OUT/mod-ids.txt"
-# the dev classpath must not carry Brimstone: every run loads it from run/mods or not at all
+# the dev classpath must not carry Quicksilver: every run loads it from run/mods or not at all
 rm -rf build/classes/java/main build/resources/main
 mkdir -p build/classes/java/main build/resources/main
 export LIBGL_ALWAYS_SOFTWARE=1
@@ -149,12 +149,12 @@ echo "op @a" >&3
 
 # one client session per render distance and set of client options (package 3: scenes with "clientOptions", e.g.
 # Improved Transparency, get their own session with those lines in options.txt; the same in every run; package 4:
-# "brimstoneConfig", e.g. the block renderer off, likewise, written to config/brimstone.properties)
+# "quicksilverConfig", e.g. the block renderer off, likewise, written to config/quicksilver.properties)
 groups=$(python3 -c "
 import json; s=json.load(open('$suitefile'))
 rd={}
 for x in s['scenes']:
-    o=dict(x.get('clientOptions') or {}); o.update({'brimstone.'+k: v for k,v in (x.get('brimstoneConfig') or {}).items()})
+    o=dict(x.get('clientOptions') or {}); o.update({'quicksilver.'+k: v for k,v in (x.get('quicksilverConfig') or {}).items()})
     opts=','.join(k+'='+str(v) for k,v in sorted(o.items()))
     rd.setdefault((x.get('renderDistance',8), opts),[]).append(x['id'])
 print(' '.join(str(k[0])+'|'+(k[1] or '-')+'|'+','.join(v) for k,v in sorted(rd.items())))")
@@ -176,16 +176,16 @@ for g in $groups; do
   # menuBackgroundBlurriness 0 (package 7): the menu blur behind screens such as Create's Ponder index came out
   # differently on Vulkan than on OpenGL (433,000 pixels apart), which left the strict check blind on 63% of that screen
   # chatHeightFocused 0.25 (package 7): the open chat shows its last 6 lines only, so the SIFTEC hud scene's chat shows
-  # its own lines and not the bench messages earlier scenes leave in Brimstone runs
+  # its own lines and not the bench messages earlier scenes leave in Quicksilver runs
   # glDebugVerbosity 1 (the game's default, set explicitly): the GPU's high-severity debug messages, errors among them,
-  # go to the log in every run alike; ci/compare.py compares their counts between Brimstone and vanilla
+  # go to the log in every run alike; ci/compare.py compares their counts between Quicksilver and vanilla
   printf 'pauseOnLostFocus:false\nglDebugVerbosity:1\nonboardAccessibility:false\ntutorialStep:none\nnarrator:0\nrenderDistance:%s\nguiScale:2\nmaxFps:30\nsoundCategory_master:0.0\nrenderClouds:"false"\nglintSpeed:0.0\nmenuBackgroundBlurriness:0\nchatHeightFocused:0.25\nkey_key.use:22\n' "$rd" > run/options.txt
-  # package 4: "brimstoneConfig" entries (brimstone.<key>=<value>) go to Brimstone's config file, the rest to options.txt
-  mkdir -p run/config; rm -f run/config/brimstone.properties
+  # package 4: "quicksilverConfig" entries (quicksilver.<key>=<value>) go to Quicksilver's config file, the rest to options.txt
+  mkdir -p run/config; rm -f run/config/quicksilver.properties
   if [ "$opts" != "-" ]; then
     for kv in $(echo "$opts" | tr ',' ' '); do
       case "$kv" in
-        brimstone.*) k=${kv%%=*}; echo "${k#brimstone.}=${kv#*=}" >> run/config/brimstone.properties;;
+        quicksilver.*) k=${kv%%=*}; echo "${k#quicksilver.}=${kv#*=}" >> run/config/quicksilver.properties;;
         *) echo "${kv%%=*}:${kv#*=}" >> run/options.txt;;
       esac
     done
@@ -198,7 +198,7 @@ for g in $groups; do
   # made from the name picks the default skin, so the first-person arm and SIFTEC's company name ("<player>'s
   # Company" on the HUB and MAM screens) differed between runs; one fixed name in every run
   (env -u CI JAVA_TOOL_OPTIONS="${client_jvm# }" timeout 2400 ./gradlew runClient --no-daemon -Dorg.gradle.console=plain -x compileJava -x processResources -x classes \
-     --args="--quickPlayMultiplayer localhost --width 1280 --height 720 --username BrimstoneCI $extra_args" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
+     --args="--quickPlayMultiplayer localhost --width 1280 --height 720 --username QuicksilverCI $extra_args" > "$OUT/client-gradle-$n.log" 2>&1; echo "EXIT $?" >> "$OUT/client-gradle-$n.log") &
   for i in $(seq 1 150); do
     now=$(grep -c 'joined the game' server/server.log)
     if [ "$now" -gt "$before" ] || grep -q '^EXIT' "$OUT/client-gradle-$n.log"; then break; fi
@@ -208,7 +208,7 @@ for g in $groups; do
     echo "op @a" >&3
     sleep 40
     xdotool mousemove 640 360
-    python3 -I ci/drive.py "$suitefile" server/in.fifo "$OUT" run/logs/latest.log "$([ $brim = 1 ] || [ $benchonly = 1 ] && echo brimstone || echo vanilla)" "$BENCH_SECONDS" $ids
+    python3 -I ci/drive.py "$suitefile" server/in.fifo "$OUT" run/logs/latest.log "$([ $brim = 1 ] || [ $benchonly = 1 ] && echo quicksilver || echo vanilla)" "$BENCH_SECONDS" $ids
   else
     echo "client did not join (session $n)"
     import -window root "$OUT/no-join-$n.png"
@@ -222,7 +222,7 @@ for g in $groups; do
     | awk '/Loading Minecraft .* with Fabric Loader/ {n++} {l[NR]=$0; s[NR]=n} END {for (i=1;i<=NR;i++) if (s[i]==n) print l[i]}' > "$OUT/client-$n.log"
   cp -r run/crash-reports "$OUT/client-crash-reports" 2>/dev/null
 done
-mkdir -p "$OUT/bench" && cp run/brimstone/bench/*.json "$OUT/bench/" 2>/dev/null
+mkdir -p "$OUT/bench" && cp run/quicksilver/bench/*.json "$OUT/bench/" 2>/dev/null
 echo "stop" >&3
 for i in $(seq 1 60); do grep -q '^EXIT' server/server.log && break; sleep 2; done
 exec 3>&-

@@ -8,4 +8,4 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
-rootProject.name = 'brimstone'
+rootProject.name = 'quicksilver'

@@ -50,7 +50,7 @@ done
 if grep -q 'Done (' server.log; then
   while read -r line; do case "$line" in "#sleep "*) sleep "${line#\#sleep }";; *) echo "$line" >&3; sleep 0.3;; esac; done < "$S/smoke-commands.txt"
   sleep 10
-  # Brimstone's own addition: generate the areas the SIFTEC scenes look at that SIFTEC's smoke run doesn't (The Sift
+  # Quicksilver's own addition: generate the areas the SIFTEC scenes look at that SIFTEC's smoke run doesn't (The Sift
   # around 0,0 and the MAM platform), so every client run loads the same saved chunks instead of generating them
   echo "execute in the_sift:the_sift run forceload add -128 -128 127 127" >&3
   echo "execute in minecraft:overworld run forceload add 2128 -2064 2271 -1937" >&3
@@ -67,7 +67,7 @@ if grep -q 'Done (' server.log; then
   echo "execute in minecraft:overworld run forceload remove 416 -400 511 -1" >&3
   # package 7: no random ticks and no mob griefing in the CI world (water freezing over, grass and leaves changing at
   # random, sheep eating grass: one of the map's pixels changed colour in one run), in vanilla's runs as much as
-  # Brimstone's, so what each scene shows doesn't depend on how long a run has been going
+  # Quicksilver's, so what each scene shows doesn't depend on how long a run has been going
   echo "gamerule random_tick_speed 0" >&3
   echo "gamerule mob_griefing false" >&3
   echo "save-all flush" >&3

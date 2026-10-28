@@ -1,7 +1,7 @@
-# 26.3 terrain pipeline (research for Brimstone's terrain renderer)
+# 26.3 terrain pipeline (research for Quicksilver's terrain renderer)
 
 Sources: `dump/javap-all.txt` (signatures), `dump/bytecode2.txt` (bytecode; line numbers below are from this file),
-Brimstone CI client logs (`scratchpad/cilogs*`). **Fact** = read from bytecode/signatures/logs. **Guess** = inferred,
+Quicksilver CI client logs (`scratchpad/cilogs*`). **Fact** = read from bytecode/signatures/logs. **Guess** = inferred,
 marked as such.
 
 ## 0. What the bytecode dump does not cover
@@ -285,9 +285,9 @@ No push constants are used for terrain (no `pushConstants` call on this path).
   targets is unknown) and **`wrapRenderOpaqueTerrain` / `wrapRenderTranslucentTerrain`: `@WrapOperation` on the
   `ChunkSectionsToRender.renderGroup(...)` calls** in `executeSolid` / `executeClassicTransparency`. They fire
   `LevelRenderEvents.START_MAIN`, `AFTER_OPAQUE_TERRAIN`, `BEFORE/AFTER_TRANSLUCENT_TERRAIN`.
-  So Brimstone should keep those call sites (cancel or replace *inside* `renderGroup`, not at the caller).
+  So Quicksilver should keep those call sites (cancel or replace *inside* `renderGroup`, not at the caller).
 
-## 9. Hook points for Brimstone
+## 9. Hook points for Quicksilver
 
 **(a) Take over drawing, keep vanilla meshing.**
 1. Build our own draw list: `@Inject(at=HEAD, cancellable)` on
@@ -315,7 +315,7 @@ No push constants are used for terrain (no `pushConstants` call on this path).
    indexOffsets, IntBuffer counts, IntBuffer baseVertices, int drawCount)` (`multiDrawDirectSeparate`, always true on
    GL) per heap. The section origin then has to come from somewhere other than a per-draw UBO:
    `gl_DrawID`/`shaderDrawParameters` (feature flag), or our own vertex format with a region-relative position
-   (needs our own pipeline, so it falls under (b)). Brimstone's forced Intel MDI flag (`GlHeuristicsMixin`) just
+   (needs our own pipeline, so it falls under (b)). Quicksilver's forced Intel MDI flag (`GlHeuristicsMixin`) just
    switches vanilla to path A.
    The capability flags live in `LevelRenderer.multiDrawIndirectAvailable` (private final, set in the ctor) and
    `usingMultiDrawIndirectForTerrain` (private, set per frame).

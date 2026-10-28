@@ -88,7 +88,7 @@
     "runs": [
       10,
       11,
-      "uploads: highest seen in any run, vanilla or Brimstone (81788, run 40154022133 Vulkan), Andre 2026-10-25"
+      "uploads: highest seen in any run, vanilla or Quicksilver (81788, run 40154022133 Vulkan), Andre 2026-10-25"
     ],
     "uploadBytesPerFrame": 81788,
     "uploadsPerFrame": 19

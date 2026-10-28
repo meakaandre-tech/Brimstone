@@ -37,32 +37,32 @@ java {
 }
 
 jar {
-    from("LICENSE") { rename { "LICENSE_brimstone" } }
-    from("COPYING") { rename { "COPYING_brimstone" } }
-    from("NOTICE") { rename { "NOTICE_brimstone" } }
-    from("LICENSE-APACHE-2.0") { rename { "LICENSE-APACHE-2.0_brimstone" } }
+    from("LICENSE") { rename { "LICENSE_quicksilver" } }
+    from("COPYING") { rename { "COPYING_quicksilver" } }
+    from("NOTICE") { rename { "NOTICE_quicksilver" } }
+    from("LICENSE-APACHE-2.0") { rename { "LICENSE-APACHE-2.0_quicksilver" } }
 }
 
-// Package 4b: the bench-only jar (brimstone-bench): /brimstone bench, its counters, the capability probe and the
-// scenes, and none of Brimstone's modules, so it runs on plain Fabric or next to Sodium and measures them the same way.
+// Package 4b: the bench-only jar (quicksilver-bench): /quicksilver bench, its counters, the capability probe and the
+// scenes, and none of Quicksilver's modules, so it runs on plain Fabric or next to Sodium and measures them the same way.
 // Built from the same classes as the full jar; its own mod id and mixin config name, so it can never be mistaken for
-// Brimstone (and it declares that it breaks Brimstone: only one of the two belongs in an instance). It holds no
+// Quicksilver (and it declares that it breaks Quicksilver: only one of the two belongs in an instance). It holds no
 // Indigo-derived code, so no NOTICE; its counters mixin config is copied as is (26.3 is unobfuscated, no refmap).
 def benchClasses = [
-    'com/meakaandre/brimstone/BrimstoneClient.class',
-    'com/meakaandre/brimstone/bench/**',
-    'com/meakaandre/brimstone/probe/**',
-    'com/meakaandre/brimstone/gui/**',
-    'com/meakaandre/brimstone/mixin/counters/**',
-    'brimstone/scenes/**',
+    'com/meakaandre/quicksilver/QuicksilverClient.class',
+    'com/meakaandre/quicksilver/bench/**',
+    'com/meakaandre/quicksilver/probe/**',
+    'com/meakaandre/quicksilver/gui/**',
+    'com/meakaandre/quicksilver/mixin/counters/**',
+    'quicksilver/scenes/**',
 ]
 def benchJar = tasks.register("benchJar", Jar) {
-    archiveBaseName = "brimstone-bench"
+    archiveBaseName = "quicksilver-bench"
     dependsOn tasks.named("classes")
     from(sourceSets.main.output) { include benchClasses }
     from("src/main/resources") {
-        include "brimstone.counters.mixins.json"
-        rename { "brimstone_bench.counters.mixins.json" }
+        include "quicksilver.counters.mixins.json"
+        rename { "quicksilver_bench.counters.mixins.json" }
     }
     def version = project.version
     inputs.property "version", version
@@ -70,7 +70,7 @@ def benchJar = tasks.register("benchJar", Jar) {
         include "fabric.mod.json"
         expand "version": version
     }
-    from("LICENSE") { rename { "LICENSE_brimstone_bench" } }
-    from("COPYING") { rename { "COPYING_brimstone_bench" } }
+    from("LICENSE") { rename { "LICENSE_quicksilver_bench" } }
+    from("COPYING") { rename { "COPYING_quicksilver_bench" } }
 }
 tasks.named("assemble") { dependsOn benchJar }
