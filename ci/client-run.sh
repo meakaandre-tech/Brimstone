@@ -216,7 +216,10 @@ for g in $groups; do
   pkill -f KnotClient; sleep 8
   # the game rolls latest.log over at midnight (UTC on the runners) into a dated .log.gz: keep the session's rolled
   # parts in front of it, so client-$n.log is the whole session (run 40605316942 crossed midnight and lost them)
-  { for z in $(ls run/logs/*.log.gz 2>/dev/null | sort); do zcat "$z"; done; cat run/logs/latest.log 2>/dev/null; } > "$OUT/client-$n.log"
+  # (one session is one game start: only the text from its last "Loading Minecraft" line on, since the game may also
+  # archive a previous session's log into a .log.gz when it starts)
+  { for z in $(ls run/logs/*.log.gz 2>/dev/null | sort); do zcat "$z"; done; cat run/logs/latest.log 2>/dev/null; } \
+    | awk '/Loading Minecraft .* with Fabric Loader/ {n++} {l[NR]=$0; s[NR]=n} END {for (i=1;i<=NR;i++) if (s[i]==n) print l[i]}' > "$OUT/client-$n.log"
   cp -r run/crash-reports "$OUT/client-crash-reports" 2>/dev/null
 done
 mkdir -p "$OUT/bench" && cp run/brimstone/bench/*.json "$OUT/bench/" 2>/dev/null

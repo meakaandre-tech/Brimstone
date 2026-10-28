@@ -2123,7 +2123,11 @@ little; the laptop bench decides that part of the done-when.
    follows a rolled-over `latest.log`. Its numbers: visible sections waited at most 7 frames (fly-through old-GPU;
    bound 15, nothing forced past the budget), no layer needed the coplanar fallback, fly-through's largest upload frame
    2.21 / 2.11 / 2.13 MB, old-GPU spawn 49.11 draws per frame (median 49; main's spread 46-49).
-4. Final run: see the hand-off.
+4. `c23b9ff` full run 40610247676: every picture, count and 4b gate passed; compare failed only on core's block-renderer-off
+   check in session 4 of the three Brimstone runs: at start-up the game archives a leftover log into a dated `.log.gz`,
+   which the new collection prepended (session 4's file began with session 3's renderer_off log). Fixed in
+   `ci/client-run.sh`: a session's log is kept from its own last "Loading Minecraft" line on. No check changed.
+5. Final run: see the hand-off.
 
 ### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
 
