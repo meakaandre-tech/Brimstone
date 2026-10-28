@@ -53,7 +53,9 @@ public final class CompactVertex {
     /**
      * Facing groups (package 4b, skip back faces): a solid or cutout layer's quads stored grouped by the direction they
      * face, each group a contiguous range of quads in the layer (so one index range of the shared quad index list),
-     * groups in the order {@link #UNALIGNED}, +X, +Y, +Z, -X, -Y, -Z. Inside a group the quads keep vanilla's order.
+     * groups in the order {@link #UNALIGNED}, +X, +Y, +Z, -X, -Z, -Y (bottoms last: where a layer is drawn as one span,
+     * only trailing groups can be left out, and bottoms are the ones a camera above the terrain sees least). Inside a
+     * group the quads keep vanilla's order.
      *
      * <p>A quad is in an axis group only if, on the 16-byte format's stored grid (what the GPU draws), all four corners
      * lie in one plane {@code axis = p} and every corner's triangle (0-1-2, 1-2-3, 2-3-0, 3-0-1) that has an area winds
@@ -72,9 +74,18 @@ public final class CompactVertex {
 
     static final int GROUPS = 7, UNALIGNED = 0;
 
-    /** Axis (0 x, 1 y, 2 z) of an axis group 1-6. */
+    /** Axis (0 x, 1 y, 2 z) of an axis group 1-6 (+X, +Y, +Z, -X, -Z, -Y). */
     static int axis(int g) {
-        return (g - 1) % 3;
+        return switch (g) {
+            case 1, 4 -> 0;
+            case 2, 6 -> 1;
+            default -> 2;
+        };
+    }
+
+    /** The group of a quad facing along {@code axis}, positive or negative. */
+    static int group(int axis, boolean positive) {
+        return positive ? 1 + axis : axis == 0 ? 4 : axis == 1 ? 6 : 5;
     }
 
     /** Whether an axis group faces the positive direction of its axis (groups 1-3). */
@@ -258,7 +269,7 @@ public final class CompactVertex {
         }
         if (sign == 0) return UNALIGNED; // no area
         plane[q] = s[axis];
-        return sign > 0 ? 1 + axis : 4 + axis;
+        return group(axis, sign > 0);
     }
 
     /** Whether any vertex of a layer has a colour alpha other than 255 (Quicksilver's vertex has no alpha byte). */

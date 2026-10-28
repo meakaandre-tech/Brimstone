@@ -19,7 +19,7 @@ migrated. The shader's attribute and uniform names (`BrimCell`, `BrimRegion`, ..
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
 | package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met; **7b deferred until after package 6**, with inventory tooltips, F3 and long chat measured first). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
-| package 4b (terrain speed-ups) | `package-4b` | not merged (Andre's check), `0fe3631` green full run 40619534606: upload budget, skip back faces, bench-only jar; see its section |
+| package 4b (terrain speed-ups) | `package-4b` | not merged (Andre's check), `be01dda` green full run 40638313286: upload budget, skip back faces, bench-only jar; see its section |
 | core/mobs strict limit | main | 600 -> 10 (chicken wing pin; samples 0 in four full runs) |
 | baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0) |
 | animation pin fix | merged | `cea5bfb`: the animation pin counts texture ticks, not client ticks (the cause of a flake in core/animation's measure runs); **main full run 40526712029 green, `latest` rebuilt** |
@@ -2027,9 +2027,11 @@ multi-draw, not extra draws)." Plus the bench-only jar and a laptop-bench sectio
    into triangles faces one side; everything else (plants, slopes, rotated parts, degenerate quads) is unaligned and
    always drawn. Each frame the axis groups that face away from the camera for the whole section (camera at least
    1 block, plus twice the camera's move since the last frame, behind the nearest plane of the group) are left out; the
-   groups that stay are index ranges of the shared quad index list, so on the plain path they are entries of the same
-   multi-draw and on the indirect path commands of the same indirect multi-draw (where a device has neither, one span
-   from the first kept group to the last). Translucent layers are untouched (vanilla's sorted lists). Every group is
+   groups that stay are index ranges of the shared quad index list: on the plain multi-draw paths (old-GPU, the laptop)
+   entries of the same multi-draw; on the indirect path one span per section layer from the first kept group to the
+   last, since each extra range there is one more indirect command uploaded every frame (see run 6), except that up to
+   128 extra commands per frame (2.5 KB) go to the layers whose full ranges leave out the most quads per extra command;
+   where a device has no multi-draw, one span. Group order unaligned, +X, +Y, +Z, -X, -Z, -Y: bottoms last, so a span trims them most often. Translucent layers are untouched (vanilla's sorted lists). Every group is
    drawn when the pipelines don't cull, without a camera position, after a jump of more than 16 blocks, and with
    `-Dbrimstone.debug.drawAllFaces=true`. The camera position comes from a new optional terrain hook on
    `LevelExtractor.extractVisibleEntities`. Common idea (Sodium does something similar); no Sodium code read or used.
@@ -2145,6 +2147,30 @@ little; the laptop bench decides that part of the done-when.
    40481430766 and 40516650792. Run-to-run noise in what is visible, not the facing groups.
 
 The commit after `0fe3631` is docs only (this list and the hand-off), `[skip ci]`.
+6. **Upload bytes on the indirect path.** The rename branch's run 40624564347 (4b plus only the rename) failed core full
+   spawn's upload-bytes gate: median 46,732 bytes per frame against a gate of 41,107 (baseline 22,476). 4b's own green
+   run 40619534606 already had 40,776 (full) and 41,492 (Vulkan) there against main's 21,004 and 28,044: a real rise from
+   4b, passing by 331 bytes, not noise. Cause: on the indirect path every index range is an indirect command (20 bytes)
+   uploaded each frame, about 2 ranges per section layer. Fix (no baseline changed): one span per section layer on the
+   indirect path, bottoms ordered last so the span trims them; the plain multi-draw paths keep every range (CPU-side
+   arrays, nothing uploaded).
+7. `c5383c5` full run 40632113264: spawn's upload bytes back near main on full and Vulkan (28,500 and 23,068), but two
+   failures: (a) siftec ponder's triangles were no longer down on full and Vulkan (12.02 of 12.02: the index screen
+   shows a few quads, and a span can't trim the middle), fixed by the 128-command allowance above; (b) core old-GPU
+   spawn's upload bytes per frame, median 28,164 against a gate of 23,393 (baseline 6,372). The old-GPU path has no
+   indirect commands; the budget held nothing there (0 sections waiting), and the median is almost all MAP_WRITE
+   (the game's own writes into mapped buffers, 28,052), which moves in steps of about 6.7 KB: Brimstone old-GPU 1,380,
+   1,380, 15,204 (main), 7,428 (the same old-GPU code in the rename run), 28,164; vanilla's measure-old 6,868-13,012 and
+   measure-full 20,968-29,644 in the same runs. No baseline changed; see the next run.
+8. **`be01dda` full run 40638313286: green** (every gate, both suites, every profile, both bench-only runs). Old-GPU
+   spawn's upload bytes median 1,492 with the same old-GPU code: run 7's 28,164 was that MAP_WRITE noise. Triangles per
+   frame left out (full / old-GPU / Vulkan): fly-through 38 / 38 / 38%, spawn 26 / 35 / 26%, nether 33 / 44 / 33%, most
+   scenes 40-54%, sift 28%, ponder 17%; the indirect path leaves out less where a span can't trim the middle. Largest
+   upload frame in the fly-through 4.48 -> 2.36 MB (full), 4.23 -> 2.11 (old-GPU), 4.54 -> 2.12 (Vulkan), vanilla 7.93.
+   Spawn's upload bytes median 25,536 (full) and 25,480 (Vulkan) against main's 21,004 and 28,044. Draw calls per frame
+   (median) equal to main's in every scene and profile but old-GPU spawn 49 (47) and nether 34 (33), both inside main's
+   own run-to-run spread (see run 5), and at or under vanilla everywhere. Visible sections waited at most 11 frames.
+   The commit after `be01dda` is docs only, `[skip ci]`.
 
 ### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
 
@@ -2200,7 +2226,7 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** package 4b on branch `package-4b`, green full run 40619534606 on `0fe3631`, not merged (Andre checks it first);
+**Now:** package 4b on branch `package-4b`, green full run 40638313286 on `be01dda`, not merged (Andre checks it first);
 the rename to Quicksilver on its own branch `rename-quicksilver`, on top of 4b. The repo is now
 meakaandre-tech/Quicksilver (GitHub redirects the old URL).
 Local agent note: client logs are collected per game start (`ci/client-run.sh`), so a run crossing midnight UTC keeps
