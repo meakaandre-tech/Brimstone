@@ -1,0 +1,97 @@
+suite=siftec run=measure-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+old-GPU Brimstone run: -Dbrimstone.debug.forceIntelMdiIssue=true
+measure run JVM properties:-Dbrimstone.debug.forceIntelMdiIssue=true -Dbrimstone.ci.measureOnly=true
+measure run: contains_renderer taken out of the jar's fabric.mod.json (Indigo draws)
+total 62992
+-rw-r--r-- 1 runner runner  3486296 Oct 28 05:31 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   392000 Oct 28 05:31 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 05:31 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 05:31 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 05:31 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 05:31 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 28 05:31 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 05:31 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 05:31 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 05:31 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 05:31 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 05:31 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 05:31 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 05:31 travelersbackpack.jar
+total 60452
+-rw-r--r-- 1 runner runner  3486296 Oct 28 05:33 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   392000 Oct 28 05:33 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 05:33 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16787 Oct 28 05:33 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 05:33 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 05:33 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 05:33 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 05:33 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 05:33 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 05:33 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 05:33 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 05:33 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 05:33 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 05:33 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene ponder: setting up
+scene ponder: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: setting up
+scene hologram: bench done
+scene hud: setting up
+scene hud: bench done
+scene create_ct: setting up
+scene create_ct: bench done
+session 2 client options: ao=false
+scene factory_flat: setting up
+scene factory_flat: bench done
+/tmp/out/siftec-measure-old:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-measure-old/bench:
+20261028-053831-factory.json
+20261028-054005-sift.json
+20261028-054116-hub.json
+20261028-054227-mam.json
+20261028-054341-ponder.json
+20261028-054641-map.json
+20261028-054804-hologram.json
+20261028-054943-hud.json
+20261028-055121-create_ct.json
+20261028-055437-factory_flat.json
+
+/tmp/out/siftec-measure-old/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png

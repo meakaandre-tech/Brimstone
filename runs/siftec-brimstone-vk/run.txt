@@ -1,0 +1,92 @@
+suite=siftec run=brimstone-vk
+Vulkan profile: --graphicsBackend vulkan on lavapipe
+Brimstone run JVM properties: -Dbrimstone.debug.logUploadQueue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true
+total 62996
+-rw-r--r-- 1 runner runner  3486296 Oct 28 05:31 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   395268 Oct 28 05:31 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 05:31 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 05:31 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 05:31 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 05:31 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 28 05:31 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 05:31 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 05:31 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 05:31 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 05:31 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 05:31 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 05:31 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 05:31 travelersbackpack.jar
+total 60456
+-rw-r--r-- 1 runner runner  3486296 Oct 28 05:34 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   395268 Oct 28 05:34 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 05:34 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16787 Oct 28 05:34 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 05:34 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 05:34 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 05:34 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 05:34 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 05:34 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 05:34 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 05:34 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 05:34 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 05:34 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 05:34 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene ponder: setting up
+scene ponder: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: skipped (not run in brimstone-vk: Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too)
+scene hud: setting up
+scene hud: bench done
+scene create_ct: setting up
+scene create_ct: bench done
+session 2 client options: ao=false
+scene factory_flat: setting up
+scene factory_flat: bench done
+/tmp/out/siftec-brimstone-vk:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-brimstone-vk/bench:
+20261028-053907-factory.json
+20261028-054040-sift.json
+20261028-054152-hub.json
+20261028-054303-mam.json
+20261028-054417-ponder.json
+20261028-054717-map.json
+20261028-054855-hud.json
+20261028-055033-create_ct.json
+20261028-055350-factory_flat.json
+
+/tmp/out/siftec-brimstone-vk/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png

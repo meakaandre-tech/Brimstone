@@ -1,0 +1,10 @@
+[
+  {
+    "scene": "flythrough",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  }
+]

@@ -1,0 +1,96 @@
+suite=siftec run=brimstone-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+old-GPU Brimstone run: -Dbrimstone.debug.forceIntelMdiIssue=true
+Brimstone run JVM properties:-Dbrimstone.debug.forceIntelMdiIssue=true -Dbrimstone.debug.logUploadQueue=true -Dbrimstone.debug.verifyVisibility=true -Dbrimstone.debug.verifyTranslucency=true -Dbrimstone.debug.verifyRenderer=true -Dbrimstone.debug.animationUses=true
+total 62996
+-rw-r--r-- 1 runner runner  3486296 Oct 28 05:40 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   395268 Oct 28 05:40 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 05:40 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 05:40 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 05:40 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 05:40 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 28 05:40 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 05:40 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 05:40 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 05:40 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 05:40 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 05:40 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 05:40 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 05:40 travelersbackpack.jar
+total 60456
+-rw-r--r-- 1 runner runner  3486296 Oct 28 05:41 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner   395268 Oct 28 05:41 brimstone.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 05:41 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16787 Oct 28 05:41 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 05:41 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 05:41 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 05:41 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 05:41 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 05:41 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 05:41 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 05:41 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 05:41 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 05:41 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 05:41 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene ponder: setting up
+scene ponder: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: setting up
+scene hologram: bench done
+scene hud: setting up
+scene hud: bench done
+scene create_ct: setting up
+scene create_ct: bench done
+session 2 client options: ao=false
+scene factory_flat: setting up
+scene factory_flat: bench done
+/tmp/out/siftec-brimstone-old:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-brimstone-old/bench:
+20261028-054608-factory.json
+20261028-054741-sift.json
+20261028-054852-hub.json
+20261028-055002-mam.json
+20261028-055116-ponder.json
+20261028-055416-map.json
+20261028-055539-hologram.json
+20261028-055717-hud.json
+20261028-055854-create_ct.json
+20261028-060155-factory_flat.json
+
+/tmp/out/siftec-brimstone-old/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png
