@@ -10,7 +10,7 @@
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
 | package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met; **7b deferred until after package 6**, with inventory tooltips, F3 and long chat measured first). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
-| package 4b (terrain speed-ups) | `package-4b` | not merged (Andre's check): upload budget, skip back faces, bench-only jar; see its section |
+| package 4b (terrain speed-ups) | `package-4b` | not merged (Andre's check), `0fe3631` green full run 40619534606: upload budget, skip back faces, bench-only jar; see its section |
 | core/mobs strict limit | main | 600 -> 10 (chicken wing pin; samples 0 in four full runs) |
 | baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0) |
 | animation pin fix | merged | `cea5bfb`: the animation pin counts texture ticks, not client ticks (the cause of a flake in core/animation's measure runs); **main full run 40526712029 green, `latest` rebuilt** |
@@ -2127,7 +2127,15 @@ little; the laptop bench decides that part of the done-when.
    check in session 4 of the three Brimstone runs: at start-up the game archives a leftover log into a dated `.log.gz`,
    which the new collection prepended (session 4's file began with session 3's renderer_off log). Fixed in
    `ci/client-run.sh`: a session's log is kept from its own last "Loading Minecraft" line on. No check changed.
-5. Final run: see the hand-off.
+5. **`0fe3631` full run 40619534606: green** (every gate, both suites, every profile, both bench-only runs). Fly-through's
+   largest upload frame 2.31 / 2.11 / 2.12 MB (main 4.48 / 4.23 / 4.54, vanilla 7.38); triangles per frame down 35-54%
+   in the core scenes (fly-through full 552,438 of 884,736); visible sections waited at most 9 frames (bound 15).
+   Old-GPU draw calls against main's run 40585312798: spawn 49 against 47 (median), fly-through 66 against 64; the
+   fly-through's terrain draws are identical (57.37 per frame) and its totals were 64-68 in main's last runs; spawn's
+   +3 are translucent runs breaking at region borders over a larger visible set, and main read 48 and 49 there in runs
+   40481430766 and 40516650792. Run-to-run noise in what is visible, not the facing groups.
+
+The commit after `0fe3631` is docs only (this list and the hand-off), `[skip ci]`.
 
 ### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
 
@@ -2183,5 +2191,8 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** package 4b on branch `package-4b`, not merged (Andre checks it first); then the rename to Quicksilver on its own
-branch `rename-quicksilver`.
+**Now:** package 4b on branch `package-4b`, green full run 40619534606 on `0fe3631`, not merged (Andre checks it first);
+the rename to Quicksilver on its own branch `rename-quicksilver`, on top of 4b. The repo is now
+meakaandre-tech/Quicksilver (GitHub redirects the old URL).
+Local agent note: client logs are collected per game start (`ci/client-run.sh`), so a run crossing midnight UTC keeps
+the rolled-over part.
