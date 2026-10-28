@@ -250,6 +250,7 @@ public final class TerrainRenderer {
         path = indirect ? Path.INDIRECT : plainPath(device.getDeviceInfo());
         boolean plain = path != Path.INDIRECT;
         for (List<ArenaDraws> l : FRAME) l.clear();
+        PENDING.clear();
         TRUNS.clear();
         TL_ENTRIES.clear();
         TL_MESHES.clear();
@@ -310,6 +311,14 @@ public final class TerrainRenderer {
                         // ranges are CPU-side entries of the same call and cost nothing to upload
                         boolean span = path == Path.PLAIN_SINGLE || path == Path.INDIRECT;
                         int ranges = BackFaces.ranges(part, e, skipBackFaces, span, RANGE_COUNT, RANGE_FIRST);
+                        if (path == Path.INDIRECT) {
+                            // decided after the loop, in this order: a few layers may get their full ranges (EXTRA_COMMANDS)
+                            Pending pd = new Pending(ad, instance, part, whole, RANGE_COUNT[0], ranges == 0 ? 0 : RANGE_FIRST[0], ranges);
+                            pd.multi = BackFaces.ranges(part, e, skipBackFaces, false, pd.count, pd.first);
+                            PENDING.add(pd);
+                            ad.sectionLayers++;
+                            continue;
+                        }
                         int drawn = 0;
                         RegionDraw rd = null;
                         if (plain) {
@@ -339,6 +348,7 @@ public final class TerrainRenderer {
                     TL_INSTANCES.add(instance);
                 }
             }
+            if (!PENDING.isEmpty()) emitPending(audit);
             if (skipBackFaces) checkDrawLimits(device);
             buildTranslucentRuns(plain);
             if (TranslucencyCheck.ENABLED) {
@@ -361,6 +371,85 @@ public final class TerrainRenderer {
         if (maxIndexCount > 0) RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS).requestIndexCount(maxIndexCount);
         if (audit) VisibilityStats.terrainFrame(audited, missingFromVanilla());
         translucentOthers();
+    }
+
+    /**
+     * Indirect path, package 4b: a section layer is one command (one span of its kept facing groups), except that up to
+     * {@link #EXTRA_COMMANDS} more commands per frame go to the layers whose full ranges leave out the most quads per
+     * extra command. Each command is 20 bytes uploaded every frame, so this caps what back-face skipping adds to the
+     * frame's uploads at about 2.5 KB.
+     */
+    static final int EXTRA_COMMANDS = 128;
+
+    private static final class Pending {
+        final ArenaDraws ad;
+        final int instance, whole, spanCount, spanFirst, spanRanges;
+        final TerrainStore.Part part;
+        final int[] count = new int[CompactVertex.GROUPS], first = new int[CompactVertex.GROUPS];
+        int multi;
+        boolean useMulti;
+
+        Pending(ArenaDraws ad, int instance, TerrainStore.Part part, int whole, int spanCount, int spanFirst, int spanRanges) {
+            this.ad = ad;
+            this.instance = instance;
+            this.part = part;
+            this.whole = whole;
+            this.spanCount = spanCount;
+            this.spanFirst = spanFirst;
+            this.spanRanges = spanRanges;
+        }
+
+        int multiQuads() {
+            int q = 0;
+            for (int r = 0; r < multi; r++) q += count[r];
+            return q;
+        }
+
+        /** Quads the full ranges leave out beyond the span, per extra command. */
+        double gain() {
+            int extra = multi - Math.max(1, spanRanges);
+            return extra <= 0 ? 0 : (double) ((spanRanges == 0 ? 0 : spanCount) - multiQuads()) / extra;
+        }
+    }
+
+    private static final List<Pending> PENDING = new ArrayList<>();
+
+    private static void emitPending(boolean audit) {
+        int n = PENDING.size();
+        Integer[] order = new Integer[n];
+        double[] gain = new double[n];
+        for (int i = 0; i < n; i++) {
+            order[i] = i;
+            gain[i] = PENDING.get(i).gain();
+        }
+        Arrays.sort(order, (a, b) -> Double.compare(gain[b], gain[a]));
+        int left = EXTRA_COMMANDS;
+        for (int i : order) {
+            Pending pd = PENDING.get(i);
+            int extra = pd.multi - Math.max(1, pd.spanRanges);
+            if (gain[i] <= 0 || extra > left) continue;
+            pd.useMulti = true;
+            left -= extra;
+        }
+        // in the order the layers were listed
+        for (Pending pd : PENDING) {
+            int drawn = 0, ranges;
+            if (pd.useMulti) {
+                ranges = pd.multi;
+                for (int r = 0; r < ranges; r++) {
+                    pd.ad.commands.add(new DynamicGpuData.IndexedDraw(pd.count[r] * 6, 1, 0, pd.part.baseVertex + pd.first[r] * 4, pd.instance));
+                    drawn += pd.count[r] * 6;
+                }
+            } else {
+                ranges = pd.spanRanges;
+                if (ranges > 0) {
+                    pd.ad.commands.add(new DynamicGpuData.IndexedDraw(pd.spanCount * 6, 1, 0, pd.part.baseVertex + pd.spanFirst * 4, pd.instance));
+                    drawn = pd.spanCount * 6;
+                }
+            }
+            if (audit) TerrainStats.layerTriangles(drawn / 3, pd.whole / 3, ranges);
+        }
+        PENDING.clear();
     }
 
     /**

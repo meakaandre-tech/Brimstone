@@ -2019,9 +2019,10 @@ multi-draw, not extra draws)." Plus the bench-only jar and a laptop-bench sectio
    always drawn. Each frame the axis groups that face away from the camera for the whole section (camera at least
    1 block, plus twice the camera's move since the last frame, behind the nearest plane of the group) are left out; the
    groups that stay are index ranges of the shared quad index list: on the plain multi-draw paths (old-GPU, the laptop)
-   entries of the same multi-draw; on the indirect path (and where a device has no multi-draw) one span per section layer
-   from the first kept group to the last, since each extra range there would be one more indirect command uploaded every
-   frame (see run 6). Group order unaligned, +X, +Y, +Z, -X, -Z, -Y: bottoms last, so a span trims them most often. Translucent layers are untouched (vanilla's sorted lists). Every group is
+   entries of the same multi-draw; on the indirect path one span per section layer from the first kept group to the
+   last, since each extra range there is one more indirect command uploaded every frame (see run 6), except that up to
+   128 extra commands per frame (2.5 KB) go to the layers whose full ranges leave out the most quads per extra command;
+   where a device has no multi-draw, one span. Group order unaligned, +X, +Y, +Z, -X, -Z, -Y: bottoms last, so a span trims them most often. Translucent layers are untouched (vanilla's sorted lists). Every group is
    drawn when the pipelines don't cull, without a camera position, after a jump of more than 16 blocks, and with
    `-Dbrimstone.debug.drawAllFaces=true`. The camera position comes from a new optional terrain hook on
    `LevelExtractor.extractVisibleEntities`. Common idea (Sodium does something similar); no Sodium code read or used.
@@ -2143,7 +2144,16 @@ The commit after `0fe3631` is docs only (this list and the hand-off), `[skip ci]
    4b, passing by 331 bytes, not noise. Cause: on the indirect path every index range is an indirect command (20 bytes)
    uploaded each frame, about 2 ranges per section layer. Fix (no baseline changed): one span per section layer on the
    indirect path, bottoms ordered last so the span trims them; the plain multi-draw paths keep every range (CPU-side
-   arrays, nothing uploaded). Final run: see the hand-off.
+   arrays, nothing uploaded).
+7. `c5383c5` full run 40632113264: spawn's upload bytes back near main on full and Vulkan (28,500 and 23,068), but two
+   failures: (a) siftec ponder's triangles were no longer down on full and Vulkan (12.02 of 12.02: the index screen
+   shows a few quads, and a span can't trim the middle), fixed by the 128-command allowance above; (b) core old-GPU
+   spawn's upload bytes per frame, median 28,164 against a gate of 23,393 (baseline 6,372). The old-GPU path has no
+   indirect commands; the budget held nothing there (0 sections waiting), and the median is almost all MAP_WRITE
+   (the game's own writes into mapped buffers, 28,052), which moves in steps of about 6.7 KB: Brimstone old-GPU 1,380,
+   1,380, 15,204 (main), 7,428 (the same old-GPU code in the rename run), 28,164; vanilla's measure-old 6,868-13,012 and
+   measure-full 20,968-29,644 in the same runs. No baseline changed; see the next run.
+   Final run: see the hand-off.
 
 ### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
 
