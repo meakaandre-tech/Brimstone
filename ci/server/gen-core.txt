@@ -1,0 +1,7 @@
+# Worldgen diff, core suite (ci/server/server-run.sh): dimension and chunk x1 z1 x2 z2 (inclusive), each generated to
+# full one chunk at a time, rows of z then x, on a fresh world (seed 12345) with one worldgen thread. Every chunk
+# saved (these plus the partly generated ring around them and whatever the server makes at start-up) is compared
+# byte for byte against vanilla's run (ci/server/worlddiff.py --mode gen).
+minecraft:overworld 200 200 211 211
+minecraft:the_nether -6 -6 5 5
+minecraft:the_end -6 -6 5 5

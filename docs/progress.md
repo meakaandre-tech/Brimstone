@@ -16,6 +16,7 @@ the `brim*` outputs are `QsCell`, `QsTint`, `QsTexel`, `QsRegion` and `qs*`; the
 
 | track | branch | status |
 |---|---|---|
+| phase 2, P2-0 (server harness) | `p2-0`, not merged | server suite, server bench numbers, research; see "Phase 2, P2-0" below |
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
@@ -2220,6 +2221,134 @@ bench-only jar plus Sodium 0.9.2, Brimstone), seed 12345, new world each time, `
 Brimstone instance's `backFaces` and `uploadBudget` lines show the triangles left out and the sections that waited.
 
 ---
+
+## Phase 2, P2-0: server harness (branch `p2-0`)
+
+Design doc: [Quicksilver Phase 2: Design](https://claude.ai/artifact/6QVKeDHfvCQDDDppdrxu45). Phase 2's files are
+apart from phase 1's: `ci/server/` (scripts, the comparator, the CI-only harness mod), jobs `server-base`, `server`,
+`server-net` and `server-compare` in `build.yml` (logs on `ci-logs-server-<branch>`), and Java under
+`src/main/java/com/meakaandre/quicksilver/phase2/`. Shared files touched: `build.yml` (one build step, the new jobs,
+release also needs `server-compare`), `fabric.mod.json` (one mixin config, one client entrypoint), `Quicksilver.java`
+(one line), `BenchReport.java` (two lines), the bench-only jar (its classes, one mixin config, two lines in
+`BenchOnlyClient.java`: it carries the server numbers too), `.gitignore` (`server/` anchored to the root), `docs/laptop-bench.md`
+and `docs/ci-limits.md` (new sections at the end).
+
+**Final run:** full mode, green: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40679862182 (SHA
+`82ef290`; server suite logs on `ci-logs-server-p2-0`, client suite on `ci-logs-p2-0`). Main hadn't moved since the
+branch started and the rename branch hadn't merged, so no rebase was needed.
+
+### Done-when
+
+1. **Server suite: done.** Dedicated servers only, on every branch (quick mode too), three suites: core (Fabric
+   API only), siftec (SIFTEC's pack from its latest release, with `siftec-selftest-26.3.jar`), terralith (Terralith
+   and Lithostitched from Modrinth). Each suite runs vanilla three times and Quicksilver once; every gate and its
+   noise are in `docs/ci-limits.md`, "Server suite".
+   - **World diff:** a vanilla base world per suite (`ci/server/base-area-<suite>.txt`, seed 12345), then a scripted
+     run of 1200 ticks (`scripted-run-<suite>.txt`): core has a hopper chain, furnaces, an observer clock driving a
+     sticky piston, crops, animals in a pen, villagers with job sites, item entities over a hopper; SIFTEC adds
+     Create's contraptions (a mechanical bearing and a mechanical piston on creative motors). The saved worlds are
+     compared block by block, block entity by block entity (each top-level field), scheduled block and fluid ticks,
+     and entity by entity (type, exact position, health, the stack an item entity holds; an entity left without an
+     exact match on the other side is a difference, keyed by its type and block).
+   - **GameTests** (Fabric's GameTest API, `ci/server/harness/.../HarnessTests.java`): hopper chain, observer clock,
+     piston machine, piston door, item sorter, crop farm, mob farm, villager job and trade. Each logs its result and
+     the tick it finished. Create contraption and train: **not as GameTests** (the GameTest server can't load
+     SIFTEC's pack: its registries fail on Create: New Age's recipes there); the contraptions are in SIFTEC's
+     scripted run instead, and trains are not covered yet (choices below).
+   - **SIFTEC's self-tests:** SIFTEC's `.github/smoke-commands.txt` on a fresh SIFTEC world with Quicksilver loaded;
+     each suite's passed/failed counts against vanilla (30 suites, 712 checks).
+   - **Worldgen diff:** 144 chunks per dimension byte for byte: vanilla's overworld, nether and end; SIFTEC's
+     overworld, nether and the Sift; Terralith's overworld. Generated one step at a time with one worldgen thread
+     (your decision A); no fall-back to B was needed: vanilla's runs agree byte for byte.
+   - **Network check:** a vanilla client on a Quicksilver server and a Quicksilver client on a vanilla server,
+     through the core scripted run: joined, stayed to the end, no protocol error.
+   - **Green on vanilla against vanilla:** the harness repeats (worldgen exactly; world diff, GameTests and self-tests
+     where vanilla repeats; the noise that is left is listed in ci-limits).
+   - **Not covered yet (open gaps, before the packages that need them):** random ticks and natural mob spawning are
+     off in the scripted runs (both draw on vanilla's shared random, and Lithium changes both: before P2-3/P2-4 they
+     need their own targeted tests); the crop farm is judged on its state, not its bone meal count; Create trains;
+     threaded worldgen (`max.bg.threads=1` everywhere: P2-6 needs a threaded-generation check of its own).
+2. **`/quicksilver bench` server numbers: done** (`phase2/ServerNumbers.java`, `NetworkBytes.java`,
+   `ClientTimes.java`, one count-only mixin on `Connection`). The client bench's JSON and log block gain a `server`
+   section: MSPT average, p50, p99, max and ticks over 50 ms over the bench's seconds, heap used, start-up (to the title
+   screen and to the first world joined) and world-load time, bytes on the wire. On a dedicated server
+   `/quicksilver bench [seconds]` (or `/qs bench`; console or an admin) writes the same numbers to
+   `quicksilver/bench/<time>-server.json`
+   and a `QUICKSILVER SERVER BENCH` block, with heap after a GC. Heap after load and after 10 minutes come from benches
+   at those times (laptop steps). Measurement only: nothing in the game changes.
+3. **Research: done,** `docs/phase2-research.md` (licences from each mod's repo; what 26.3 already does; your order A
+   is in the phase 2 doc).
+4. **Laptop steps: done,** `docs/laptop-bench.md`, "Phase 2: server numbers". Pending on you.
+
+### How the harness repeats
+
+`ci/server/harness` is a CI-only mod (built like the pin mod, never released) in every server run, vanilla's and
+Quicksilver's alike. What it pins and why is in `docs/ci-limits.md`, "Server suite". The comparator
+(`ci/server/worlddiff.py`) reads saved worlds itself (no game code) and has a self-test on synthetic worlds that runs
+first in `server-compare`.
+
+### Measurements (CI, relative only)
+
+Scripted run: MSPT average and p99 for vanilla and Quicksilver are in the report's "Scripted run" table; across the
+branch's runs about 1.2 to 2.7 ms average and 6 to 15 ms p99 on CI runners, swinging with the runner, not the mod.
+Heap after load about 151 MB core and 279 MB SIFTEC (Quicksilver about +2 MB: its own classes); start-up 7.5 to 13 s
+core, 12.8 to 18.7 s SIFTEC. Network: the vanilla client's session sent about 2.6 to 2.8 MB from the Quicksilver
+server. CI measures relatively; the laptop decides the real numbers.
+
+### Andre's decisions (2026-10-29)
+
+1. **Modded worldgen in CI:** the SIFTEC suite checks what SIFTEC's pack generates; no other worldgen data pack is
+   used in CI or kept in this repo.
+2. **Create train:** added to SIFTEC's scripted run (below, "Create train").
+3. **Three vanilla runs per suite:** kept.
+4. **Quick mode runs the core server suite only;** SIFTEC's and Terralith's run in full mode. A commit with
+   `[siftec]` in its message adds SIFTEC's server suite to a quick run.
+5. **Pending scheduled ticks:** reported, not gated, for now; before P2-3, find what makes them vary at the cave
+   (chunk -1,-2 of seed 12345) and gate them again.
+
+### Before later packages (Andre, 2026-10-29)
+
+Each is a small CI package of its own, done before the package it guards and recorded in that package's plan:
+
+- **Before P2-3:** find what makes the pending scheduled ticks vary at the cave (chunk -1,-2 of seed 12345; core and
+  SIFTEC alike) and gate scheduled ticks again (`REPORT_ONLY` in `ci/server/compare-server.py` emptied).
+- **Before P2-3 and P2-4:** random-tick tests and natural-spawning tests (both are off in the scripted runs, both draw
+  on the level's shared random, and Lithium changes both: `world.chunk_ticking.random_block_ticking`,
+  `minimal_nonvanilla.spawning`): targeted, repeatable scenes, e.g. a pinned random per chunk as in the GameTest
+  server, with growth, spreading and spawn counts compared with vanilla.
+- **Before P2-6:** a threaded-worldgen check (every run today generates with one worldgen thread): generation with the
+  normal thread count, compared block by block with the single-threaded vanilla result where vanilla's own threaded
+  runs agree.
+
+### Create train
+
+`ci/server/harness/.../CiTrain.java`, in SIFTEC's scripted run: straight track and two stations placed with
+commands; at tick 20 the harness names the stations, at 40 it puts station A in assembly mode, builds a one-bogey
+carriage behind it (a bogey, three casings, a blaze burner and two controls facing it, so the blaze conducts both
+ways) and assembles it, at 60 it gives the train a cycling schedule A to B and back. Create has no commands for
+assembling or scheduling, so those two steps use reflection (the harness is compiled without Create). Every arrival
+is logged with its tick; CI requires the same line in every run and at least two arrivals, and the carriage is an
+entity in the world diff.
+
+### Review
+
+Independent review by a fresh agent (scratchpad `review-p2-0.md`): 2 must-fix, 9 should-fix, 6 nits; all fixed.
+The must-fixes: entity positions were rounded to 6 decimals before comparing (a 1e-7 drift, Lithium's
+`empty_space` kind, passed): now exact; and this section's final-run placeholder. The should-fixes: palette shapes
+that could merge two states, block entities ungated over one noisy field (now per field), scheduled ticks and item
+stacks not compared, unreadable entity chunks not counted, harness pins that could silently not apply (now required),
+worldgen not falling back to blocks where bytes are noisy, generation failures and chunk counts unchecked, the
+network check not confirming which side had Quicksilver, coverage gaps not listed. Fixing them showed three more
+vanilla noise sources (random ticks; entities spawned by worldgen keep no UUID between runs; the ring of chunks
+around the scripted area finishing loading at different moments), each fixed in the harness or the comparator.
+
+### Known limits
+
+- Noise vanilla shows against itself can't be gated (it's reported): see ci-limits.
+- The item sorter GameTest ends with 19 of 20 diamonds sorted and one held in its lock hopper, the same in every
+  run: the cell's design, not a fault.
+- The crop farm is judged on its state at tick 200, not the bone meal count (vanilla's own runs differ there).
+- The bench's network bytes are 0 in single player (an in-memory connection carries no bytes).
 
 ## Hand-off
 

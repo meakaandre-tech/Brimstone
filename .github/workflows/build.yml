@@ -23,6 +23,7 @@ jobs:
     outputs:
       mode: ${{ steps.m.outputs.mode }}
       matrix: ${{ steps.m.outputs.matrix }}
+      server_suites: ${{ steps.m.outputs.server_suites }}
       logs: ${{ steps.m.outputs.logs }}
     steps:
       - id: m
@@ -38,9 +39,16 @@ jobs:
           if [ $mode = full ]; then
             # package 4b: two more core runs with only the bench-only jar, on plain Fabric and next to Sodium
             matrix='{"suite":["core","siftec"],"run":["vanilla-a","vanilla-b","vanilla-old","vanilla-vk","quicksilver-full","quicksilver-old","quicksilver-vk","measure-full","measure-old","measure-vk"],"include":[{"suite":"core","run":"bench-plain"},{"suite":"core","run":"bench-sodium"}]}'
+            server_suites='["core","siftec","terralith"]'
           else
             matrix='{"suite":["core"],"run":["vanilla-a","vanilla-b","quicksilver-old"]}'
+            # phase 2's server suite in quick mode: core only (Andre, 2026-10-29); SIFTEC and Terralith in full mode.
+            # A commit with [siftec] in its message adds SIFTEC's server suite to a quick run (to work on it without
+            # the whole client matrix)
+            server_suites='["core"]'
+            case "$MESSAGE" in *"[siftec]"*) server_suites='["core","siftec"]';; esac
           fi
+          echo "server_suites=$server_suites" >> "$GITHUB_OUTPUT"
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           echo "logs=ci-logs-$(echo "$GITHUB_REF_NAME" | tr '/' '-')" >> "$GITHUB_OUTPUT"
@@ -151,6 +159,40 @@ jobs:
         with:
           name: ci-pin-jar
           path: /tmp/pin-out/ci-pin.jar
+      - name: Build the CI-only server harness mod
+        shell: bash
+        run: |
+          # ci/server/harness (phase 2): loaded in every server-suite run, vanilla and Quicksilver alike; built like the
+          # pin mod, never published beyond this run's artifacts
+          set -eo pipefail
+          mixin=$(grep -E '/sponge-mixin[^/]*\.jar$' /tmp/compile-cp.txt 2>/dev/null | grep -v sources | head -1 || true)
+          [ -n "$mixin" ] || mixin=$(find ~/.gradle/caches -name 'sponge-mixin*.jar' 2>/dev/null | grep -v sources | head -1 || true)
+          mkdir -p /tmp/harness/classes /tmp/harness-out /tmp/harness-log
+          cp="$mixin:$(tr '\n' ':' < /tmp/compile-cp.txt):$(tr '\n' ':' < /tmp/mcjars.txt)"
+          # its compiler output goes to the server suite's logs branch (server-compare publishes it)
+          javac --release 25 -Xmaxerrs 500 -cp "$cp" -d /tmp/harness/classes $(find ci/server/harness/src -name '*.java') 2>&1 | tee /tmp/harness-log/javac.log
+          cp ci/server/harness/fabric.mod.json ci/server/harness/*.mixins.json /tmp/harness/classes/
+          python3 ci/server/harness/make-structures.py /tmp/harness/classes/data/ci_server_harness/gametest/structure
+          (cd /tmp/harness/classes && jar cf /tmp/harness-out/ci-server-harness.jar .)
+          unzip -l /tmp/harness-out/ci-server-harness.jar | tail -3
+          # Fabric API's GameTest module ships only in development environments, not in its release jar: the server
+          # suite's GameTest phase loads it from the build's own classpath (Apache-2.0; CI only, never published)
+          gt=$(grep -E '/fabric-gametest-api-v1[^/]*\.jar$' /tmp/compile-cp.txt | grep -v sources | head -1)
+          echo "GameTest module: $gt"
+          test -n "$gt"
+          cp "$gt" /tmp/harness-out/fabric-gametest-api-v1.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-server-harness-jar
+          path: /tmp/harness-out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-build-logs
+          path: |
+            /tmp/harness-log
+            /tmp/ci/build.log
+          if-no-files-found: ignore
 
   siftec-world:
     # SIFTEC's server and CI world, built once per SIFTEC build and smoke-file change and shared by the SIFTEC runs
@@ -346,8 +388,209 @@ jobs:
         shell: bash
         run: test "${{ steps.compare.outputs.status }}" = "0"
 
+  # ---- phase 2 server suite (ci/server/; P2-0): dedicated server, no client, on every branch in quick mode too.
+  # Every run loads the CI-only server harness and runs with one worldgen thread (fixed generation order).
+  server-base:
+    # the world every scripted run of a suite starts from (vanilla, generated once per run of this workflow)
+    needs: [mode, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # the suites with a scripted run (terralith has none); in quick mode core only
+        suite: ${{ fromJSON(needs.mode.outputs.server_suites) }}
+        exclude:
+          - suite: terralith
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        if: matrix.suite == 'siftec'
+        with:
+          repository: meakaandre-tech/SIFTEC
+          path: siftec
+          sparse-checkout: .github
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-server-harness-jar
+          path: ci-server-harness
+      - name: Generate the base world
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
+          RUN: base
+          OUT: /tmp/sout/${{ matrix.suite }}-base
+        run: bash ci/server/server-run.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-base-${{ matrix.suite }}
+          path: server-base.tar
+          retention-days: 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sres-${{ matrix.suite }}-base
+          path: /tmp/sout
+          retention-days: 3
+
+  server:
+    needs: [mode, build, server-base]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        # core: worldgen, GameTests, scripted-run world diff; siftec: SIFTEC's pack, its worldgen and self-tests;
+        # terralith: Terralith's worldgen. Quick mode: core only (the mode job's server_suites)
+        suite: ${{ fromJSON(needs.mode.outputs.server_suites) }}
+        # three vanilla runs: what vanilla does differently between its own runs is its noise (the standing rule's
+        # three samples), and Quicksilver is gated wherever all three agree
+        run: [vanilla-a, vanilla-b, vanilla-c, quicksilver]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        if: matrix.suite == 'siftec'
+        with:
+          repository: meakaandre-tech/SIFTEC
+          path: siftec
+          sparse-checkout: .github
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: actions/download-artifact@v4
+        with:
+          name: quicksilver-jar
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-server-harness-jar
+          path: ci-server-harness
+      - uses: actions/download-artifact@v4
+        if: matrix.suite != 'terralith'
+        continue-on-error: true
+        with:
+          name: server-base-${{ matrix.suite }}
+      - name: Run the server suite
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
+          RUN: ${{ matrix.run }}
+          OUT: /tmp/sout/${{ matrix.suite }}-${{ matrix.run }}
+        run: bash ci/server/server-run.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sres-${{ matrix.suite }}-${{ matrix.run }}
+          path: /tmp/sout
+          retention-days: 3
+
+  server-net:
+    # the network check: a vanilla client on a Quicksilver server and a Quicksilver client on a vanilla server,
+    # through the scripted run (ci/server/net-run.sh)
+    needs: [build, server-base]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [net-vanilla-client, net-qs-client]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: quicksilver-jar
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-server-harness-jar
+          path: ci-server-harness
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: server-base-core
+      - name: Run the network check
+        shell: bash
+        env:
+          RUN: ${{ matrix.run }}
+          OUT: /tmp/sout/core-${{ matrix.run }}
+        run: |
+          chmod +x gradlew
+          bash ci/server/net-run.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sres-core-${{ matrix.run }}
+          path: /tmp/sout
+          retention-days: 3
+
+  server-compare:
+    needs: [mode, build, server, server-net]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: sres-*
+          path: /tmp/sres
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: server-build-logs
+          path: /tmp/sci/build
+      - name: Self-test the world comparator, then compare the runs
+        id: compare
+        shell: bash
+        run: |
+          set +e
+          mkdir -p /tmp/sci/compare
+          python3 -I ci/server/test_worlddiff.py > /tmp/sci/compare/worlddiff-selftest.txt 2>&1
+          self=$?
+          extra=$(echo '${{ needs.mode.outputs.server_suites }}' | python3 -c "import json,sys; print(','.join(json.load(sys.stdin)))")
+          CI_MODE="${{ needs.mode.outputs.mode }}" CI_EXTRA_SUITES="$extra" python3 -I ci/server/compare-server.py /tmp/sres /tmp/sci/compare
+          cmp=$?
+          cat /tmp/sci/compare/report.md >> "$GITHUB_STEP_SUMMARY"
+          tail -1 /tmp/sci/compare/worlddiff-selftest.txt >> "$GITHUB_STEP_SUMMARY"
+          echo "status=$(( self || cmp ))" >> "$GITHUB_OUTPUT"
+      - name: Publish the server suite's logs to ci-logs-server-<branch>
+        if: always()
+        shell: bash
+        run: |
+          # results without the saved worlds (they stay in the run's artifacts); Quicksilver's own build log and the
+          # harness's compiler output, nothing of Mojang's
+          set +e
+          mkdir -p /tmp/sci/runs
+          if [ -d /tmp/sres ]; then (cd /tmp/sres && find . -type f ! -path '*/world/*' -size -20M -exec cp --parents {} /tmp/sci/runs/ \;); fi
+          set -e
+          logs="ci-logs-server-$(echo "$GITHUB_REF_NAME" | tr '/' '-')"
+          echo "${GITHUB_SHA} ${GITHUB_REF_NAME} ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} ${{ needs.mode.outputs.mode }}" > /tmp/sci/commit.txt
+          cd /tmp/sci
+          git init -q -b "$logs"
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A && git commit -q -m "Server suite logs for ${GITHUB_SHA} (${GITHUB_REF_NAME})"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$logs"
+      - name: Fail on any Quicksilver-only difference or a harness that doesn't repeat
+        shell: bash
+        run: test "${{ steps.compare.outputs.status }}" = "0"
+
   release:
-    needs: [mode, build, compare]
+    needs: [mode, build, compare, server-compare]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.mode.outputs.mode == 'full'
     runs-on: ubuntu-latest
     steps:

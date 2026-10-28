@@ -1,0 +1,81 @@
+# The server suite's scripted run (phase 2, P2-0), played by the CI harness on the base world in every run alike.
+#   area DIM CX1 CZ1 CX2 CZ2   force-loaded; the run starts once every chunk is entity-ticking with its entities loaded
+#   cmd COMMAND                run once, before tick 0 (the game is frozen until then)
+#   ticks N                    the run's length
+#   at T COMMAND               run at the start of tick T
+#   qs-at T COMMAND            the same, only when Quicksilver is loaded (vanilla's runs have no such command)
+# Afterwards the server saves and stops, and ci/server/worlddiff.py compares the world with vanilla's run: blocks and
+# block entities exactly, entities by type, count, position and health.
+area minecraft:overworld -4 -4 3 3
+
+cmd time set 13000
+cmd weather clear 100000
+# no natural spawning: whether a mob may spawn reads light from the light engine, which works on its own thread,
+# so where mobs appear isn't repeatable (the mobs below are summoned, and spawn from fixed seeds)
+cmd gamerule spawn_mobs false
+# no random ticks: they draw on the level's shared random over every loaded chunk (cave vines, vines, crops), and
+# vanilla's own runs differed in hundreds of blocks with them on; random-tick behaviour gets its own tests later
+cmd gamerule random_tick_speed 0
+
+# a stone platform high above spawn: machines that don't depend on the terrain
+cmd fill 0 199 0 31 199 31 minecraft:stone
+cmd fill 0 200 0 31 201 0 minecraft:glass
+cmd fill 0 200 31 31 201 31 minecraft:glass
+cmd fill 0 200 0 0 201 31 minecraft:glass
+cmd fill 31 200 0 31 201 31 minecraft:glass
+
+# hopper chain: a chest of cobblestone through six hoppers into a chest
+cmd setblock 2 201 2 minecraft:chest{Items:[{Slot:0b,id:"minecraft:cobblestone",count:64},{Slot:1b,id:"minecraft:cobblestone",count:64}]}
+cmd fill 2 200 2 7 200 2 minecraft:hopper[facing=east]
+cmd setblock 8 200 2 minecraft:chest
+
+# furnaces: smelting with fuel (block entity ticking)
+cmd setblock 2 200 5 minecraft:furnace{Items:[{Slot:0b,id:"minecraft:raw_iron",count:16},{Slot:1b,id:"minecraft:coal",count:4}]}
+cmd setblock 4 200 5 minecraft:smoker{Items:[{Slot:0b,id:"minecraft:beef",count:8},{Slot:1b,id:"minecraft:coal",count:2}]}
+cmd setblock 6 200 5 minecraft:blast_furnace{Items:[{Slot:0b,id:"minecraft:raw_gold",count:8},{Slot:1b,id:"minecraft:coal",count:2}]}
+
+# observer clock driving a sticky piston that moves a block back and forth, and a lamp
+cmd setblock 2 200 8 minecraft:redstone_lamp
+cmd setblock 3 200 8 minecraft:observer[facing=east]
+cmd setblock 4 200 8 minecraft:observer[facing=west]
+cmd setblock 5 200 8 minecraft:sticky_piston[facing=east]
+cmd setblock 6 200 8 minecraft:oak_planks
+
+# crops on hydrated farmland
+cmd fill 2 198 12 9 198 12 minecraft:stone
+cmd fill 2 199 12 9 199 12 minecraft:water
+cmd fill 2 199 11 9 199 11 minecraft:farmland[moisture=7]
+cmd fill 2 199 13 9 199 13 minecraft:farmland[moisture=7]
+cmd fill 2 200 11 9 200 11 minecraft:wheat
+cmd fill 2 200 13 9 200 13 minecraft:carrots
+
+# animals in a pen, villagers with job sites
+cmd fill 12 200 2 20 200 2 minecraft:oak_fence
+cmd fill 12 200 10 20 200 10 minecraft:oak_fence
+cmd fill 12 200 2 12 200 10 minecraft:oak_fence
+cmd fill 20 200 2 20 200 10 minecraft:oak_fence
+cmd summon minecraft:cow 14 200 4
+cmd summon minecraft:cow 16 200 5
+cmd summon minecraft:cow 18 200 6
+cmd summon minecraft:sheep 14 200 8
+cmd summon minecraft:sheep 17 200 8
+cmd summon minecraft:chicken 15 200 6
+cmd summon minecraft:chicken 16 200 7
+cmd summon minecraft:pig 18 200 4
+cmd setblock 24 200 24 minecraft:lectern
+cmd setblock 26 200 24 minecraft:composter
+cmd setblock 28 200 24 minecraft:smithing_table
+cmd summon minecraft:villager 24 200 20
+cmd summon minecraft:villager 26 200 20
+cmd summon minecraft:villager 28 200 20
+
+# item entities and a hopper collecting them
+cmd setblock 24 199 4 minecraft:hopper
+cmd setblock 24 198 4 minecraft:chest
+cmd summon minecraft:item 24.5 202 4.5 {Item:{id:"minecraft:diamond",count:5}}
+cmd summon minecraft:item 24.5 203 4.5 {Item:{id:"minecraft:emerald",count:3}}
+
+ticks 1200
+
+# Quicksilver's server bench over most of the run (vanilla has no such command)
+qs-at 0 quicksilver bench 50

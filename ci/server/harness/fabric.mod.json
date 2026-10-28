@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "ci_server_harness",
+  "version": "1",
+  "name": "Quicksilver CI: server harness",
+  "description": "CI only (phase 2, P2-0), loaded in every server-suite run, vanilla and Quicksilver alike, never in a release: pins the server's unseeded random numbers so runs repeat, generates chunks one at a time in a fixed order, plays a scripted run of a fixed number of ticks after the whole area has loaded, measures milliseconds per tick, and carries the GameTest suite.",
+  "license": "LGPL-3.0-only",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.meakaandre.ciserver.Harness"],
+    "fabric-gametest": ["com.meakaandre.ciserver.HarnessTests"]
+  },
+  "mixins": ["ci_server_harness.mixins.json"],
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": "*",
+    "fabric-api": "*"
+  }
+}

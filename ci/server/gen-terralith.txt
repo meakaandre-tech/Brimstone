@@ -1,0 +1,2 @@
+# Worldgen diff, Terralith suite: Terralith's overworld, as gen-core.txt.
+minecraft:overworld 200 200 211 211
