@@ -1,6 +1,6 @@
 #!/bin/bash
 # Builds the core suite's server and world once (./core-server): a plain Fabric server with Fabric API, seed 12345,
-# with the areas the core scenes look at generated and saved. Every core client run (vanilla and Brimstone, every GPU
+# with the areas the core scenes look at generated and saved. Every core client run (vanilla and Quicksilver, every GPU
 # profile) then loads the same saved chunks. Generating them in each run made the picture differ between identical
 # runs: Minecraft's feature placement at chunk borders (trees, for one) depends on the order chunks generate in.
 set +e

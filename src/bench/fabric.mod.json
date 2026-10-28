@@ -1,27 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "brimstone_bench",
+  "id": "quicksilver_bench",
   "version": "${version}",
-  "name": "Brimstone bench",
-  "description": "Only Brimstone's benchmark: /brimstone bench, its counters and scenes. Changes nothing in the game; measures vanilla, Sodium or anything else the same way.",
+  "name": "Quicksilver bench",
+  "description": "Only Quicksilver's benchmark: /quicksilver bench, its counters and scenes. Changes nothing in the game; measures vanilla, Sodium or anything else the same way.",
   "authors": [
     "Andre"
   ],
   "contact": {
-    "sources": "https://github.com/meakaandre-tech/Brimstone"
+    "sources": "https://github.com/meakaandre-tech/Quicksilver"
   },
   "license": "LGPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.meakaandre.brimstone.bench.BenchOnlyClient"
+      "com.meakaandre.quicksilver.bench.BenchOnlyClient"
     ]
   },
   "mixins": [
-    "brimstone_bench.counters.mixins.json"
+    "quicksilver_bench.counters.mixins.json"
   ],
   "breaks": {
-    "brimstone": "*"
+    "quicksilver": "*"
   },
   "depends": {
     "fabricloader": ">=0.19.5",

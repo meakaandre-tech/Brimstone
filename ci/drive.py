@@ -3,9 +3,9 @@
 
 For each scene: send the suite's preamble and the scene's setup to the server console (the same commands the bench
 sends as the player), wait for it to settle, press the scene's key if it measures a screen, take a screenshot. In a
-Brimstone run it then types `/brimstone bench <scene> <seconds>` and waits for the bench's END line in latest.log.
+Quicksilver run it then types `/quicksilver bench <scene> <seconds>` and waits for the bench's END line in latest.log.
 
-usage: drive.py SUITE_FILE FIFO OUT_DIR LATEST_LOG MODE(vanilla|brimstone) BENCH_SECONDS SCENE_ID...
+usage: drive.py SUITE_FILE FIFO OUT_DIR LATEST_LOG MODE(vanilla|quicksilver) BENCH_SECONDS SCENE_ID...
 """
 import json
 import os
@@ -23,8 +23,8 @@ WAITS = []
 
 
 def wait_uploads(timeout=120):
-    """Package 4b: Brimstone's terrain uploads go under a per-frame budget, so after F3+A a section can wait a few
-    frames for its mesh. In Brimstone runs (brimstone.debug.logUploadQueue) the client logs "Brimstone uploads:
+    """Package 4b: Quicksilver's terrain uploads go under a per-frame budget, so after F3+A a section can wait a few
+    frames for its mesh. In Quicksilver runs (quicksilver.debug.logUploadQueue) the client logs "Quicksilver uploads:
     waiting" and "... caught up"; wait until the last such line is "caught up". Runs without the line (vanilla, measure
     runs, the bench-only jar) don't wait. Returns the seconds waited, -1 on a timeout. It only sees waits already
     logged: meshes that F3+A has not staged yet are left to steady_shot's own check, as in every run."""
@@ -37,7 +37,7 @@ def wait_uploads(timeout=120):
             continue
         with open(LATEST, errors="replace") as f:
             text = f.read()
-        w, c = text.rfind("Brimstone uploads: waiting"), text.rfind("Brimstone uploads: caught up")
+        w, c = text.rfind("Quicksilver uploads: waiting"), text.rfind("Quicksilver uploads: caught up")
         if w < 0 or c > w:
             return round(time.time() - t0, 1)
         time.sleep(1)
@@ -135,7 +135,7 @@ def main():
         print(f"scene {sid}: setting up", flush=True)
         if sc.get("ciClearChat"):
             # F3+D before the setup (package 7: the hud scene's open chat): the chat then holds only the setup's own
-            # lines in every run (Brimstone and measure runs' benches add messages, which moved its scrollbar)
+            # lines in every run (Quicksilver and measure runs' benches add messages, which moved its scrollbar)
             xdo("keydown", "F3")
             xdo("key", "d")
             xdo("keyup", "F3")
@@ -176,25 +176,25 @@ def main():
         entry["steadyAfter"] = steady_shot(shot)
         entry["shot"] = os.path.exists(shot)
         # extra fixed points (package 2): commands to the server, then a screenshot named <scene>.<name>, the same in
-        # every run; the Brimstone bench afterwards sets the scene up again from scratch
+        # every run; the Quicksilver bench afterwards sets the scene up again from scratch
         for extra in sc.get("ciShots", []):
             for cmd in extra["commands"]:
                 send(cmd)
             time.sleep(3)
             p = os.path.join(out, "shots", sid + "." + extra["name"] + ".png")
             entry.setdefault("extraShots", {})[extra["name"]] = steady_shot(p)
-        # seconds each shot waited for Brimstone's upload queue; -1: timed out (compare.py fails on it)
+        # seconds each shot waited for Quicksilver's upload queue; -1: timed out (compare.py fails on it)
         entry["uploadWaits"] = list(WAITS)
         if screen:
             # every run closes the scene's screen the same way before going on
             xdo("key", "Escape")
             time.sleep(1.5)
             xdo("mousemove", "640", "360")
-        if mode == "brimstone":
+        if mode == "quicksilver":
             start = os.path.getsize(latest) if os.path.exists(latest) else 0
             xdo("key", "slash")
             time.sleep(1.5)
-            xdo("type", "--delay", "40", f"brimstone bench {sid} {bench_seconds} confirm")
+            xdo("type", "--delay", "40", f"quicksilver bench {sid} {bench_seconds} confirm")
             time.sleep(0.5)
             xdo("key", "Return")
             waits = sum(float(c[6:]) for c in sc["setup"] if c.startswith("#wait "))
@@ -211,7 +211,7 @@ def main():
                     tail = f.read()
                 # the scene's screen key (or chat command) once the bench waits for it; again every 15 s while the bench
                 # still waits (package 7: one measure run's chat key press was lost and the bench gave up)
-                waiting = f"BRIMSTONE BENCH WAITING FOR SCREEN scene={sid}" in tail and f"BRIMSTONE BENCH MEASURING scene={sid}" not in tail
+                waiting = f"QUICKSILVER BENCH WAITING FOR SCREEN scene={sid}" in tail and f"QUICKSILVER BENCH MEASURING scene={sid}" not in tail
                 if screen and (screen.get("ciKey") or screen.get("ciChat")) and waiting and time.time() >= pressed:
                     time.sleep(1)
                     if screen.get("ciKey"):
@@ -219,10 +219,10 @@ def main():
                     else:
                         chat(screen["ciChat"])
                     pressed = time.time() + 15
-                if f"BRIMSTONE BENCH END scene={sid}" in tail:
+                if f"QUICKSILVER BENCH END scene={sid}" in tail:
                     result = "done"
                     break
-                if f"BRIMSTONE BENCH ABORTED scene={sid}" in tail:
+                if f"QUICKSILVER BENCH ABORTED scene={sid}" in tail:
                     result = "aborted"
                     break
             entry["bench"] = result

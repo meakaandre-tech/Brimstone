@@ -1,0 +1,21 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.quicksilver.mixin.terrain",
+  "plugin": "com.meakaandre.quicksilver.terrain.TerrainMixins",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ChunkSectionsToRenderMixin",
+    "LevelExtractorCameraMixin",
+    "LevelRendererMixin",
+    "RenderSectionInvoker",
+    "RenderSectionMixin",
+    "SectionCompilerMixin",
+    "SectionRenderDispatcherMixin",
+    "ShaderManagerMixin",
+    "SortStateMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

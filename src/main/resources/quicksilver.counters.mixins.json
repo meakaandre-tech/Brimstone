@@ -1,0 +1,29 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.quicksilver.mixin.counters",
+  "plugin": "com.meakaandre.quicksilver.bench.CounterAudit",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "BufferMapMixin",
+    "EffectsAnimationMixin",
+    "EffectsCloudMixin",
+    "EffectsParticleDrawMixin",
+    "EffectsParticleEngineMixin",
+    "EffectsSkyMixin",
+    "EffectsWeatherMixin",
+    "FrontendCommandEncoderMixin",
+    "FrontendGpuDeviceMixin",
+    "FrontendGpuSurfaceMixin",
+    "FrontendRenderPassMixin",
+    "QuadParticleCountAccessor",
+    "GuiRendererMixin",
+    "TransientMemoryMixin",
+    "SectionRenderDispatcherAccessor",
+    "SectionUberBuffersAccessor",
+    "UberGpuBufferAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

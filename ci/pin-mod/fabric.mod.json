@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "id": "brimstone_ci_pin",
+  "id": "quicksilver_ci_pin",
   "version": "1",
-  "name": "Brimstone CI: pins",
-  "description": "CI only, loaded in every client run (vanilla and Brimstone alike): holds noise that isn't Brimstone's still (the lightmap's block-light flicker, texture animation, banner sway, the order of feature batches such as Create's outliner faces and edges) leaves out the crosshair's block outline (it moves by a pixel row between frames on GL 3.3) except round the core outline scene's one block (package 7), makes no particles in the Sift dimension (sprites drifting over the sift scene's canyon), holds a focused text box's cursor on (package 7), and in the core suite's particle and animation areas makes particles the same in every run and lets animation run a fixed number of ticks (package 8), holds chickens' wings at rest, so screenshots don't depend on the run or the moment they are taken.",
+  "name": "Quicksilver CI: pins",
+  "description": "CI only, loaded in every client run (vanilla and Quicksilver alike): holds noise that isn't Quicksilver's still (the lightmap's block-light flicker, texture animation, banner sway, the order of feature batches such as Create's outliner faces and edges) leaves out the crosshair's block outline (it moves by a pixel row between frames on GL 3.3) except round the core outline scene's one block (package 7), makes no particles in the Sift dimension (sprites drifting over the sift scene's canyon), holds a focused text box's cursor on (package 7), and in the core suite's particle and animation areas makes particles the same in every run and lets animation run a fixed number of ticks (package 8), holds chickens' wings at rest, so screenshots don't depend on the run or the moment they are taken.",
   "license": "LGPL-3.0-only",
   "environment": "client",
   "mixins": [
-    "brimstone_ci_pin.mixins.json"
+    "quicksilver_ci_pin.mixins.json"
   ],
   "depends": {
     "fabricloader": "*",

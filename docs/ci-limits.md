@@ -1,22 +1,22 @@
 # CI limits and baselines
 
-Set in package 0, when Brimstone draws nothing of its own: every difference between two runs is noise. Frozen when
+Set in package 0, when Quicksilver draws nothing of its own: every difference between two runs is noise. Frozen when
 package 0 merges; from then on a limit is never raised and a baseline only goes down after a real improvement.
 
 ## Profiles
 
-Every scene runs in each suite (core: plain world, Fabric API and Brimstone only; SIFTEC: SIFTEC's pack and server)
-as: vanilla twice (`vanilla-a`, `vanilla-b`), vanilla old-GPU, vanilla Vulkan, and Brimstone in the same three GPU
+Every scene runs in each suite (core: plain world, Fabric API and Quicksilver only; SIFTEC: SIFTEC's pack and server)
+as: vanilla twice (`vanilla-a`, `vanilla-b`), vanilla old-GPU, vanilla Vulkan, and Quicksilver in the same three GPU
 profiles. **full**: Mesa llvmpipe OpenGL 4.5, every extension. **old-GPU**: multi-draw indirect and buffer storage
-hidden, GL forced to 3.3 (vanilla's minimum); the Brimstone run also sets `brimstone.debug.forceIntelMdiIssue`, which
+hidden, GL forced to 3.3 (vanilla's minimum); the Quicksilver run also sets `quicksilver.debug.forceIntelMdiIssue`, which
 applies vanilla's Intel multi-draw-indirect workaround flag. **Vulkan**: Mesa lavapipe through
-`--graphicsBackend vulkan`. Brimstone full is compared with vanilla-a, old-GPU with vanilla old-GPU, Vulkan with
+`--graphicsBackend vulkan`. Quicksilver full is compared with vanilla-a, old-GPU with vanilla old-GPU, Vulkan with
 vanilla Vulkan.
 
 ## Quick CI and per-branch logs (design doc, Quick CI, 2026-10-26)
 
-Branch pushes run **quick mode**: the core suite only, with vanilla-a, vanilla-b and brimstone-old (about 10
-minutes). Brimstone's old-GPU run is compared with vanilla-a (vanilla's GL 3.3 and GL 4.5 pictures differ no more
+Branch pushes run **quick mode**: the core suite only, with vanilla-a, vanilla-b and quicksilver-old (about 10
+minutes). Quicksilver's old-GPU run is compared with vanilla-a (vanilla's GL 3.3 and GL 4.5 pictures differ no more
 than vanilla a and b: on run 40233004611, 0 to 82 pixels over 8/255 per shot against 0 to 1,295 for a/b), and the
 strict check counts the pixels where vanilla a and b agree. Every limit and baseline is the full mode's. Quick mode
 leaves out the measure runs (so the same-run draw-call gate, the terrain GPU memory gate and the measure runs'
@@ -74,8 +74,8 @@ the map a strict gate (see "GUI scenes, the block outline and Ponder" below).
 A screenshot's difference is the share of pixels whose largest RGB channel differs by more than 8 (of 255): small
 enough to catch a wrong block, colour or shade, large enough to ignore rounding.
 
-**Noise samples.** Each CI run gives four per scene: vanilla a against vanilla b, and each Brimstone profile against
-its vanilla run. With Brimstone doing nothing, all four are run-to-run noise. Only runs after a scene's last setup
+**Noise samples.** Each CI run gives four per scene: vanilla a against vanilla b, and each Quicksilver profile against
+its vanilla run. With Quicksilver doing nothing, all four are run-to-run noise. Only runs after a scene's last setup
 change count (listed below; every sample is in `ci/pixel-noise-samples.json`). Runs where the SIFTEC suite broke for
 a reason outside the picture (run 8: SIFTEC's test commands left its release) are left out for the scenes it broke.
 
@@ -112,8 +112,8 @@ samples came in larger than the earlier ones (water and glass 3.3% to 6.45%, net
 | core/occlusion_move.bare_open (package 2) | 40091787069 | 4 | 0.0133 | 0.3 |
 
 Package 3's scenes (`translucent_move` and `translucent_move_oit`, each with six fixed-point shots, and
-`water_glass_oit`) were sampled in the marked collection run 40115084815, with Brimstone's translucency in dry run
-(translucent terrain left with vanilla; solid and cutout still Brimstone's), so all four samples per shot are noise.
+`water_glass_oit`) were sampled in the marked collection run 40115084815, with Quicksilver's translucency in dry run
+(translucent terrain left with vanilla; solid and cutout still Quicksilver's), so all four samples per shot are noise.
 Every sample was at most 0.001%, so the rule's floor applies (0.3). See the table below for the strict gate.
 
 | scene / shot (package 3) | samples (vanilla a/b, full, old-GPU, Vulkan; %) | limit % |
@@ -126,31 +126,31 @@ Every sample was at most 0.001%, so the rule's floor applies (0.3). See the tabl
 | core/water_glass_oit | 0.0037, 0.003, 0.0033, 0.0035 | 0.3 |
 | siftec/hologram (run 40123696828; not run on Vulkan) | 0.0027 (vanilla a/b), 0.2629 (full), 0.238 (old-GPU) | 0.55 |
 
-Package 4's scenes (smooth lighting off, the block renderer switched off, Create connected textures). Brimstone's
-block lighting is Indigo's own code, and a diagnostic run (40274749083) found Brimstone's block renderer and Indigo's
-identical on every block of the measure runs; so Brimstone's samples below are the 16-byte vertex's rounding (package
-3, Andre's decision), not lighting. Samples per run: vanilla a/b; Brimstone full, old-GPU, Vulkan; the measure runs
+Package 4's scenes (smooth lighting off, the block renderer switched off, Create connected textures). Quicksilver's
+block lighting is Indigo's own code, and a diagnostic run (40274749083) found Quicksilver's block renderer and Indigo's
+identical on every block of the measure runs; so Quicksilver's samples below are the 16-byte vertex's rounding (package
+3, Andre's decision), not lighting. Samples per run: vanilla a/b; Quicksilver full, old-GPU, Vulkan; the measure runs
 (Indigo) were 0.0 in every run but factory_flat in 40279156080 (0.0041 full). Limit by the rule above.
 
 | scene (package 4) | runs | samples (%) | limit % |
 |---|---|---|---|
-| core/flat_plants | 40270542386 (quick), 40274749083, 40279156080, 40287221751 | a/b 0.0 in all four; Brimstone 0.023, 0.023 / 0.023 / 0.0226 (each full run) | 0.3 |
+| core/flat_plants | 40270542386 (quick), 40274749083, 40279156080, 40287221751 | a/b 0.0 in all four; Quicksilver 0.023, 0.023 / 0.023 / 0.0226 (each full run) | 0.3 |
 | core/renderer_off | the same four | 0.0 everywhere | 0.25 |
-| siftec/factory_flat | 40274749083, 40279156080, 40287221751 | a/b 0.0, 0.0041, 0.0; Brimstone 0.0 but 0.0041 (full, 40279156080) | 0.3 |
+| siftec/factory_flat | 40274749083, 40279156080, 40287221751 | a/b 0.0, 0.0041, 0.0; Quicksilver 0.0 but 0.0041 (full, 40279156080) | 0.3 |
 | siftec/create_ct (the GUI hidden from 40279156080 on) | 40279156080, 40287221751 (third run: the final run of the branch) | 0.0 everywhere (before the GUI was hidden, run 40274749083: a/b 0.0532, all in SIFTEC's minimap) | 0.25 |
 
 The SIFTEC `hologram` scene (package 3) was sampled in run 40123696828, with only the SIFTEC suite in translucency
 dry run. It is not run in the two Vulkan runs (`ciSkipRuns`): Mesa's lavapipe segfaults as soon as Create's outliner
-draws the hologram, in vanilla's Vulkan run as much as Brimstone's, so its samples and limits cover the other three
+draws the hologram, in vanilla's Vulkan run as much as Quicksilver's, so its samples and limits cover the other three
 profiles, and its strict gate uses the three other vanilla runs.
 
 The occlusion_move shots (package 2) were sampled in the collection run 40091787069, also in dry run. The happy
 ghast, whose tentacles animate, appears only in the last shot (`ghast`), so its animation adds noise to no other
 shot.
 
-The core occlusion scene (package 2) was sampled in run 40079570978 with Brimstone's visibility module in dry run
-(deciding and counting but hiding nothing, so Brimstone drew exactly vanilla's set): vanilla a/b and all three
-Brimstone profiles differed on 0.0% of pixels, so the rule's floor applies (0 + 0.25).
+The core occlusion scene (package 2) was sampled in run 40079570978 with Quicksilver's visibility module in dry run
+(deciding and counting but hiding nothing, so Quicksilver drew exactly vanilla's set): vanilla a/b and all three
+Quicksilver profiles differed on 0.0% of pixels, so the rule's floor applies (0 + 0.25).
 
 The SIFTEC factory and map limits come from earlier runs; both scenes were skipped while SIFTEC's test commands were
 missing from its release (they need the `siftec_selftest` mod). They run again since 2026-10-25 (see below); the map's
@@ -169,31 +169,31 @@ captures 4 s apart to agree, and parks the mouse for screen scenes. All of it is
 
 ## Strict pixel limits (`ci/strict-pixel-limits.json`, package 1)
 
-The 8/255 threshold above ignores small shifts. The strict check doesn't: per scene and Brimstone profile it counts
-the pixels where **all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly** but the Brimstone run
+The 8/255 threshold above ignores small shifts. The strict check doesn't: per scene and Quicksilver profile it counts
+the pixels where **all four vanilla runs (GL 4.5 a and b, GL 3.3, Vulkan) agree exactly** but the Quicksilver run
 differs from its own profile's vanilla run **by more than 2/255 in any channel** (threshold 0 until package 3; see
 "The 16-byte vertex" below). Over the limit fails. Like the other limits these may only go down, never up, except by
 Andre's decisions recorded here.
 
 **Noise samples.** The same count for vanilla against itself: vanilla b against a (and a against b) on the pixels
-where the other three vanilla runs agree, plus the counts of Brimstone builds that hold every vertex exactly
+where the other three vanilla runs agree, plus the counts of Quicksilver builds that hold every vertex exactly
 (a7aff90, ae203ca, 14479f5). Core scenes count from the shared core world on (a7aff90; before it, spawn noise was
 129,368 pixels); SIFTEC scenes from every run with screenshots (82ba60c onwards).
 
 **Limit = the largest sample x 1.5, rounded up to 100 pixels.** Package 2's scenes, where a wrongly hidden object may
 cover only a few hundred pixels, use a finer rule: the largest sample x 1.5, rounded up to 10 pixels, and at least 10
-pixels. The floor guards against single-pixel flakes. Every object that Brimstone could hide wrongly in a shot must
+pixels. The floor guards against single-pixel flakes. Every object that Quicksilver could hide wrongly in a shot must
 cover more on screen than that shot's limit. That was measured against shots of the same views with every object
 removed (the `bare_*` shots); see docs/progress.md, package 2. core/occlusion (all samples 0 in three runs) got 20
 pixels: the smallest hideable object seen there, the iron golem in the doorway, covers about 200.
 
-| scene | vanilla b/a samples (pixels) | Brimstone samples, max | limit |
+| scene | vanilla b/a samples (pixels) | Quicksilver samples, max | limit |
 |---|---|---|---|
 | core/spawn | 2842/3674, 12000/1090, 811/5490 | 3338 | 18000 |
 | core/flythrough | 1487/492, 672/3877, 342/1100 | 906 | 5900 |
 | core/water_glass | 2566/16964, 12740/1330, 4798/1040 | 1336 | 25500 |
 | core/nether | after the lightmap pin: 230/80; before it, on the side where the flicker matched: 216, 27, 96, 339, 26, 549, 36, 250 | 4 | 900 |
-| core/mobs | 304/268, 382/126, 30/104; with the chicken wing pin 0/0 in runs 40471457759, 40481430766, 40516650792, 40526712029 | 105; with the pin 0 (every Brimstone and measure run, all four runs) | **10** (was 600; finer rule, 2026-10-28) |
+| core/mobs | 304/268, 382/126, 30/104; with the chicken wing pin 0/0 in runs 40471457759, 40481430766, 40516650792, 40526712029 | 105; with the pin 0 (every Quicksilver and measure run, all four runs) | **10** (was 600; finer rule, 2026-10-28) |
 | core/occlusion (package 2) | 0/0 in runs 40079570978, 40081970862, 40083026856 | 0 (dry run, all three profiles) | 20 (was 100; lowered in package 2's review fixes) |
 | core/occlusion_move (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
 | core/occlusion_move.x2297 (package 2) | 0/0 (run 40091787069) | 0 (dry run) | 10 |
@@ -223,7 +223,7 @@ pixels: the smallest hideable object seen there, the iron golem in the doorway, 
 | core/renderer_off (package 4) | 0/0 in the same three | 0 | 10 |
 | SIFTEC/factory_flat (package 4) | 0/0, 0/26, 0/0 (runs 40274749083, 40279156080, 40287221751) | 0 | 40 (26 x 1.5, rounded up to 10) |
 | SIFTEC/create_ct (package 4; the GUI hidden from 40279156080 on) | 0/0, 0/0 (runs 40279156080, 40287221751; the third run is the branch's final run); before: 32/167 (minimap) | 0 | 10 (floor) |
-| SIFTEC/ponder (package 7) | final setup: 0/0 in runs 40273668937, 40276630375, 40288414898 (earlier placements: 0/0) | final setup: 0 in every Brimstone and measure run of those three runs (earlier placements: 3-5 pixels of the minimap in every Brimstone and measure run, 425 and 578 once; see below) | **10** |
+| SIFTEC/ponder (package 7) | final setup: 0/0 in runs 40273668937, 40276630375, 40288414898 (earlier placements: 0/0) | final setup: 0 in every Quicksilver and measure run of those three runs (earlier placements: 3-5 pixels of the minimap in every Quicksilver and measure run, 425 and 578 once; see below) | **10** |
 | core/outline, outline.bare (package 7) | 0/0 in runs 40249146134 to 40260847921 (bare: 40260847921) | 0 (measure runs 0) | **10** |
 
 Package 3's shots use package 2's finer rule (largest sample x 1.5, rounded up to 10 pixels, at least 10). The
@@ -240,21 +240,21 @@ whose order follows identity hash codes, so from one game start to the next the 
 faces were drawn before or after its solid edges; when the edges came first, the far edges (seen through the faces)
 were blended under them. The outliner's own state (colour, light, alpha, pose, normals) and the lightmap's inputs were
 identical in both states. Since then the CI pin mod (`FeatureBatchOrderMixin`) keeps those batches in the order they
-were first submitted, in every client run, vanilla and Brimstone alike: all vanilla runs now draw the outline the
+were first submitted, in every client run, vanilla and Quicksilver alike: all vanilla runs now draw the outline the
 same way (they agree on 100% of the hologram frame), and the strict limit was re-collected by the rule above in a
-SIFTEC noise collection run (40139105024): vanilla b/a 7/4, Brimstone dry run 15 (full) and 18 (old-GPU), so
+SIFTEC noise collection run (40139105024): vanilla b/a 7/4, Quicksilver dry run 15 (full) and 18 (old-GPU), so
 18 x 1.5 = 27, rounded up to 30. That came from one shot per run and was too few samples: vanilla's own water
 changes by 15-27 pixels from one shot to the next in the same run, and SIFTEC's minimap differs between runs. So the
 limit was re-collected (with Andre's OK, 2026-10-25) over eleven shots of the scene per run, 0.5 s plus a steady-shot
 wait apart, in run 40155387068 (dry run): vanilla b/a 221-234 and 9-22 (the 234 is mostly the minimap's tiles plus
-scattered water pixels), Brimstone dry run up to 63 (full) and 24 (old-GPU): 234 x 1.5 = 351, rounded up to 10:
-**360**. The outline covers about 14,500 pixels, about 3,900 of them over Brimstone's water.
+scattered water pixels), Quicksilver dry run up to 63 (full) and 24 (old-GPU): 234 x 1.5 = 351, rounded up to 10:
+**360**. The outline covers about 14,500 pixels, about 3,900 of them over Quicksilver's water.
 
 The crosshair outline: the outline the game draws around the block under the crosshair moved by one pixel row from
 one frame to the next in the old-GPU profile (GL 3.3), in vanilla's own runs too (run 40152673881: 2 of 11 hologram
-shots in vanilla's old-GPU run, 5 of 11 in Brimstone's, with the same draws and the same target block in every frame),
+shots in vanilla's old-GPU run, 5 of 11 in Quicksilver's, with the same draws and the same target block in every frame),
 so the shot decided about 100-230 pixels along the hologram's bottom edge. Since 2026-10-25 the CI pin mod
-(`BlockOutlineMixin`) leaves that outline out of every client run, vanilla and Brimstone alike (with it, all eleven
+(`BlockOutlineMixin`) leaves that outline out of every client run, vanilla and Quicksilver alike (with it, all eleven
 shots in every profile agreed there, run 40154022133). **The block outline is therefore untested in CI**; package 6
 or 7 must add a scene that checks it with the outline drawn.
 
@@ -262,8 +262,8 @@ The SIFTEC factory and map scenes run again since SIFTEC's latest release carrie
 had no strict limits (skipped since package 1). Factory's first limit (100, run 40155387068 alone) was under-sampled: in about one run in
 four, a yellow-and-black striped part of one Create machine in the factory is in another phase (its angle or
 texture follows time), in vanilla's runs too (vanilla b against a: 315 pixels in run 40156711337 attempt 2;
-Brimstone 313-315 in runs 40162905190 and 40166776073). By the rule, 315 x 1.5 = 472.5, rounded up to 100: **500**
-(Andre's OK, 2026-10-25). Package 5 (Flywheel and Create) makes that animation repeatable in CI, vanilla and Brimstone
+Quicksilver 313-315 in runs 40162905190 and 40166776073). By the rule, 315 x 1.5 = 472.5, rounded up to 100: **500**
+(Andre's OK, 2026-10-25). Package 5 (Flywheel and Create) makes that animation repeatable in CI, vanilla and Quicksilver
 alike, then re-collects and lowers this limit. The map's first limit (13,100, one run) was under-sampled: vanilla runs differ from each
 other there by up to 22,532 pixels, because SIFTEC's map shows whichever tiles it has scanned by the time it opens.
 Two attempts to make it steady from the client side (Andre's time box) did not: waiting until two captures 5 s apart
@@ -278,7 +278,7 @@ package 7 found the player's random name and skin and the MAM tab's glint, now p
 package 1, the lightmap's block-light flicker. The flicker is random per tick and shifts every block-lit pixel by one
 colour level, and lava lights most of the nether scene: vanilla runs disagreed with each other on up to 349,419 of
 those pixels (vanilla b against a). Since package 1, CI's lightmap pin (`ci/pin-mod`, a CI-only mod loaded in every
-client run, vanilla and Brimstone alike) holds the flicker at zero, its resting value. With it the four vanilla runs
+client run, vanilla and Quicksilver alike) holds the flicker at zero, its resting value. With it the four vanilla runs
 agree on 98.7% of the nether frame, against 22-71% before. The one-level nether shift the package 1 re-review saw
 (248,492 pixels) was this flicker; vanilla b against a shows the same one-sided one-level shift in earlier runs.
 
@@ -286,7 +286,7 @@ Since the package 2 merge, the same pin mod also holds every animated texture (w
 first frame, in every client run. Main's CI on the package 2 merge failed on the fly-through's strict gate in the
 Vulkan profile (7,384 pixels against 5,900, with full at 5,653 and old-GPU at 5,152 in the same run): a dithered band
 along the water surface at the horizon, where the vanilla runs happened to share an animation frame and the
-Brimstone run caught another. Water is still drawn by vanilla, so this was noise; the limit wasn't raised, the cause
+Quicksilver run caught another. Water is still drawn by vanilla, so this was noise; the limit wasn't raised, the cause
 was pinned. The strict limits set before this pin stay as they are (they now have more room). Package 8 (animated
 textures only when seen) needs its own check with animation running.
 
@@ -296,7 +296,7 @@ Package 3 moved every terrain layer to one 16-byte vertex: positions off the 1/2
 1/65536 grid are rounded (largest error 0.000245 block and 1.45e-5 UV, at most 0.06 px on a 1280x720 screen; on-grid
 vertices are bit-identical, shader harness). The rounding moves interpolated colours by 1-2/255 on rounded geometry
 (water surfaces above all): at threshold 0 that added up to about 2,700 strict pixels in water_glass and 4,500 in
-the hologram scene, almost all off by exactly 1/255, nothing visible (vanilla next to Brimstone at 4x, plant-heavy
+the hologram scene, almost all off by exactly 1/255, nothing visible (vanilla next to Quicksilver at 4x, plant-heavy
 and water-edge views, sent to Andre). **Andre's decision:** the strict gate counts a pixel only when it differs by
 more than 2/255 in any channel, still only where every vanilla run agrees exactly; each scene's extra under that
 threshold is measured, and **new strict limit = old limit + 1.5 x the extra**. The 8/255 gate is unchanged. The count
@@ -307,7 +307,7 @@ build before the switch (`a9444ac` 40164365265, `2e3f85f` 40166776073, `99fe3bd`
 40168745352, `998a7a0` 40169188320) and in the five runs with the 16-byte vertex (`1dd6880` 40170948997, `49fec37`
 40172887031, `629f023` 40177279502, `9a3d411` 40180107484 attempts 1 and 2); extra = median after - median before,
 the largest over the profiles. The median, not the largest single run, because single runs on both sides carry
-run-wide noise events that vanilla shows too (spawn in run 40180107484 attempt 1: 2,228-2,309 in all three Brimstone
+run-wide noise events that vanilla shows too (spawn in run 40180107484 attempt 1: 2,228-2,309 in all three Quicksilver
 profiles at once, where vanilla b against a reached 1,350-1,582 in other runs; hub: vanilla b against a up to 9,812):
 the largest-run method would have raised spawn by 2,834 and hub by 1,638 on noise alone. Every one of the ten runs
 passes the new limits. (The agent chose the median while Andre was away; recorded at the top of docs/progress.md.)
@@ -359,7 +359,7 @@ Ponder").
 (`the_sift:sift_note`, random places in every run, vanilla's too); mob spawning off plus sending the mobs away did not
 remove them, the CI pin mod's `SiftParticlesMixin` (no particles in the Sift dimension, every client run) did. Samples
 under >2/255 with the pin, runs 40185974374, 40187878826 and 40189806229: vanilla b/a 0/0 in each and the measure
-runs 0, so vanilla's noise is 0; Brimstone 55 / 55 / 61 (full / old-GPU / Vulkan) in each, the 16-byte vertex's
+runs 0, so vanilla's noise is 0; Quicksilver 55 / 55 / 61 (full / old-GPU / Vulkan) in each, the 16-byte vertex's
 rounding (decision 3's extra). Limit = noise + 1.5 x that extra = 91.5, rounded up to 100 pixels as for the other
 SIFTEC scenes: **100** (was 4,900). Samples in `ci/pixel-noise-samples.json`.
 
@@ -371,7 +371,7 @@ default skin, so the first-person arm in the lower right was a different skin in
 and SIFTEC prints the name on both screens (`<player>'s Company`; a different number of digits moves the rest of the
 line). The MAM's selected tab carries an enchantment glint, whose texture offset follows the wall clock (about 450
 pixels). The "two fade states" seen earlier were these. **Pins** (`ci/client-run.sh`, every client run, vanilla and
-Brimstone alike): `--username BrimstoneCI`, `glintSpeed:0.0` (the glint is still drawn, but holds still).
+Quicksilver alike): `--username QuicksilverCI`, `glintSpeed:0.0` (the glint is still drawn, but holds still).
 
 **The map.** Its tiles differed pixel by pixel (one map pixel is 4 x 4 blocks, 12 x 12 screen pixels): the area round
 300 -200 was generated during each run, and SIFTEC's map records a chunk's top blocks when it loads, so trees at chunk
@@ -384,7 +384,7 @@ over, grass and leaves changing) and mob griefing off (`mob_griefing false`: one
 
 **Samples** (strict, >2/255): vanilla b/a and a/b 0/0 for hub, mam, map and outline in all four runs with the pins
 (40249146134, 40254531258, 40260765722, 40260847921); vanilla a, b and GL 3.3 identical pixel for pixel on these four
-scenes; every Brimstone and measure run 0. The strict check needs all four vanilla runs to agree: on hub and map the
+scenes; every Quicksilver and measure run 0. The strict check needs all four vanilla runs to agree: on hub and map the
 Vulkan run agrees on 99.8% and 99.99% of the frame; on mam on 88-99.8% (Vulkan and some GL runs differ by 1/255 on
 the sky and floor behind the screen, never on the screen itself). **Limits** by package 2's finer rule (the smallest
 thing here, a glyph, covers a few dozen pixels): largest sample x 1.5, rounded up to 10, at least 10: **10** for hub
@@ -404,14 +404,14 @@ in chat by drive.py in every run: `ciChat`). The Ponder scenes themselves keep m
 scene's dancing parrot), so the index is what CI checks. Pins: `menuBackgroundBlurriness:0` in every run (the menu
 blur came out differently on Vulkan: 433,312 pixels over 2/255 against GL, which agreed exactly; Vulkan also darkens
 the world behind the index differently, so with the world behind it the strict check saw 42% of the frame); the camera
-looks straight up at the sky (above the HUB platform), with one stone block above it so Brimstone has terrain to draw
+looks straight up at the sky (above the HUB platform), with one stone block above it so Quicksilver has terrain to draw
 (CI requires that in every scene), so only sky and that block are behind the screen (99.3% of the frame covered,
 run 40266027605). The scene runs before the map scene, so SIFTEC's minimap and map markers are not on yet: after it,
-each Brimstone and measure run showed the map scene's markers twice (each bench sets the map up again: 578 pixels in
+each Quicksilver and measure run showed the map scene's markers twice (each bench sets the map up again: 578 pixels in
 run 40266027605), and over the HUB platform the minimap's east edge showed tiles of chunks generated during the run
 (425 pixels in run 40260847921's old-GPU run). Samples of the final setup (from `0dd5438`: runs 40273668937, 40276630375, 40288414898): vanilla b/a and a/b 0/0,
-every Brimstone and measure run 0 strict pixels and 0% over 8/255, 99.69% of the frame covered. Earlier placements
-(not used for the limits): 3-5 pixels of the minimap in every Brimstone and measure run, the same in measure runs.
+every Quicksilver and measure run 0 strict pixels and 0% over 8/255, 99.69% of the frame covered. Earlier placements
+(not used for the limits): 3-5 pixels of the minimap in every Quicksilver and measure run, the same in measure runs.
 Limits by the finer rule: **10** strict; 8/255 by package 0's rule: **0.25**.
 
 **The HUD scene** (SIFTEC `hud`, after the rebase on main): normal play in creative with nine hotbar items, the chat
@@ -421,7 +421,7 @@ clears the chat before the setup (`ciClearChat`; bench messages had moved the ch
 the fills reloads all chunks and clears the chat again (the `#chunks` step; a vanilla stand-in run once showed a hole
 in the wall, 4,080 pixels, run 40450860976); SIFTEC's map setup runs once per world, so the map markers it places are
 not doubled by the benches (they showed twice on the compass of later scenes and sessions). Samples: vanilla b/a and
-a/b 0/0 and every Brimstone and measure run 0 in runs 40436256016, 40444035980, 40454752063 (run 40450860976: the
+a/b 0/0 and every Quicksilver and measure run 0 in runs 40436256016, 40444035980, 40454752063 (run 40450860976: the
 hole, before the `#chunks` step). Limits by the finer rule: strict **10**, 8/255 **0.25**. Coverage: the strict check
 sees 44% of the frame (minimap 86%, hotbar 92%, chat 51%, compass 41%): Vulkan shades the concrete wall in fine rings
 that differ from OpenGL's by 1-2/255 (fog or interpolation; with a textured wall it differed on most pixels, run
@@ -455,7 +455,7 @@ The `ponder` scene is gated like hub, on the per-frame average and median (its a
 
 ## Count baselines (`ci/baselines/<suite>-<profile>.json`)
 
-From the bench in each Brimstone run (20 s per scene in CI). **Draw calls**: per-frame average (frames that line up
+From the bench in each Quicksilver run (20 s per scene in CI). **Draw calls**: per-frame average (frames that line up
 with a game tick draw about 26 more, so the median flips between two values; the average held within 0.1%).
 **Uploads and bytes**: per-frame median (chunk uploads arrive in bursts, so averages moved 20-35% between identical
 runs). **Memory**: heap used after a GC at the end of the bench, and java.nio direct buffers.
@@ -498,11 +498,11 @@ how fast CI's server generates the new terrain. The Vulkan count baselines come 
 | siftec-vulkan | mam | 352.85 | 21 | 24656 | 462.56 | 5.46 | 10,11 |
 | siftec-vulkan | sift | 424.25 | 19 | 55980 | 439.9 | 4.23 | 10,11 |
 
-The occlusion scene's baselines (package 2) come from one run with Brimstone's visibility module in dry run, i.e. with
-Brimstone drawing exactly vanilla's entities and block entities.
+The occlusion scene's baselines (package 2) come from one run with Quicksilver's visibility module in dry run, i.e. with
+Quicksilver drawing exactly vanilla's entities and block entities.
 
 Package 3's scenes (`translucent_move`, `water_glass_oit`, `translucent_move_oit`) got their baselines from the
-collection run 40115084815, with Brimstone's translucency in dry run (vanilla drawing all translucent terrain, as
+collection run 40115084815, with Quicksilver's translucency in dry run (vanilla drawing all translucent terrain, as
 before package 3). Against these baselines `translucent_move` and `translucent_move_oit` are gated on memory only (`ciGatedCounts`; their draw calls are gated against vanilla in the same run): the
 moving camera makes vanilla sort again and upload new index lists at times that depend on the runner's speed.
 
@@ -524,20 +524,20 @@ moving camera makes vanilla sort again and upload new index lists at times that 
 
 The hologram scene runs below CI's 30 fps cap on slower runners, and its per-frame draw-call *average* follows the
 frame rate (frames that line up with a game tick draw more): about 119 at 30 fps, 142-148 at 22-24 fps, while
-Brimstone's own draws are the same in every run. Per the design doc (Testing, "Counts that follow the runner's
+Quicksilver's own draws are the same in every run. Per the design doc (Testing, "Counts that follow the runner's
 speed"), this scene alone is gated on the per-frame **median** (`"ciDrawCallGate": "median"` in `siftec.json`), in
 every profile it runs in (full and old-GPU; not run on Vulkan). Baseline = the highest clean median from package 3's
 runs on `4cb5419`, `6d48fc7` and later. Every other scene and every other count is gated as before.
 
 | run | commit | full: median (avg) | old-GPU: median (avg) | clean? |
 |---|---|---|---|---|
-| 40123696828 | `4cb5419` | 166 (119.16) | 170 (155.07) | no: translucency and visibility dry run (Brimstone drew vanilla's set, vanilla drew the translucent terrain) |
+| 40123696828 | `4cb5419` | 166 (119.16) | 170 (155.07) | no: translucency and visibility dry run (Quicksilver drew vanilla's set, vanilla drew the translucent terrain) |
 | 40126212181 | `6d48fc7` | 166 (118.92) | 167 (124.18) | yes (green) |
 | 40128444322 | `0db931b` | 166 (144.24) | 167 (148.72) | yes (failed only on this average) |
 | 40130610610 | `13f56fb` | 166 (142.45) | 167 (146.9) | yes (failed only on this average) |
 
-Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2), then **165 / 166** since the crosshair outline pin: it removed exactly one draw per frame from this scene (median 174 to 173 on full, 175 to 174 on old-GPU between runs 40152673881 and 40154022133), so the baselines went down by that draw, as after the texture-animation pin. The dry run's 170 is left out: in a dry run Brimstone isn't
-drawing the translucent terrain itself, so its count is not Brimstone's.
+Baselines: **full 166, old-GPU 167** (gate: x1.10 + 2), then **165 / 166** since the crosshair outline pin: it removed exactly one draw per frame from this scene (median 174 to 173 on full, 175 to 174 on old-GPU between runs 40152673881 and 40154022133), so the baselines went down by that draw, as after the texture-animation pin. The dry run's 170 is left out: in a dry run Quicksilver isn't
+drawing the translucent terrain itself, so its count is not Quicksilver's.
 
 ### SIFTEC scenes on SIFTEC's 2026-10-25 release (factory and map back, sift uploads, hologram direct buffers)
 
@@ -547,17 +547,17 @@ when that scene passed every check in it, Andre 2026-10-25):
 - **`sift` upload bytes re-baselined** (Andre's rule: vanilla jumps the same way, so it is the pack). The per-frame
   median moves in about 12.9 KB steps (30k, 43k, 56k, 69k, 82k) and since SIFTEC's latest releases reaches 81,788 in
   some runs (over the old gate, about 77.7k). Vanilla's own counts in the same runs (branch-only jobs that ran the
-  factory and sift scenes with every Brimstone module off, so the bench measured vanilla): vanilla a / b / old-GPU /
+  factory and sift scenes with every Quicksilver module off, so the bench measured vanilla): vanilla a / b / old-GPU /
   Vulkan = 43,120 / 68,936 / 47,504 / 55,980, then 43,120 / 55,972 / 34,316 / 55,764, then 55,980 / 56,304 / 60,252 /
-  43,128. Brimstone in the same runs: full 68,940 / 43,128 / 68,940, old-GPU 43,264 / 43,376 / 43,376, Vulkan
+  43,128. Quicksilver in the same runs: full 68,940 / 43,128 / 68,940, old-GPU 43,264 / 43,376 / 43,376, Vulkan
   55,980 / 56,084 / 43,232. New baselines: full **68,940** (was 55,764), old-GPU **43,376** (was 73,228: down),
   Vulkan **56,084** (was 55,980). Then, Andre's one-off exception to "highest clean value" (2026-10-25, other scenes
   keep the rule): the upload breakdown by kind shows every byte of the jump is in MAP_WRITE (writes into mapped GPU
-  buffers) in vanilla and Brimstone alike; WRITE_TEXTURE is 0 everywhere, WRITE_BUFFER is constant (4,016 B/frame on
+  buffers) in vanilla and Quicksilver alike; WRITE_TEXTURE is 0 everywhere, WRITE_BUFFER is constant (4,016 B/frame on
   full and Vulkan, 112 on old-GPU), always 3 + 16 uploads per frame (2 + ~15 on old-GPU). So the `sift` baseline is the
-  highest value seen in any run, vanilla or Brimstone, **81,788** on every profile (gate as usual: x1.10 + 16 KiB).
+  highest value seen in any run, vanilla or Quicksilver, **81,788** on every profile (gate as usual: x1.10 + 16 KiB).
 
-  | run | vanilla a | vanilla b | vanilla old | vanilla vk | Brimstone full | Brimstone old | Brimstone vk |
+  | run | vanilla a | vanilla b | vanilla old | vanilla vk | Quicksilver full | Quicksilver old | Quicksilver vk |
   |---|---|---|---|---|---|---|---|
   | 40156711337 #1 | 43,120 (39,125) | 68,936 (64,928) | 47,504 (47,359) | 55,980 (54,012) | 68,940 (66,584) | 43,264 (44,452) | 55,980 (54,217) |
   | #2 | 43,120 (41,420) | 55,972 (51,423) | 34,316 (34,236) | 55,764 (51,497) | 43,128 (44,802) | 43,376 (43,256) | 56,084 (52,072) |
@@ -565,14 +565,14 @@ when that scene passed every check in it, Andre 2026-10-25):
   | 40154022133 | - | - | - | - | 55,872 (51,858) | 30,860 (33,856) | 81,788 (77,935) |
 
   Upload bytes per frame, median; in brackets the MAP_WRITE part (a per-frame average, so it doesn't add up exactly
-  to the median). Vanilla's factory uploads matched Brimstone's too (6,284-6,488 on full, 49,444-49,604
+  to the median). Vanilla's factory uploads matched Quicksilver's too (6,284-6,488 on full, 49,444-49,604
   old-GPU, 51,036-51,056 Vulkan).
 - **`hologram` direct buffers re-baselined** (Andre's OK): full **8.24** (was 4.24), old-GPU **6.31** (was 3.73, one
   dry-run sample from when factory and map were skipped). The map scene now runs just before the hologram in the same
   client session, and the JVM's direct pool grows to 8.24 MB there and keeps that size (attempt 1, full: mam 7.73, map
   8.24, hologram 8.24; attempt 2, old-GPU the same). Old-GPU's value comes from attempts 1 and 3 (6.06, 6.31): attempt 2
   failed this very check (8.24 against the old 3.73), so it was not clean for the hologram (review finding, 2026-10-25);
-  its 8.24 is within the new gate (6.31 x 1.10 + 4 = 10.94). Brimstone allocates no java.nio direct buffers at all, and a
+  its 8.24 is within the new gate (6.31 x 1.10 + 4 = 10.94). Quicksilver allocates no java.nio direct buffers at all, and a
   15-minute hologram bench showed no growth (docs/progress.md, package 3).
 - **`factory` and `map` count baselines** (they had none, so their counts were not gated): from the same runs (map
   from attempts 1 and 3; attempt 2 failed the map's then strict limit).
@@ -589,35 +589,35 @@ when that scene passed every check in it, Andre 2026-10-25):
 Run-to-run spread of the old-GPU draw calls is wider (up to about 15% in mobs and water and glass) because vanilla
 draws each visible section separately there and the count follows how far meshing has got.
 
-Meshing time per section is measured since package 1 (the bench's `meshing` block: vanilla's mesher plus Brimstone's
+Meshing time per section is measured since package 1 (the bench's `meshing` block: vanilla's mesher plus Quicksilver's
 transcode, sections meshed while measuring) and shown in CI's report; it is not gated (it follows CI's CPU load).
 
 ### Against vanilla in the same run: draw calls and terrain GPU memory (package 3, decided by Andre, 2026-10-25)
 
 **Measure runs.** Every CI run has three more client runs per suite, `measure-full`, `measure-old` and `measure-vk`:
-Brimstone loaded with every module off (`-Dbrimstone.ci.measureOnly=true`), in the profile of the Brimstone run of the
-same name, so Brimstone's bench measures vanilla's own counts under the same pins and runner. They must look like
-vanilla: their screenshots go through the same 8/255 and strict limits against vanilla's runs as Brimstone's runs
+Quicksilver loaded with every module off (`-Dquicksilver.ci.measureOnly=true`), in the profile of the Quicksilver run of the
+same name, so Quicksilver's bench measures vanilla's own counts under the same pins and runner. They must look like
+vanilla: their screenshots go through the same 8/255 and strict limits against vanilla's runs as Quicksilver's runs
 (compare.py's "Measure runs" table); run 40180107484 attempt 2: every measure run inside every limit. CI also
 checks that a measure run really is vanilla: both modules' "measureOnly is set" log lines and no "on" line, every
-bench with terrain off ("measure only (CI)") and visibility off, no Brimstone arena and no layer taken, and the same
-profile checks of its probe as the Brimstone run (old-GPU's forced Intel flag). Since package 4 they also draw blocks
+bench with terrain off ("measure only (CI)") and visibility off, no Quicksilver arena and no layer taken, and the same
+profile checks of its probe as the Quicksilver run (old-GPU's forced Intel flag). Since package 4 they also draw blocks
 and items with Fabric's Indigo, as the vanilla runs do: CI takes `fabric-renderer-api-v1:contains_renderer` out of
-the measure run's copy of the jar and Brimstone does not register its renderer when measureOnly is set; CI requires
-Indigo's registration line and Brimstone's "Brimstone renderer: off" line, and no Brimstone registration.
+the measure run's copy of the jar and Quicksilver does not register its renderer when measureOnly is set; CI requires
+Indigo's registration line and Quicksilver's "Quicksilver renderer: off" line, and no Quicksilver registration.
 
-**Draw calls.** In every scene, Brimstone's draw calls per frame against the measure run of its profile, on the
+**Draw calls.** In every scene, Quicksilver's draw calls per frame against the measure run of its profile, on the
 per-frame average **and** the median: the translucent scenes (`ci/vanilla-draw-calls.json`: water_glass,
 translucent_move, water_glass_oit, translucent_move_oit, flythrough; SIFTEC hologram) at most vanilla's, the others at
 most vanilla's x 1.10 + 2 (the count gate's allowance). These sit next to the committed count baselines, which stay.
 Exceptions, each by Andre's rule:
 - `siftec/hologram`: median only (decided earlier, see above).
 - `siftec/sift`: median only, because its average follows the runner's frame rate (below 20 fps every frame lines up
-  with a game tick and draws the tick's extra draws). Run 40180107484 attempt 1, full: Brimstone 154.0 average / 154
+  with a game tick and draws the tick's extra draws). Run 40180107484 attempt 1, full: Quicksilver 154.0 average / 154
   median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps; Vulkan 153.97 / 154 at 15.8 fps against
   153.94 / 154 at 12.37 fps. (`"ciVanillaDrawGate": "median"` on the scene, with this reason.)
 - `core/water_glass`, `water_glass_oit`, `nether`, `translucent_move`, `mobs`: median only, by the same rule. Each
-  failed only on the average, in the Vulkan profile (lavapipe runs near 20 fps), where the Brimstone run and the
+  failed only on the average, in the Vulkan profile (lavapipe runs near 20 fps), where the Quicksilver run and the
   measure run ran at different speeds, with equal medians: water_glass 124.0 / 124 at 18.57 fps against 103.78 / 124
   at 24.15 fps; water_glass_oit 129.01 / 129 at 9.86 fps against 129.0 / 129 at 13.46 fps; nether 120.73 / 121 at
   18.93 fps against 102.5 / 121 at 23.63 fps (all three run 40180107484 attempt 2); translucent_move 124.0 / 124 at
@@ -625,20 +625,20 @@ Exceptions, each by Andre's rule:
   run 40193520268, and attempt 2 above). The reasons are on the scenes. Gated on both average and median: spawn,
   flythrough, occlusion, occlusion_move, translucent_move_oit, factory, hub, map, ponder (package 7: its average is
   flat at about 30 fps, 180.57-181.12 in every run).
-- `core/outline` (package 7): median only, by the same rule. Run 40266027605, Vulkan: Brimstone 127.0 average / 127
+- `core/outline` (package 7): median only, by the same rule. Run 40266027605, Vulkan: Quicksilver 127.0 average / 127
   median at 16.42 fps against vanilla's measure run 101.35 / 127 at 25.57 fps (limit 113.48); and the other way round
-  in run 40276630375, Vulkan: Brimstone 98.66 / 127 at 26.42 fps against 127.0 / 127 at 16.04 fps.
+  in run 40276630375, Vulkan: Quicksilver 98.66 / 127 at 26.42 fps against 127.0 / 127 at 16.04 fps.
 - `siftec/mam`: median only, by the same rule (2026-10-26). Run 40238316211 (the ci-quick branch, main's code),
-  Vulkan: Brimstone 132.6 average / 162 median at 25.17 fps against vanilla's measure run 117.94 / 162 at 29.31 fps
+  Vulkan: Quicksilver 132.6 average / 162 median at 25.17 fps against vanilla's measure run 117.94 / 162 at 29.31 fps
   (limit x 1.10 + 2: 131.73); full in the same run 116.03 / 162 against 116.48 / 162, both at 29.83 fps.
 - `core/flat_plants` and `core/renderer_off` (package 4): median only, by the same rule (the slower run lines up more
   frames with game ticks, so the average moves with fps and the median does not). flat_plants, run 40274749083,
-  Vulkan: Brimstone 121.34 average / 124 median at 20.36 fps against vanilla's measure run 103.03 / 124 at 24.41 fps
+  Vulkan: Quicksilver 121.34 average / 124 median at 20.36 fps against vanilla's measure run 103.03 / 124 at 24.41 fps
   (limit x 1.10 + 2: 115.33); renderer_off, run 40279156080, Vulkan: 96.3 / 123 at 25.89 fps against 84.85 / 123 at
   29.76 fps (limit 95.34). The reasons are on the scenes. factory_flat and create_ct are gated on both.
 - `core/flythrough`: vanilla + 2 on full and Vulkan (old-GPU stays at vanilla), Andre's rule for a fly-through excess of 2 draws per frame or fewer. Run
   40180107484 attempt 1, Vulkan: average 123.11 against vanilla's 123.05 (medians 123 and 123; full 123.07 against
-  123.07). Brimstone's terrain draws there are exactly vanilla's 3 indirect draws (solid, cutout, translucent: one
+  123.07). Quicksilver's terrain draws there are exactly vanilla's 3 indirect draws (solid, cutout, translucent: one
   arena each); the 0.06 is in the other draws (`single` 120.11 against 120.05), which depend on what the server has
   generated as the camera flies. (`"allowance"` in `ci/vanilla-draw-calls.json`.)
 
@@ -648,11 +648,11 @@ at every change between two shared arenas (run 40172887031: 12-15 breaks per fra
 
 **Terrain GPU memory.** The bench reports terrain GPU memory reserved (buffers made) and used: vanilla's own heaps (its
 section dispatcher's vertex and index buffers per layer: heaps x heap size, 128 MiB vertex heaps and 32 MiB index
-heaps, made on first use) and Brimstone's arenas (each starts at 4 MiB and doubles up to 64 MiB, per layer). CI fails
-when a Brimstone run reserves more than vanilla's measure run of the same profile, in any scene. Run 40180107484
+heaps, made on first use) and Quicksilver's arenas (each starts at 4 MiB and doubles up to 64 MiB, per layer). CI fails
+when a Quicksilver run reserves more than vanilla's measure run of the same profile, in any scene. Run 40180107484
 attempt 1, full profile (MB reserved / used):
 
-| scene | Brimstone | vanilla |
+| scene | Quicksilver | vanilla |
 |---|---|---|
 | spawn | 36 / 21.8 | 416 / 38.0 |
 | flythrough | 112 / 87.1 | 416 / 144.1 |
@@ -670,24 +670,24 @@ limit, for package 9.
 
 ## Package 8: the particle and animation scenes
 
-Both scenes are made the same in every run, vanilla and Brimstone alike, by the CI pin mod (`ci/pin-mod`, `Pins`;
+Both scenes are made the same in every run, vanilla and Quicksilver alike, by the CI pin mod (`ci/pin-mod`, `Pins`;
 docs/progress.md, package 8): in the particle scene's area particles take their random numbers from where and what
 they are, are not ticked and are drawn at partial tick 0 while the player is there, and are removed when the player
 leaves; in the animation scene's area every animated texture starts again from frame 0 when the player enters, runs
 exactly 70 texture ticks and is held (counted per texture tick since the animation flake fix, see below). Vanilla's runs agree exactly on both (vanilla b/a 0 strict pixels in every run), so the
 limits are the rules' floors.
 
-| scene / shot | runs | samples (8/255 %: vanilla a/b, Brimstone; strict: vanilla b/a, Brimstone, measure runs) | limit % | strict limit |
+| scene / shot | runs | samples (8/255 %: vanilla a/b, Quicksilver; strict: vanilla b/a, Quicksilver, measure runs) | limit % | strict limit |
 |---|---|---|---|---|
 | core/particles | 40257302632, 40260148458, 40263318499, 40267202902 (full), 40271672678, 40275109388 (full), 40293774852 (full) | all 0.0; strict all 0 | 0.25 | **4** |
 | core/particles.bare | 40271672678, 40275109388 (full), 40293774852 (full) | all 0.0; strict all 0 | 0.25 | **4** |
-| core/animation, .front | 40263318499, 40267202902 (full), 40271672678, 40275109388 (full) | vanilla a/b 0.0, Brimstone 0.0001 (every profile); strict vanilla 0/0, Brimstone 1, measure runs 0 | 0.25 | 10 |
+| core/animation, .front | 40263318499, 40267202902 (full), 40271672678, 40275109388 (full) | vanilla a/b 0.0, Quicksilver 0.0001 (every profile); strict vanilla 0/0, Quicksilver 1, measure runs 0 | 0.25 | 10 |
 | core/animation.behind | the same | all 0.0; strict all 0 | 0.25 | 10 |
 | core/animated_items (Andre's follow-up) | 40404276347 (quick), 40412755923 (full) | all 0.0; strict all 0 | 0.25 | 10 |
 
 Limit = max(2 x largest, largest + 0.25, 0.1) rounded up to 0.05 (0.25); strict = largest x 1.5 rounded up to 10, at
 least 10 (10), except the particle scene's: **4** (Andre, 2026-10-27), below its smallest particle (9 pixels), as its
-samples are 0 in every run and the finer rule's floor (10) would let that particle go missing unseen. Brimstone's one strict pixel in the animation shots (x 965, y 384) is on the lantern's handle edge: the lantern
+samples are 0 in every run and the finer rule's floor (10) would let that particle go missing unseen. Quicksilver's one strict pixel in the animation shots (x 965, y 384) is on the lantern's handle edge: the lantern
 model's off-grid coordinates rounded by the 16-byte vertex (package 3, Andre's decision), the same pixel in every
 profile and run, and not in the measure runs. Earlier runs of the animation scene (before its blocks behind the camera
 moved two sections back, `5db4432`) are not counted.
@@ -700,9 +700,9 @@ start (`ciDrawCallGate`, Andre's rule for such scenes): 44 in every profile (ave
 review fixes added two steps to its bench (a block particle and a block placed while measuring; quick run
 40288502378, old-GPU median 49): the scene is new in this package, so its baseline is set, not re-collected.
 
-**Existing draw-call baselines were not lowered.** Brimstone's animation module removes most of vanilla's per-tick
+**Existing draw-call baselines were not lowered.** Quicksilver's animation module removes most of vanilla's per-tick
 atlas redraws even in the pinned scenes (vanilla still redraws its 23 interpolated block sprites every tick: 77-115
-draws per frame in the core scenes and 94-140 in SIFTEC's, against Brimstone's 0-10; `compare/report.md`, "Effects"),
+draws per frame in the core scenes and 94-140 in SIFTEC's, against Quicksilver's 0-10; `compare/report.md`, "Effects"),
 so every draw-call baseline now has that much room. They are left as they are so the lead can merge packages 4, 7
 and 8 by hand; lowering them is listed for Andre (docs/progress.md, package 8).
 
@@ -716,14 +716,14 @@ chicken pin), as the rule allows after a real improvement: package 8 (animated t
 
 `siftec/create_ct` direct buffers, full profile: 4.24 to 10.24 MB, re-collected by the noise rule (standing rules):
 the JVM's direct pool grows in 2 MB steps at a moment that varies by run, and vanilla's own measure run showed 10.12
-in the same run (40463682395) where Brimstone's showed 10.24; Brimstone's samples 10.24, 6.06, 5.99, 8.24; the other
+in the same run (40463682395) where Quicksilver's showed 10.24; Quicksilver's samples 10.24, 6.06, 5.99, 8.24; the other
 profiles' baselines were already 8.24 and 8.29.
 
 `core/mobs` strict noise: the chickens' wing flap (their last ticks of falling) made two vanilla runs differ by up
 to 718 strict pixels (vanilla's measure run on Vulkan, run 40463682395, limit 600). CI's pin mod now holds the wings
-at rest in every run, vanilla and Brimstone alike; with it every mobs sample is 0 (run 40471457759). **Lowered
+at rest in every run, vanilla and Quicksilver alike; with it every mobs sample is 0 (run 40471457759). **Lowered
 2026-10-28: 600 -> 10.** Four full runs with the pin (40471457759, 40481430766, 40516650792 and main's 40526712029;
-the last three recomputed from their PNGs): vanilla b/a 0/0 and every Brimstone and measure run 0 in each, so by
+the last three recomputed from their PNGs): vanilla b/a 0/0 and every Quicksilver and measure run 0 in each, so by
 package 2's finer rule (largest sample x 1.5, rounded up to 10, at least 10) the limit is 10, below a chicken (about
 480 px). Samples in `ci/pixel-noise-samples.json`.
 
@@ -747,15 +747,15 @@ received; every bench report lists missing ones (and classes not loaded because 
 fails if any is missing.
 
 The `occlusion_move.ghast` shot (package 2) was removed before package 2 merged: the happy ghast's tentacle animation
-made vanilla's own noise reach 239 strict pixels against its 240 limit, and the shot tested nothing Brimstone hides.
+made vanilla's own noise reach 239 strict pixels against its 240 limit, and the shot tested nothing Quicksilver hides.
 Removed rather than raised; no limit was raised.
 
 ### Draw-call baselines after the texture-animation pin
 
 Holding animated textures still also stops the game redrawing them into the block atlas every frame, so every run
-(vanilla and Brimstone) makes fewer draw calls. Left alone, the draw-call baselines would have had that much extra
+(vanilla and Quicksilver) makes fewer draw calls. Left alone, the draw-call baselines would have had that much extra
 room and the 10% gate would have missed a regression of the same size. Each draw-call baseline was lowered by
-exactly the drop measured for the same scene and profile between two runs of the same Brimstone code without and
+exactly the drop measured for the same scene and profile between two runs of the same Quicksilver code without and
 with the pin (package 2 run 40094673590 against run 40104120800), so each keeps the margin it had. No baseline went
 up; other counts are unchanged.
 
@@ -799,23 +799,23 @@ pixels against 70 in the Vulkan run on a dropped item from the clean-up; the lim
 
 ## Package 4b: back faces, the upload budget and the bench-only jar
 
-New gates in every Brimstone run (`ci/compare.py`), none of them a limit or baseline (no file in `ci/*.json` changed):
+New gates in every Quicksilver run (`ci/compare.py`), none of them a limit or baseline (no file in `ci/*.json` changed):
 - **Back faces:** each bench's `backFaces` block must be `on`, and its triangles per frame below the same frames'
-  count with every face drawn (`trianglesAllFacesPerFrame`, what Brimstone drew before 4b).
+  count with every face drawn (`trianglesAllFacesPerFrame`, what Quicksilver drew before 4b).
 - **Upload budget:** `uploadBudget` must be `on` with the camera known, and no visible section's mesh may have waited
   more than `maxVisibleWaitFramesAllowed` (15) frames since it was first seen visible (past that it goes in whatever the
   budget).
-- **Screenshots:** Brimstone runs set `brimstone.debug.logUploadQueue` and `ci/drive.py` waits, before each shot, until
-  the client's last "Brimstone uploads:" line is "caught up" (runs without the line don't wait: vanilla, measure and
+- **Screenshots:** Quicksilver runs set `quicksilver.debug.logUploadQueue` and `ci/drive.py` waits, before each shot, until
+  the client's last "Quicksilver uploads:" line is "caught up" (runs without the line don't wait: vanilla, measure and
   bench-only runs). Each scene's drive JSON records the seconds waited per shot (`uploadWaits`); a timeout (-1, after
   120 s) fails the run.
 - Reported, not gated: a "Package 4b" table per suite and profile (triangles per frame and with every face, index ranges
-  per section layer, the largest upload bytes in one frame against vanilla's measure run, Brimstone's own largest
+  per section layer, the largest upload bytes in one frame against vanilla's measure run, Quicksilver's own largest
   terrain upload and the average budget, frames over 50 ms, sections waiting).
 
-**Bench-only jar runs** (full mode, core suite only): `bench-plain` (Fabric API and `brimstone-bench`) and `bench-sodium`
+**Bench-only jar runs** (full mode, core suite only): `bench-plain` (Fabric API and `quicksilver-bench`) and `bench-sodium`
 (the same plus Sodium 0.9.2 for 26.3, downloaded from Modrinth in the run), benching spawn, flythrough, water_glass and
-nether. compare.py requires the bench-only jar's start-up line, a bench per scene written by `brimstone-bench`, no
-Brimstone module block or log line, no counter missing, Sodium loaded in `bench-sodium` only, and Brimstone itself not
+nether. compare.py requires the bench-only jar's start-up line, a bench per scene written by `quicksilver-bench`, no
+Quicksilver module block or log line, no counter missing, Sodium loaded in `bench-sodium` only, and Quicksilver itself not
 loaded. Their pictures are not compared (Sodium draws its own way); the "Bench-only jar" table reports fps, frame-time
 p99, frames over 50 ms, draw calls and the largest upload per frame.

@@ -5,7 +5,7 @@ client logs. No choice is made here.
 
 Where the dumps are (since 2026-10-25): the build job's **`game-dumps` Actions artifact** of that run
 (`javap-all.txt.gz`, `bytecode.txt.gz` and the class lists), kept for **1 day**. Nothing of Mojang's goes to the public
-`ci-logs` branch (design doc, Rules: Mojang code); `ci-logs` carries only Brimstone's own `build.log`, the client runs
+`ci-logs` branch (design doc, Rules: Mojang code); `ci-logs` carries only Quicksilver's own `build.log`, the client runs
 and the compare report. Until then the dumps were published on `ci-logs` under `build/`; that directory was removed
 and `ci-logs` republished on 2026-10-25 (GitHub may keep older force-pushed commits fetchable by ID for a while).
 Note for chats: the agent workspace cannot download Actions artifacts (their storage host isn't reachable), so a
@@ -39,7 +39,7 @@ the window, vertex formats and render targets.
   Then for each backend in order: `loadLibrary()`, `createDevice()`; on failure it logs "Failed to create backend
   {name}" and tries the next. The winner is logged: "Using graphics backend {name}, using drivers: {driver}", then
   the device name and "Using graphics device extensions: ...".
-- In SIFTEC's and Brimstone's CI (Mesa llvmpipe, `default`), the result is OpenGL 4.5.
+- In SIFTEC's and Quicksilver's CI (Mesa llvmpipe, `default`), the result is OpenGL 4.5.
 
 ## Minimum OpenGL version: 3.3 core
 

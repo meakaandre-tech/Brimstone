@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   mode:
-    # Quick mode on branch pushes: the core suite with vanilla a, vanilla b and Brimstone on the old-GPU profile
+    # Quick mode on branch pushes: the core suite with vanilla a, vanilla b and Quicksilver on the old-GPU profile
     # (about 10 minutes). Full matrix on main, on a commit with [full] in its message (every pre-merge check) and on a
     # manual run. Each branch publishes its logs to its own ci-logs-<branch> branch.
     runs-on: ubuntu-latest
@@ -37,9 +37,9 @@ jobs:
           case "$MESSAGE" in *"[full]"*) mode=full;; esac
           if [ $mode = full ]; then
             # package 4b: two more core runs with only the bench-only jar, on plain Fabric and next to Sodium
-            matrix='{"suite":["core","siftec"],"run":["vanilla-a","vanilla-b","vanilla-old","vanilla-vk","brimstone-full","brimstone-old","brimstone-vk","measure-full","measure-old","measure-vk"],"include":[{"suite":"core","run":"bench-plain"},{"suite":"core","run":"bench-sodium"}]}'
+            matrix='{"suite":["core","siftec"],"run":["vanilla-a","vanilla-b","vanilla-old","vanilla-vk","quicksilver-full","quicksilver-old","quicksilver-vk","measure-full","measure-old","measure-vk"],"include":[{"suite":"core","run":"bench-plain"},{"suite":"core","run":"bench-sodium"}]}'
           else
-            matrix='{"suite":["core"],"run":["vanilla-a","vanilla-b","brimstone-old"]}'
+            matrix='{"suite":["core"],"run":["vanilla-a","vanilla-b","quicksilver-old"]}'
           fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
@@ -78,10 +78,10 @@ jobs:
           ./gradlew build --no-daemon -Dorg.gradle.console=plain -I /tmp/ci.gradle 2>&1 | tee build.log
           mkdir -p dist
           v=$(grep '^mod_version' gradle.properties | sed 's/.*= *//')+$(grep '^minecraft_version' gradle.properties | sed 's/.*= *//')
-          cp "build/libs/brimstone-$v.jar" dist/brimstone.jar
-          # package 4b: the bench-only jar (brimstone-bench: /brimstone bench, counters, scenes; no Brimstone module)
-          cp "build/libs/brimstone-bench-$v.jar" dist/brimstone-bench.jar
-          unzip -l dist/brimstone-bench.jar | tail -1
+          cp "build/libs/quicksilver-$v.jar" dist/quicksilver.jar
+          # package 4b: the bench-only jar (quicksilver-bench: /quicksilver bench, counters, scenes; no Quicksilver module)
+          cp "build/libs/quicksilver-bench-$v.jar" dist/quicksilver-bench.jar
+          unzip -l dist/quicksilver-bench.jar | tail -1
       - name: Dump game signatures and bytecode
         if: always()
         shell: bash
@@ -89,7 +89,7 @@ jobs:
           # .github/dump-signatures: javap -p of every game and Fabric API class; .github/dump-bytecode: javap -c of the
           # game classes whose names match a regex in that file (one per line). Facts for later packages' mixins.
           # Nothing of Mojang's is published (design doc, Rules: Mojang code): the dumps and the class lists go to
-          # /tmp/dumps, an Actions artifact kept for 1 day, never to the public ci-logs branch. /tmp/ci holds Brimstone's
+          # /tmp/dumps, an Actions artifact kept for 1 day, never to the public ci-logs branch. /tmp/ci holds Quicksilver's
           # own build log and jar list (only build.log reaches ci-logs).
           set +e +o pipefail
           mkdir -p /tmp/ci /tmp/dumps
@@ -126,14 +126,14 @@ jobs:
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
-          name: brimstone-jar
+          name: quicksilver-jar
           path: |
-            dist/brimstone.jar
-            dist/brimstone-bench.jar
+            dist/quicksilver.jar
+            dist/quicksilver-bench.jar
       - name: Build the CI-only lightmap pin mod
         shell: bash
         run: |
-          # ci/pin-mod: loaded in every client run, vanilla and Brimstone alike (see its mixin); compiled against the
+          # ci/pin-mod: loaded in every client run, vanilla and Quicksilver alike (see its mixin); compiled against the
           # Mixin jar from the game's compile classpath, never published beyond this run's artifacts
           set -e
           mixin=$(grep -E '/sponge-mixin[^/]*\.jar$' /tmp/compile-cp.txt 2>/dev/null | grep -v sources | head -1 || true)
@@ -246,9 +246,9 @@ jobs:
     timeout-minutes: 90
     strategy:
       fail-fast: false
-      # the mode job's matrix: suites core and siftec with every run (measure-*: Brimstone loaded with every module
+      # the mode job's matrix: suites core and siftec with every run (measure-*: Quicksilver loaded with every module
       # off, so its bench measures vanilla's own draw calls and terrain GPU memory in the same run, package 3's
-      # at-or-under-vanilla gates), or in quick mode core with vanilla-a, vanilla-b and brimstone-old
+      # at-or-under-vanilla gates), or in quick mode core with vanilla-a, vanilla-b and quicksilver-old
       matrix: ${{ fromJSON(needs.mode.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
@@ -259,7 +259,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - uses: actions/download-artifact@v4
         with:
-          name: brimstone-jar
+          name: quicksilver-jar
           path: dist
       - uses: actions/download-artifact@v4
         with:
@@ -331,7 +331,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/ci/runs && { cp -r /tmp/res/* /tmp/ci/runs/ 2>/dev/null || echo 'no client results'; }
-          # Brimstone's own build log only: no game class dumps or lists on ci-logs (they are the 1-day game-dumps artifact)
+          # Quicksilver's own build log only: no game class dumps or lists on ci-logs (they are the 1-day game-dumps artifact)
           cp /tmp/build-logs/build.log /tmp/ci/build.log 2>/dev/null || echo 'no build log'
           rm -rf /tmp/ci/build
           echo "${GITHUB_SHA} ${GITHUB_REF_NAME} ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} ${{ needs.mode.outputs.mode }}" > /tmp/ci/commit.txt
@@ -353,7 +353,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: brimstone-jar
+          name: quicksilver-jar
           path: dist
       - name: Publish the jar as the latest release
         env:
@@ -362,7 +362,7 @@ jobs:
         run: |
           gh release delete latest -y --cleanup-tag -R "${{ github.repository }}" || true
           sleep 3
-          cp dist/brimstone.jar brimstone-26.3.jar
-          # package 4b: the bench-only jar next to it (for comparing vanilla, Sodium and Brimstone, docs/laptop-bench.md)
-          cp dist/brimstone-bench.jar brimstone-bench-26.3.jar
-          gh release create latest brimstone-26.3.jar brimstone-bench-26.3.jar -R "${{ github.repository }}" --target "${GITHUB_SHA}" --title "Brimstone (latest build)" --notes "Built from main at ${GITHUB_SHA}. Fabric 26.3, needs Fabric API. brimstone-26.3.jar: Brimstone (draws what vanilla draws, faster). brimstone-bench-26.3.jar: only /brimstone bench, its counters and scenes, with every Brimstone module left out; use it instead of Brimstone on plain Fabric or next to Sodium to compare them (docs/laptop-bench.md). Never both in one instance. Known trade: while flying into new terrain, a visible section can appear up to 15 frames later than in vanilla (terrain uploads are spread over frames), for smoother frame times."
+          cp dist/quicksilver.jar quicksilver-26.3.jar
+          # package 4b: the bench-only jar next to it (for comparing vanilla, Sodium and Quicksilver, docs/laptop-bench.md)
+          cp dist/quicksilver-bench.jar quicksilver-bench-26.3.jar
+          gh release create latest quicksilver-26.3.jar quicksilver-bench-26.3.jar -R "${{ github.repository }}" --target "${GITHUB_SHA}" --title "Quicksilver (latest build)" --notes "Built from main at ${GITHUB_SHA}. Fabric 26.3, needs Fabric API. quicksilver-26.3.jar: Quicksilver (draws what vanilla draws, faster). quicksilver-bench-26.3.jar: only /quicksilver bench, its counters and scenes, with every Quicksilver module left out; use it instead of Quicksilver on plain Fabric or next to Sodium to compare them (docs/laptop-bench.md). Never both in one instance. Known trade: while flying into new terrain, a visible section can appear up to 15 frames later than in vanilla (terrain uploads are spread over frames), for smoother frame times."

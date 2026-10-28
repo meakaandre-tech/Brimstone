@@ -1,0 +1,17 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.quicksilver.mixin.visibility",
+  "plugin": "com.meakaandre.quicksilver.visibility.VisibilityMixins",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ClientChunkCacheMixin",
+    "EntityRendererInvoker",
+    "LevelExtractorMixin",
+    "RenderSectionStampMixin",
+    "SectionUpdateTrackerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "suite": "siftec",
+  "requiresMod": "siftec",
+  "description": "SIFTEC compat suite, offered only when SIFTEC is loaded. Uses SIFTEC's own test commands (op needed).",
+  "preamble": [
+    "gamerule advance_time false",
+    "gamerule advance_weather false",
+    "gamerule send_command_feedback false",
+    "gamemode spectator @a",
+    "time set 6000",
+    "weather clear"
+  ],
+  "scenes": [
+    {
+      "id": "factory",
+      "title": "SIFTEC factory: the buildings_a row of work-package-5 buildings (built once, marked by bedrock at 1190 160 970)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
+        "execute in minecraft:overworld run forceload add 1180 960 1290 1040",
+        "#wait 10",
+        "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
+        "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
+        "#wait 4",
+        "execute in minecraft:overworld run setblock 1238 189 1018 create:fluid_tank{Size:1,Height:1,Window:1b,Fluid:{id:\"minecraft:lava\",amount:648000}}",
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
+      ],
+      "requiresMod": "siftec_selftest",
+      "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.",
+      "ciNote": "Package 8 (Andre's follow-up): a Create fluid tank full of lava floats in front of the camera, so Create's fluid renderer draws an animated block sprite (lava) outside terrain; CI fails on any late redraw."
+    },
+    {
+      "id": "factory_flat",
+      "title": "The SIFTEC factory scene (the buildings_a row) with smooth lighting off: flat lighting of SIFTEC and Create models (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
+        "execute in minecraft:overworld run forceload add 1180 960 1290 1040",
+        "#wait 10",
+        "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
+        "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
+        "#wait 4",
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
+      ],
+      "requiresMod": "siftec_selftest",
+      "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.",
+      "clientOptions": {
+        "ao": "false"
+      }
+    },
+    {
+      "id": "sift",
+      "title": "The Sift (Mielon's The Sift dimension; its own clock and weather pinned too)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "gamerule spawn_mobs false",
+        "gamerule spawn_phantoms false",
+        "execute in the_sift:the_sift run tp @a 0.5 200 0.5 45 20",
+        "execute in the_sift:the_sift run time set 6000",
+        "execute in the_sift:the_sift run weather clear",
+        "#wait 6",
+        "execute in the_sift:the_sift positioned 0.5 0 0.5 positioned over motion_blocking run tp @a ~ ~4 ~ 45 20",
+        "execute as @a at @s run tp @e[type=!minecraft:player,distance=..400] ~ -200 ~"
+      ],
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate: below 20 fps every frame lines up with a game tick and draws the tick's extra draws, above it some don't. Run 40180107484, full: Quicksilver 154.0 average / 154 median at 15.1 fps, vanilla's measure run 135.58 / 154 at 22.64 fps (Vulkan: 153.97 / 154 at 15.8 fps against 153.94 / 154 at 12.37 fps). Gated against vanilla on the median (Andre's rule, 2026-10-25).",
+      "ciNote": "Mob spawning is off for this scene and the mobs already there are sent away before it settles, in vanilla's runs and Quicksilver's alike: Andre's decision (package 3, 2026-10-25), as the sprites over the canyon were somewhere else in every run; they turned out to be the Sift's note particles, which CI's pin mod holds off (SiftParticlesMixin). The next scene turns spawning back on."
+    },
+    {
+      "id": "hub",
+      "title": "SIFTEC HUB screen (an unowned HUB: whoever right-clicks it takes it over)",
+      "renderDistance": 8,
+      "settleSeconds": 8,
+      "setup": [
+        "gamerule spawn_mobs true",
+        "gamerule spawn_phantoms true",
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2240.5 201 -1996.5 180 21",
+        "#wait 5",
+        "fill 2235 200 -2005 2245 200 -1995 minecraft:stone_bricks",
+        "fill 2235 201 -2005 2245 205 -1995 minecraft:air",
+        "setblock 2240 201 -2000 minecraft:air",
+        "setblock 2240 201 -2000 siftec:hub",
+        "execute in minecraft:overworld run tp @a 2240.5 201 -1996.5 180 21"
+      ],
+      "screen": {
+        "expect": "HubScreen",
+        "prompt": "Right-click the HUB in front of you",
+        "ciKey": "u"
+      }
+    },
+    {
+      "id": "mam",
+      "ciVanillaDrawGate": "median",
+      "ciVanillaDrawGateReason": "Its average follows the runner's frame rate (the GUI screen draws more per frame when frames line up with game ticks). run 40238316211, Vulkan: Quicksilver 132.6 average / 162 median at 25.17 fps, vanilla's measure run 117.94 / 162 at 29.31 fps (limit x 1.10 + 2: 131.73); full on the same run: 116.03 / 162 against 116.48 / 162 at 29.83 fps both. Gated against vanilla on the median (Andre's rule, 2026-10-26).",
+      "title": "SIFTEC MAM screen",
+      "renderDistance": 8,
+      "settleSeconds": 8,
+      "setup": [
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2200.5 201 -1996.5 180 21",
+        "#wait 5",
+        "fill 2195 200 -2005 2205 200 -1995 minecraft:stone_bricks",
+        "fill 2195 201 -2005 2205 205 -1995 minecraft:air",
+        "setblock 2200 201 -2000 minecraft:air",
+        "setblock 2200 201 -2000 siftec:mam",
+        "execute in minecraft:overworld run tp @a 2200.5 201 -1996.5 180 21"
+      ],
+      "screen": {
+        "expect": "ContainerScreen",
+        "prompt": "Right-click the MAM in front of you",
+        "ciKey": "u"
+      }
+    },
+    {
+      "id": "ponder",
+      "title": "Create's Ponder index screen (Create Fly's /ponder index), looking up at the sky and a stone block above the HUB platform (package 7)",
+      "renderDistance": 8,
+      "settleSeconds": 8,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2240.5 230 -1996.5 0 -90",
+        "#wait 5",
+        "setblock 2240 236 -1997 minecraft:stone",
+        "execute in minecraft:overworld run tp @a 2240.5 230 -1996.5 0 -90"
+      ],
+      "screen": {
+        "expect": "PonderIndexScreen",
+        "prompt": "Type /ponder index",
+        "ciChat": "ponder index"
+      },
+      "requiresMod": "create",
+      "requiresNote": "Create's Ponder screens come with Create (Create Fly in SIFTEC's pack).",
+      "ciNote": "Opened with Create's client command, typed in chat in every run (drive.py's ciChat). The index lists every item with a Ponder scene; the scenes themselves keep moving (belts, kinetics, the nixie scene's dancing parrot), so the index is the Ponder screen CI checks. It runs before the map scene, so SIFTEC's minimap and map markers are not on yet (after it, the Quicksilver and measure runs show the map scene's markers twice, as each bench sets the map up again: 578 pixels in run 40266027605, and the minimap's edge over the HUB platform showed tiles of chunks generated during the run: 425 pixels in run 40260847921). Spectator (the preamble's), looking up: sky behind the screen and one stone block above the camera, so Quicksilver has terrain to draw here too (CI requires it in every scene)."
+    },
+    {
+      "id": "map",
+      "title": "SIFTEC fullscreen map, centred on a pinned player",
+      "renderDistance": 8,
+      "settleSeconds": 15,
+      "setup": [
+        "gamemode creative @a",
+        "execute in minecraft:overworld run tp @a 300.5 200 -199.5",
+        "#wait 5",
+        "execute in minecraft:overworld positioned 300.5 0 -199.5 positioned over motion_blocking run tp @a ~ ~ ~",
+        "#wait 5",
+        "execute in minecraft:overworld unless block 300 -63 -200 minecraft:emerald_block run siftec worldtest map setup",
+        "execute in minecraft:overworld run setblock 300 -63 -200 minecraft:emerald_block",
+        "#wait 40",
+        "gamemode spectator @a",
+        "execute in minecraft:overworld run tp @a 300.5 150 -199.5 0 0",
+        "#wait 3",
+        "siftec worldtest map open 1.5"
+      ],
+      "ciNote": "Strict-gated since package 7: its area is pre-generated in the CI world (and so recorded by SIFTEC's map there), the player is put at a fixed spot (spreadplayers landed a block either way, and the markers sit relative to it), random ticks and mob griefing are off in the CI world. Before, vanilla runs differed by up to 22,532 strict pixels here. SIFTEC's map setup (unlock, radar sweep, two markers) runs once per world: an emerald block deep under the spot marks it done, so a Quicksilver or measure run's bench (which sets the scene up again) no longer adds the markers a second time; with one player name in every session the markers show on the compass in later scenes and sessions (factory_flat: 328 pixels in run 40436256016).",
+      "screen": {
+        "expect": "MapScreen"
+      },
+      "requiresMod": "siftec_selftest",
+      "requiresNote": "SIFTEC's map unlocks through progression; its test command (siftec worldtest map) opens it, and that lives in SIFTEC's CI-only selftest mod, not in its release."
+    },
+    {
+      "id": "hologram",
+      "ciDrawCallGate": "median",
+      "title": "SIFTEC Build Gun hologram (green where the building fits) in front of a water pool, high above the terrain (package 3)",
+      "renderDistance": 8,
+      "settleSeconds": 15,
+      "setup": [
+        "gamemode creative @a",
+        "item replace entity @a weapon.mainhand with minecraft:air",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1981.5 180 30",
+        "#wait 5",
+        "fill 2148 285 -2014 2174 305 -1976 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2148,y=285,z=-2014,dx=26,dy=20,dz=38] 2160.5 -200 -1995.5",
+        "fill 2148 288 -2014 2174 288 -1976 minecraft:stone",
+        "fill 2148 289 -2014 2174 289 -1976 minecraft:smooth_stone",
+        "fill 2151 288 -2010 2169 288 -1992 minecraft:sea_lantern",
+        "fill 2151 289 -2010 2169 289 -1992 minecraft:water",
+        "item replace entity @a weapon.mainhand with siftec:build_gun",
+        "execute in minecraft:overworld run tp @a 2160.5 290 -1984.5 180 30"
+      ],
+      "ciRequiresTranslucent": true,
+      "ciNote": "The Build Gun hologram is drawn by Create's outliner (SIFTEC's BuildGunClient), not as terrain, so it stays on its own path; the gates check that it still looks exactly as with vanilla in front of Quicksilver's translucent water. CI presses Tab once after the setup (the Build Gun's next-tab key: picks the first Power building, the Power Pole Mk.1; the selection stays for the bench). On a laptop, press Tab once with the Build Gun in hand before the bench starts measuring. The pool's floor is sea lanterns: up there water freezes over at random where block light is low (ice in vanilla's own runs, run 40121527770), and light 14 at the surface stops it. The last setup step moves the camera three blocks, so vanilla sorts the water again from where the picture is taken. Not run on Vulkan: lavapipe segfaults (libvulkan_lvp.so) as soon as the outliner draws, in vanilla's run too (runs 40115084815 and 40119107821).",
+      "ciKeys": [
+        "Tab"
+      ],
+      "ciSkipRuns": [
+        "vanilla-vk",
+        "quicksilver-vk",
+        "measure-vk"
+      ],
+      "ciSkipReason": "Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
+    },
+    {
+      "id": "hud",
+      "title": "Normal play with the HUD on: hotbar with items, the chat open with a few lines, SIFTEC's compass strip and minimap, on a platform in front of a wall (package 7)",
+      "renderDistance": 8,
+      "settleSeconds": 10,
+      "setup": [
+        "gamemode creative @a",
+        "execute in minecraft:overworld run tp @a 400.5 201 -109.5 0 0",
+        "#wait 5",
+        "fill 378 200 -116 423 216 -92 minecraft:air",
+        "fill 378 200 -116 423 200 -92 minecraft:gray_concrete",
+        "fill 378 201 -93 423 216 -93 minecraft:gray_concrete",
+        "#wait 3",
+        "#chunks",
+        "item replace entity @a hotbar.0 with minecraft:diamond_sword",
+        "item replace entity @a hotbar.1 with minecraft:iron_pickaxe",
+        "item replace entity @a hotbar.2 with minecraft:oak_log 32",
+        "item replace entity @a hotbar.3 with minecraft:torch 64",
+        "item replace entity @a hotbar.4 with minecraft:bread 12",
+        "item replace entity @a hotbar.5 with minecraft:water_bucket",
+        "item replace entity @a hotbar.6 with minecraft:redstone 7",
+        "item replace entity @a hotbar.7 with siftec:build_gun",
+        "item replace entity @a hotbar.8 with minecraft:map",
+        "#wait 3",
+        "tellraw @a {\"text\":\"[CI] The HUD scene: hotbar, chat, compass and minimap\",\"color\":\"gold\"}",
+        "tellraw @a {\"text\":\"Line two of the chat, plain white text\"}",
+        "tellraw @a [{\"text\":\"Line three: \",\"color\":\"aqua\"},{\"text\":\"bold\",\"bold\":true},{\"text\":\" and \"},{\"text\":\"italic\",\"italic\":true}]",
+        "tellraw @a {\"text\":\"Line four: numbers 0123456789\",\"color\":\"green\"}",
+        "tellraw @a {\"text\":\"Line five: a longer line of chat text to see the wrap and the background width\",\"color\":\"gray\"}",
+        "tellraw @a {\"text\":\"Line six: the last one\",\"color\":\"red\"}",
+        "tellraw @a {\"text\":\"Line seven, so six lines show whatever came before\"}",
+        "tellraw @a {\"text\":\"Line eight: end of the chat\",\"color\":\"yellow\"}",
+        "execute in minecraft:overworld run tp @a 400.5 201 -109.5 0 0"
+      ],
+      "ciClearChat": true,
+      "screen": {
+        "expect": "ChatScreen",
+        "prompt": "Press T (open the chat)",
+        "ciKey": "t"
+      },
+      "ciNote": "The chat is open (its lines fade with time otherwise, and an open chat shows them in full); chatHeightFocused 0.25 in CI shows the last 6 lines, all this scene's, and CI's pin mod holds the input box's cursor on. The spot (400 -110, in the CI world's pre-generated, explored map area) keeps the map scene's markers off the minimap, and facing south keeps them off the compass: each Quicksilver and measure run sets the map up again in its bench, which doubles the markers (578 pixels in run 40266027605). A gray concrete platform high above the ground with a gray concrete wall 16 blocks in front (no sun, no mob in view; Quicksilver draws the terrain). Concrete is one flat colour: Vulkan sampled a stone-brick wall's texture differently from GL on most pixels (runs 40414693058 and 40426298065), which left the strict check blind under the compass and the chat. After the fills, the #chunks step makes drive.py reload all chunks (F3+A; the wall once had a hole, a section not rebuilt in time, in run 40450860976's measure-full run) and clear the chat. drive.py also clears the chat (F3+D) before the setup, so it holds only the setup's lines in every run (bench messages in Quicksilver and measure runs moved the chat's scrollbar: 48 pixels in run 40404251173). Runs after the hologram scene and before create_ct, which hides the GUI (F1) for the rest of the session."
+    },
+    {
+      "id": "create_ct",
+      "title": "Create connected textures: walls of andesite casing (with a corner), brass casing, copper casing with a stone block set in it, and framed glass, each beside a non-connecting block (stone, glass) (package 4)",
+      "renderDistance": 8,
+      "settleSeconds": 20,
+      "setup": [
+        "execute in minecraft:overworld run tp @a 2071.5 243 -1987.5 180 12",
+        "#wait 6",
+        "fill 2056 236 -2014 2094 252 -1982 minecraft:air",
+        "tp @e[type=!minecraft:player,x=2056,y=230,z=-2014,dx=38,dy=22,dz=32] 2075.5 -200 -1995.5",
+        "fill 2056 239 -2012 2094 239 -1984 minecraft:smooth_stone",
+        "fill 2060 240 -2000 2064 243 -2000 create:andesite_casing",
+        "fill 2060 240 -1999 2060 243 -1997 create:andesite_casing",
+        "fill 2065 240 -2000 2065 243 -2000 minecraft:stone",
+        "fill 2066 240 -2000 2070 243 -2000 create:brass_casing",
+        "fill 2071 240 -2000 2071 243 -2000 minecraft:stone",
+        "fill 2072 240 -2000 2076 243 -2000 create:copper_casing",
+        "setblock 2074 241 -2000 minecraft:stone",
+        "fill 2077 240 -2000 2077 243 -2000 minecraft:stone",
+        "fill 2078 240 -2000 2082 243 -2000 create:framed_glass",
+        "fill 2083 240 -2000 2083 243 -2000 minecraft:glass",
+        "fill 2066 240 -1996 2068 240 -1994 create:brass_casing",
+        "execute in minecraft:overworld run tp @a 2071.5 243 -1987.5 180 12"
+      ],
+      "requiresMod": "create",
+      "requiresNote": "Create's casings and framed glass: without Create the scene would show only stone, so it is skipped.",
+      "ciNote": "The design doc's done-when names Create's connected textures: Create draws them through the Fabric Renderer API, so these blocks are tessellated by Quicksilver's renderer in Quicksilver's runs and by Indigo in the vanilla runs. CT blocks in view: create:andesite_casing (a 5x4 wall plus a 3-block return at its west end), create:brass_casing (a 5x4 wall and a 3x3 floor patch in front), create:copper_casing (a 5x4 wall with minecraft:stone set in at its centre left), create:framed_glass (a 5x4 wall); each wall ends against minecraft:stone or minecraft:glass, which do not connect. CI presses F1 after the setup (vanilla's hide-GUI key): SIFTEC's minimap shows whichever tiles it has scanned, which differs from run to run (vanilla against vanilla up to 167 strict pixels in run 40274749083), and a single wrong connected-texture border is smaller than that. It is the suite's last scene, so the hidden GUI reaches only its own bench.",
+      "ciKeys": [
+        "F1"
+      ]
+    }
+  ],
+  "prepare": [
+    "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
+    "execute in minecraft:overworld run forceload add 1180 960 1290 1040",
+    "#wait 15",
+    "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
+    "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
+    "#wait 90"
+  ],
+  "prepareNote": "Run once per CI session before any screenshot: builds the factory row so its lighting has settled. The factory scene builds it too (only when the marker block under the platform is missing).",
+  "prepareFor": "factory"
+}
