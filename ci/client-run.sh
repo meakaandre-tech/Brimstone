@@ -23,7 +23,7 @@ loader=$(grep '^loader_version' gradle.properties | sed 's/.*= *//')
 fapi=$(grep '^fabric_version' gradle.properties | sed 's/.*= *//')
 suitefile=src/main/resources/quicksilver/scenes/$SUITE.json
 
-case "$RUN" in quicksilver-*|measure-*) brim=1;; *) brim=0;; esac
+case "$RUN" in quicksilver-*|measure-*) qs=1;; *) qs=0;; esac
 # package 4b: bench-plain / bench-sodium load only the bench-only jar (quicksilver-bench, every Quicksilver module out),
 # on plain Fabric or next to Sodium, and bench the scenes in BENCH_SCENES; the server has no Quicksilver
 case "$RUN" in bench-*) benchonly=1;; *) benchonly=0;; esac
@@ -47,7 +47,7 @@ case "$RUN" in quicksilver-old|measure-old) client_jvm="-Dquicksilver.debug.forc
 if [ $measure = 1 ]; then
   client_jvm="$client_jvm -Dquicksilver.ci.measureOnly=true"
   echo "measure run JVM properties:$client_jvm"
-elif [ $brim = 1 ]; then
+elif [ $qs = 1 ]; then
   # package 8: the animation module logs each animated sprite's first use outside terrain, with where it came from
   # package 4b: the terrain upload budget logs when meshes wait for a later frame and when it has caught up, so
   # drive.py takes no screenshot while a section is still waiting (vanilla uploads at once and logs nothing)
@@ -72,7 +72,7 @@ else
   curl -fsSL -o server/mods/fabric-api.jar "$fapiurl"
   echo "eula=true" > server/eula.txt
 fi
-if [ $brim = 1 ]; then cp dist/quicksilver.jar server/mods/; fi
+if [ $qs = 1 ]; then cp dist/quicksilver.jar server/mods/; fi
 # measure runs stand in for vanilla, so Fabric's Indigo draws there as in the vanilla runs: their copy of the jar does
 # not declare fabric-renderer-api-v1:contains_renderer (and Quicksilver does not register its renderer, measureOnly)
 if [ $measure = 1 ]; then
@@ -208,7 +208,7 @@ for g in $groups; do
     echo "op @a" >&3
     sleep 40
     xdotool mousemove 640 360
-    python3 -I ci/drive.py "$suitefile" server/in.fifo "$OUT" run/logs/latest.log "$([ $brim = 1 ] || [ $benchonly = 1 ] && echo quicksilver || echo vanilla)" "$BENCH_SECONDS" $ids
+    python3 -I ci/drive.py "$suitefile" server/in.fifo "$OUT" run/logs/latest.log "$([ $qs = 1 ] || [ $benchonly = 1 ] && echo quicksilver || echo vanilla)" "$BENCH_SECONDS" $ids
   else
     echo "client did not join (session $n)"
     import -window root "$OUT/no-join-$n.png"

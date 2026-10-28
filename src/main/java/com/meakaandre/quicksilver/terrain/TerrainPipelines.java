@@ -38,7 +38,7 @@ import net.minecraft.resources.Identifier;
  * whatever the game draws translucent terrain with, Quicksilver draws its part with the same states.
  */
 final class TerrainPipelines {
-    static final BindGroupLayout REGION = BindGroupLayout.builder().withUniform("BrimRegion", UniformType.UNIFORM_BUFFER).build();
+    static final BindGroupLayout REGION = BindGroupLayout.builder().withUniform("QsRegion", UniformType.UNIFORM_BUFFER).build();
     /** std140: ivec4 origin, then 64 vec4 of fade-in values (256 sections). */
     static final int REGION_UBO_BYTES = 16 + 64 * 16;
 

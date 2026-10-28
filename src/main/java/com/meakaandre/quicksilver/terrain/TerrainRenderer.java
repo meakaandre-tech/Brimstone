@@ -791,7 +791,7 @@ public final class TerrainRenderer {
                     }
                     continue;
                 }
-                pass.setUniform("BrimRegion", run.ubo);
+                pass.setUniform("QsRegion", run.ubo);
                 switch (path) {
                     case PLAIN_SEPARATE -> {
                         ensureCapacity(n);
@@ -848,7 +848,7 @@ public final class TerrainRenderer {
             for (RegionDraw rd : ad.regions) {
                 int n = rd.n;
                 if (n == 0) continue;
-                pass.setUniform("BrimRegion", rd.ubo);
+                pass.setUniform("QsRegion", rd.ubo);
                 switch (path) {
                     case PLAIN_SEPARATE -> {
                         ensureCapacity(n);

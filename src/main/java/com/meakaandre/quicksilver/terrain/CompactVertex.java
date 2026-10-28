@@ -35,9 +35,9 @@ public final class CompactVertex {
     public static final int VANILLA_BYTES = 28;
 
     static final VertexFormat FORMAT = VertexFormat.builder(0)
-        .addAttribute("BrimCell", GpuFormat.RGBA16_UINT)
-        .addAttribute("BrimTint", GpuFormat.RGBA8_UNORM)
-        .addAttribute("BrimTexel", GpuFormat.RG16_UINT)
+        .addAttribute("QsCell", GpuFormat.RGBA16_UINT)
+        .addAttribute("QsTint", GpuFormat.RGBA8_UNORM)
+        .addAttribute("QsTexel", GpuFormat.RG16_UINT)
         .build();
 
     /**

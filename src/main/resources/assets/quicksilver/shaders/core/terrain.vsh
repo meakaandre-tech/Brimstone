@@ -20,14 +20,14 @@
 uniform sampler2D Sampler2;
 #endif
 
-layout(location = 0) in uvec4 BrimCell;
-layout(location = 1) in vec4 BrimTint;
-layout(location = 2) in uvec2 BrimTexel;
+layout(location = 0) in uvec4 QsCell;
+layout(location = 1) in vec4 QsTint;
+layout(location = 2) in uvec2 QsTexel;
 
 #ifdef QUICKSILVER_PLAIN
-layout(std140) uniform BrimRegion {
-    ivec4 brimRegionCorner;
-    vec4 brimFade[64];
+layout(std140) uniform QsRegion {
+    ivec4 qsRegionCorner;
+    vec4 qsFade[64];
 };
 #else
 // per-section data from the instance stream (binding 1), whose locations follow the vertex's own attributes
@@ -35,11 +35,11 @@ layout(location = 3) in ivec3 ChunkPosition;
 layout(location = 4) in float ChunkVisibility;
 #endif
 
-layout(location = 0) out float brimEyeDistance;
-layout(location = 1) out float brimColumnDistance;
-layout(location = 2) out vec4 brimLitTint;
-layout(location = 3) out vec2 brimTexel;
-layout(location = 4) out float brimFadeIn;
+layout(location = 0) out float qsEyeDistance;
+layout(location = 1) out float qsColumnDistance;
+layout(location = 2) out vec4 qsLitTint;
+layout(location = 3) out vec2 qsTexel;
+layout(location = 4) out float qsFadeIn;
 
 void main() {
     vec3 local;
@@ -47,19 +47,19 @@ void main() {
     ivec2 lightPair;
     vec2 texel;
     uint slot;
-    local = vec3(BrimCell.xyz) * (1.0 / 2048.0) - 8.0;
-    tint = vec4(BrimTint.rgb, 1.0);
-    lightPair = ivec2(int(BrimCell.w >> 8u), int(round(BrimTint.a * 255.0)));
+    local = vec3(QsCell.xyz) * (1.0 / 2048.0) - 8.0;
+    tint = vec4(QsTint.rgb, 1.0);
+    lightPair = ivec2(int(QsCell.w >> 8u), int(round(QsTint.a * 255.0)));
     // 65535 is the atlas edge, exactly 1.0
-    texel = mix(vec2(BrimTexel) * (1.0 / 65536.0), vec2(1.0), equal(BrimTexel, uvec2(65535u)));
-    slot = BrimCell.w & 255u;
+    texel = mix(vec2(QsTexel) * (1.0 / 65536.0), vec2(1.0), equal(QsTexel, uvec2(65535u)));
+    slot = QsCell.w & 255u;
 
     ivec3 corner;
     float fade;
 #ifdef QUICKSILVER_PLAIN
     int s = int(slot);
-    corner = brimRegionCorner.xyz + 16 * ivec3(s & 7, (s >> 3) & 3, s >> 5);
-    fade = brimFade[s >> 2][s & 3];
+    corner = qsRegionCorner.xyz + 16 * ivec3(s & 7, (s >> 3) & 3, s >> 5);
+    fade = qsFade[s >> 2][s & 3];
 #else
     corner = ChunkPosition;
     fade = ChunkVisibility;
@@ -70,16 +70,16 @@ void main() {
     // order: the two matrices are multiplied together before the point, as the game does
     gl_Position = ProjMat * ModelViewMat * vec4(eye, 1.0);
 
-    brimEyeDistance = fog_spherical_distance(eye);
-    brimColumnDistance = fog_cylindrical_distance(eye);
+    qsEyeDistance = fog_spherical_distance(eye);
+    qsColumnDistance = fog_cylindrical_distance(eye);
 #ifdef OIT_ALPHA_ONLY
-    brimLitTint = tint;
+    qsLitTint = tint;
 #else
-    brimLitTint = tint * sample_lightmap(Sampler2, lightPair);
+    qsLitTint = tint * sample_lightmap(Sampler2, lightPair);
 #endif
-    brimTexel = texel;
+    qsTexel = texel;
     // sections fade in from the fog colour, except within 16 blocks of the camera (full at 32); order: the game's
     const float fullyVisibleWithin = 16.0;
     float reach = length(eye);
-    brimFadeIn = mix(1.0, fade, clamp((reach - fullyVisibleWithin) / fullyVisibleWithin, 0.0, 1.0));
+    qsFadeIn = mix(1.0, fade, clamp((reach - fullyVisibleWithin) / fullyVisibleWithin, 0.0, 1.0));
 }

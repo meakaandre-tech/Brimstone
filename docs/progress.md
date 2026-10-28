@@ -6,7 +6,8 @@ package `com.meakaandre.quicksilver`, mixin configs `quicksilver.*.mixins.json`,
 properties `quicksilver.debug.*` / `quicksilver.ci.*`, jars `quicksilver-26.3.jar` and `quicksilver-bench-26.3.jar`, CI
 runs `quicksilver-full|old|vk`, repo meakaandre-tech/Quicksilver. Everything below this note is history and keeps the
 old name (read Brimstone as Quicksilver); the other docs use the new names. Brimstone was never released, so nothing is
-migrated. The shader's attribute and uniform names (`BrimCell`, `BrimRegion`, ...) are internal and were left as they are.
+migrated. The terrain shader's own names went too (Andre, 2026-10-29): `BrimCell`, `BrimTint`, `BrimTexel`, `BrimRegion` and
+the `brim*` outputs are `QsCell`, `QsTint`, `QsTexel`, `QsRegion` and `qs*`; the scenes' entity tag `brim_mover` is `qs_mover`.
 
 
 ## Where things stand
@@ -19,7 +20,7 @@ migrated. The shader's attribute and uniform names (`BrimCell`, `BrimRegion`, ..
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
 | package 7a (GUI measurement) | merged | `7597832` (squash of `package-7`, counters and scenes only; package 7's done-when not met; **7b deferred until after package 6**, with inventory tooltips, F3 and long chat measured first). HUD: 23 GUI draws per frame, 11 states (6 pipelines, 7 textures, 2 scissor areas), identical to vanilla |
-| package 4b (terrain speed-ups) | `package-4b` | not merged (Andre's check), `be01dda` green full run 40638313286: upload budget, skip back faces, bench-only jar; see its section |
+| package 4b (terrain speed-ups) | merged | `5a2d927` (squash of `package-4b`; branch green full run 40638313286), **main full run 40760999456 green, `latest` rebuilt with `brimstone-26.3.jar` and `brimstone-bench-26.3.jar`**; known trade in the release notes |
 | core/mobs strict limit | main | 600 -> 10 (chicken wing pin; samples 0 in four full runs) |
 | baselines after 4, 7a, 8 | merged | `2f6c545`: 66 draw-call baselines lowered to the merged build's clean values; chicken wing pin (mobs strict samples now 0) |
 | animation pin fix | merged | `cea5bfb`: the animation pin counts texture ticks, not client ticks (the cause of a flake in core/animation's measure runs); **main full run 40526712029 green, `latest` rebuilt** |
@@ -2012,7 +2013,7 @@ pass's draws per frame.
 
 ---
 
-## Package 4b: terrain speed-ups (branch `package-4b`, not merged: Andre reviews it first)
+## Package 4b: terrain speed-ups (merged as `5a2d927`; main green, run 40760999456)
 
 **Done when (doc):** "pixel checks unchanged in every profile; triangles drawn per frame down in every scene (reported);
 fly-through frame-time p99 and frames over 50 ms down on the laptop bench, and in CI the largest upload bytes in one
@@ -2187,6 +2188,8 @@ entrypoint method, which the bench jar never calls).
 
 ### Deviations and choices to confirm
 
+Andre's decisions (2026-10-29): 1 keep, 2 keep, 3 keep, the rest as below; 4b merges first, then the rename.
+
 1. **Margin 1 block** (plus twice the camera's move since the last frame; all groups after a jump of 16 blocks).
 2. **Budget numbers:** 64 KiB per ms of frame time, 256 KiB to 2 MiB; an eighth of the frame time, 1-6 ms; at most 15
    frames' wait for a visible section; 64 MiB staged cap.
@@ -2199,6 +2202,10 @@ entrypoint method, which the bench jar never calls).
 
 ### Known limits
 
+- **Known trade (Andre, 2026-10-29; in the release notes):** while flying into new terrain, a visible section can appear
+  up to 15 frames later than in vanilla (the upload budget's bound; at most 11 seen in CI, run 40638313286), in return
+  for smoother frame times (no upload spike when many sections finish meshing at once). The camera's own section and its
+  neighbours are never held back.
 - Done-when on the laptop (fly-through p99 and frames over 50 ms down) is for Andre's bench; CI's llvmpipe frame times are
   too noisy to show it.
 - A layer is grouped or not as a whole; the coplanar test is per layer, conservative (no overlap test).
@@ -2226,8 +2233,8 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** package 4b on branch `package-4b`, green full run 40638313286 on `be01dda`, not merged (Andre checks it first);
-the rename to Quicksilver on its own branch `rename-quicksilver`, on top of 4b. The repo is now
+**Now:** package 4b merged (`5a2d927`, main green 40760999456); the rename to Quicksilver on its own branch
+`rename-quicksilver`, brought up to date with main. The repo is now
 meakaandre-tech/Quicksilver (GitHub redirects the old URL).
 Local agent note: client logs are collected per game start (`ci/client-run.sh`), so a run crossing midnight UTC keeps
 the rolled-over part.
