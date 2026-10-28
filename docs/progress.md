@@ -2178,6 +2178,8 @@ entrypoint method, which the bench jar never calls).
 
 ### Deviations and choices to confirm
 
+Andre's decisions (2026-10-29): 1 keep, 2 keep, 3 keep, the rest as below; 4b merges first, then the rename.
+
 1. **Margin 1 block** (plus twice the camera's move since the last frame; all groups after a jump of 16 blocks).
 2. **Budget numbers:** 64 KiB per ms of frame time, 256 KiB to 2 MiB; an eighth of the frame time, 1-6 ms; at most 15
    frames' wait for a visible section; 64 MiB staged cap.
@@ -2190,6 +2192,10 @@ entrypoint method, which the bench jar never calls).
 
 ### Known limits
 
+- **Known trade (Andre, 2026-10-29; in the release notes):** while flying into new terrain, a visible section can appear
+  up to 15 frames later than in vanilla (the upload budget's bound; at most 11 seen in CI, run 40638313286), in return
+  for smoother frame times (no upload spike when many sections finish meshing at once). The camera's own section and its
+  neighbours are never held back.
 - Done-when on the laptop (fly-through p99 and frames over 50 ms down) is for Andre's bench; CI's llvmpipe frame times are
   too noisy to show it.
 - A layer is grouped or not as a whole; the coplanar test is per layer, conservative (no overlap test).
