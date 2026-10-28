@@ -191,7 +191,7 @@ for g in $groups; do
     done
     echo "session $n client options: $opts"
   fi
-  rm -f run/logs/latest.log
+  rm -f run/logs/latest.log run/logs/*.log.gz
   : > "$OUT/joined-$n.txt"
   before=$(grep -c 'joined the game' server/server.log)
   # --username (package 7): the dev launcher otherwise names the player Player<random digits>, and the offline UUID
@@ -214,7 +214,9 @@ for g in $groups; do
     import -window root "$OUT/no-join-$n.png"
   fi
   pkill -f KnotClient; sleep 8
-  cp run/logs/latest.log "$OUT/client-$n.log" 2>/dev/null
+  # the game rolls latest.log over at midnight (UTC on the runners) into a dated .log.gz: keep the session's rolled
+  # parts in front of it, so client-$n.log is the whole session (run 40605316942 crossed midnight and lost them)
+  { for z in $(ls run/logs/*.log.gz 2>/dev/null | sort); do zcat "$z"; done; cat run/logs/latest.log 2>/dev/null; } > "$OUT/client-$n.log"
   cp -r run/crash-reports "$OUT/client-crash-reports" 2>/dev/null
 done
 mkdir -p "$OUT/bench" && cp run/brimstone/bench/*.json "$OUT/bench/" 2>/dev/null

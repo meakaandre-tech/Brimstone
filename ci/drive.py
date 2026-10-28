@@ -32,6 +32,9 @@ def wait_uploads(timeout=120):
         return 0
     t0 = time.time()
     while time.time() - t0 < timeout:
+        if not os.path.exists(LATEST):
+            time.sleep(1)
+            continue
         with open(LATEST, errors="replace") as f:
             text = f.read()
         w, c = text.rfind("Brimstone uploads: waiting"), text.rfind("Brimstone uploads: caught up")
@@ -200,6 +203,9 @@ def main():
             result = "timeout"
             while time.time() < budget:
                 time.sleep(2)
+                # the game rolls latest.log over at midnight: a file shorter than where this bench started is a new one
+                if os.path.getsize(latest) < start:
+                    start = 0
                 with open(latest, errors="replace") as f:
                     f.seek(start)
                     tail = f.read()

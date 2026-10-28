@@ -2115,7 +2115,15 @@ little; the laptop bench decides that part of the done-when.
 
 1. `20e3ef6` quick run 40588031898: green (the spawn hole above in the old-GPU shot, within limits).
 2. `59801d9` full run 40593712100: green (reviewed).
-3. Review fixes: see "Final run".
+3. `b317196` full run 40605316942 (review fixes): every picture, count and 4b gate passed, but compare failed on log
+   checks in every Brimstone and measure run's first session (renderer registration, self-test, measure-only lines):
+   the run crossed midnight UTC and the game rolled `latest.log` over into a dated `.log.gz`, so the session's early
+   lines were not in the collected log (measure runs, which have none of 4b's log lines, failed the same way). CI fix,
+   no check changed: `ci/client-run.sh` keeps the session's rolled parts in front of `latest.log`, and `ci/drive.py`
+   follows a rolled-over `latest.log`. Its numbers: visible sections waited at most 7 frames (fly-through old-GPU;
+   bound 15, nothing forced past the budget), no layer needed the coplanar fallback, fly-through's largest upload frame
+   2.21 / 2.11 / 2.13 MB, old-GPU spawn 49.11 draws per frame (median 49; main's spread 46-49).
+4. Final run: see the hand-off.
 
 ### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
 
