@@ -1,0 +1,71 @@
+suite=siftec run=vanilla-b
+total 62608
+-rw-r--r-- 1 runner runner  3486296 Oct 28 21:45 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 21:45 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 21:45 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 21:45 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 21:45 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 28 21:45 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 21:45 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 21:45 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 21:45 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 21:45 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 21:45 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 21:45 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 21:45 travelersbackpack.jar
+total 60068
+-rw-r--r-- 1 runner runner  3486296 Oct 28 21:46 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 28 21:46 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16896 Oct 28 21:46 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 28 21:46 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 28 21:46 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 28 21:46 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 28 21:46 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 28 21:46 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 28 21:46 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 28 21:46 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2147462 Oct 28 21:46 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   619323 Oct 28 21:46 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 28 21:46 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene sift: setting up
+scene hub: setting up
+scene mam: setting up
+scene ponder: setting up
+scene map: setting up
+scene hologram: setting up
+scene hud: setting up
+scene create_ct: setting up
+session 2 client options: ao=false
+scene factory_flat: setting up
+/tmp/out/siftec-vanilla-b:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-vanilla-b/bench:
+
+/tmp/out/siftec-vanilla-b/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png

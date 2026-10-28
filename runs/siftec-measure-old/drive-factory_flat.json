@@ -1,0 +1,11 @@
+[
+  {
+    "scene": "factory_flat",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  }
+]

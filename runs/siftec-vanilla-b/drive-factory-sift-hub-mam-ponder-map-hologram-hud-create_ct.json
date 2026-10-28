@@ -1,0 +1,74 @@
+[
+  {
+    "scene": "factory",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "ponder",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "map",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "hologram",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "hud",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "create_ct",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  }
+]
