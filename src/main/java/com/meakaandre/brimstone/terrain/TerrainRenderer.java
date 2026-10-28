@@ -304,7 +304,12 @@ public final class TerrainRenderer {
                         int whole = part.indexCount();
                         maxIndexCount = Math.max(maxIndexCount, whole);
                         // the layer's quads as index ranges: the facing groups that may face the camera (package 4b)
-                        int ranges = BackFaces.ranges(part, e, skipBackFaces, path == Path.PLAIN_SINGLE, RANGE_COUNT, RANGE_FIRST);
+                        // one span per section layer where each range would cost something: a draw call (one draw per
+                        // section) or an indirect command uploaded every frame (20 bytes each; ranges there raised upload
+                        // bytes per frame by about 20 KB in spawn, run 40619534606); on the plain multi-draw paths the
+                        // ranges are CPU-side entries of the same call and cost nothing to upload
+                        boolean span = path == Path.PLAIN_SINGLE || path == Path.INDIRECT;
+                        int ranges = BackFaces.ranges(part, e, skipBackFaces, span, RANGE_COUNT, RANGE_FIRST);
                         int drawn = 0;
                         RegionDraw rd = null;
                         if (plain) {

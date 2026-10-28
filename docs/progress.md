@@ -2018,9 +2018,10 @@ multi-draw, not extra draws)." Plus the bench-only jar and a laptop-bench sectio
    into triangles faces one side; everything else (plants, slopes, rotated parts, degenerate quads) is unaligned and
    always drawn. Each frame the axis groups that face away from the camera for the whole section (camera at least
    1 block, plus twice the camera's move since the last frame, behind the nearest plane of the group) are left out; the
-   groups that stay are index ranges of the shared quad index list, so on the plain path they are entries of the same
-   multi-draw and on the indirect path commands of the same indirect multi-draw (where a device has neither, one span
-   from the first kept group to the last). Translucent layers are untouched (vanilla's sorted lists). Every group is
+   groups that stay are index ranges of the shared quad index list: on the plain multi-draw paths (old-GPU, the laptop)
+   entries of the same multi-draw; on the indirect path (and where a device has no multi-draw) one span per section layer
+   from the first kept group to the last, since each extra range there would be one more indirect command uploaded every
+   frame (see run 6). Group order unaligned, +X, +Y, +Z, -X, -Z, -Y: bottoms last, so a span trims them most often. Translucent layers are untouched (vanilla's sorted lists). Every group is
    drawn when the pipelines don't cull, without a camera position, after a jump of more than 16 blocks, and with
    `-Dbrimstone.debug.drawAllFaces=true`. The camera position comes from a new optional terrain hook on
    `LevelExtractor.extractVisibleEntities`. Common idea (Sodium does something similar); no Sodium code read or used.
@@ -2136,6 +2137,13 @@ little; the laptop bench decides that part of the done-when.
    40481430766 and 40516650792. Run-to-run noise in what is visible, not the facing groups.
 
 The commit after `0fe3631` is docs only (this list and the hand-off), `[skip ci]`.
+6. **Upload bytes on the indirect path.** The rename branch's run 40624564347 (4b plus only the rename) failed core full
+   spawn's upload-bytes gate: median 46,732 bytes per frame against a gate of 41,107 (baseline 22,476). 4b's own green
+   run 40619534606 already had 40,776 (full) and 41,492 (Vulkan) there against main's 21,004 and 28,044: a real rise from
+   4b, passing by 331 bytes, not noise. Cause: on the indirect path every index range is an indirect command (20 bytes)
+   uploaded each frame, about 2 ranges per section layer. Fix (no baseline changed): one span per section layer on the
+   indirect path, bottoms ordered last so the span trims them; the plain multi-draw paths keep every range (CPU-side
+   arrays, nothing uploaded). Final run: see the hand-off.
 
 ### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
 

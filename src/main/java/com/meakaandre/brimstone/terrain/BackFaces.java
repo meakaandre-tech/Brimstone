@@ -18,8 +18,9 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
  * {@code -Dbrimstone.debug.drawAllFaces=true}, every group is drawn.
  *
  * <p>The groups that stay are index ranges inside the same draw: on the plain path entries of the same multi-draw, on
- * the indirect path commands of the same indirect multi-draw, so draw calls don't rise. Where the device has neither
- * (one draw per section and layer, {@code PLAIN_SINGLE}), the one range from the first to the last group kept is drawn.
+ * the indirect path one command per section layer covering the span from the first group kept to the last (more
+ * commands would raise the bytes uploaded every frame), so draw calls and uploads don't rise. Where the device has no
+ * multi-draw (one draw per section and layer, {@code PLAIN_SINGLE}), the same one span is drawn.
  * Idea common to terrain renderers (Sodium does something similar); written from the game's geometry only.
  */
 final class BackFaces {
