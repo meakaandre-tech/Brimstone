@@ -39,6 +39,9 @@ WHY_TICKS = ("which sand, gravel and fluid ticks are still pending when the worl
              "own runs, at one cave (chunk -1,-2 of seed 12345: sand and gravel over water), in core and SIFTEC alike; "
              "cause not found yet. Blocks, block entities and entities stay gated")
 REPORT_ONLY = {("core", "run"): (("sb", "sf"), WHY_TICKS), ("siftec", "run"): (("sb", "sf"), WHY_TICKS)}
+# keys vanilla has shown differing against itself in recent runs, even when its three runs in this run agree (the
+# standing noise rule); evidence in docs/ci-limits.md, "Server suite"
+KNOWN_NOISE = {("siftec", "run"): {"e2,200,11/cooking_time_spent", "e2,200,11/lit_time_remaining", "e2,201,2/Angle"}}
 TESTS = ("hopper_chain", "redstone_clock", "piston_machine", "piston_door", "item_sorter", "crop_farm", "mob_farm",
          "villager_trade")
 QS_IDS = ("quicksilver",)
@@ -176,6 +179,7 @@ def main(res, rep):
                     lines.append("| %s | missing | | | |" % dim)
                     continue
                 nk, qk = set(n.get("keys", [])), set(q.get("keys", []))
+                nk |= KNOWN_NOISE.get((suite, tag), set())
                 skip, why = REPORT_ONLY.get((suite, tag), ((), ""))
                 if skip:
                     reported = sorted(k for k in qk - nk if k.startswith(skip))

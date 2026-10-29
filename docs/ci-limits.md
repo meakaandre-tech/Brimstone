@@ -867,6 +867,12 @@ gravel and fluid ticks are still pending when the world is saved varies between 
 the cause isn't found yet (waiting for the ring of chunks around the area fixed the rest). The blocks, block entity
 fields and entities those ticks lead to stay gated, so a mis-scheduled tick that changes the world is still caught.
 
+**Known noise, gated as noise even when this run's vanilla agrees** (`KNOWN_NOISE` in `ci/server/compare-server.py`,
+the standing noise rule): SIFTEC's scripted run, the furnace at 2 200 11 (`cooking_time_spent`,
+`lit_time_remaining`) and the mechanical bearing at 2 201 2 (`Angle`). Vanilla's own runs differed on exactly these in
+runs 40632202272 and 40645807938 (and earlier); in run 40792634386 its three runs happened to agree and Quicksilver's
+didn't. Every other field of both block entities stays gated.
+
 **Known vanilla noise** (three vanilla runs, run 40645807938; reported, not gated):
 
 | suite / check | keys where vanilla differs from itself | what |
