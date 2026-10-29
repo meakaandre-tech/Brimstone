@@ -11,7 +11,7 @@ c5d70743acd2fc03645f1e38516b1fdda62cb8ef0a2e4e40f249bac645bb79e5  siftec/create-
 86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  siftec/fabric-api.jar
 95cc2bd7a943f910a54baf2f65acde301dcfb3d8aeff2c989c04c416d5a4a1cd  siftec/forge-config-api-port.jar
 0e397991dae6e1aee9a342f80b740fe4fef6d161dc8abe694c6a555317163f82  siftec/geckolib-fabric-26.3-5.5.7.jar
-6f06d2c13e90d2dce09ae6ab0013b9257c997cc178e0ddb719198c45ab1175f2  siftec/mapmod-26.3.jar
+f77881853b15312b2ffc8d98e05b95a2dc5705beedbdba152b3ce96e9cc72142  siftec/mapmod-26.3.jar
 5b53b8bc2002d01d1bedd70e5c975c82c57f61e29726426b78affa9bfdcaf7bc  siftec/mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
 aec3dae28e9fdba20ce594d25958bdf69f485b02058d5e92fcc3853e190d302c  siftec/ntgl-fabric-26.3.jar
 20910aec59b1f5e0255cc5c523acca0afc4e163d2e6ee13e59d88a3693c83351  siftec/siftec-26.3.jar
