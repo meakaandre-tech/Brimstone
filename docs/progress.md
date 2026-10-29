@@ -2319,6 +2319,9 @@ Each is a small CI package of its own, done before the package it guards and rec
 
 - **Before P2-3:** find what makes the pending scheduled ticks vary at the cave (chunk -1,-2 of seed 12345; core and
   SIFTEC alike) and gate scheduled ticks again (`REPORT_ONLY` in `ci/server/compare-server.py` emptied).
+- **Before P2-3:** make the harness start SIFTEC's furnace (e2,200,11) and bearing (e2,201,2) on a fixed tick, as
+  it does for the train, then gate `cooking_time_spent`, `lit_time_remaining` and `Angle` again (`KNOWN_NOISE` in
+  `ci/server/compare-server.py` emptied). P2-3 changes block-entity ticking, so these must be gated before it starts.
 - **Before P2-3 and P2-4:** random-tick tests and natural-spawning tests (both are off in the scripted runs, both draw
   on the level's shared random, and Lithium changes both: `world.chunk_ticking.random_block_ticking`,
   `minimal_nonvanilla.spawning`): targeted, repeatable scenes, e.g. a pinned random per chunk as in the GameTest
@@ -2362,6 +2365,19 @@ around the scripted area finishing loading at different moments), each fixed in 
 - Phase 1's direct-buffer gate: one +8 MB step in the SIFTEC full profile from the map scene on, seen once (attempt 1
   of the final run), gone on a re-run; never seen in a vanilla run. If it comes back, it belongs to phase 1's
   direct-buffer baselines (not touched here).
+
+## Open bugs
+
+- **Direct-buffer jump, Quicksilver only (found 2026-10-29).** Run
+  [40803126672](https://github.com/meakaandre-tech/Quicksilver/actions/runs/40803126672), attempt 1, SIFTEC
+  `quicksilver-full`: direct buffers went from about 8 MB to 13.8–13.9 MB in the map, hologram and hud scenes
+  (create_ct 13.99), against an 8.24 MB baseline. The step of about +8 MB began at the map scene and stayed for the
+  rest of the session; the measure run didn't show it, and a re-run of the same job read 5.9 MB. Treated as a bug
+  until shown otherwise, even if phase 1 code causes it. CI now logs direct-buffer MB per scene at the start of
+  measuring, its peak (with the tick) and the end (`directBuffersStartMB`, `directBuffersMaxMB`,
+  `directBuffersMaxAtTick`, `directBuffersMB` in each bench JSON; the "Direct buffers per scene" table in
+  `ci/compare.py`'s report marks a rise of 4 MB or more as "between scenes" or "inside the scene"). If it shows up
+  again on main: stop and report.
 
 ## Hand-off
 

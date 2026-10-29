@@ -28,9 +28,19 @@ final class BenchReport {
     static final String END = "===== QUICKSILVER BENCH END =====";
     private static final double MB = 1024.0 * 1024.0;
 
-    /** Heap sampled once a tick while measuring; direct memory and the after-GC heap read at the end. */
+    /**
+     * Heap sampled once a tick while measuring; direct memory read when measuring starts, once a tick (its peak) and at
+     * the end, so a jump in direct buffers shows whether it happened inside the scene or between scenes; the after-GC
+     * heap read at the end.
+     */
     static final class Memory {
         long samples, heapUsedSum, heapUsedMax, heapCommittedMax;
+        long directStart = -1, directMax = 0, directMaxAtSample = 0;
+
+        void start() {
+            directStart = direct();
+            directMax = directStart;
+        }
 
         void sample() {
             Runtime rt = Runtime.getRuntime();
@@ -39,6 +49,18 @@ final class BenchReport {
             heapUsedSum += used;
             heapUsedMax = Math.max(heapUsedMax, used);
             heapCommittedMax = Math.max(heapCommittedMax, rt.totalMemory());
+            long d = direct();
+            if (d > directMax) {
+                directMax = d;
+                directMaxAtSample = samples;
+            }
+        }
+
+        static long direct() {
+            for (BufferPoolMXBean pool : ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class)) {
+                if (pool.getName().equals("direct")) return pool.getMemoryUsed();
+            }
+            return 0;
         }
     }
 
@@ -112,6 +134,9 @@ final class BenchReport {
             memory.addProperty(pool.getName() + "BuffersMB", mb(pool.getMemoryUsed()));
             memory.addProperty(pool.getName() + "BuffersCount", pool.getCount());
         }
+        memory.addProperty("directBuffersStartMB", mem.directStart < 0 ? null : mb(mem.directStart));
+        memory.addProperty("directBuffersMaxMB", mb(mem.directMax));
+        memory.addProperty("directBuffersMaxAtTick", mem.directMaxAtSample);
         memory.addProperty("nonHeapMB", mb(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed()));
         // after measuring, so the collection cannot touch the frame times
         System.gc();
@@ -160,7 +185,8 @@ final class BenchReport {
         line(b, "upload bytes/frame", stats(gpu.getAsJsonObject("uploadBytesPerFrame")) + "  by kind " + gpu.get("uploadBytesByKind"));
         line(b, "heap MB", "used avg " + mem.get("heapUsedAvgMB") + ", max " + mem.get("heapUsedMaxMB") + ", after GC " + mem.get("heapUsedAfterGcMB")
             + ", committed " + mem.get("heapCommittedMB") + ", max allowed " + mem.get("heapMaxMB"));
-        line(b, "off-heap MB", "direct buffers " + mem.get("directBuffersMB") + " (" + mem.get("directBuffersCount") + "), mapped "
+        line(b, "off-heap MB", "direct buffers " + mem.get("directBuffersMB") + " (" + mem.get("directBuffersCount") + "; at the start of measuring "
+            + mem.get("directBuffersStartMB") + ", peak " + mem.get("directBuffersMaxMB") + " at tick " + mem.get("directBuffersMaxAtTick") + "), mapped "
             + mem.get("mappedBuffersMB") + ", non-heap " + mem.get("nonHeapMB"));
         JsonObject tg = o.getAsJsonObject("terrainGpu");
         line(b, "terrain GPU MB", "reserved " + tg.get("reservedMB") + ", used " + tg.get("usedMB") + " (vanilla's heaps "

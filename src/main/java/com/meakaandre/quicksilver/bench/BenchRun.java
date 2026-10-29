@@ -138,7 +138,9 @@ public final class BenchRun {
         measureStart = now;
         nextStep = 0;
         FrameRecorder.start();
-        QuicksilverClient.LOG.info("QUICKSILVER BENCH MEASURING scene={}", sceneId);
+        memory.start();
+        QuicksilverClient.LOG.info("QUICKSILVER BENCH MEASURING scene={} directBuffersMB={}", sceneId,
+            Math.round(BenchReport.Memory.direct() / 10485.76) / 100.0);
     }
 
     /** Sends the scene's measure-time commands whose time has come (one per tick at most, in order). */

@@ -12,6 +12,7 @@ curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$mods/siftec-26.3.ja
 curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$mods/siftec-selftest-26.3.jar" https://github.com/meakaandre-tech/SIFTEC/releases/download/latest/siftec-selftest-26.3.jar
 curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$mods/create-fly-26.3.jar" https://github.com/meakaandre-tech/Create-Fly/releases/download/pack-26.3-latest/create-fly-26.3.jar
 curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$mods/create-new-age-26.3.jar" https://github.com/meakaandre-tech/Create-New-Age/releases/download/fabric-26.3-latest/create-new-age-fabric-26.3.jar
+curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$mods/mapmod-26.3.jar" https://github.com/meakaandre-tech/MapMod/releases/download/latest/mapmod-26.3.jar
 set +e
 python3 -I "$S/fetch-tb.py" "$mc" /tmp/tb /tmp/tb-out
 cp /tmp/tb/runtime/*.jar "$mods/" 2>/dev/null || echo "no Traveler's Backpack build for $mc"
