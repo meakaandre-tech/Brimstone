@@ -2,7 +2,7 @@
 # usage: pack-check.sh DIR SET [complete] [REPORT]
 # Checks the jars CI downloaded into DIR against ci/pack-lock.txt (lines "<sha256>  <SET>/<jar name>"; sets: core,
 # siftec, sodium). Any jar that differs from its locked hash, or isn't in the lock, fails with "pack changed: <jar>";
-# with "complete", so does a locked jar of SET that is missing from DIR. Quicksilver's own jars and CI's pin mod (built
+# with "complete", so does a locked jar of SET that is missing from DIR. Quicksilver's own jars, CI's pin mod and the server harness (built
 # in CI) are not checked. Every jar's hash is also written to REPORT (default: stdout) for the record.
 # A SET with no entries in the lock yet is recorded, not checked (the first run after adding a set). Updating the lock
 # is a deliberate commit that re-collects the numbers the changed jars affect (docs/ci-limits.md, "Pack lock").
@@ -17,7 +17,7 @@ seen=""
 for j in "$dir"/*.jar; do
   [ -f "$j" ] || continue
   name=$(basename "$j")
-  case "$name" in quicksilver*.jar|ci-pin.jar) continue;; esac
+  case "$name" in quicksilver*.jar|ci-pin.jar|ci-server-harness*.jar) continue;; esac
   sha=$(sha256sum "$j" | cut -c1-64)
   echo "$sha  $set_/$name" >> "$report"
   seen="$seen $name"
