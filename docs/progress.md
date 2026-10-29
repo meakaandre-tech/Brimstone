@@ -2233,8 +2233,13 @@ release also needs `server-compare`), `fabric.mod.json` (one mixin config, one c
 `BenchOnlyClient.java`: it carries the server numbers too), `.gitignore` (`server/` anchored to the root), `docs/laptop-bench.md`
 and `docs/ci-limits.md` (new sections at the end).
 
-**Final run:** FINAL_RUN (SHA FINAL_SHA; server suite logs on `ci-logs-server-p2-0`, client suite on
-`ci-logs-p2-0`). Rebased on main after package 4b and the rename (`94503ad`): one commit ported from the earlier branch
+**Final run:** full mode, green: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40803126672 (SHA
+`121dd44`, attempt 2; server suite logs on `ci-logs-server-p2-0`, client suite on `ci-logs-p2-0`). Attempt 1 passed
+the server suite and failed phase 1's direct-buffer gate in three SIFTEC scenes of the Quicksilver full profile (8.24
+to 13.9 MB, one +8 MB step at the map scene for the rest of that session, not in the measure run). Re-running that
+one client job gave 5.9 MB in the same scenes and the run passed. Phase 2 allocates no direct buffers on the client,
+the same code passed this gate on `d6aed08`, and main's own runs move between about 5.5, 7.7 and 8.2 MB there; the
+13.9 MB step hasn't been seen in a vanilla run, so no baseline was touched (listed under known limits). Rebased on main after package 4b and the rename (`94503ad`): one commit ported from the earlier branch
 (based on `14c74fd`), with the rename applied to everything phase 2 added (package `com.meakaandre.quicksilver.phase2`,
 `/quicksilver bench` and `/qs bench`, `quicksilver/bench/`, `dist/quicksilver.jar`).
 
@@ -2354,6 +2359,9 @@ around the scripted area finishing loading at different moments), each fixed in 
   run: the cell's design, not a fault.
 - The crop farm is judged on its state at tick 200, not the bone meal count (vanilla's own runs differ there).
 - The bench's network bytes are 0 in single player (an in-memory connection carries no bytes).
+- Phase 1's direct-buffer gate: one +8 MB step in the SIFTEC full profile from the map scene on, seen once (attempt 1
+  of the final run), gone on a re-run; never seen in a vanilla run. If it comes back, it belongs to phase 1's
+  direct-buffer baselines (not touched here).
 
 ## Hand-off
 
