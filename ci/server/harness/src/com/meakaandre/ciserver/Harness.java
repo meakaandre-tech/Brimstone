@@ -39,6 +39,12 @@ import org.slf4j.LoggerFactory;
  * </ul>
  * Either way it writes {@code ci-harness-result.json} to {@code ci.harness.out} (default: the server directory):
  * milliseconds per tick over the run, heap after load and at the end (after a GC), start-up and world-load time.
+ *
+ * <p>P2-1: {@code -Dci.harness.heap=true} (the heap run) plays the run script's scene for {@code ci.harness.ticks}
+ * ticks (12000, ten minutes of game time) sprinting, and writes the live heap and a class histogram right after load
+ * and at the end ({@code histo-load.txt}, {@code histo-end.txt}). Script lines {@code random-ticks MIN_Y} (random ticks
+ * pinned per chunk, only at or above MIN_Y: {@link Pins}) and {@code spawn CX CZ} (natural spawning in that chunk
+ * every tick, from a pinned random) make the random-tick run.
  */
 public final class Harness implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger("ci_server_harness");
@@ -50,6 +56,17 @@ public final class Harness implements ModInitializer {
 
     private record At(int tick, String command, boolean quicksilverOnly) {
     }
+
+    private record Spawn(int cx, int cz) {
+    }
+
+    /** P2-1: the heap run (histograms, sprinting, no bench). */
+    private static final boolean HEAP = Boolean.getBoolean("ci.harness.heap");
+    private static final List<Spawn> spawns = new ArrayList<>();
+    private static long monstersSpawned = 0, creaturesSpawned = 0;
+    private static final int SPAWN_CAP = 24;  // per chunk and category over the run
+    private static final java.util.Map<String, Integer> spawnedIn = new java.util.HashMap<>();
+    static volatile long gameTime = 0;
 
     /** The GameTest server only: the CI pins in mixin/ChunkTickRandomMixin apply. */
     public static volatile boolean gameTestPins = false;
@@ -65,6 +82,7 @@ public final class Harness implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        Trace.init();
         ServerLifecycleEvents.SERVER_STARTING.register(server -> startingAt = System.currentTimeMillis());
         ServerLifecycleEvents.SERVER_STARTED.register(Harness::started);
         ServerTickEvents.START_SERVER_TICK.register(Harness::startTick);
@@ -183,10 +201,23 @@ public final class Harness implements ModInitializer {
                 case "cmd" -> setup.add(line.substring(4).strip());
                 case "ticks" -> ticks = Integer.parseInt(p[1]);
                 case "at" -> timed.add(new At(Integer.parseInt(p[1]), p[2], false));
-                case "qs-at" -> timed.add(new At(Integer.parseInt(p[1]), p[2], true));
+                case "qs-at" -> {
+                    // the heap run measures the game, not Quicksilver's bench
+                    if (!HEAP) timed.add(new At(Integer.parseInt(p[1]), p[2], true));
+                }
+                case "random-ticks" -> Pins.randomTickMinY = Integer.parseInt(p[1]);
+                case "spawn-player" -> {
+                    String[] a = line.split("\\s+");
+                    spawnPlayerAt = new double[] {Double.parseDouble(a[1]), Double.parseDouble(a[2]), Double.parseDouble(a[3])};
+                }
+                case "spawn" -> {
+                    String[] a = line.split("\\s+");
+                    spawns.add(new Spawn(Integer.parseInt(a[1]), Integer.parseInt(a[2])));
+                }
                 default -> throw new IllegalArgumentException("unknown script line: " + line);
             }
         }
+        if (Integer.getInteger("ci.harness.ticks") != null) ticks = Integer.getInteger("ci.harness.ticks");
         if (ticks <= 0) throw new IllegalArgumentException("script has no 'ticks N'");
         server.tickRateManager().setFrozen(true);
         for (Area a : areas) {
@@ -199,7 +230,7 @@ public final class Harness implements ModInitializer {
                 }
             }
         }
-        result.addProperty("mode", "run");
+        result.addProperty("mode", HEAP ? "heap" : "run");
         result.addProperty("ticks", ticks);
         stage = Stage.LOADING;
         LOG.info("CI HARNESS RUN: frozen, waiting for {} areas to load", areas.size());
@@ -264,7 +295,9 @@ public final class Harness implements ModInitializer {
 
     private static void startTick(MinecraftServer server) {
         tickStart = System.nanoTime();
+        gameTime = server.overworld().getGameTime();
         if (stage != Stage.RUNNING) return;
+        if (HEAP && tick == 0) command(server, "tick sprint " + ticks);
         for (At a : timed) {
             if (a.tick() != tick || (a.quicksilverOnly() && !quicksilver())) continue;
             if (a.command().startsWith("ci-train ")) {
@@ -322,6 +355,7 @@ public final class Harness implements ModInitializer {
                 result.addProperty("lightSettleTicks", settleWaited);
                 if (settleWaited >= 6000) result.addProperty("error", "light engine still busy after 6000 ticks");
                 heap("heapAfterLoadMB");
+                if (HEAP) histogram("load");
                 // tick 0: every random source from a fixed point, whatever order things loaded in
                 reseed(server);
                 tickNanos = new long[ticks];
@@ -334,6 +368,7 @@ public final class Harness implements ModInitializer {
                 // the first tick after unfreezing is the run's tick 0
                 tickNanos[tick] = dt;
                 CiTrain.tick(server, tick);
+                spawn(server);
                 tick++;
                 if (tick >= ticks) {
                     server.tickRateManager().setFrozen(true);
@@ -352,6 +387,13 @@ public final class Harness implements ModInitializer {
                     result.addProperty("msptMax", round(s[s.length - 1] / 1e6));
                     result.addProperty("ticksOver50ms", over);
                     heap("heapEndMB");
+                    removeSpawnPlayer(server);
+                    if (HEAP) histogram("end");
+                    if (Pins.on() || !spawns.isEmpty()) {
+                        String r = Pins.summary() + " monsters=" + monstersSpawned + " creatures=" + creaturesSpawned;
+                        result.addProperty("random", r);
+                        LOG.info("CI RANDOM result={}", r);
+                    }
                     String train = CiTrain.result(server);
                     if (train != null) {
                         result.addProperty("train", train);
@@ -364,6 +406,111 @@ public final class Harness implements ModInitializer {
             }
             default -> {
             }
+        }
+    }
+
+    /** Where the harness is, for trace lines: its stage, the run's tick, the game time. */
+    static String where() {
+        return "stage=" + stage + " t=" + tick + " gt=" + gameTime;
+    }
+
+    /**
+     * Natural spawning in the random-tick run's spawn chunks, every tick, as the game spawns in a chunk near a player
+     * (CI has no player, and without one the game spawns nowhere): a monster attempt every tick and a creature attempt
+     * every 400 game ticks, as NaturalSpawner's own schedule, up to SPAWN_CAP mobs per chunk and category. The level's
+     * random is re-seeded from the chunk and the game time first, so where mobs appear doesn't depend on every other
+     * draw on it this tick. The same in vanilla's runs and Quicksilver's.
+     */
+    private static void spawn(MinecraftServer server) {
+        if (spawns.isEmpty()) return;
+        ServerLevel level = server.overworld();
+        if (spawnPlayer == null) addSpawnPlayer(level);
+        long t = level.getGameTime();
+        for (Spawn s : spawns) {
+            net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(s.cx(), s.cz());
+            for (net.minecraft.world.entity.MobCategory cat : new net.minecraft.world.entity.MobCategory[] {
+                net.minecraft.world.entity.MobCategory.MONSTER, net.minecraft.world.entity.MobCategory.CREATURE}) {
+                boolean creature = cat == net.minecraft.world.entity.MobCategory.CREATURE;
+                if (creature && t % 400 != 0) continue;
+                String key = s.cx() + "," + s.cz() + "/" + cat;
+                if (spawnedIn.getOrDefault(key, 0) >= SPAWN_CAP) continue;
+                level.getRandom().setSeed(SeedPin.mix(s.cx() * 31L + s.cz() * 1_000_003L + t * 0x9E3779B97F4A7C15L + cat.ordinal()));
+                net.minecraft.world.level.NaturalSpawner.spawnCategoryForChunk(cat, level, chunk, (type, pos, c) -> true, (mob, c) -> {
+                    spawnedIn.merge(key, 1, Integer::sum);
+                    if (creature) creaturesSpawned++;
+                    else monstersSpawned++;
+                });
+            }
+        }
+    }
+
+    private static Object spawnPlayer = null;
+
+    /**
+     * The game spawns a mob only where a player is near enough (and at least 24 blocks away), and CI has none: a
+     * Fabric API fake player, in creative mode at the run's player point (script line {@code spawn-player X Y Z}), is
+     * put in the overworld's player list only (not in the world as an entity: it loads no chunks, isn't saved, and
+     * never ticks), so the spawner and mobs' despawn checks find it as they would a real player. Random-tick run only.
+     */
+    @SuppressWarnings("unchecked")
+    private static void addSpawnPlayer(ServerLevel level) {
+        try {
+            net.fabricmc.fabric.api.entity.FakePlayer p = net.fabricmc.fabric.api.entity.FakePlayer.get(level);
+            p.setPos(spawnPlayerAt[0], spawnPlayerAt[1], spawnPlayerAt[2]);
+            try {
+                p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+            } catch (Throwable t) {
+                LOG.warn("CI HARNESS spawn player: game mode not set", t);
+            }
+            java.lang.reflect.Field f = ServerLevel.class.getDeclaredField("players");
+            f.setAccessible(true);
+            ((List<Object>) f.get(level)).add(p);
+            spawnPlayer = p;
+            LOG.info("CI HARNESS spawn player at {} {} {}, creative {}", spawnPlayerAt[0], spawnPlayerAt[1], spawnPlayerAt[2], p.isCreative());
+        } catch (Throwable t) {
+            LOG.error("CI HARNESS FAILED: no spawn player", t);
+            result.addProperty("error", "spawn player: " + t);
+            spawnPlayer = Boolean.FALSE;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void removeSpawnPlayer(MinecraftServer server) {
+        if (spawnPlayer == null || spawnPlayer == Boolean.FALSE) return;
+        try {
+            java.lang.reflect.Field f = ServerLevel.class.getDeclaredField("players");
+            f.setAccessible(true);
+            ((List<Object>) f.get(server.overworld())).remove(spawnPlayer);
+        } catch (Throwable t) {
+            LOG.warn("CI HARNESS spawn player not removed", t);
+        }
+    }
+
+    private static double[] spawnPlayerAt = {0.5, 64, 0.5};
+
+    /** The live heap's class histogram (the JVM's own, after a full GC): its top classes to histo-NAME.txt and the
+     * live total to the result as heapLiveNAMEMB. */
+    private static void histogram(String name) {
+        try {
+            javax.management.MBeanServer s = ManagementFactory.getPlatformMBeanServer();
+            javax.management.ObjectName n = new javax.management.ObjectName("com.sun.management:type=DiagnosticCommand");
+            String out = (String) s.invoke(n, "gcClassHistogram", new Object[] {new String[0]}, new String[] {String[].class.getName()});
+            String[] rows = out.split("\n");
+            StringBuilder top = new StringBuilder();
+            for (int i = 0; i < rows.length; i++) {
+                if (i < 400 || rows[i].startsWith("Total")) top.append(rows[i]).append('\n');
+                if (rows[i].startsWith("Total")) {
+                    String[] p = rows[i].trim().split("\\s+");
+                    result.addProperty("heapLive" + Character.toUpperCase(name.charAt(0)) + name.substring(1) + "MB",
+                        round(Long.parseLong(p[2]) / 1048576.0));
+                }
+            }
+            Path dir = Path.of(System.getProperty("ci.harness.out", "."));
+            Files.createDirectories(dir);
+            Files.writeString(dir.resolve("histo-" + name + ".txt"), top.toString(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            LOG.error("CI HARNESS histogram failed", e);
+            result.addProperty("error", "histogram: " + e);
         }
     }
 

@@ -7,10 +7,17 @@
   "license": "LGPL-3.0-only",
   "environment": "*",
   "entrypoints": {
-    "main": ["com.meakaandre.ciserver.Harness"],
-    "fabric-gametest": ["com.meakaandre.ciserver.HarnessTests"]
+    "main": [
+      "com.meakaandre.ciserver.Harness"
+    ],
+    "fabric-gametest": [
+      "com.meakaandre.ciserver.HarnessTests"
+    ]
   },
-  "mixins": ["ci_server_harness.mixins.json"],
+  "mixins": [
+    "ci_server_harness.mixins.json",
+    "ci_server_optional.mixins.json"
+  ],
   "depends": {
     "fabricloader": "*",
     "minecraft": "*",
