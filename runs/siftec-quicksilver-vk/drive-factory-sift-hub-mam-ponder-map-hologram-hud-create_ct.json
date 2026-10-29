@@ -1,0 +1,78 @@
+[
+  {
+    "scene": "factory",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "ponder",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "map",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "hologram",
+    "skipped": "not run in quicksilver-vk: Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
+  },
+  {
+    "scene": "hud",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "create_ct",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  }
+]

@@ -1,0 +1,481 @@
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[02:06:02] [main/INFO]: Loading Minecraft 26.3 with Fabric Loader 0.19.5
+[02:06:02] [main/INFO]: Mappings not present!
+[02:06:02] [main/WARN]: Warnings were found!
+ - Mod 'Forge Config API Port' (forgeconfigapiport) 26.3.1 recommends any version of modmenu, which is missing!
+	 - You should install any version of modmenu for the optimal experience.
+ - Mod 'Mielon's The Sift' (the_sift) 1.1.2 recommends version 4.13.0 or later of lambdynlights, which is missing!
+	 - You should install version 4.13.0 or later of lambdynlights for the optimal experience.
+[02:06:02] [main/INFO]: Loading 57 mods:
+	- cgs 1.4.9+26.3
+	- create 6.0.9-1
+	- create_new_age 1.2.1+26.3
+	- createdieselgenerators 1.3.15+26.3
+	- fabric-api 0.161.0+26.3
+	   |-- fabric-advancement-api-v1 1.0.0+38c7a2d55d
+	   |-- fabric-api-base 2.0.6+fcdff87f5d
+	   |-- fabric-api-lookup-api-v1 2.0.24+3434d6d95d
+	   |-- fabric-biome-api-v1 20.0.9+74ed1ea55d
+	   |-- fabric-block-api-v1 3.1.0+0ae6f9115d
+	   |-- fabric-block-getter-api-v2 2.0.9+3434d6d95d
+	   |-- fabric-command-api-v2 3.1.2+fcdff87f5d
+	   |-- fabric-content-registries-v0 15.0.4+74ed1ea55d
+	   |-- fabric-convention-tags-v2 4.10.3+6b5b47fd5d
+	   |-- fabric-crash-report-info-v1 1.0.7+fcdff87f5d
+	   |-- fabric-creative-tab-api-v1 5.0.21+fcdff87f5d
+	   |-- fabric-data-attachment-api-v1 2.2.30+3434d6d95d
+	   |-- fabric-data-generation-api-v1 27.2.4+427eab975d
+	   |-- fabric-debug-api-v1 1.0.4+3434d6d95d
+	   |-- fabric-dimensions-v1 5.1.19+47f74c985d
+	   |-- fabric-entity-events-v1 6.0.4+3434d6d95d
+	   |-- fabric-events-interaction-v0 5.3.6+3434d6d95d
+	   |-- fabric-game-rule-api-v1 4.0.10+3434d6d95d
+	   |-- fabric-item-api-v1 14.7.0+cf6bc2db5d
+	   |-- fabric-lifecycle-events-v1 4.1.9+ffef5f675d
+	   |-- fabric-loot-api-v3 4.0.8+4068fd645d
+	   |-- fabric-menu-api-v1 2.0.27+ed66f0a35d
+	   |-- fabric-message-api-v1 7.0.10+3434d6d95d
+	   |-- fabric-networking-api-v1 6.3.8+fcdff87f5d
+	   |-- fabric-object-builder-api-v1 24.1.9+3434d6d95d
+	   |-- fabric-particles-v1 5.0.24+3434d6d95d
+	   |-- fabric-permission-api-v1 1.0.8+fcdff87f5d
+	   |-- fabric-recipe-api-v1 10.0.8+fcdff87f5d
+	   |-- fabric-registry-sync-v0 8.0.1+fcdff87f5d
+	   |-- fabric-rendering-fluids-v1 6.0.6+3434d6d95d
+	   |-- fabric-resource-conditions-api-v1 6.1.5+3434d6d95d
+	   |-- fabric-resource-loader-v0 3.3.26+4fc5413f5d
+	   |-- fabric-resource-loader-v1 3.0.4+fcdff87f5d
+	   |-- fabric-serialization-api-v1 2.0.7+74ed1ea55d
+	   |-- fabric-tag-api-v1 2.1.10+fcdff87f5d
+	   |-- fabric-transfer-api-v1 8.0.25+fcdff87f5d
+	   \-- fabric-transitive-access-wideners-v1 8.1.16+52268a0e5d
+	- fabricloader 0.19.5
+	   \-- mixinextras 0.5.5
+	- farmersdelight 26.3-3.6.27+refabricated
+	- forgeconfigapiport 26.3.1
+	   |-- com_electronwill_night-config_core 3.8.4
+	   \-- com_electronwill_night-config_toml 3.8.4
+	- geckolib 5.5.7
+	- java 25
+	- minecraft 26.3
+	- ntgl 3.1.8+26.3
+	- quicksilver 0.0.1+26.3
+	- siftec 0.1.0+26.3
+	- siftec_selftest 0.1.0+26.3
+	- the_sift 1.1.2
+	- travelersbackpack 11.4.2
+[02:06:02] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/home/runner/work/Quicksilver/Quicksilver/server/libraries/net/fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/sponge-mixin-0.17.4+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[02:06:03] [main/WARN]: Error loading class: net/minecraft/client/gui/screens/recipebook/GhostSlots (java.lang.ClassNotFoundException: net/minecraft/client/gui/screens/recipebook/GhostSlots)
+[02:06:03] [main/WARN]: @Mixin target net.minecraft.client.gui.screens.recipebook.GhostSlots was not found farmersdelight.mixins.json:refabricated.GhostSlotsInvoker from mod farmersdelight
+[02:06:03] [main/WARN]: Error loading class: net/minecraft/client/gui/GuiGraphicsExtractor (java.lang.ClassNotFoundException: net/minecraft/client/gui/GuiGraphicsExtractor)
+[02:06:03] [main/WARN]: @Mixin target net.minecraft.client.gui.GuiGraphicsExtractor was not found farmersdelight.mixins.json:refabricated.GuiGraphicsExtractorAccessor from mod farmersdelight
+[02:06:04] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/home/runner/work/Quicksilver/Quicksilver/server/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[02:06:17] [main/INFO]: Loaded config farmersdelight-common.json
+[02:06:18] [main/INFO]: SIFTEC: Traveler's Backpack found; it is every player's inventory, raised by milestones and bound to them
+[02:06:18] [main/INFO]: The Sift initialized.
+[02:06:19] [main/INFO]: Registered the FluidEffect with Unique ID of minecraft:water for Water (Fluid Amount Required: 81000) with the ID 0
+[02:06:19] [main/INFO]: Registered the FluidEffect with Unique ID of minecraft:lava for Lava (Fluid Amount Required: 81000) with the ID 1
+[02:06:19] [main/INFO]: Registered the FluidEffect with Unique ID of travelersbackpack:potion for block.travelersbackpack.potion_still (Fluid Amount Required: 27000) with the ID 2
+[02:06:19] [main/INFO]: Registered the FluidEffect with Unique ID of minecraft:milk for Air (Fluid Amount Required: 81000) with the ID 3
+[02:06:20] [main/INFO]: Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[02:06:20] [main/INFO]: Created 13 recipes which will be injected into the game
+[02:06:23] [Worker-Main-1/INFO]: Loaded 3541 advancements
+[02:06:23] [main/INFO]: Applied 258 biome modifications to 61 of 77 new biomes in 11.17 ms
+[02:06:23] [Server thread/INFO]: SIFTEC: settings: spawn_free_radius=64, member_cooldown_hours=24
+[02:06:23] [Server thread/INFO]: Starting minecraft server version 26.3
+[02:06:23] [Server thread/INFO]: Loading properties
+[02:06:23] [Server thread/INFO]: Default game type: CREATIVE
+[02:06:23] [Server thread/INFO]: Generating keypair
+[02:06:23] [Server thread/INFO]: Starting Minecraft server on *:25565
+[02:06:23] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[02:06:23] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[02:06:23] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[02:06:23] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[02:06:23] [Server thread/INFO]: Preparing level "world"
+[02:06:24] [Server thread/INFO]: Loading 3278 persistent chunks...
+[02:06:24] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:25] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:25] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:26] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:26] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:27] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:27] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:28] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:28] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:29] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:29] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:30] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:30] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:31] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:31] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:32] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:32] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:33] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:33] [Server thread/INFO]: Preparing spawn area: 0%
+[02:06:34] [Server thread/INFO]: Preparing spawn area: 1%
+[02:06:35] [Server thread/INFO]: Preparing spawn area: 3%
+[02:06:35] [Server thread/INFO]: Preparing spawn area: 3%
+[02:06:35] [Server thread/INFO]: Preparing spawn area: 3%
+[02:06:36] [Server thread/INFO]: Preparing spawn area: 3%
+[02:06:36] [Server thread/INFO]: Preparing spawn area: 3%
+[02:06:37] [Server thread/INFO]: Preparing spawn area: 4%
+[02:06:37] [Server thread/INFO]: Preparing spawn area: 4%
+[02:06:38] [Server thread/INFO]: Preparing spawn area: 5%
+[02:06:38] [Server thread/INFO]: Preparing spawn area: 5%
+[02:06:39] [Server thread/INFO]: Preparing spawn area: 5%
+[02:06:39] [Server thread/INFO]: Preparing spawn area: 6%
+[02:06:40] [Server thread/INFO]: Preparing spawn area: 6%
+[02:06:40] [Server thread/INFO]: Preparing spawn area: 7%
+[02:06:41] [Server thread/INFO]: Preparing spawn area: 8%
+[02:06:41] [Server thread/INFO]: Preparing spawn area: 9%
+[02:06:42] [Server thread/INFO]: Preparing spawn area: 9%
+[02:06:42] [Server thread/INFO]: Preparing spawn area: 9%
+[02:06:43] [Server thread/INFO]: Preparing spawn area: 9%
+[02:06:43] [Server thread/INFO]: Preparing spawn area: 9%
+[02:06:44] [Server thread/INFO]: Preparing spawn area: 9%
+[02:06:44] [Server thread/INFO]: Preparing spawn area: 10%
+[02:06:45] [Server thread/INFO]: Preparing spawn area: 11%
+[02:06:45] [Server thread/INFO]: Preparing spawn area: 12%
+[02:06:46] [Server thread/INFO]: Preparing spawn area: 13%
+[02:06:46] [Server thread/INFO]: Preparing spawn area: 13%
+[02:06:47] [Server thread/INFO]: Preparing spawn area: 14%
+[02:06:47] [Server thread/INFO]: Preparing spawn area: 14%
+[02:06:48] [Server thread/INFO]: Preparing spawn area: 15%
+[02:06:48] [Server thread/INFO]: Preparing spawn area: 16%
+[02:06:49] [Server thread/INFO]: Preparing spawn area: 17%
+[02:06:49] [Server thread/INFO]: Preparing spawn area: 17%
+[02:06:50] [Server thread/INFO]: Preparing spawn area: 18%
+[02:06:50] [Server thread/INFO]: Preparing spawn area: 19%
+[02:06:51] [Server thread/INFO]: Preparing spawn area: 20%
+[02:06:51] [Server thread/INFO]: Preparing spawn area: 20%
+[02:06:52] [Server thread/INFO]: Preparing spawn area: 21%
+[02:06:52] [Server thread/INFO]: Preparing spawn area: 22%
+[02:06:53] [Server thread/INFO]: Preparing spawn area: 22%
+[02:06:53] [Server thread/INFO]: Preparing spawn area: 23%
+[02:06:54] [Server thread/INFO]: Preparing spawn area: 24%
+[02:06:54] [Server thread/INFO]: Preparing spawn area: 25%
+[02:06:55] [Server thread/INFO]: Preparing spawn area: 26%
+[02:06:55] [Server thread/INFO]: Preparing spawn area: 27%
+[02:06:56] [Server thread/INFO]: Preparing spawn area: 28%
+[02:06:56] [Server thread/INFO]: Preparing spawn area: 30%
+[02:06:57] [Server thread/INFO]: Preparing spawn area: 32%
+[02:06:57] [Server thread/INFO]: Preparing spawn area: 33%
+[02:06:58] [Server thread/INFO]: Preparing spawn area: 35%
+[02:06:58] [Server thread/INFO]: Preparing spawn area: 35%
+[02:06:59] [Server thread/INFO]: Preparing spawn area: 38%
+[02:06:59] [Server thread/INFO]: Preparing spawn area: 41%
+[02:07:00] [Server thread/INFO]: Preparing spawn area: 44%
+[02:07:00] [Server thread/INFO]: Preparing spawn area: 46%
+[02:07:01] [Server thread/INFO]: Preparing spawn area: 46%
+[02:07:01] [Server thread/INFO]: Preparing spawn area: 48%
+[02:07:02] [Server thread/INFO]: Preparing spawn area: 50%
+[02:07:02] [Server thread/INFO]: Preparing spawn area: 52%
+[02:07:03] [Server thread/INFO]: Preparing spawn area: 54%
+[02:07:03] [Server thread/INFO]: Preparing spawn area: 56%
+[02:07:04] [Server thread/INFO]: Preparing spawn area: 59%
+[02:07:04] [Server thread/INFO]: Preparing spawn area: 63%
+[02:07:05] [Server thread/INFO]: Preparing spawn area: 68%
+[02:07:05] [Server thread/INFO]: Preparing spawn area: 72%
+[02:07:06] [Server thread/INFO]: Preparing spawn area: 77%
+[02:07:06] [Server thread/INFO]: Preparing spawn area: 85%
+[02:07:07] [Server thread/INFO]: Time elapsed: 42273 ms
+[02:07:07] [Server thread/INFO]: Done (43.533s)! For help, type "help"
+[02:07:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[02:07:15] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/the_sift:the_sift
+[02:07:15] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[02:07:15] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[02:07:16] [Server thread/INFO]: SIFTEC: the factory simulation read 4976 recipes (166 smelting inputs)
+[02:07:16] [Server thread/INFO]: RecipeTrie of depth 7 with 1218 nodes built with 862 variants, 670 ingredients, and 1170 recipes
+[02:07:17] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 2013ms or 40 ticks behind
+[02:07:49] [Server thread/INFO]: System chat: No player was found
+[02:08:35] [Server thread/INFO]: QuicksilverCI[/127.0.0.1:42836] logged in with entity id 686 at (86.5, 125.0, -28.5)
+[02:08:35] [Server thread/INFO]: System chat: QuicksilverCI joined the game
+[02:08:35] [Server thread/INFO]: SIFTEC: gave QuicksilverCI their backpack, tier 0
+[02:08:40] [Server thread/INFO]: System chat: Made QuicksilverCI a server operator
+[02:08:46] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 2016ms or 40 ticks behind
+[02:09:20] [Server thread/INFO]: System chat: Game rule advance_time is now set to false
+[02:09:20] [Server thread/INFO]: System chat: Game rule advance_weather is now set to false
+[02:09:20] [Server thread/INFO]: System chat: Game rule send_command_feedback is now set to false
+[02:09:21] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Spectator Mode
+[02:09:21] [Server thread/INFO]: System chat: Set minecraft:overworld to 6000 tick(s)
+[02:09:21] [Server thread/INFO]: System chat: Set the weather to clear
+[02:09:21] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000
+[02:09:29] [Server thread/INFO]: System chat: Marked 48 chunks in minecraft:overworld from [73, 60] to [80, 65] to be force loaded
+[02:09:29] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 7141ms or 142 ticks behind
+[02:09:37] [Server thread/INFO]: SIFTEC: building portable_miner placed at 1201, 183, 999 facing north (14 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: portable_miner built at 1201, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: portable_miner built at 1201, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building miner_mk1 placed at 1208, 182, 1000 facing north (133 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: miner_mk1 built at 1207, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: miner_mk1 built at 1207, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building miner_mk2 placed at 1215, 182, 1000 facing north (148 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: miner_mk2 built at 1214, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: miner_mk2 built at 1214, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building miner_mk3 placed at 1222, 182, 1000 facing north (164 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: miner_mk3 built at 1221, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: miner_mk3 built at 1221, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building constructor placed at 1230, 182, 999 facing north (294 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: constructor built at 1229, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: constructor built at 1229, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building smelter placed at 1239, 182, 999 facing north (331 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: smelter built at 1238, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: smelter built at 1238, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building storage_container placed at 1246, 182, 1000 facing north (43 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: storage_container built at 1245, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: storage_container built at 1245, 181, 1000
+[02:09:37] [Server thread/INFO]: SIFTEC: building industrial_storage_container placed at 1251, 182, 1000 facing north (52 blocks, 0 refund stacks)
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view: industrial_storage_container built at 1250, 181, 1000
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view: industrial_storage_container built at 1250, 181, 1000
+[02:09:37] [Server thread/INFO]: SELFTEST buildings_a view 0 ready
+[02:09:37] [Server thread/INFO]: System chat: SELFTEST buildings_a view 0 ready
+[02:09:37] [Server thread/INFO]: System chat: Changed the block at 1190, 160, 970
+[02:11:08] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:11:08] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:11:08] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:11:09] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:11:09] [Server thread/INFO]: System chat: Set the weather to clear
+[02:11:09] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000
+[02:11:10] [Server thread/INFO]: System chat: No chunks were marked for force loading
+[02:11:20] [Server thread/INFO]: System chat: Could not set the block
+[02:11:25] [Server thread/INFO]: System chat: Changed the block at 1238, 189, 1018
+[02:11:25] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000
+[02:11:58] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:11:58] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000]
+[02:12:13] [Server thread/INFO]: System chat: [QuicksilverCI: Changed the block at 1238, 189, 1018]
+[02:12:13] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000]
+[02:12:57] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:12:57] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:12:57] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:12:58] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:12:58] [Server thread/INFO]: System chat: Set the weather to clear
+[02:12:59] [Server thread/INFO]: System chat: Game rule spawn_mobs is now set to false
+[02:12:59] [Server thread/INFO]: System chat: Game rule spawn_phantoms is now set to false
+[02:12:59] [Server thread/INFO]: System chat: QuicksilverCI has made the advancement [Brave the Unknown]
+[02:12:59] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 0.500000, 200.000000, 0.500000
+[02:13:00] [Server thread/INFO]: System chat: Set the_sift:the_sift to 6000 tick(s)
+[02:13:00] [Server thread/INFO]: System chat: Set the weather to clear
+[02:13:06] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 0.500000, 85.000000, 0.500000
+[02:13:07] [Server thread/INFO]: System chat: Teleported 19 entities to 0.500000, -200.000000, 0.500000
+[02:13:40] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:13:40] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 0.500000, 200.000000, 0.500000]
+[02:13:40] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:13:46] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 0.500000, 85.000000, 0.500000]
+[02:14:31] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:14:31] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:14:31] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:14:32] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:14:32] [Server thread/INFO]: System chat: Set the weather to clear
+[02:14:32] [Server thread/INFO]: System chat: Game rule spawn_mobs is now set to true
+[02:14:33] [Server thread/INFO]: System chat: Game rule spawn_phantoms is now set to true
+[02:14:33] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Creative Mode
+[02:14:33] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Air]
+[02:14:34] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2240.500000, 201.000000, -1996.500000
+[02:14:39] [Server thread/INFO]: System chat: Successfully filled 121 block(s)
+[02:14:39] [Server thread/INFO]: System chat: No blocks were filled
+[02:14:40] [Server thread/INFO]: System chat: Could not set the block
+[02:14:40] [Server thread/INFO]: System chat: Changed the block at 2240, 201, -2000
+[02:14:40] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2240.500000, 201.000000, -1996.500000
+[02:15:03] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Spectator Mode]
+[02:15:03] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:15:04] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Creative Mode]
+[02:15:04] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Air]]
+[02:15:04] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2240.500000, 201.000000, -1996.500000]
+[02:15:09] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1 block(s)]
+[02:15:09] [Server thread/INFO]: System chat: [QuicksilverCI: Changed the block at 2240, 201, -2000]
+[02:15:09] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2240.500000, 201.000000, -1996.500000]
+[02:15:43] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:15:43] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:15:44] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:15:44] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Spectator Mode
+[02:15:44] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:15:45] [Server thread/INFO]: System chat: Set the weather to clear
+[02:15:45] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Creative Mode
+[02:15:45] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Air]
+[02:15:46] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2200.500000, 201.000000, -1996.500000
+[02:15:47] [Server thread/WARN]: QuicksilverCI moved too quickly! 0.0,-10.184074939147308,0.0
+[02:15:51] [Server thread/INFO]: System chat: Successfully filled 121 block(s)
+[02:15:51] [Server thread/INFO]: System chat: No blocks were filled
+[02:15:51] [Server thread/INFO]: System chat: Could not set the block
+[02:15:52] [Server thread/INFO]: System chat: Changed the block at 2200, 201, -2000
+[02:15:52] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2200.500000, 201.000000, -1996.500000
+[02:15:52] [Server thread/INFO]: Player QuicksilverCI standing on air - force-sending blocks below
+[02:16:14] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Spectator Mode]
+[02:16:14] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:16:14] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Creative Mode]
+[02:16:15] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Air]]
+[02:16:15] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2200.500000, 201.000000, -1996.500000]
+[02:16:20] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1 block(s)]
+[02:16:20] [Server thread/INFO]: System chat: [QuicksilverCI: Changed the block at 2200, 201, -2000]
+[02:16:20] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2200.500000, 201.000000, -1996.500000]
+[02:16:54] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:16:54] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:16:55] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:16:55] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Spectator Mode
+[02:16:55] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:16:56] [Server thread/INFO]: System chat: Set the weather to clear
+[02:16:56] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2240.500000, 230.000000, -1996.500000
+[02:17:01] [Server thread/INFO]: System chat: Changed the block at 2240, 236, -1997
+[02:17:02] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2240.500000, 230.000000, -1996.500000
+[02:17:26] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:17:26] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2240.500000, 230.000000, -1996.500000]
+[02:17:31] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2240.500000, 230.000000, -1996.500000]
+[02:18:08] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:18:09] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:18:09] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:18:10] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:18:10] [Server thread/INFO]: System chat: Set the weather to clear
+[02:18:10] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Creative Mode
+[02:18:10] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 300.500000, 200.000000, -199.500000
+[02:18:16] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 300.500000, 119.000000, -199.500000
+[02:18:21] [Server thread/INFO]: SELFTEST map map set up round 300, 119, -200 for QuicksilverCI
+[02:18:21] [Server thread/INFO]: System chat: SELFTEST map map set up round 300, 119, -200 for QuicksilverCI
+[02:18:21] [Server thread/INFO]: System chat: Changed the block at 300, -63, -200
+[02:18:21] [Server thread/INFO]: SIFTEC: raised QuicksilverCI's backpack from tier 0 to 1
+[02:19:02] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Spectator Mode
+[02:19:02] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 300.500000, 150.000000, -199.500000
+[02:19:35] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:19:35] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Creative Mode]
+[02:19:35] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 300.500000, 200.000000, -199.500000]
+[02:19:40] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 300.500000, 119.000000, -199.500000]
+[02:20:25] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Spectator Mode]
+[02:20:25] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 300.500000, 150.000000, -199.500000]
+[02:21:07] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:21:08] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:21:08] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:21:09] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:21:09] [Server thread/INFO]: System chat: Set the weather to clear
+[02:21:09] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Creative Mode
+[02:21:09] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Air]
+[02:21:10] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2160.500000, 290.000000, -1981.500000
+[02:21:15] [Server thread/INFO]: System chat: No blocks were filled
+[02:21:15] [Server thread/INFO]: System chat: No entity was found
+[02:21:16] [Server thread/INFO]: System chat: Successfully filled 1053 block(s)
+[02:21:16] [Server thread/INFO]: System chat: Successfully filled 1053 block(s)
+[02:21:16] [Server thread/INFO]: System chat: Successfully filled 361 block(s)
+[02:21:17] [Server thread/INFO]: System chat: Successfully filled 361 block(s)
+[02:21:17] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Build Gun]
+[02:21:17] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2160.500000, 290.000000, -1984.500000
+[02:21:46] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Spectator Mode]
+[02:21:46] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:21:46] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Creative Mode]
+[02:21:46] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Air]]
+[02:21:46] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2160.500000, 290.000000, -1981.500000]
+[02:21:51] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 2106 block(s)]
+[02:21:51] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1053 block(s)]
+[02:21:51] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1053 block(s)]
+[02:21:52] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 361 block(s)]
+[02:21:52] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 361 block(s)]
+[02:21:52] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Build Gun]]
+[02:21:52] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2160.500000, 290.000000, -1984.500000]
+[02:22:32] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:22:32] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:22:32] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:22:33] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Spectator Mode
+[02:22:33] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:22:33] [Server thread/INFO]: System chat: Set the weather to clear
+[02:22:34] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Creative Mode
+[02:22:34] [Server thread/INFO]: Player QuicksilverCI standing on air - force-sending blocks below
+[02:22:34] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 400.500000, 201.000000, -109.500000
+[02:22:35] [Server thread/WARN]: QuicksilverCI moved too quickly! 0.0,-10.188594643186804,0.0
+[02:22:36] [Server thread/WARN]: QuicksilverCI moved too quickly! 0.0,-11.14161161612887,0.0
+[02:22:39] [Server thread/INFO]: System chat: No blocks were filled
+[02:22:40] [Server thread/INFO]: System chat: Successfully filled 1150 block(s)
+[02:22:40] [Server thread/INFO]: System chat: Successfully filled 736 block(s)
+[02:22:47] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Diamond Sword]
+[02:22:48] [Server thread/INFO]: System chat: QuicksilverCI has made the advancement [Isn't It Iron Pick?]
+[02:22:48] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Iron Pickaxe]
+[02:22:48] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Oak Log]
+[02:22:48] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Torch]
+[02:22:48] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Bread]
+[02:22:49] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Water Bucket]
+[02:22:49] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Redstone Dust]
+[02:22:49] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Build Gun]
+[02:22:50] [Server thread/INFO]: System chat: Replaced 1 slot(s) on QuicksilverCI with [Empty Map]
+[02:22:55] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 400.500000, 201.000000, -109.500000
+[02:23:20] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Spectator Mode]
+[02:23:20] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:23:20] [Server thread/INFO]: System chat: [QuicksilverCI: Set own game mode to Creative Mode]
+[02:23:20] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 400.500000, 201.000000, -109.500000]
+[02:23:25] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1886 block(s)]
+[02:23:25] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1150 block(s)]
+[02:23:25] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 736 block(s)]
+[02:23:28] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Diamond Sword]]
+[02:23:28] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Iron Pickaxe]]
+[02:23:28] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Oak Log]]
+[02:23:28] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Torch]]
+[02:23:29] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Bread]]
+[02:23:29] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Water Bucket]]
+[02:23:29] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Redstone Dust]]
+[02:23:29] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Build Gun]]
+[02:23:29] [Server thread/INFO]: System chat: [QuicksilverCI: Replaced 1 slot(s) on QuicksilverCI with [Empty Map]]
+[02:23:32] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 400.500000, 201.000000, -109.500000]
+[02:24:10] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:24:10] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:24:10] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:24:11] [Server thread/INFO]: System chat: Set QuicksilverCI's game mode to Spectator Mode
+[02:24:11] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:24:11] [Server thread/INFO]: System chat: Set the weather to clear
+[02:24:12] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2071.500000, 243.000000, -1987.500000
+[02:24:18] [Server thread/INFO]: System chat: No blocks were filled
+[02:24:18] [Server thread/INFO]: System chat: No entity was found
+[02:24:18] [Server thread/INFO]: System chat: Successfully filled 1131 block(s)
+[02:24:19] [Server thread/INFO]: System chat: Successfully filled 20 block(s)
+[02:24:19] [Server thread/INFO]: System chat: Successfully filled 12 block(s)
+[02:24:19] [Server thread/INFO]: System chat: Successfully filled 4 block(s)
+[02:24:20] [Server thread/INFO]: System chat: Successfully filled 20 block(s)
+[02:24:20] [Server thread/INFO]: System chat: Successfully filled 4 block(s)
+[02:24:20] [Server thread/INFO]: System chat: Successfully filled 20 block(s)
+[02:24:21] [Server thread/INFO]: System chat: Changed the block at 2074, 241, -2000
+[02:24:21] [Server thread/INFO]: System chat: Successfully filled 4 block(s)
+[02:24:21] [Server thread/INFO]: System chat: Successfully filled 20 block(s)
+[02:24:21] [Server thread/INFO]: System chat: Successfully filled 4 block(s)
+[02:24:22] [Server thread/INFO]: System chat: Successfully filled 9 block(s)
+[02:24:22] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 2071.500000, 243.000000, -1987.500000
+[02:24:56] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:24:56] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2071.500000, 243.000000, -1987.500000]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1248 block(s)]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 1131 block(s)]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 20 block(s)]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 12 block(s)]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 4 block(s)]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 20 block(s)]
+[02:25:02] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 4 block(s)]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 20 block(s)]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Changed the block at 2074, 241, -2000]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 4 block(s)]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 20 block(s)]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 4 block(s)]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Successfully filled 9 block(s)]
+[02:25:03] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 2071.500000, 243.000000, -1987.500000]
+[02:25:47] [Server thread/INFO]: QuicksilverCI lost connection: Disconnected
+[02:25:47] [Server thread/INFO]: System chat: QuicksilverCI left the game
+[02:26:33] [Server thread/INFO]: QuicksilverCI[/127.0.0.1:44322] logged in with entity id 4789 at (2071.5, 243.0, -1987.5)
+[02:26:33] [Server thread/INFO]: System chat: QuicksilverCI joined the game
+[02:26:35] [Server thread/INFO]: System chat: Nothing changed. The player is already an operator
+[02:27:15] [Server thread/INFO]: System chat: Game rule advance_time is already set to false
+[02:27:15] [Server thread/INFO]: System chat: Game rule advance_weather is already set to false
+[02:27:16] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false
+[02:27:16] [Server thread/INFO]: System chat: Clock minecraft:overworld is already set to 6000 tick(s)
+[02:27:17] [Server thread/INFO]: System chat: Set the weather to clear
+[02:27:17] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000
+[02:27:17] [Server thread/INFO]: System chat: No chunks were marked for force loading
+[02:27:28] [Server thread/INFO]: System chat: Could not set the block
+[02:27:32] [Server thread/INFO]: System chat: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000
+[02:28:05] [Server thread/INFO]: System chat: [QuicksilverCI: Set the weather to clear]
+[02:28:05] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000]
+[02:28:19] [Server thread/INFO]: System chat: [QuicksilverCI: Teleported QuicksilverCI to 1238.500000, 192.000000, 1028.500000]
+[02:29:04] [Server thread/INFO]: QuicksilverCI lost connection: Disconnected
+[02:29:04] [Server thread/INFO]: System chat: QuicksilverCI left the game
+[02:29:12] [Server thread/INFO]: System chat: Stopping the server
+[02:29:12] [Server thread/INFO]: Stopping server
+[02:29:12] [Server thread/INFO]: Saving players
+[02:29:12] [Server thread/INFO]: Saving worlds
+[02:29:13] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[02:29:16] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/the_sift:the_sift
+[02:29:16] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[02:29:16] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+EXIT 0
