@@ -2233,28 +2233,30 @@ release also needs `server-compare`), `fabric.mod.json` (one mixin config, one c
 `BenchOnlyClient.java`: it carries the server numbers too), `.gitignore` (`server/` anchored to the root), `docs/laptop-bench.md`
 and `docs/ci-limits.md` (new sections at the end).
 
-**Final run:** full mode, green: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40679862182 (SHA
-`82ef290`; server suite logs on `ci-logs-server-p2-0`, client suite on `ci-logs-p2-0`). Main hadn't moved since the
-branch started and the rename branch hadn't merged, so no rebase was needed.
+**Final run:** FINAL_RUN (SHA FINAL_SHA; server suite logs on `ci-logs-server-p2-0`, client suite on
+`ci-logs-p2-0`). Rebased on main after package 4b and the rename (`94503ad`): one commit ported from the earlier branch
+(based on `14c74fd`), with the rename applied to everything phase 2 added (package `com.meakaandre.quicksilver.phase2`,
+`/quicksilver bench` and `/qs bench`, `quicksilver/bench/`, `dist/quicksilver.jar`).
 
 ### Done-when
 
-1. **Server suite: done.** Dedicated servers only, on every branch (quick mode too), three suites: core (Fabric
+1. **Server suite: done.** Dedicated servers only, on every branch (quick mode: core only; full mode: all three;
+   `[siftec]` adds SIFTEC's to a quick run), three suites: core (Fabric
    API only), siftec (SIFTEC's pack from its latest release, with `siftec-selftest-26.3.jar`), terralith (Terralith
    and Lithostitched from Modrinth). Each suite runs vanilla three times and Quicksilver once; every gate and its
    noise are in `docs/ci-limits.md`, "Server suite".
    - **World diff:** a vanilla base world per suite (`ci/server/base-area-<suite>.txt`, seed 12345), then a scripted
      run of 1200 ticks (`scripted-run-<suite>.txt`): core has a hopper chain, furnaces, an observer clock driving a
      sticky piston, crops, animals in a pen, villagers with job sites, item entities over a hopper; SIFTEC adds
-     Create's contraptions (a mechanical bearing and a mechanical piston on creative motors). The saved worlds are
+     Create's contraptions (a mechanical bearing and a mechanical piston on creative motors) and a Create train
+     (below, "Create train": 11 arrivals between two stations at the same ticks in every run). The saved worlds are
      compared block by block, block entity by block entity (each top-level field), scheduled block and fluid ticks,
      and entity by entity (type, exact position, health, the stack an item entity holds; an entity left without an
      exact match on the other side is a difference, keyed by its type and block).
    - **GameTests** (Fabric's GameTest API, `ci/server/harness/.../HarnessTests.java`): hopper chain, observer clock,
      piston machine, piston door, item sorter, crop farm, mob farm, villager job and trade. Each logs its result and
      the tick it finished. Create contraption and train: **not as GameTests** (the GameTest server can't load
-     SIFTEC's pack: its registries fail on Create: New Age's recipes there); the contraptions are in SIFTEC's
-     scripted run instead, and trains are not covered yet (choices below).
+     SIFTEC's pack: its registries fail on Create: New Age's recipes there); both are in SIFTEC's scripted run.
    - **SIFTEC's self-tests:** SIFTEC's `.github/smoke-commands.txt` on a fresh SIFTEC world with Quicksilver loaded;
      each suite's passed/failed counts against vanilla (30 suites, 712 checks).
    - **Worldgen diff:** 144 chunks per dimension byte for byte: vanilla's overworld, nether and end; SIFTEC's
@@ -2266,8 +2268,8 @@ branch started and the rename branch hadn't merged, so no rebase was needed.
      where vanilla repeats; the noise that is left is listed in ci-limits).
    - **Not covered yet (open gaps, before the packages that need them):** random ticks and natural mob spawning are
      off in the scripted runs (both draw on vanilla's shared random, and Lithium changes both: before P2-3/P2-4 they
-     need their own targeted tests); the crop farm is judged on its state, not its bone meal count; Create trains;
-     threaded worldgen (`max.bg.threads=1` everywhere: P2-6 needs a threaded-generation check of its own).
+     need their own targeted tests); the crop farm is judged on its state, not its bone meal count; pending scheduled ticks are
+     reported, not gated; threaded worldgen (`max.bg.threads=1` everywhere: P2-6 needs a threaded-generation check of its own).
 2. **`/quicksilver bench` server numbers: done** (`phase2/ServerNumbers.java`, `NetworkBytes.java`,
    `ClientTimes.java`, one count-only mixin on `Connection`). The client bench's JSON and log block gain a `server`
    section: MSPT average, p50, p99, max and ticks over 50 ms over the bench's seconds, heap used, start-up (to the title
@@ -2323,12 +2325,15 @@ Each is a small CI package of its own, done before the package it guards and rec
 ### Create train
 
 `ci/server/harness/.../CiTrain.java`, in SIFTEC's scripted run: straight track and two stations placed with
-commands; at tick 20 the harness names the stations, at 40 it puts station A in assembly mode, builds a one-bogey
-carriage behind it (a bogey, three casings, a blaze burner and two controls facing it, so the blaze conducts both
-ways) and assembles it, at 60 it gives the train a cycling schedule A to B and back. Create has no commands for
-assembling or scheduling, so those two steps use reflection (the harness is compiled without Create). Every arrival
-is logged with its tick; CI requires the same line in every run and at least two arrivals, and the carriage is an
-entity in the world diff.
+commands (the stations face opposite ways: a station takes trains from one direction only); at tick 20 the harness
+names the stations, at 40 it puts station A in assembly mode and builds a one-bogey carriage behind it (a bogey, three
+casings, a blaze burner and two controls facing it, so the blaze conducts both ways) with Super Glue over it (centred
+on the carriage: Create keeps a glue entity's box centred on its position), at 45 it assembles it and takes station A
+out of assembly mode (Create doesn't route to a station in assembly mode), at 60 it gives the train a cycling schedule
+A to B and back. Create has no commands for assembling or scheduling, so those steps use reflection (the harness is
+compiled without Create). Every arrival is logged with its tick; CI requires the same line in every run and at least
+two arrivals, and the carriage is an entity in the world diff. Result in every run: 11 arrivals, B at 136, A at 235,
+and so on to B at 1131, the same final speed.
 
 ### Review
 
