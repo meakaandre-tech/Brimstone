@@ -219,7 +219,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           asset=$(gh api repos/meakaandre-tech/SIFTEC/releases/tags/latest --jq '[.assets[] | "\(.name)=\(.id)"] | join(",")' | sha256sum | cut -c1-16 || echo none)
-          files=$(cat siftec/.github/smoke-commands.txt siftec/.github/smoke-pack-mods siftec/.github/fetch-tb.py ci/siftec-world.sh gradle.properties | sha256sum | cut -c1-16)
+          files=$(cat siftec/.github/smoke-commands.txt siftec/.github/smoke-pack-mods siftec/.github/fetch-tb.py ci/siftec-world.sh ci/pack-lock.txt gradle.properties | sha256sum | cut -c1-16)
           echo "key=siftec-world-$asset-$files" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         id: cache
@@ -230,6 +230,10 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         shell: bash
         run: bash ci/siftec-world.sh
+      - name: Pack lock
+        # every downloaded jar against ci/pack-lock.txt: a changed pack fails here, before any client run
+        shell: bash
+        run: bash ci/pack-check.sh siftec-server/mods siftec complete
       - name: Pack the server
         shell: bash
         run: tar cf siftec-server.tar siftec-server && ls -l siftec-server.tar
@@ -257,7 +261,7 @@ jobs:
       - name: Cache key
         id: key
         shell: bash
-        run: echo "key=core-world-$(cat ci/core-world.sh gradle.properties | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+        run: echo "key=core-world-$(cat ci/core-world.sh ci/pack-lock.txt gradle.properties | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         id: cache
         with:
@@ -267,6 +271,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         shell: bash
         run: bash ci/core-world.sh
+      - name: Pack lock
+        shell: bash
+        run: bash ci/pack-check.sh core-server/mods core complete
       - name: Pack the server
         shell: bash
         run: tar cf core-server.tar core-server && ls -l core-server.tar

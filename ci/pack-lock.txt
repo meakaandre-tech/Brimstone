@@ -1,0 +1,4 @@
+# The jars CI downloads, by sha256 ("<sha256>  <set>/<jar name>"): ci/pack-check.sh fails a run early with
+# "pack changed: <jar>" when a download differs. Sets: core (Fabric API), siftec (SIFTEC's server mods: SIFTEC, its
+# self-test, MapMod, Create Fly, New Age, Diesel Generators, Traveler's Backpack, Fabric API, the pack mods), sodium
+# (the bench-sodium run). Updating a hash is a deliberate commit that re-collects the numbers the jar affects.

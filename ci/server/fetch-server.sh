@@ -13,4 +13,5 @@ curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$dir/server.jar" "ht
 fapiurl=$(curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 "https://api.modrinth.com/v2/project/fabric-api/version" | python3 -c "import json,sys; v=[x for x in json.load(sys.stdin) if x['version_number']=='$fapi']; print(v[0]['files'][0]['url'])")
 curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$dir/mods/fabric-api.jar" "$fapiurl"
 echo "eula=true" > "$dir/eula.txt"
+bash ci/pack-check.sh "$dir/mods" core complete || { echo "the pack changed (see above)"; exit 1; }
 echo "fabric server $mc, loader $loader, fabric api $fapi in $dir"
