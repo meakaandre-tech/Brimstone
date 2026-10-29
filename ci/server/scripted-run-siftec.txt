@@ -1,0 +1,57 @@
+# The SIFTEC suite's scripted run (as scripted-run-core.txt), with SIFTEC's pack loaded: Create's machines as moving
+# contraptions, which lean hardest on entity and block-entity logic. Compared with vanilla's run by the world diff.
+area minecraft:overworld -4 -4 3 3
+
+cmd time set 1000
+cmd weather clear 100000
+cmd gamerule spawn_mobs false
+# no random ticks: they draw on the level's shared random over every loaded chunk (cave vines, vines, crops), and
+# vanilla's own runs differed in hundreds of blocks with them on; random-tick behaviour gets its own tests later
+cmd gamerule random_tick_speed 0
+
+cmd fill 0 199 0 31 199 31 minecraft:stone
+
+# a mechanical bearing on a creative motor, turning a small frame of planks (a rotating contraption)
+cmd setblock 2 200 2 create:creative_motor[facing=up]
+cmd setblock 2 201 2 create:mechanical_bearing[facing=up]
+cmd setblock 2 202 2 minecraft:oak_planks
+cmd setblock 1 202 2 minecraft:oak_planks
+cmd setblock 3 202 2 minecraft:oak_planks
+cmd setblock 2 202 1 minecraft:oak_planks
+cmd setblock 2 202 3 minecraft:oak_planks
+
+# a mechanical piston turned by a creative motor, pushing a block (a moving contraption)
+cmd setblock 8 200 2 create:piston_extension_pole[facing=up]
+cmd setblock 8 201 2 create:piston_extension_pole[facing=up]
+cmd setblock 8 202 2 create:mechanical_piston[facing=up]
+cmd setblock 8 203 2 minecraft:stone
+# a motor on two sides: whichever horizontal axis the piston's shaft has, one of them turns it
+cmd setblock 7 202 2 create:creative_motor[facing=east]
+cmd setblock 8 202 1 create:creative_motor[facing=south]
+
+# a hopper chain and a furnace, with the pack loaded
+cmd setblock 2 201 8 minecraft:chest{Items:[{Slot:0b,id:"minecraft:cobblestone",count:64}]}
+cmd fill 2 200 8 6 200 8 minecraft:hopper[facing=east]
+cmd setblock 7 200 8 minecraft:chest
+cmd setblock 2 200 11 minecraft:furnace{Items:[{Slot:0b,id:"minecraft:raw_iron",count:8},{Slot:1b,id:"minecraft:coal",count:2}]}
+
+# a Create train (ci/server/harness/.../CiTrain.java): straight track, two stations beside it; the harness names
+# the stations, builds and assembles a one-bogey carriage behind station A, and gives it a cycling schedule A to B
+cmd fill 3 200 28 29 200 28 create:track[shape=xo]
+cmd setblock 8 200 29 create:track_station{Id:[I;0,0,0,1],TargetTrack:[I;0,0,-1],TargetDirection:1b,Ortho:1b}
+# station B faces the other way: a station takes trains from one direction only, and the train leaves A eastwards
+cmd setblock 24 200 29 create:track_station{Id:[I;0,0,0,2],TargetTrack:[I;0,0,-1],TargetDirection:0b,Ortho:1b}
+
+# animals and a villager
+cmd summon minecraft:cow 14 200 14
+cmd summon minecraft:sheep 16 200 14
+cmd summon minecraft:villager 18 200 18
+
+ticks 1200
+
+at 20 ci-train stations 8 200 29 24 200 29
+at 40 ci-train build
+at 45 ci-train assemble
+at 60 ci-train schedule
+
+qs-at 0 quicksilver bench 50

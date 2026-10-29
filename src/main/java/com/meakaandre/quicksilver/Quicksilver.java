@@ -12,6 +12,8 @@ import net.fabricmc.loader.api.FabricLoader;
 public final class Quicksilver implements ModInitializer {
     @Override
     public void onInitialize() {
+        // phase 2 (P2-0): the server's numbers for the bench, on both sides (measurement only)
+        com.meakaandre.quicksilver.phase2.ServerNumbers.init();
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             com.meakaandre.quicksilver.frapi.QuicksilverRenderer.register();
         }

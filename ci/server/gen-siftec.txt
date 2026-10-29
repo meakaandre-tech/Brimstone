@@ -1,0 +1,5 @@
+# Worldgen diff, SIFTEC suite (as gen-core.txt): what SIFTEC's pack generates, its overworld (vanilla terrain with
+# SIFTEC's ore nodes and geysers), the nether and the Sift.
+minecraft:overworld 200 200 211 211
+minecraft:the_nether -6 -6 5 5
+the_sift:the_sift -6 -6 5 5

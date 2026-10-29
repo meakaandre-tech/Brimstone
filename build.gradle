@@ -54,6 +54,7 @@ def benchClasses = [
     'com/meakaandre/quicksilver/probe/**',
     'com/meakaandre/quicksilver/gui/**',
     'com/meakaandre/quicksilver/mixin/counters/**',
+    'com/meakaandre/quicksilver/phase2/**',
     'quicksilver/scenes/**',
 ]
 def benchJar = tasks.register("benchJar", Jar) {
@@ -63,6 +64,11 @@ def benchJar = tasks.register("benchJar", Jar) {
     from("src/main/resources") {
         include "quicksilver.counters.mixins.json"
         rename { "quicksilver_bench.counters.mixins.json" }
+    }
+    // phase 2 (P2-0): the count-only network byte mixin, for the bench's server numbers
+    from("src/main/resources") {
+        include "quicksilver.phase2.mixins.json"
+        rename { "quicksilver_bench.phase2.mixins.json" }
     }
     def version = project.version
     inputs.property "version", version

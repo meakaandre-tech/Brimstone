@@ -1,0 +1,2 @@
+# The base world for the SIFTEC suite's scripted run (as base-area-core.txt), generated with SIFTEC's pack.
+minecraft:overworld -6 -6 5 5

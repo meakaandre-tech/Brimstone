@@ -133,3 +133,34 @@ What to compare: `fps` (average and 1% low), `frame time ms` (p99 and frames ove
 `backFaces` and `uploadBudget` lines say how many triangles were left out and how many sections waited for a later frame.
 Draw calls are counted where the game draws through its own graphics layer (renderpearl); a mod that draws past it would
 show fewer draw calls than it makes, so for Sodium compare frame times and FPS first.
+
+## Phase 2: server numbers (P2-0)
+
+From the build with phase 2's harness on, every bench block has a `server:` line too. In single player that is the
+integrated server inside your game: milliseconds per tick (average, median, 99th percentile, max, ticks over 50 ms)
+over the bench's measured seconds, heap used, the client's start-up time to the title screen and the world's load
+time. Network bytes are 0 in single player (the client talks to its own server in memory), which is expected.
+
+Nothing extra to run for most of it: the steps above already give the numbers phase 2's targets need. To make them
+comparable, do these the same way every time:
+
+1. **Start-up:** close Prism's other instances, then launch the instance and don't click anything until the title
+   screen shows. The first bench block's `server:` line has `start-up ms` (JVM start to the title screen).
+2. **World load:** for each instance, after the title screen, open the bench world (Singleplayer → the seed-12345
+   world → Play). The `world load ms` in the next bench block is the server's start, including loading that world.
+3. **Heap after load:** the first bench after joining (`flythrough` in a new world): read `after GC` in its `heap MB`
+   line (the `server:` line's heap is taken without a GC, so it moves with garbage).
+4. **Heap after 10 minutes:** the 600-second bench in step 8 (plain) and step 5 (SIFTEC), `after GC` in `heap MB`.
+5. **MSPT while flying over new terrain:** the `flythrough` block's `server:` line (`p99` and `over 50 ms` are what
+   the "no server tick over 50 ms" target reads).
+6. **SIFTEC factory (50+ machines):** only with `siftec-selftest-26.3.jar` in the mods folder (see Instance 2):
+   `/quicksilver bench factory confirm`, then paste its block.
+
+Optional, a dedicated server (only if you want to see a server on its own; the laptop targets are single player):
+start a Fabric 26.3 server with Fabric API and the same Quicksilver jar (`quicksilver-26.3.jar`) in its
+`mods` folder, join it, play or wait
+a minute, then type `quicksilver bench 60` (or `qs bench 60`) in the server console. It writes the same `server:` numbers between
+`===== QUICKSILVER SERVER BENCH BEGIN =====` and `===== QUICKSILVER SERVER BENCH END =====` in the server's
+`logs/latest.log`, with network bytes this time.
+
+Paste every `server:` line along with the blocks, as above.

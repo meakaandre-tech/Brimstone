@@ -819,3 +819,70 @@ nether. compare.py requires the bench-only jar's start-up line, a bench per scen
 Quicksilver module block or log line, no counter missing, Sodium loaded in `bench-sodium` only, and Quicksilver itself not
 loaded. Their pictures are not compared (Sodium draws its own way); the "Bench-only jar" table reports fps, frame-time
 p99, frames over 50 ms, draw calls and the largest upload per frame.
+
+## Server suite (phase 2, P2-0)
+
+The server suite (`ci/server/`, jobs `server-base`, `server`, `server-net`, `server-compare`; logs on
+`ci-logs-server-<branch>`) runs on every branch: quick mode runs its core suite (and SIFTEC's with `[siftec]` in the
+commit message), full mode runs core, SIFTEC and Terralith (Andre, 2026-10-29). It has **no tolerances**: there is no limit to
+raise. Every comparison is keyed, and Quicksilver must equal vanilla-a on every key where all three vanilla runs
+(vanilla-a, vanilla-b, vanilla-c) agree. A key where vanilla differs from itself is vanilla's noise: it is reported
+(per dimension, with examples in `compare/<suite>-<check>-noise-{b,c}.json`) and can't be gated, as phase 1's strict
+pixel check gates only where every vanilla run agrees. Three vanilla samples are the standing noise rule's minimum.
+
+| check | key | gate |
+|---|---|---|
+| worldgen | each chunk the harness generated (`ci/server/gen-<suite>.txt`), its whole saved NBT byte for byte; and the same chunks block by block (below), which gates any chunk whose bytes vanilla doesn't repeat; every listed dimension with exactly its area's chunk count | equal where vanilla agrees |
+| world diff (core, SIFTEC) | each block's state; each block entity's top-level fields; each pending scheduled block and fluid tick; each entity (type, exact position, health, the stack an item entity holds; one without an exact match on the other side is keyed by type and block; UUIDs aren't compared, as worldgen's entities don't repeat theirs) | equal where vanilla agrees |
+| GameTests (core) | each test's result and the tick it finished | equal to vanilla-a; vanilla-b and c must equal vanilla-a too |
+| SIFTEC self-tests | each suite's passed/failed counts | equal to vanilla-a; vanilla-b and c too |
+| Create train (SIFTEC) | every arrival at a station with its tick, final speed, schedule state | the same line in every run; at least 2 arrivals |
+| network check | the client joins, stays until the run ends, no protocol error or desync line | always |
+| scripted run | every setup command succeeds, the run finishes its ticks | always |
+
+**What makes runs repeat** (all in vanilla's runs and Quicksilver's alike; CI only):
+
+- `-Dmax.bg.threads=1`, and the harness generates one step at a time over each area (every chunk reaches a step
+  before any starts the next), so worldgen order can't depend on thread timing. Before this, vanilla a/b differed in
+  3 of 1,685 overworld chunks (the area's edge).
+- The light engine works on its own thread: the server saves after worldgen, and the scripted run starts, only once
+  no light engine has had work for 20 ticks (before this, SkyLight differed in 1 to 4 chunks).
+- Unseeded random sources (`RandomSupport.generateUniqueSeed`) come from per-thread fixed sequences, and at the
+  scripted run's tick 0 every level's and entity's random is re-seeded from fixed values.
+- The scripted run waits frozen until its area (and every entity in it) is loaded, then at least 200 more frozen
+  ticks after the setup commands: Create and SIFTEC tick through their own hooks even while the game is frozen
+  (before this, a furnace's cooking time and a bearing's angle differed between vanilla runs).
+- No natural mob spawning in the scripted runs: where a mob may spawn reads light from the light engine's thread.
+- No random ticks in the scripted runs: they draw on the shared level random over every loaded chunk, and vanilla's
+  own runs differed in 600 to 900 blocks with them on (cave vines growing and berrying, vines spreading). Random-tick
+  behaviour needs its own tests when phase 2 touches chunk ticking (P2-4).
+- GameTest server only: the ticking-chunk shuffle and the chunk tick's weather draws use their own randoms (they drew
+  on the shared level random once per loaded chunk). The crop farm is still judged on its state at tick 200, not on
+  how many bone meals it took: growth draws on the shared random, which the GameTest world uses in ways that depend
+  on chunk loading.
+
+**Reported, not gated:** the scripted runs' pending scheduled block and fluid ticks (core and SIFTEC). Which sand,
+gravel and fluid ticks are still pending when the world is saved varies between vanilla's own runs at one cave (chunk
+-1,-2 of seed 12345: sand and gravel over water), in core and SIFTEC alike (in 1 or 2 of every 3 runs; once 101 ticks);
+the cause isn't found yet (waiting for the ring of chunks around the area fixed the rest). The blocks, block entity
+fields and entities those ticks lead to stay gated, so a mis-scheduled tick that changes the world is still caught.
+
+**Known noise, gated as noise even when this run's vanilla agrees** (`KNOWN_NOISE` in `ci/server/compare-server.py`,
+the standing noise rule): SIFTEC's scripted run, the furnace at 2 200 11 (`cooking_time_spent`,
+`lit_time_remaining`) and the mechanical bearing at 2 201 2 (`Angle`). Vanilla's own runs differed on exactly these in
+runs 40632202272 and 40645807938 (and earlier); in run 40792634386 its three runs happened to agree and Quicksilver's
+didn't. Every other field of both block entities stays gated.
+
+**Known vanilla noise** (three vanilla runs, run 40645807938; reported, not gated):
+
+| suite / check | keys where vanilla differs from itself | what |
+|---|---|---|
+| core / worldgen | 0 of 432 chunks | |
+| core / world diff | 0 blocks, block entities or entities; 3 to 101 pending scheduled ticks (reported) | (before random ticks were off: 600 to 900 blocks of cave vines and vines, a gravel cave-in in some runs) |
+| SIFTEC / worldgen | 0 of 432 chunks | (before the light fix: 1 to 29 chunks in the nether and the Sift) |
+| SIFTEC / world diff | 2 block entities | the furnace's cooking time and the mechanical bearing's angle (SIFTEC and Create tick these through their own hooks; the 200-tick frozen head start made the rest repeat) |
+| Terralith / worldgen | 0 of 144 chunks | |
+
+Smallest thing each check must catch: one block state, one block entity field, one scheduled tick, one entity's
+existence, type, position (exactly: a 1e-7 drift is caught) or health, one item stack, one chunk's byte; one GameTest
+tick or result; one self-test.

@@ -2,7 +2,7 @@ build/
 .gradle/
 run/
 libs/
-server/
+/server/
 *.log
 __pycache__/
 *.pyc

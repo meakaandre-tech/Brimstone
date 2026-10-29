@@ -1,0 +1,4 @@
+# The base world for the scripted run (ci/server/server-run.sh, RUN=base): dimension and chunk x1 z1 x2 z2
+# (inclusive), generated one step at a time (see the harness), rows of z then x. One chunk wider on every side than the
+# scripted run's area (scripted-run-core.txt), so every chunk the run loads is a full chunk.
+minecraft:overworld -6 -6 5 5

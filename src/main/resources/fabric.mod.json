@@ -17,7 +17,8 @@
       "com.meakaandre.quicksilver.Quicksilver"
     ],
     "client": [
-      "com.meakaandre.quicksilver.QuicksilverClient"
+      "com.meakaandre.quicksilver.QuicksilverClient",
+      "com.meakaandre.quicksilver.phase2.ClientTimes"
     ]
   },
   "mixins": [
@@ -26,7 +27,8 @@
     "quicksilver.terrain.mixins.json",
     "quicksilver.visibility.mixins.json",
     "quicksilver.frapi.mixins.json",
-    "quicksilver.animation.mixins.json"
+    "quicksilver.animation.mixins.json",
+    "quicksilver.phase2.mixins.json"
   ],
   "custom": {
     "fabric-renderer-api-v1:contains_renderer": true

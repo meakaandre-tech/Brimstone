@@ -14,5 +14,8 @@ public final class BenchOnlyClient implements ClientModInitializer {
         BenchModules.jar = "quicksilver-bench";
         QuicksilverClient.LOG.info("Quicksilver bench-only jar: /quicksilver bench, its counters and scenes; no Quicksilver module is in this jar");
         QuicksilverClient.init();
+        // phase 2 (P2-0): the single-player server's numbers in the bench, as in the full jar (measurement only)
+        com.meakaandre.quicksilver.phase2.ServerNumbers.init();
+        new com.meakaandre.quicksilver.phase2.ClientTimes().onInitializeClient();
     }
 }

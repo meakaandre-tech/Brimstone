@@ -18,7 +18,8 @@
     ]
   },
   "mixins": [
-    "quicksilver_bench.counters.mixins.json"
+    "quicksilver_bench.counters.mixins.json",
+    "quicksilver_bench.phase2.mixins.json"
   ],
   "breaks": {
     "quicksilver": "*"
