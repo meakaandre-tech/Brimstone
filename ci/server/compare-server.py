@@ -124,9 +124,9 @@ def histogram(path):
     return out, total
 
 
-def heap_report(suite, d, rep, lines, s):
+def heap_report(suite, d, rep, lines, s, fails):
     """The heap run (P2-1): live heap after load and after ten minutes of game time per run, and where it goes (the top
-    classes of vanilla-a's histogram against Quicksilver's) in REPORT_DIR/<suite>-heap.md. Reported (P2-1 gates it)."""
+    classes of vanilla-a's histogram against Quicksilver's) in REPORT_DIR/<suite>-heap.md. Gated (P2-1): Quicksilver below every vanilla run, after load and at the end."""
     res = {r: load(os.path.join(d[r], "heap", "ci-harness-result.json"), {}) for r in RUNS}
     if not any(res.values()):
         return
@@ -135,6 +135,17 @@ def heap_report(suite, d, rep, lines, s):
         j = res[r]
         lines.append("| %s | %s | %s | %s |" % (r, j.get("heapLiveLoadMB"), j.get("heapLiveEndMB"), "yes" if "msptAvg" in j and "error" not in j else "no (%s)" % j.get("error")))
     s["heap"] = {r: {k: res[r].get(k) for k in ("heapLiveLoadMB", "heapLiveEndMB", "heapAfterLoadMB", "heapEndMB")} for r in RUNS}
+    # P2-1's gate: Quicksilver's live heap below every vanilla run's, after load and after ten minutes
+    for key, when in (("heapLiveLoadMB", "after load"), ("heapLiveEndMB", "after ten minutes")):
+        v = [res[r].get(key) for r in RUNS if r != "quicksilver"]
+        q = res["quicksilver"].get(key)
+        if q is None or None in v:
+            fails.append("%s heap run: no live heap %s in every run" % (suite, when))
+        elif q >= min(v):
+            fails.append("%s heap run: Quicksilver's live heap %s is %.1f MiB, not below vanilla's lowest %.1f MiB" % (suite, when, q, min(v)))
+        else:
+            lines.append("Heap %s: Quicksilver %.1f MiB, vanilla %.1f to %.1f MiB (%.1f MiB, %.0f%% below the lowest)" % (
+                when, q, min(v), max(v), min(v) - q, 100 * (min(v) - q) / min(v)))
     md = ["# %s heap run: where the live heap goes\n" % suite]
     for when in ("load", "end"):
         ha, ta = histogram(os.path.join(d["vanilla-a"], "heap", "histo-%s.txt" % when))
@@ -358,7 +369,7 @@ def main(res, rep):
             if rr["vanilla-a"] != rr["quicksilver"]:
                 fails.append("%s random-tick run: quicksilver differs from vanilla (%s / %s)" % (suite, rr["quicksilver"], rr["vanilla-a"]))
             lines.append("")
-        heap_report(suite, d, rep, lines, s)
+        heap_report(suite, d, rep, lines, s, fails)
         if has_run:
             bench = sorted(glob.glob(os.path.join(d["quicksilver"], "bench", "*.json")))
             if not bench:

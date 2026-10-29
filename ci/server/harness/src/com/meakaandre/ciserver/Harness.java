@@ -89,6 +89,13 @@ public final class Harness implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(Harness::started);
         ServerTickEvents.START_SERVER_TICK.register(Harness::startTick);
         ServerTickEvents.END_SERVER_TICK.register(Harness::endTick);
+        // P2-1 diagnosis: the reported block entities once more while the server stops (before it saves) and after
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            if (!reports.isEmpty()) {
+                LOG.info("CI REPORT stopping");
+                report(server);
+            }
+        });
     }
 
     private static void started(MinecraftServer server) {
@@ -257,7 +264,11 @@ public final class Harness implements ModInitializer {
                         if (!level.areEntitiesLoaded(chunkKey(cx, cz))) return false;
                         if (!level.isPositionEntityTicking(new BlockPos(cx * 16 + 8, 64, cz * 16 + 8))) return false;
                     } else if (ring == 1) {
+                        // block-ticking, and (P2-1) its entities loaded: a chunk's scheduled ticks run only once its
+                        // entities have loaded, which they do at a different moment in every run (the lava and water
+                        // in the ring, whose ticks ran a few ticks later in some runs)
                         if (!level.shouldTickBlocksAt(chunkKey(cx, cz))) return false;
+                        if (!level.areEntitiesLoaded(chunkKey(cx, cz))) return false;
                     } else if (!level.hasChunk(cx, cz)) {
                         return false;
                     }
@@ -365,8 +376,11 @@ public final class Harness implements ModInitializer {
         result.addProperty("commandErrors", commandErrors);
     }
 
+    private static int extraTicks = 0;
+
     private static void startTick(MinecraftServer server) {
         tickStart = System.nanoTime();
+        if (stage == Stage.DONE && ++extraTicks <= 20) LOG.info("CI HARNESS EXTRA TICK {} after the run", extraTicks);
         gameTime = server.overworld().getGameTime();
         if (stage != Stage.RUNNING) return;
         if (HEAP && tick == 0) command(server, "tick sprint " + ticks);

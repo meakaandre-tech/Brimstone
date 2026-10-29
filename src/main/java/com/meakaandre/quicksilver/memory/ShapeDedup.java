@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -34,9 +33,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class ShapeDedup {
     public static final String ID = "shape-dedup";
 
-    private static final Map<Class<?>, Field[]> FIELDS = new HashMap<>();
+    // keyed by class name: a Class key would ask for its identity hash (see hash)
+    private static final Map<String, Field[]> FIELDS = new HashMap<>();
     private static Map<Key, VoxelShape> shapes = new HashMap<>();
-    private static Map<List<Object>, VoxelShape[]> arrays = new HashMap<>();
+    private static Map<ArrayKey, VoxelShape[]> arrays = new HashMap<>();
     private static Map<BoolKey, boolean[]> bools = new HashMap<>();
     private static Field[] stateShapes, stateArrays, cacheShapes, cacheArrays, cacheBools;
     private static Field cacheField;
@@ -173,7 +173,7 @@ public final class ShapeDedup {
             }
         }
         if (!full) return a;  // filled lazily later: this state's own
-        VoxelShape[] d = arrays.computeIfAbsent(Arrays.asList((Object[]) a.clone()), k -> a);
+        VoxelShape[] d = arrays.computeIfAbsent(new ArrayKey(a.clone()), k -> a);
         if (d != a) arraysShared++;
         return d;
     }
@@ -181,9 +181,9 @@ public final class ShapeDedup {
     // ------------------------------------------------------------------ comparing shapes field by field
 
     private static Field[] fields(Class<?> c) {
-        return FIELDS.computeIfAbsent(c, k -> {
+        return FIELDS.computeIfAbsent(c.getName(), k -> {
             List<Field> out = new ArrayList<>();
-            for (Field f : k.getDeclaredFields()) {
+            for (Field f : c.getDeclaredFields()) {
                 if (Modifier.isStatic(f.getModifiers())) continue;
                 f.setAccessible(true);
                 out.add(f);
@@ -197,17 +197,16 @@ public final class ShapeDedup {
         return f.getType() == VoxelShape[].class;
     }
 
-    static boolean same(Object a, Object b, IdentityHashMap<Object, Object> seen) throws IllegalAccessException {
+    static boolean same(Object a, Object b) throws IllegalAccessException {
         if (a == b) return true;
         if (a == null || b == null || a.getClass() != b.getClass()) return false;
         if (a instanceof Enum<?>) return false;
         if (a instanceof VoxelShape || a instanceof DiscreteVoxelShape) {
-            if (seen.put(a, b) != null) return seen.get(a) == b;
             for (Class<?> k = a.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
                 for (Field f : fields(k)) {
                     if (cache(f)) continue;
                     Object x = f.get(a), y = f.get(b);
-                    if (f.getType().isPrimitive() ? !x.equals(y) : !same(x, y, seen)) return false;
+                    if (f.getType().isPrimitive() ? !x.equals(y) : !same(x, y)) return false;
                 }
             }
             return true;
@@ -231,9 +230,17 @@ public final class ShapeDedup {
             }
             return h;
         }
+        // never an object's identity hash: asking for one changes every identity hash the server thread hands out after it
+        // (hash sets of blocks and entities would then iterate in another order than vanilla's)
         if (a instanceof Enum<?> e) return e.ordinal();
-        if (a.getClass().isArray()) return Arrays.deepHashCode(new Object[] {a});
-        return a.hashCode();
+        if (a instanceof Number || a instanceof String || a instanceof Boolean || a instanceof BitSet
+            || a instanceof it.unimi.dsi.fastutil.doubles.DoubleList || a instanceof it.unimi.dsi.fastutil.ints.IntList) return a.hashCode();
+        if (a.getClass().isArray() && a.getClass().getComponentType().isPrimitive()) {
+            int h = 1;
+            for (int i = 0, n = java.lang.reflect.Array.getLength(a); i < n; i++) h = 31 * h + java.lang.reflect.Array.get(a, i).hashCode();
+            return h;
+        }
+        return a.getClass().getName().hashCode();
     }
 
     /** A shape compared and hashed by its contents. */
@@ -254,10 +261,36 @@ public final class ShapeDedup {
         @Override
         public boolean equals(Object o) {
             try {
-                return o instanceof Key k && k.hash == hash && same(shape, k.shape, new IdentityHashMap<>());
+                return o instanceof Key k && k.hash == hash && same(shape, k.shape);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+
+    /** A face array: its shapes are already the first equal ones seen, so equal arrays hold the same shapes. Hashed by
+     * the shapes' contents, never their identity (see hash). */
+    private static final class ArrayKey {
+        final VoxelShape[] shapes;
+        final int hash;
+
+        ArrayKey(VoxelShape[] shapes) throws IllegalAccessException {
+            this.shapes = shapes;
+            int h = 1;
+            for (VoxelShape s : shapes) h = 31 * h + (s == Shapes.block() ? 1 : s == Shapes.empty() ? 2 : ShapeDedup.hash(s, 0));
+            this.hash = h;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ArrayKey k) || k.hash != hash || k.shapes.length != shapes.length) return false;
+            for (int i = 0; i < shapes.length; i++) if (shapes[i] != k.shapes[i]) return false;
+            return true;
         }
     }
 
