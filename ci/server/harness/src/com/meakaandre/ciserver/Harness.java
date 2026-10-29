@@ -264,11 +264,7 @@ public final class Harness implements ModInitializer {
                         if (!level.areEntitiesLoaded(chunkKey(cx, cz))) return false;
                         if (!level.isPositionEntityTicking(new BlockPos(cx * 16 + 8, 64, cz * 16 + 8))) return false;
                     } else if (ring == 1) {
-                        // block-ticking, and (P2-1) its entities loaded: a chunk's scheduled ticks run only once its
-                        // entities have loaded, which they do at a different moment in every run (the lava and water
-                        // in the ring, whose ticks ran a few ticks later in some runs)
                         if (!level.shouldTickBlocksAt(chunkKey(cx, cz))) return false;
-                        if (!level.areEntitiesLoaded(chunkKey(cx, cz))) return false;
                     } else if (!level.hasChunk(cx, cz)) {
                         return false;
                     }
@@ -477,6 +473,7 @@ public final class Harness implements ModInitializer {
                     result.addProperty("ticksOver50ms", over);
                     heap("heapEndMB");
                     removeSpawnPlayer(server);
+                    markUnsaved(server);
                     if (HEAP) histogram("end");
                     if (HEAP) lightLayers(server);
                     if (Pins.on() || !spawns.isEmpty()) {
@@ -572,6 +569,33 @@ public final class Harness implements ModInitializer {
             }
             LOG.info("CI REPORT t={} {} {} {} {}", tick, p.getX(), p.getY(), p.getZ(), nbt);
         }
+    }
+
+    /**
+     * P2-1: every loaded chunk of the run's areas (and three rings around them) marked as changed, so the save as the
+     * server stops writes each one as it is at the run's last tick. The game also saves chunks during the run, each
+     * when ten seconds of wall-clock time have passed since its last save, and a chunk the run hasn't changed since
+     * (by the game's own account: a Create bearing turning or a SIFTEC furnace cooking doesn't count, nor do ticks being
+     * scheduled) isn't written again at the end: its saved block entities and pending ticks were those of whatever tick
+     * the clock picked (the furnace's cooking time, the bearing's angle, the cave's pending ticks, all equal in every
+     * run up to the last tick and different on disk). The same in vanilla's runs and Quicksilver's.
+     */
+    private static void markUnsaved(MinecraftServer server) {
+        int n = 0;
+        for (Area a : areas) {
+            ServerLevel level = server.getLevel(a.dim());
+            if (level == null) continue;
+            for (int cz = a.z1() - 3; cz <= a.z2() + 3; cz++) {
+                for (int cx = a.x1() - 3; cx <= a.x2() + 3; cx++) {
+                    net.minecraft.world.level.chunk.LevelChunk c = level.getChunkSource().getChunkNow(cx, cz);
+                    if (c == null) continue;
+                    c.markUnsaved();
+                    n++;
+                }
+            }
+        }
+        result.addProperty("chunksResaved", n);
+        LOG.info("CI HARNESS RUN: {} chunks marked to be saved as they are now", n);
     }
 
     /** Where the harness is, for trace lines: its stage, the run's tick, the game time. */
