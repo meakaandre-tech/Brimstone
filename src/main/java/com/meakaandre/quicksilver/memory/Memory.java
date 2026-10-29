@@ -32,6 +32,8 @@ public final class Memory {
 
     static {
         OPTIMISATIONS.put("state-neighbours", "one shared table per block for BlockState#setValue in place of every state's own neighbour arrays");
+        OPTIMISATIONS.put("shape-dedup", "equal block shapes, face shapes and sturdiness arrays shared between block states");
+        OPTIMISATIONS.put("datafixer-caches", "the data fixer's rewrite caches emptied when it has been idle");
         OPTIMISATIONS.put("bench-buffers", "the server bench's tick history kept only while a bench runs");
     }
 
@@ -86,8 +88,16 @@ public final class Memory {
     public static void init() {
         load();
         com.meakaandre.quicksilver.phase2.ServerNumbers.keepAlways = !on("bench-buffers");
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server ->
-            LOG.info("Quicksilver memory: {}; state tables: {}", status(), StateTables.counts()));
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            // an optimisation that is on but did nothing means its hook didn't run: a fallback (CI fails on it)
+            if (on(StateTables.ID) && StateTables.blocks == 0) fallback(StateTables.ID, "no block got a table (the StateDefinition hook did not run)", null);
+            if (on(ShapeDedup.ID) && ShapeDedup.states == 0) fallback(ShapeDedup.ID, "no state shared its shapes (the initCache hook did not run)", null);
+            ShapeDedup.dropTables();
+            DatafixerCaches.started(server);
+            LOG.info("Quicksilver memory: {}; state tables: {}; shapes: {}; data fixer caches emptied: {}", status(), StateTables.counts(),
+                ShapeDedup.counts(), DatafixerCaches.counts());
+        });
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(DatafixerCaches::tick);
     }
 
     /** One line: every optimisation's state, for the log at start-up (and CI). */

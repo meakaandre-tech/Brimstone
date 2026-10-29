@@ -6,7 +6,8 @@
 #                        shared random, and only sections at or above MIN_Y tick (the scenes below; the terrain stays
 #                        still, so its cave vines and grass can't move the shared random by how far the light engine's
 #                        thread had got)
-#   spawn-player X Y Z   a fake player in the overworld's player list only (the spawner needs one near), creative
+#   spawn-player X Y Z   a fake player in the overworld's player list only (the spawner needs one near: a mob farther
+#                        than 128 blocks from every player isn't spawned), creative
 #   spawn CX CZ          natural spawning in chunk CX CZ every tick (monsters; creatures every 400 game ticks), as the
 #                        game spawns near a player, from a random pinned per chunk and tick
 area minecraft:overworld -4 -4 3 3
@@ -17,7 +18,7 @@ cmd weather rain 100000
 cmd gamerule spawn_mobs false
 cmd gamerule random_tick_speed 20
 random-ticks 192
-spawn-player 16.5 230 16.5
+spawn-player 16.5 64 16.5
 spawn -3 2
 spawn 2 -3
 

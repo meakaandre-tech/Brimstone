@@ -23,7 +23,8 @@ public final class MemoryMixins implements IMixinConfigPlugin {
     /** Each mixin class (simple name) and the optimisation it belongs to. */
     private static final Map<String, String> OWNER = Map.of(
         "StateHolderMixin", StateTables.ID,
-        "StateDefinitionMixin", StateTables.ID);
+        "StateDefinitionMixin", StateTables.ID,
+        "BlockStateBaseMixin", ShapeDedup.ID);
 
     private static final Map<String, Set<String>> APPLIED = new ConcurrentHashMap<>();
 

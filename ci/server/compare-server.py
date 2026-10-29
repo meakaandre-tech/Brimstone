@@ -38,7 +38,9 @@ OTHER_VANILLA = ("vanilla-b", "vanilla-c")  # each compared with vanilla-a: thei
 WHY_TICKS = ("which sand, gravel and fluid ticks are still pending when the world is saved varies between vanilla's "
              "own runs, at one cave (chunk -1,-2 of seed 12345: sand and gravel over water), in core and SIFTEC alike; "
              "cause not found yet. Blocks, block entities and entities stay gated")
-REPORT_ONLY = {("core", "run"): (("sb", "sf"), WHY_TICKS), ("siftec", "run"): (("sb", "sf"), WHY_TICKS)}
+# (P2-1: empty. The cave's pending ticks repeat since the harness schedules every pending tick in a fixed order before
+# tick 0; docs/ci-limits.md, "Server suite".)
+REPORT_ONLY = {}
 # keys vanilla has shown differing against itself in recent runs, even when its three runs in this run agree (the
 # standing noise rule); evidence in docs/ci-limits.md, "Server suite"
 # (P2-1: empty. SIFTEC's furnace and bearing differed until the harness started them on a fixed tick.)

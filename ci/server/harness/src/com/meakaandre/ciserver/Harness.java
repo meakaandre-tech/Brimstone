@@ -63,6 +63,8 @@ public final class Harness implements ModInitializer {
     /** P2-1: the heap run (histograms, sprinting, no bench). */
     private static final boolean HEAP = Boolean.getBoolean("ci.harness.heap");
     private static final List<Spawn> spawns = new ArrayList<>();
+    /** P2-1 diagnosis (script line {@code report X Y Z}): block entities whose saved fields are logged during the run. */
+    private static final List<BlockPos> reports = new ArrayList<>();
     private static long monstersSpawned = 0, creaturesSpawned = 0;
     private static final int SPAWN_CAP = 24;  // per chunk and category over the run
     private static final java.util.Map<String, Integer> spawnedIn = new java.util.HashMap<>();
@@ -206,6 +208,10 @@ public final class Harness implements ModInitializer {
                     if (!HEAP) timed.add(new At(Integer.parseInt(p[1]), p[2], true));
                 }
                 case "random-ticks" -> Pins.randomTickMinY = Integer.parseInt(p[1]);
+                case "report" -> {
+                    String[] a = line.split("\\s+");
+                    reports.add(new BlockPos(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3])));
+                }
                 case "spawn-player" -> {
                     String[] a = line.split("\\s+");
                     spawnPlayerAt = new double[] {Double.parseDouble(a[1]), Double.parseDouble(a[2]), Double.parseDouble(a[3])};
@@ -270,6 +276,67 @@ public final class Harness implements ModInitializer {
                 UUID u = e.getUUID();
                 e.getRandom().setSeed(SeedPin.mix(u.getMostSignificantBits() ^ u.getLeastSignificantBits()));
             }
+        }
+    }
+
+    /**
+     * P2-1: the pending scheduled block and fluid ticks in a fixed order. Chunks are post-processed (their generation's
+     * pending shape and fluid updates applied) as they finish loading, which happens in a different order in every run;
+     * each update schedules its ticks with the level's next sub-tick number, so the same ticks (the same set in every
+     * run) got a different order among those due on the same game tick, and where water and falling sand meet (the cave
+     * at chunk -1,-2) the world then went different ways. Here, just before tick 0, every tick still pending in every
+     * level is taken out and scheduled again in one fixed order (trigger tick, priority, position, type), so the order
+     * no longer depends on loading. The game's own ordering rules are unchanged from there on. The same in vanilla's runs
+     * and Quicksilver's.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void renumberTicks(MinecraftServer server) {
+        long total = 0;
+        try {
+            for (ServerLevel level : server.getAllLevels()) {
+                for (net.minecraft.world.ticks.LevelTicks<?> ticks : List.of(level.getBlockTicks(), level.getFluidTicks())) {
+                    java.lang.reflect.Field containersField = null;
+                    for (java.lang.reflect.Field f : net.minecraft.world.ticks.LevelTicks.class.getDeclaredFields()) {
+                        if (it.unimi.dsi.fastutil.longs.Long2ObjectMap.class.isAssignableFrom(f.getType())) containersField = f;
+                    }
+                    if (containersField == null) throw new IllegalStateException("LevelTicks has no chunk container map");
+                    containersField.setAccessible(true);
+                    it.unimi.dsi.fastutil.longs.Long2ObjectMap<?> containers = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) containersField.get(ticks);
+                    List<net.minecraft.world.ticks.ScheduledTick> all = new ArrayList<>();
+                    int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
+                    for (var e : containers.long2ObjectEntrySet()) {
+                        net.minecraft.world.ticks.LevelChunkTicks<?> c = (net.minecraft.world.ticks.LevelChunkTicks<?>) e.getValue();
+                        c.getAll().forEach(t -> all.add((net.minecraft.world.ticks.ScheduledTick) t));
+                        int cx = (int) e.getLongKey(), cz = (int) (e.getLongKey() >> 32);
+                        minX = Math.min(minX, cx);
+                        minZ = Math.min(minZ, cz);
+                        maxX = Math.max(maxX, cx);
+                        maxZ = Math.max(maxZ, cz);
+                    }
+                    if (all.isEmpty()) continue;
+                    long before = 0;
+                    for (Object c : containers.values()) before += ((net.minecraft.world.ticks.LevelChunkTicks<?>) c).count();
+                    all.sort(java.util.Comparator.<net.minecraft.world.ticks.ScheduledTick>comparingLong(t -> t.triggerTick())
+                        .thenComparing(t -> (Comparable) t.priority())
+                        .thenComparingInt(t -> t.pos().getX()).thenComparingInt(t -> t.pos().getZ()).thenComparingInt(t -> t.pos().getY())
+                        .thenComparing(t -> String.valueOf(t.type())));
+                    ticks.clearArea(new net.minecraft.world.level.levelgen.structure.BoundingBox(minX * 16, -4096, minZ * 16,
+                        maxX * 16 + 15, 4096, maxZ * 16 + 15));
+                    long order = 0;
+                    for (net.minecraft.world.ticks.ScheduledTick t : all) {
+                        ((net.minecraft.world.ticks.LevelTicks) ticks).schedule(new net.minecraft.world.ticks.ScheduledTick(t.type(), t.pos(), t.triggerTick(), t.priority(), order++));
+                    }
+                    long left = 0;
+                    for (Object c : containers.values()) left += ((net.minecraft.world.ticks.LevelChunkTicks<?>) c).count();
+                    if (left != before) throw new IllegalStateException(level.dimension() + ": " + before + " ticks before renumbering, " + left + " after");
+                    total += all.size();
+                }
+            }
+            result.addProperty("ticksRenumbered", total);
+            LOG.info("CI HARNESS RUN: {} pending scheduled ticks put in a fixed order", total);
+        } catch (Throwable e) {
+            LOG.error("CI HARNESS FAILED: renumbering the scheduled ticks", e);
+            result.addProperty("error", "renumbering ticks: " + e);
         }
     }
 
@@ -358,6 +425,8 @@ public final class Harness implements ModInitializer {
                 if (HEAP) histogram("load");
                 // tick 0: every random source from a fixed point, whatever order things loaded in
                 reseed(server);
+                // and every pending scheduled tick in a fixed order (P2-1: see renumberTicks)
+                renumberTicks(server);
                 tickNanos = new long[ticks];
                 tick = 0;
                 stage = Stage.RUNNING;
@@ -369,6 +438,7 @@ public final class Harness implements ModInitializer {
                 tickNanos[tick] = dt;
                 CiTrain.tick(server, tick);
                 spawn(server);
+                if (!reports.isEmpty() && (tick <= 3 || tick == 10 || tick == 20 || tick % 100 == 0 || tick == ticks - 1)) report(server);
                 tick++;
                 if (tick >= ticks) {
                     server.tickRateManager().setFrozen(true);
@@ -389,6 +459,7 @@ public final class Harness implements ModInitializer {
                     heap("heapEndMB");
                     removeSpawnPlayer(server);
                     if (HEAP) histogram("end");
+                    if (HEAP) lightLayers(server);
                     if (Pins.on() || !spawns.isEmpty()) {
                         String r = Pins.summary() + " monsters=" + monstersSpawned + " creatures=" + creaturesSpawned;
                         result.addProperty("random", r);
@@ -406,6 +477,81 @@ public final class Harness implements ModInitializer {
             }
             default -> {
             }
+        }
+    }
+
+    /**
+     * P2-1 diagnosis, the heap run: the light engine's section layers in the overworld's loaded area (the run's areas
+     * and two rings around them): how many there are, how many hold a 2048-byte array, and how many of those arrays
+     * hold one value throughout (which a layer could keep as a single number).
+     */
+    private static void lightLayers(MinecraftServer server) {
+        try {
+            ServerLevel level = server.overworld();
+            java.lang.reflect.Field data = null;
+            for (java.lang.reflect.Field f : net.minecraft.world.level.chunk.DataLayer.class.getDeclaredFields()) {
+                if (f.getType() == byte[].class && !java.lang.reflect.Modifier.isStatic(f.getModifiers())) data = f;
+            }
+            data.setAccessible(true);
+            StringBuilder out = new StringBuilder();
+            for (net.minecraft.world.level.LightLayer layer : net.minecraft.world.level.LightLayer.values()) {
+                long layers = 0, arrays = 0, uniform = 0;
+                java.util.Map<Integer, Integer> values = new java.util.TreeMap<>();
+                var listener = level.getLightEngine().getLayerListener(layer);
+                for (Area a : areas) {
+                    for (int cz = a.z1() - 2; cz <= a.z2() + 2; cz++) {
+                        for (int cx = a.x1() - 2; cx <= a.x2() + 2; cx++) {
+                            for (int sy = level.getMinSectionY() - 1; sy <= level.getMaxSectionY() + 1; sy++) {
+                                net.minecraft.world.level.chunk.DataLayer d = listener.getDataLayerData(net.minecraft.core.SectionPos.of(cx, sy, cz));
+                                if (d == null) continue;
+                                layers++;
+                                byte[] b = (byte[]) data.get(d);
+                                if (b == null) continue;
+                                arrays++;
+                                boolean same = true;
+                                for (byte x : b) if (x != b[0]) {
+                                    same = false;
+                                    break;
+                                }
+                                if (same) {
+                                    uniform++;
+                                    values.merge(b[0] & 15, 1, Integer::sum);
+                                }
+                            }
+                        }
+                    }
+                }
+                out.append(layer).append(": layers=").append(layers).append(" arrays=").append(arrays).append(" uniform=").append(uniform)
+                    .append(" uniformValues=").append(values).append("; ");
+            }
+            result.addProperty("lightLayers", out.toString());
+            LOG.info("CI LIGHT {}", out);
+        } catch (Throwable t) {
+            LOG.warn("CI LIGHT diagnosis failed", t);
+        }
+    }
+
+    /** Logs each reported block entity's saved fields (CI REPORT lines), through whichever save method this game has. */
+    private static void report(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        for (BlockPos p : reports) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(p);
+            String nbt = "none";
+            if (be != null) {
+                nbt = "?";
+                for (java.lang.reflect.Method m : be.getClass().getMethods()) {
+                    if (m.getName().equals("saveWithoutMetadata") && m.getParameterCount() == 1
+                        && m.getParameterTypes()[0].isInstance(level.registryAccess())) {
+                        try {
+                            nbt = String.valueOf(m.invoke(be, level.registryAccess()));
+                        } catch (Throwable t) {
+                            nbt = "error " + t;
+                        }
+                        break;
+                    }
+                }
+            }
+            LOG.info("CI REPORT t={} {} {} {} {}", tick, p.getX(), p.getY(), p.getZ(), nbt);
         }
     }
 

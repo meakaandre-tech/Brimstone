@@ -34,19 +34,21 @@ public final class StateTables {
 
     private static Field neighbours, keys;
     private static boolean checked = false;
-    private static long blocks = 0, states = 0, singletons = 0;
+    static long blocks = 0, states = 0, singletons = 0;
 
     private StateTables() {
     }
 
-    /** Vanilla's neighbour arrays (the one Object[][] field of StateHolder) and its properties (the one Property[]). */
+    /** Vanilla's neighbour arrays (the one S[][] field of StateHolder) and its properties (the one Property[]). */
     private static void findFields() {
         if (checked) return;
         checked = true;
         List<Field> nb = new ArrayList<>(), ks = new ArrayList<>();
         for (Field f : StateHolder.class.getDeclaredFields()) {
             if (Modifier.isStatic(f.getModifiers())) continue;
-            if (f.getType() == Object[][].class) nb.add(f);
+            // S[][], erased to the bound of S (StateHolder[][] in 26.3)
+            if (f.getType().isArray() && f.getType().getComponentType().isArray()
+                && !f.getType().getComponentType().getComponentType().isPrimitive()) nb.add(f);
             if (f.getType() == Property[].class) ks.add(f);
         }
         if (nb.size() != 1 || ks.size() != 1) {
