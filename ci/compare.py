@@ -94,16 +94,19 @@ def load(path):
     return np.asarray(Image.open(path).convert("RGB"), dtype=np.int16) if os.path.exists(path) else None
 
 
-def strict(shot, out_prefix, skip_runs=(), pairs=None):
+def strict(shot, out_prefix, skip_runs=(), pairs=None, mask=None):
     """Per Quicksilver profile: pixels where all vanilla runs agree exactly but the Quicksilver run differs by more than
     STRICT_THRESHOLD, and (reported only) by anything at all. Runs a scene skips ("ciSkipRuns", package 3) are left out
-    of both the agreement and the counts."""
+    of both the agreement and the counts, and so are a scene's "ciStrictMask" rectangles ([x0, y0, x1, y1], end
+    exclusive; MapMod's minimap while MapMod is being finished, Andre 2026-10-30)."""
     v = {r: load(shot(r)) for r in VANILLA_RUNS if r not in skip_runs}
     if any(x is None for x in v.values()) or len({x.shape for x in v.values()}) != 1:
         return None, {}, {}
     agree = np.ones(v["vanilla-a"].shape[:2], bool)
     for x in v.values():
         agree &= (x == v["vanilla-a"]).all(axis=2)
+    for x0, y0, x1, y1 in mask or ():
+        agree[y0:y1, x0:x1] = False
     out, anyd = {}, {}
     for prof, (b, vr) in (pairs or PAIRS).items():
         if b in skip_runs or vr in skip_runs:
@@ -580,7 +583,7 @@ def main():
                         failures.append(f"{name}/{sid}: {prof} differs from vanilla on {dv['pct']}% of pixels (limit {limit}%)")
                 fmt = lambda d, p=None: f"skipped ({sc.get('ciSkipReason', 'ciSkipRuns')})" if p in skipped_profiles else ("missing" if d is None else f"{d['pct']}")
                 lines.append(f"| {sid} | {fmt(noise)} | {limit} | " + " | ".join(fmt(row[p], p) for p in PAIRS) + " |")
-                agree, counts, counts_any = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"), skip_runs)
+                agree, counts, counts_any = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}"), skip_runs, mask=sc.get("ciStrictMask"))
                 sd["strict"][sid] = {"vanillaAgreePct": agree, "pixels": counts, "pixelsAnyDifference": counts_any}
                 slimit = None if strict_limits is None else strict_limits.get(name, {}).get(sid)
                 if agree is None:
@@ -606,7 +609,7 @@ def main():
                 # in the draw-call and terrain memory gates
                 mpairs = {} if QUICK else {prof: (MEASURE[prof], v) for prof, (b, v) in PAIRS.items() if prof not in skipped_profiles}
                 mrow = {prof: diff(shot(mb), shot(v), os.path.join(rep, "diff", f"{name}-{sid}-{prof}-measure.png")) for prof, (mb, v) in mpairs.items()}
-                _, mcounts, _ = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}-measure"), skip_runs, mpairs) if mpairs else (None, {}, {})
+                _, mcounts, _ = strict(shot, os.path.join(rep, "diff", f"{name}-{sid}-measure"), skip_runs, mpairs, mask=sc.get("ciStrictMask")) if mpairs else (None, {}, {})
                 no_strict = sc.get("ciNoStrict") and f"{name}/{sid}" in NO_STRICT_ALLOWED
                 for prof, dv in mrow.items():
                     if dv is None:

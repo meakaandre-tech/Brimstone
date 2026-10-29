@@ -32,6 +32,9 @@
     },
     {
       "id": "factory_flat",
+      "ciStrictMask": [[1056, 0, 1280, 240]],
+      "ciGatedCounts": ["uploadsPerFrame", "uploadBytesPerFrame", "heapUsedAfterGcMB", "directBuffersMB"],
+      "ciMapModNote": "MapMod is being finished (Andre, 2026-10-30): MapMod's minimap shows here, so the strict check leaves its screen area out (ciStrictMask) and draw calls are gated against vanilla in the same run only, not main's baselines (any MapMod build is taken).",
       "title": "The SIFTEC factory scene (the buildings_a row) with smooth lighting off: flat lighting of SIFTEC and Create models (package 4)",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -140,6 +143,7 @@
     {
       "id": "map",
       "title": "SIFTEC fullscreen map, centred on a pinned player",
+      "skip": "MapMod is being finished (Andre, 2026-10-30): the map scene is out of the bench and CI until then; with it, its limits are re-collected",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
@@ -151,14 +155,12 @@
         "execute in minecraft:overworld unless block 300 -63 -200 minecraft:emerald_block run siftec worldtest map setup",
         "execute in minecraft:overworld run setblock 300 -63 -200 minecraft:emerald_block",
         "#wait 40",
-        "gamerule spawn_mobs false",
-        "execute in minecraft:overworld run tp @e[type=!minecraft:player,x=100,y=-64,z=-420,dx=420,dy=384,dz=440] 300.5 -200 -199.5",
         "gamemode spectator @a",
         "execute in minecraft:overworld run tp @a 300.5 150 -199.5 0 0",
         "#wait 3",
         "siftec worldtest map open 1.5"
       ],
-      "ciNote": "Strict-gated since package 7: its area is pre-generated in the CI world (and so recorded by SIFTEC's map there), the player is put at a fixed spot (spreadplayers landed a block either way, and the markers sit relative to it), random ticks and mob griefing are off in the CI world. Before, vanilla runs differed by up to 22,532 strict pixels here. SIFTEC's map setup (unlock, radar sweep, two markers) runs once per world: an emerald block deep under the spot marks it done, so a Quicksilver or measure run's bench (which sets the scene up again) no longer adds the markers a second time; with one player name in every session the markers show on the compass in later scenes and sessions (factory_flat: 328 pixels in run 40436256016). Since MapMod's round-minimap build (2026-10-30) the map shows mobs as head icons, so the setup turns mob spawning off and sends every non-player entity in the area under the world (vanilla runs differed by 800-1,960 strict pixels, all mob icons, run 40946920488); create_ct turns spawning back on.",
+      "ciNote": "Strict-gated since package 7: its area is pre-generated in the CI world (and so recorded by SIFTEC's map there), the player is put at a fixed spot (spreadplayers landed a block either way, and the markers sit relative to it), random ticks and mob griefing are off in the CI world. Before, vanilla runs differed by up to 22,532 strict pixels here. SIFTEC's map setup (unlock, radar sweep, two markers) runs once per world: an emerald block deep under the spot marks it done, so a Quicksilver or measure run's bench (which sets the scene up again) no longer adds the markers a second time; with one player name in every session the markers show on the compass in later scenes and sessions (factory_flat: 328 pixels in run 40436256016).",
       "screen": {
         "expect": "MapScreen"
       },
@@ -167,6 +169,9 @@
     },
     {
       "id": "hologram",
+      "ciStrictMask": [[1056, 0, 1280, 240]],
+      "ciGatedCounts": ["uploadsPerFrame", "uploadBytesPerFrame", "heapUsedAfterGcMB", "directBuffersMB"],
+      "ciMapModNote": "MapMod is being finished (Andre, 2026-10-30): MapMod's minimap shows here, so the strict check leaves its screen area out (ciStrictMask) and draw calls are gated against vanilla in the same run only, not main's baselines (any MapMod build is taken).",
       "ciDrawCallGate": "median",
       "title": "SIFTEC Build Gun hologram (green where the building fits) in front of a water pool, high above the terrain (package 3)",
       "renderDistance": 8,
@@ -199,6 +204,7 @@
     },
     {
       "id": "hud",
+      "skip": "MapMod is being finished (Andre, 2026-10-30): the HUD scene (its minimap) is out of the bench and CI until then; with it, its limits are re-collected",
       "title": "Normal play with the HUD on: hotbar with items, the chat open with a few lines, SIFTEC's compass strip and minimap, on a platform in front of a wall (package 7)",
       "renderDistance": 8,
       "settleSeconds": 10,
@@ -229,8 +235,6 @@
         "tellraw @a {\"text\":\"Line six: the last one\",\"color\":\"red\"}",
         "tellraw @a {\"text\":\"Line seven, so six lines show whatever came before\"}",
         "tellraw @a {\"text\":\"Line eight: end of the chat\",\"color\":\"yellow\"}",
-        "gamerule spawn_mobs false",
-        "execute in minecraft:overworld run tp @e[type=!minecraft:player,x=100,y=-64,z=-420,dx=420,dy=384,dz=440] 300.5 -200 -199.5",
         "execute in minecraft:overworld run tp @a 400.5 201 -109.5 0 0"
       ],
       "ciClearChat": true,
@@ -239,7 +243,7 @@
         "prompt": "Press T (open the chat)",
         "ciKey": "t"
       },
-      "ciNote": "The chat is open (its lines fade with time otherwise, and an open chat shows them in full); chatHeightFocused 0.25 in CI shows the last 6 lines, all this scene's, and CI's pin mod holds the input box's cursor on. The spot (400 -110, in the CI world's pre-generated, explored map area) keeps the map scene's markers off the minimap, and facing south keeps them off the compass: each Quicksilver and measure run sets the map up again in its bench, which doubles the markers (578 pixels in run 40266027605). A gray concrete platform high above the ground with a gray concrete wall 16 blocks in front (no sun, no mob in view; Quicksilver draws the terrain). Concrete is one flat colour: Vulkan sampled a stone-brick wall's texture differently from GL on most pixels (runs 40414693058 and 40426298065), which left the strict check blind under the compass and the chat. After the fills, the #chunks step makes drive.py reload all chunks (F3+A; the wall once had a hole, a section not rebuilt in time, in run 40450860976's measure-full run) and clear the chat. drive.py also clears the chat (F3+D) before the setup, so it holds only the setup's lines in every run (bench messages in Quicksilver and measure runs moved the chat's scrollbar: 48 pixels in run 40404251173). Runs after the hologram scene and before create_ct, which hides the GUI (F1) for the rest of the session. As in the map scene, mob spawning is off and the area's mobs are sent under the world (the minimap shows mobs since MapMod's round-minimap build: 25-330 strict pixels between vanilla runs, run 40946920488)."
+      "ciNote": "The chat is open (its lines fade with time otherwise, and an open chat shows them in full); chatHeightFocused 0.25 in CI shows the last 6 lines, all this scene's, and CI's pin mod holds the input box's cursor on. The spot (400 -110, in the CI world's pre-generated, explored map area) keeps the map scene's markers off the minimap, and facing south keeps them off the compass: each Quicksilver and measure run sets the map up again in its bench, which doubles the markers (578 pixels in run 40266027605). A gray concrete platform high above the ground with a gray concrete wall 16 blocks in front (no sun, no mob in view; Quicksilver draws the terrain). Concrete is one flat colour: Vulkan sampled a stone-brick wall's texture differently from GL on most pixels (runs 40414693058 and 40426298065), which left the strict check blind under the compass and the chat. After the fills, the #chunks step makes drive.py reload all chunks (F3+A; the wall once had a hole, a section not rebuilt in time, in run 40450860976's measure-full run) and clear the chat. drive.py also clears the chat (F3+D) before the setup, so it holds only the setup's lines in every run (bench messages in Quicksilver and measure runs moved the chat's scrollbar: 48 pixels in run 40404251173). Runs after the hologram scene and before create_ct, which hides the GUI (F1) for the rest of the session."
     },
     {
       "id": "create_ct",
@@ -247,7 +251,6 @@
       "renderDistance": 8,
       "settleSeconds": 20,
       "setup": [
-        "gamerule spawn_mobs true",
         "execute in minecraft:overworld run tp @a 2071.5 243 -1987.5 180 12",
         "#wait 6",
         "fill 2056 236 -2014 2094 252 -1982 minecraft:air",

@@ -4,6 +4,7 @@
 # siftec, sodium). Any jar that differs from its locked hash, or isn't in the lock, fails with "pack changed: <jar>";
 # with "complete", so does a locked jar of SET that is missing from DIR. Quicksilver's own jars, CI's pin mod and the server harness (built
 # in CI) are not checked. Every jar's hash is also written to REPORT (default: stdout) for the record.
+# A jar locked as "*" is accepted at any hash (MapMod, while it is being finished: Andre, 2026-10-30).
 # A SET with no entries in the lock yet is recorded, not checked (the first run after adding a set). Updating the lock
 # is a deliberate commit that re-collects the numbers the changed jars affect (docs/ci-limits.md, "Pack lock").
 dir=$1
@@ -25,7 +26,7 @@ for j in "$dir"/*.jar; do
   want=$(echo "$locked" | awk -v n="$name" '$2 == n {print $1}')
   if [ -z "$want" ]; then
     echo "pack changed: $name (not in ci/pack-lock.txt, set $set_)"; bad=1
-  elif [ "$want" != "$sha" ]; then
+  elif [ "$want" != "*" ] && [ "$want" != "$sha" ]; then
     echo "pack changed: $name (sha256 $sha, locked $want)"; bad=1
   fi
 done

@@ -83,6 +83,14 @@ Why: SIFTEC's jars come from `latest`-style release tags that are rebuilt on eve
 main's run 40827558273 and package 4c's full runs (a round minimap, about 97 more GUI draws per frame in vanilla's runs
 as much as Quicksilver's, and a noisier map scene), and the gates failed with no change in Quicksilver.
 
+**MapMod, while it is being finished (Andre, 2026-10-30):** locked as `*` (any build). The map and hud scenes are
+skipped (`skip` in `scenes/siftec.json`); factory_flat and hologram, where its minimap shows, leave the minimap's screen
+area out of the strict check (`ciStrictMask`, 1056-1280 x 0-240) and gate draw calls against vanilla in the same run
+only (`ciGatedCounts` without draw calls; vanilla's own draws rose by the same ~97 GUI draws with the round-minimap
+build). Its compass strip (also MapMod's) shows in most SIFTEC scenes and stays fully checked. When MapMod is finished:
+its hash goes back in the lock, the map and hud scenes come back with their numbers re-collected, and the strict check
+covers the minimap again.
+
 Updating the lock is a deliberate commit: it names the changed jars and re-collects the numbers they affect (baselines
 and limits, by the rules above, from at least 3 clean runs on the new jars, with vanilla's numbers as the reason).
 

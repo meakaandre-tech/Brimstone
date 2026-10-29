@@ -2368,6 +2368,10 @@ around the scripted area finishing loading at different moments), each fixed in 
 
 ## Open bugs
 
+- **When MapMod is finished** (Andre, 2026-10-30): put it back in the pack lock, restore the map and hud scenes,
+  re-collect their numbers, and restore the full strict check where the minimap shows (factory_flat, hologram:
+  `ciStrictMask`, `ciGatedCounts` in `scenes/siftec.json`; `docs/ci-limits.md`, "Pack lock").
+
 - **Direct-buffer jump, Quicksilver only (found 2026-10-29).** Run
   [40803126672](https://github.com/meakaandre-tech/Quicksilver/actions/runs/40803126672), attempt 1, SIFTEC
   `quicksilver-full`: direct buffers went from about 8 MB to 13.8–13.9 MB in the map, hologram and hud scenes
