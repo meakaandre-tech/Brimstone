@@ -383,6 +383,10 @@ def main():
                                 failures.append(f"{name}/{r}/{sess}: Quicksilver's Fabric Renderer API implementation was not registered")
                             if "[Indigo] Registering Indigo renderer" in st:
                                 failures.append(f"{name}/{r}/{sess}: Indigo registered as the renderer next to Quicksilver")
+                            # phase 2, P2-1: the Memory module (both sides) never falls back
+                            nmem = len(re.findall(r"Quicksilver memory fallback:", st))
+                            if nmem:
+                                failures.append(f"{name}/{r}/{sess}: the Memory module fell back to vanilla's code {nmem} times (see client log)")
                             nwarn = len(re.findall(r"Quicksilver renderer fallback:", st))
                             if nwarn:
                                 failures.append(f"{name}/{r}/{sess}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")

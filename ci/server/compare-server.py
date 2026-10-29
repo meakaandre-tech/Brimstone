@@ -315,6 +315,21 @@ def main(res, rep):
                 fails.append("%s: Quicksilver not in the quicksilver run's mod list" % suite)
             if r != "quicksilver" and loaded:
                 fails.append("%s: Quicksilver loaded in vanilla run %s" % (suite, r))
+            # P2-1: the Memory module on in every server start of the quicksilver run, every optimisation on, no fallback
+            if r == "quicksilver":
+                for p in sorted(glob.glob(os.path.join(d[r], "*-server.log"))):
+                    t = text(p)
+                    if "Done (" not in t:
+                        continue
+                    st = re.findall(r"Quicksilver memory: (.*)", t)
+                    if not st:
+                        fails.append("%s %s: no Quicksilver memory status line" % (suite, os.path.basename(p)))
+                    elif re.search(r"=(off|fallback)", st[-1]):
+                        fails.append("%s %s: Quicksilver memory not fully on: %s" % (suite, os.path.basename(p), st[-1][:300]))
+                    s.setdefault("memory", {})[os.path.basename(p)] = st[-1] if st else None
+            fb = [l for l in log.splitlines() if "Quicksilver memory fallback:" in l]
+            if fb:
+                fails.append("%s %s: %d memory fallbacks (first: %s)" % (suite, r, len(fb), fb[0][:300]))
             errs = [l for l in log.splitlines() if re.search(r"/(ERROR|FATAL)\]", l) and re.search(r"quicksilver", l, re.I)]
             if errs:
                 fails.append("%s %s: %d error lines naming Quicksilver (first: %s)" % (suite, r, len(errs), errs[0][:200]))

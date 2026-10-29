@@ -20,4 +20,12 @@ Adapted, with changes, in these files, each of which carries the Apache License 
                                                                     mesh/MutableMeshImpl and mesh/MeshViewImpl)
   src/main/java/com/meakaandre/quicksilver/frapi/QuadData.java       (normal packing, from Indigo helper/NormalHelper)
 
+This product includes software from FerriteCore (https://github.com/malte0811/FerriteCore, branch 26.1, build 9.0.0),
+Copyright (c) 2020 malte0811, licensed under the MIT License (full text in LICENSE-MIT-FerriteCore, shipped in the jar as
+LICENSE-MIT-FerriteCore_quicksilver). Adapted, with changes, in this file, which carries the MIT licence text and says
+what was changed:
+
+  src/main/java/com/meakaandre/quicksilver/memory/StateTable.java   (fastmap/FastMap, fastmap/FastMapKey,
+                                                                    fastmap/BinaryFastMapKey)
+
 The rest of Quicksilver is its own work under the LGPL-3.0-only.
