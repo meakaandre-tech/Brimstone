@@ -26,6 +26,8 @@ else
 fi
 curl -fsSL -o mods/create-fly-26.3.jar https://github.com/meakaandre-tech/Create-Fly/releases/download/pack-26.3-latest/create-fly-26.3.jar || exit 1
 curl -fsSL -o mods/create-new-age-26.3.jar https://github.com/meakaandre-tech/Create-New-Age/releases/download/fabric-26.3-latest/create-new-age-fabric-26.3.jar || exit 1
+# MapMod: SIFTEC's map since SIFTEC e09d303 (a required mod), from MapMod's latest release as SIFTEC's own CI fetches it
+curl -fsSL -o mods/mapmod-26.3.jar https://github.com/meakaandre-tech/MapMod/releases/download/latest/mapmod-26.3.jar || exit 1
 python3 -I "$S/fetch-tb.py" "$mc" /tmp/tb /tmp/out
 cp /tmp/tb/runtime/*.jar mods/ 2>/dev/null || echo "no Traveler's Backpack build for $mc"
 while read -r url; do
