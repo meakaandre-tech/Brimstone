@@ -435,13 +435,55 @@ public final class Harness implements ModInitializer {
                 String key = s.cx() + "," + s.cz() + "/" + cat;
                 if (spawnedIn.getOrDefault(key, 0) >= SPAWN_CAP) continue;
                 level.getRandom().setSeed(SeedPin.mix(s.cx() * 31L + s.cz() * 1_000_003L + t * 0x9E3779B97F4A7C15L + cat.ordinal()));
-                net.minecraft.world.level.NaturalSpawner.spawnCategoryForChunk(cat, level, chunk, (type, pos, c) -> true, (mob, c) -> {
+                spawnCategory(cat, level, chunk, () -> {
                     spawnedIn.merge(key, 1, Integer::sum);
                     if (creature) creaturesSpawned++;
                     else monstersSpawned++;
                 });
             }
         }
+    }
+
+    private static java.lang.reflect.Method spawnMethod = null;
+
+    /**
+     * NaturalSpawner#spawnCategoryForChunk(category, level, chunk, predicate, after-spawn callback), called through
+     * reflection with its two callbacks as proxies (every spawn allowed, as the game's own predicate allows outside a
+     * charged area; every spawn counted), so the harness doesn't depend on the callbacks' exact shapes.
+     */
+    private static void spawnCategory(net.minecraft.world.entity.MobCategory cat, ServerLevel level,
+                                      net.minecraft.world.level.chunk.LevelChunk chunk, Runnable spawned) {
+        try {
+            if (spawnMethod == null) {
+                for (java.lang.reflect.Method m : net.minecraft.world.level.NaturalSpawner.class.getDeclaredMethods()) {
+                    if (m.getName().equals("spawnCategoryForChunk") && m.getParameterCount() == 5) spawnMethod = m;
+                }
+                if (spawnMethod == null) throw new NoSuchMethodException("NaturalSpawner.spawnCategoryForChunk/5");
+                spawnMethod.setAccessible(true);
+            }
+            Class<?>[] t = spawnMethod.getParameterTypes();
+            Object predicate = java.lang.reflect.Proxy.newProxyInstance(t[3].getClassLoader(), new Class<?>[] {t[3]},
+                (proxy, m, args) -> m.getDeclaringClass() == Object.class ? objectMethod(proxy, m, args) : Boolean.TRUE);
+            Object after = java.lang.reflect.Proxy.newProxyInstance(t[4].getClassLoader(), new Class<?>[] {t[4]}, (proxy, m, args) -> {
+                if (m.getDeclaringClass() == Object.class) return objectMethod(proxy, m, args);
+                spawned.run();
+                return null;
+            });
+            spawnMethod.invoke(null, cat, level, chunk, predicate, after);
+        } catch (Throwable e) {
+            if (result.get("error") == null) {
+                LOG.error("CI HARNESS FAILED: natural spawning", e);
+                result.addProperty("error", "spawning: " + e);
+            }
+        }
+    }
+
+    private static Object objectMethod(Object proxy, java.lang.reflect.Method m, Object[] args) {
+        return switch (m.getName()) {
+            case "equals" -> proxy == args[0];
+            case "hashCode" -> System.identityHashCode(proxy);
+            default -> "ci-harness-spawn-callback";
+        };
     }
 
     private static Object spawnPlayer = null;
