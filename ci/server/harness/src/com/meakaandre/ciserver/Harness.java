@@ -670,6 +670,7 @@ public final class Harness implements ModInitializer {
     private static Object objectMethod(Object proxy, java.lang.reflect.Method m, Object[] args) {
         return switch (m.getName()) {
             case "equals" -> proxy == args[0];
+            // an identity hash, but asked for in every run alike (vanilla's and Quicksilver's), so it moves nothing between them
             case "hashCode" -> System.identityHashCode(proxy);
             default -> "ci-harness-spawn-callback";
         };

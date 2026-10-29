@@ -27,6 +27,8 @@ public final class MemoryMixins implements IMixinConfigPlugin {
         "BlockStateBaseMixin", ShapeDedup.ID);
 
     private static final Map<String, Set<String>> APPLIED = new ConcurrentHashMap<>();
+    /** The handlers whose landing is checked (matched by the end of their merged name, as TerrainMixins does). */
+    private static final List<String> HANDLERS = List.of("quicksilver$tableLookup", "quicksilver$tables", "quicksilver$shareShapes");
 
     /** Whether a hook (a handler method of this config's mixins) landed in its target class. */
     public static boolean applied(String target, String handler) {
@@ -54,8 +56,8 @@ public final class MemoryMixins implements IMixinConfigPlugin {
         Set<String> found = APPLIED.computeIfAbsent(targetClassName, k -> ConcurrentHashMap.newKeySet());
         for (MethodNode m : targetClass.methods) {
             for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
-                if (insn instanceof MethodInsnNode call && call.owner.equals(targetClass.name) && call.name.contains("quicksilver$")) {
-                    found.add(call.name.substring(call.name.indexOf("quicksilver$")));
+                if (insn instanceof MethodInsnNode call && call.owner.equals(targetClass.name)) {
+                    for (String h : HANDLERS) if (call.name.endsWith(h)) found.add(h);
                 }
             }
         }

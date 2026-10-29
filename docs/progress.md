@@ -2384,8 +2384,8 @@ memory fallback), `docs/ci-limits.md` ("Server suite").
    make them repeat: logged every few ticks (`report` lines), they were equal in every vanilla run up to the last tick
    and still differed on disk. The game saves chunks during a run on a wall-clock timer, and a chunk it doesn't count
    as changed since (a turning bearing or SIFTEC's furnace doesn't mark it) isn't written again when the server stops,
-   so the saved fields were those of whatever tick the clock picked. The harness now marks every loaded chunk changed
-   at the run's end. `KNOWN_NOISE` is empty; `cooking_time_spent`, `lit_time_remaining` and `Angle` are gated.
+   so the saved fields were those of whatever tick the clock picked. The harness now marks every loaded chunk of the
+   run's areas and three rings around them changed at the run's end. `KNOWN_NOISE` is empty; `cooking_time_spent`, `lit_time_remaining` and `Angle` are gated.
 2. **The cave's pending ticks** (chunk -1,-2): a trace of every scheduled tick there (`Trace.java`, off by default)
    showed the same set of ticks in every run, scheduled in a different order: chunks are post-processed (their
    generation's pending shape and fluid updates applied) as they finish loading, in a different order each run, and
@@ -2411,7 +2411,7 @@ anything is unexpected (CI fails on it). With FerriteCore installed, or in CI's 
 |---|---|---|---|
 | `state-neighbours` | one bit-packed table per block for `BlockState#setValue` instead of every state's neighbour arrays; vanilla's arrays are built as usual, each table is checked against them entry by entry, then they are dropped | FerriteCore's fastmap (MIT, `StateTable.java` carries its licence; NOTICE) | 2.8 / 12.9 / 2.8 |
 | `shape-dedup` | equal shapes share internals (point lists, voxel data, face-shape cache); per-face occlusion arrays and sturdiness arrays shared between states; fields found by type | FerriteCore's blockstatecache idea; Quicksilver's own code | 9.7 / 50.1 / 12.7 |
-| `datafixer-caches` | DataFixerUpper's rewrite caches (rules kept for the session after upgrading old data: Terralith's structure files) emptied after start-up and when idle for 5 minutes | own (DFU is MIT, names only) | 0 / 0 / 48.9 |
+| `datafixer-caches` | DataFixerUpper's rewrite caches (rules kept for the session after upgrading old data: Terralith's structure files at start-up) emptied once the server has started | own (DFU is MIT, names only) | 0 / 0 / 48.9 |
 | `bench-buffers` | the server bench's tick history (3 x 72000 longs) kept only once a bench starts | own | 1.7 in each (Quicksilver's own: it was 1.7 above vanilla before) |
 
 Heap after a full GC, MiB (run 40963578144, quick mode with `[siftec] [terralith]`):
@@ -2444,7 +2444,10 @@ hashCode as a key) on the server thread.
 
 1. Heap is judged in CI as the live heap after a full GC (the JVM's class histogram) after 12000 ticks sprinting, not
    10 minutes of wall-clock time (same ticks, a fraction of the CI time).
-2. `datafixer-caches` is in P2-1 although it isn't FerriteCore's: it is Terralith's largest item.
+2. `datafixer-caches` is in P2-1 although it isn't FerriteCore's: it is Terralith's largest item. It empties the caches
+   once, at start-up: emptying them again during play (as first built) would make the next upgrade of old data ask for
+   identity hashes vanilla doesn't, so whatever is upgraded later in a session (old chunks, more structure files)
+   stays cached as in vanilla.
 3. The random-tick run's spawning drives the game's spawner for two chunks with a fake player in the player list; the
    game's own choice of chunks near a real player is not covered.
 4. `[terralith]` marker for quick runs (added for this package).
@@ -2454,7 +2457,26 @@ hashCode as a key) on the server thread.
 - Light layers, property values and thread detectors: above.
 - The shape tables are dropped once a server has started; a client joining a server rebuilds its states' caches after
   the server's tags arrive, and those tables stay until a single-player world starts.
-- 4 monsters and no creature spawn in the random-tick run: a small sample of the spawner.
+- 4 monsters and no creature spawn in the random-tick run: a small sample of the spawner. The spawner re-seeds the
+  shared level random before each call, so a change in how often other code draws on it isn't seen there.
+- Shared face shapes: vanilla's own identity-keyed shape caches (the full-face cache, the client's occlusion cache)
+  now see one shape where vanilla had several equal ones, so they ask for fewer identity hashes than vanilla. Nothing
+  in the gated runs shows it (every check is equal); a later package that sees an order difference should look here
+  first.
+
+### Review
+
+Independent review by a fresh agent (of `a775156`; scratchpad `review-p2-1.md`): 2 must-fix, 8 should-fix, 8 nits.
+Fixed: the heap gate passed silently without heap data (now every suite with a heap scene must have a finished heap run
+in every run); one identity hash left in the shape hashing (beyond 8 levels; and CI now rejects identity-hash calls in
+the module's sources); the data fixer caches emptied only at start-up (the idle clearing was never exercised by a gated
+run and could shift identity hashes); shape tables dropped again after a reload or a client's rebuild; both entry
+points synchronised; the hook check matches named handlers; the random-tick run also requires vanilla to repeat every
+entity (the spawned mobs); client runs must log the module fully on (measure runs: off) and every server start of the
+quicksilver run is checked, GameTest's included; `WHY_TICKS` removed; docs corrected. Left as known limits: the shared
+face shapes and vanilla's identity-keyed caches, the spawner's re-seed (above), writing final fields by reflection
+(works on Java 25; a later JDK may refuse), the config file rewritten without the user's comments when keys are
+added.
 
 ## Open bugs
 

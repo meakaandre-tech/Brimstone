@@ -33,7 +33,7 @@ public final class Memory {
     static {
         OPTIMISATIONS.put("state-neighbours", "one shared table per block for BlockState#setValue in place of every state's own neighbour arrays");
         OPTIMISATIONS.put("shape-dedup", "equal block shapes, face shapes and sturdiness arrays shared between block states");
-        OPTIMISATIONS.put("datafixer-caches", "the data fixer's rewrite caches emptied when it has been idle");
+        OPTIMISATIONS.put("datafixer-caches", "the data fixer's rewrite caches emptied once the server has started");
         OPTIMISATIONS.put("bench-buffers", "the server bench's tick history kept only while a bench runs");
     }
 
@@ -69,7 +69,7 @@ public final class Memory {
     }
 
     /** Whether an optimisation is switched on and hasn't fallen back. */
-    public static boolean on(String id) {
+    public static synchronized boolean on(String id) {
         load();
         return STATE.getOrDefault(id, State.OFF) == State.ON;
     }
@@ -97,7 +97,8 @@ public final class Memory {
             LOG.info("Quicksilver memory: {}; state tables: {}; shapes: {}; data fixer caches emptied: {}", status(), StateTables.counts(),
                 ShapeDedup.counts(), DatafixerCaches.counts());
         });
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(DatafixerCaches::tick);
+        // a later rebuild of the states' caches (a /reload) fills the shape tables again: dropped at the next tick
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> ShapeDedup.dropTables());
     }
 
     /** One line: every optimisation's state, for the log at start-up (and CI). */

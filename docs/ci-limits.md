@@ -864,8 +864,8 @@ pixel check gates only where every vanilla run agrees. Three vanilla samples are
 | Create train (SIFTEC) | every arrival at a station with its tick, final speed, schedule state | the same line in every run; at least 2 arrivals |
 | network check | the client joins, stays until the run ends, no protocol error or desync line | always |
 | scripted run | every setup command succeeds, the run finishes its ticks | always |
-| random-tick run (core, P2-1) | the same counts in every run (random positions drawn, random ticks, sections let through and held, precipitation, mobs spawned), each above zero; vanilla's runs equal on every key at or above the scenes' y 192 | always |
-| heap run (every suite, P2-1) | live heap after a full GC (the JVM's class histogram total) after load and after 12000 ticks (ten minutes of game time, sprinting) | Quicksilver below the lowest of the three vanilla runs, both times |
+| random-tick run (core, P2-1) | the same counts in every run (random positions drawn, random ticks, sections let through and held, precipitation, mobs spawned), each above zero; vanilla's runs equal on every key at or above the scenes' y 192 and on every entity | always |
+| heap run (every suite, P2-1) | live heap after a full GC (the JVM's class histogram total) after load and after 12000 ticks (ten minutes of game time, sprinting); every run must finish it | Quicksilver below the lowest of the three vanilla runs, both times |
 | Memory module (P2-1) | every server start of the quicksilver run logs `Quicksilver memory:` with every optimisation on; no `Quicksilver memory fallback:` line in any run (client runs too, ci/compare.py) | always |
 
 **What makes runs repeat** (all in vanilla's runs and Quicksilver's alike; CI only):
@@ -913,7 +913,8 @@ CI has no player and the game spawns only near one, so a Fabric API fake player 
 only (creative, at 16.5 64 16.5: not an entity, it loads nothing and is never saved), and the harness runs the game's
 spawner for two chunks (-3,2 and 2,-3) every tick from a random pinned per chunk and tick (monsters every tick,
 creatures every 400 game ticks, up to 24 per chunk and category). 4 monsters spawn in every run, no creature. Not
-covered: which chunks the game picks to spawn in near a real player.
+covered: which chunks the game picks to spawn in near a real player; and since the shared level random is re-seeded
+before each spawner call, a change in how often other code draws on it isn't seen there.
 
 **History, P2-0's vanilla noise** (three vanilla runs, run 40645807938; all of it fixed in P2-1):
 

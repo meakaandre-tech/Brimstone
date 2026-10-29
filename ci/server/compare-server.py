@@ -35,9 +35,6 @@ ERRORS = []  # the comparator's own crashes, reported (and failed) at the end
 RUNS = ("vanilla-a", "vanilla-b", "vanilla-c", "quicksilver")
 OTHER_VANILLA = ("vanilla-b", "vanilla-c")  # each compared with vanilla-a: their differences are vanilla's noise
 # keys reported but not gated, per suite and check, and why (docs/ci-limits.md, "Server suite")
-WHY_TICKS = ("which sand, gravel and fluid ticks are still pending when the world is saved varies between vanilla's "
-             "own runs, at one cave (chunk -1,-2 of seed 12345: sand and gravel over water), in core and SIFTEC alike; "
-             "cause not found yet. Blocks, block entities and entities stay gated")
 # (P2-1: empty. The cave's pending ticks repeat since the harness schedules every pending tick in a fixed order before
 # tick 0; docs/ci-limits.md, "Server suite".)
 REPORT_ONLY = {}
@@ -128,8 +125,13 @@ def heap_report(suite, d, rep, lines, s, fails):
     """The heap run (P2-1): live heap after load and after ten minutes of game time per run, and where it goes (the top
     classes of vanilla-a's histogram against Quicksilver's) in REPORT_DIR/<suite>-heap.md. Gated (P2-1): Quicksilver below every vanilla run, after load and at the end."""
     res = {r: load(os.path.join(d[r], "heap", "ci-harness-result.json"), {}) for r in RUNS}
-    if not any(res.values()):
+    has_heap = os.path.exists(os.path.join(HERE, "heap-%s.txt" % suite)) or os.path.exists(os.path.join(HERE, "scripted-run-%s.txt" % suite))
+    if not has_heap:
         return
+    for r in RUNS:
+        j = res[r]
+        if j.get("mode") != "heap" or "msptAvg" not in j or "error" in j:
+            fails.append("%s heap run %s: no finished heap run (%s)" % (suite, r, j.get("error", "no result")))
     lines.append("### Heap run (live heap after a full GC, MiB; ten minutes of game time)\n\n| run | after load | after 10 min | finished |\n|---|---|---|---|")
     for r in RUNS:
         j = res[r]
@@ -264,7 +266,8 @@ def main(res, rep):
                 if tag == "random":
                     # the random-tick run's scenes (at or above its pinned MIN_Y) must repeat in vanilla, or the test
                     # gates nothing there
-                    in_scene = sorted(k for k in nk if key_y(k) is not None and key_y(k) >= RANDOM_MIN_Y)
+                    # and every entity (the spawned mobs, which walk the terrain below the scenes)
+                    in_scene = sorted(k for k in nk if (key_y(k) is not None and key_y(k) >= RANDOM_MIN_Y) or k.startswith("t"))
                     if in_scene:
                         fails.append("%s random-tick run: vanilla differs from itself in its scenes in %s (%d keys, first: %s)"
                                      % (suite, dim, len(in_scene), ", ".join(in_scene[:5])))
@@ -332,8 +335,6 @@ def main(res, rep):
             if r == "quicksilver":
                 for p in sorted(glob.glob(os.path.join(d[r], "*-server.log"))):
                     t = text(p)
-                    if "Done (" not in t:
-                        continue
                     st = re.findall(r"Quicksilver memory: (.*)", t)
                     if not st:
                         fails.append("%s %s: no Quicksilver memory status line" % (suite, os.path.basename(p)))
@@ -468,6 +469,14 @@ def main(res, rep):
                                                  "problems": problems[:5], "network": net}
     lines.append("")
 
+    # P2-1: the Memory module asks for no identity hash (it would move every identity hash the server thread hands out
+    # later, and with them the order of vanilla's hash sets): a plain check of its sources
+    mem = os.path.join(HERE, "..", "..", "src", "main", "java", "com", "meakaandre", "quicksilver", "memory")
+    bad = re.compile(r"identityHashCode|IdentityHashMap|getClass\(\)\.hashCode\(\)|Reference2|ReferenceOpen|Identity")
+    for f in sorted(glob.glob(os.path.join(mem, "*.java"))):
+        for i, l in enumerate(text(f).splitlines(), 1):
+            if bad.search(l) and not l.strip().startswith(("*", "//", "/*")):
+                fails.append("identity hash in the Memory module: %s:%d: %s" % (os.path.basename(f), i, l.strip()[:120]))
     for e in ERRORS:
         fails.append("comparator crashed: " + e)
     lines.append("## Result\n")

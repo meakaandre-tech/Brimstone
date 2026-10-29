@@ -62,7 +62,7 @@ public final class StateTables {
     }
 
     /** A StateDefinition has made these states (all of one block or fluid): build, check and switch to the table. */
-    public static void built(Collection<?> all) {
+    public static synchronized void built(Collection<?> all) {
         if (!Memory.on(ID)) return;
         if (all.size() <= 1) {
             singletons++;

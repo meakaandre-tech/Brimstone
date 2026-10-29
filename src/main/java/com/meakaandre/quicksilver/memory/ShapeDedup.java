@@ -77,7 +77,7 @@ public final class ShapeDedup {
     }
 
     /** A state has just filled its cache. */
-    public static void afterInitCache(BlockBehaviour.BlockStateBase state) {
+    public static synchronized void afterInitCache(BlockBehaviour.BlockStateBase state) {
         if (!Memory.on(ID)) return;
         try {
             find();
@@ -115,8 +115,10 @@ public final class ShapeDedup {
         }
     }
 
-    /** After start-up: the comparison tables go (the shared shapes stay). */
-    static void dropTables() {
+    /** After start-up, and after any later rebuild (each server and client tick): the comparison tables go (the shared
+     * shapes stay). */
+    public static synchronized void dropTables() {
+        if (shapes == null) return;
         shapes = null;
         arrays = null;
         bools = null;
@@ -218,7 +220,7 @@ public final class ShapeDedup {
 
     static int hash(Object a, int depth) throws IllegalAccessException {
         if (a == null) return 0;
-        if (depth > 8) return a.getClass().hashCode();
+        if (depth > 8) return a.getClass().getName().hashCode();
         if (a instanceof VoxelShape || a instanceof DiscreteVoxelShape) {
             int h = a.getClass().getName().hashCode();
             for (Class<?> k = a.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
