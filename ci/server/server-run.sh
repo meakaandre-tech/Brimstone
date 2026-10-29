@@ -98,10 +98,9 @@ fi
 if [ -f "ci/server/scripted-run-$SUITE.txt" ] && [ -f server-base.tar ]; then
   (cd "$srv" && tar xf "$root/server-base.tar" && mv base world)
   props world normal
-  # P2-1 diagnosis: every scheduled tick in three boxes where vanilla's pending ticks varied (the cave at chunk -1,-2;
-  # lava in the ring at chunk -5,-1; water in the outer ring at chunk 3,5), and every chunk's post-processing
-  trace="-24,30,-32,0,70,-16;-80,-60,-16,-64,-30,0;32,-10,64,64,20,96"
-  serve run 1800 -Dci.harness.run="$root/ci/server/scripted-run-$SUITE.txt" -Dci.harness.trace="$trace"
+  # (to see why something varies: -Dci.harness.trace=x1,y1,z1,x2,y2,z2;... logs every scheduled tick in those boxes and
+  # every chunk's post-processing, CI TRACE lines; ci/server/harness/.../Trace.java)
+  serve run 1800 -Dci.harness.run="$root/ci/server/scripted-run-$SUITE.txt"
   grep -q 'CI HARNESS RUN DONE' "$OUT/run-server.log" || echo "scripted run: did not finish"
   keep_world "$srv/world" "$OUT/run/world"
   mkdir -p "$OUT/bench" && cp "$srv"/quicksilver/bench/*.json "$OUT/bench/" 2>/dev/null
