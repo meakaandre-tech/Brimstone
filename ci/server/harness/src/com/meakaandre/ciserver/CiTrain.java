@@ -114,7 +114,10 @@ final class CiTrain {
 
     private static void assemble(MinecraftServer server) throws Exception {
         call(stationA, "assemble", new UUID(0x51C5L, 0x7EC0L));
-        if (train(server.overworld()) == null) {
+        if (train(server.overworld()) != null) {
+            // as the station screen does once a train is built: a station in assembly mode is not a destination
+            call(stationA, "exitAssemblyMode");
+        } else {
             // Create reports a failed assembly on the station, not by throwing
             Object ex = get(stationA, "lastException");
             Object msg = ex == null ? null : get(ex, "component");
