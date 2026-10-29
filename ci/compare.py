@@ -135,6 +135,10 @@ def bench_results(run_dir):
             "uploadBytesPerFrameAvg": g["uploadBytesPerFrame"]["avg"],
             "heapUsedAfterGcMB": m["heapUsedAfterGcMB"],
             "directBuffersMB": m.get("directBuffersMB", 0),
+            "directBuffersStartMB": m.get("directBuffersStartMB"),
+            "directBuffersMaxMB": m.get("directBuffersMaxMB"),
+            "directBuffersMaxAtTick": m.get("directBuffersMaxAtTick"),
+            "benchFile": os.path.basename(f),
             "meshingMsPerSection": (j.get("meshing") or {}).get("msPerSection"),
             "terrain": j.get("terrain"),
             "visibility": j.get("visibility"),
@@ -206,6 +210,36 @@ def logs(run_dir):
 
 BENCH_ONLY = ("bench-plain", "bench-sodium")
 BENCH_ONLY_SCENES = ("spawn", "flythrough", "water_glass", "nether")
+
+
+DIRECT_JUMP_MB = 4.0  # a rise this large in one step is reported (phase 1's gate allows 10% + 4 MB on the end value)
+
+
+def direct_buffers(res, lines):
+    """Reported, not gated (Andre, 2026-10-29: open bug, a Quicksilver-only +8 MB step in SIFTEC full from the map
+    scene on, run 40803126672 attempt 1): every run's direct-buffer MB per scene, in run order, at the start of
+    measuring, its peak (with the tick) and at the end, and each rise of DIRECT_JUMP_MB or more marked with where it
+    happened: inside a scene (start to end) or between scenes (the previous scene's end to this one's start)."""
+    lines.append("## Direct buffers per scene (reported; open bug, see docs/progress.md)\n")
+    lines.append("| run | scene | start MB | peak MB (tick) | end MB | rise |\n|---|---|---|---|---|---|")
+    jumps = []
+    for d in sorted(glob.glob(os.path.join(res, "*-*"))):
+        run = os.path.basename(d)
+        b = bench_results(d)
+        prev_end = None
+        for scene, v in sorted(b.items(), key=lambda kv: kv[1]["benchFile"]):
+            st, mx, end = v.get("directBuffersStartMB"), v.get("directBuffersMaxMB"), v.get("directBuffersMB")
+            rise = []
+            if st is not None and prev_end is not None and st - prev_end >= DIRECT_JUMP_MB:
+                rise.append("between scenes +%.2f" % (st - prev_end))
+            if st is not None and end is not None and end - st >= DIRECT_JUMP_MB:
+                rise.append("inside the scene +%.2f (peak at tick %s)" % (end - st, v.get("directBuffersMaxAtTick")))
+            if rise:
+                jumps.append("%s/%s: %s" % (run, scene, "; ".join(rise)))
+            lines.append("| %s | %s | %s | %s (%s) | %s | %s |" % (run, scene, st, mx, v.get("directBuffersMaxAtTick"), end, "; ".join(rise)))
+            prev_end = end
+    lines.append("")
+    lines.append("Rises of %.0f MB or more: %s\n" % (DIRECT_JUMP_MB, "; ".join(jumps) if jumps else "none"))
 
 
 def bench_only(res, failures, lines):
@@ -786,6 +820,7 @@ def main():
                 lines.append(f"| {sc['id']} | {cell('drawCallsPerFrame')} | {cell('prepareDrawCallsPerFrame')} | {cell('elementsPerFrame')} | {cell('statesPerFrame')} (pipelines {g.get('pipelinesPerFrame')}, textures {g.get('textureSetupsPerFrame')}, scissors {g.get('scissorAreasPerFrame')}) | {cell('reorderedDrawsPerFrame')} ({cell('reorderedIgnoringTextPerFrame')}) |")
             lines.append("")
     bench_only(res, failures, lines)
+    direct_buffers(res, lines)
     lines.insert(0, "# Quicksilver CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
     json.dump({"failures": failures, "suites": data}, open(os.path.join(rep, "report.json"), "w"), indent=2)
