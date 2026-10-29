@@ -69,6 +69,23 @@ The **no** rows are limits already set (by the rule and Andre's earlier decision
 thing the scene shows; they are listed for Andre, not changed. Package 7 made the hub and mam scenes quiet and gave
 the map a strict gate (see "GUI scenes, the block outline and Ponder" below).
 
+## Pack lock (`ci/pack-lock.txt`, `ci/pack-check.sh`; Andre, 2026-10-30)
+
+Every jar CI downloads is listed with its sha256 (`<sha256>  <set>/<jar>`; sets `core`: Fabric API, `siftec`: SIFTEC's
+server mods, i.e. SIFTEC, its self-test, MapMod, Create Fly, Create: New Age, Create Diesel Generators, Traveler's
+Backpack, Fabric API and the pack mods from SIFTEC's `.github/smoke-pack-mods`, `sodium`: the bench-sodium run).
+`ci/pack-check.sh` runs in the core and SIFTEC world jobs (before any client run), on each client run's server folder,
+on the bench-sodium run's Sodium and in the server scripts; a jar that differs or isn't listed fails the run with
+"pack changed: <jar>" (and a listed jar missing from a complete set). Each client run writes the hashes it saw to
+`pack-sha256.txt` in its logs. Both world caches are keyed on the lock.
+
+Why: SIFTEC's jars come from `latest`-style release tags that are rebuilt on every build. MapMod's changed between
+main's run 40827558273 and package 4c's full runs (a round minimap, about 97 more GUI draws per frame in vanilla's runs
+as much as Quicksilver's, and a noisier map scene), and the gates failed with no change in Quicksilver.
+
+Updating the lock is a deliberate commit: it names the changed jars and re-collects the numbers they affect (baselines
+and limits, by the rules above, from at least 3 clean runs on the new jars, with vanilla's numbers as the reason).
+
 ## Pixel limits (`ci/pixel-limits.json`)
 
 A screenshot's difference is the share of pixels whose largest RGB channel differs by more than 8 (of 255): small

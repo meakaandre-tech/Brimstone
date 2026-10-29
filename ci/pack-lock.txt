@@ -2,3 +2,19 @@
 # "pack changed: <jar>" when a download differs. Sets: core (Fabric API), siftec (SIFTEC's server mods: SIFTEC, its
 # self-test, MapMod, Create Fly, New Age, Diesel Generators, Traveler's Backpack, Fabric API, the pack mods), sodium
 # (the bench-sodium run). Updating a hash is a deliberate commit that re-collects the numbers the jar affects.
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+07aa1346c23010c5f40405ce63cb8a793f5c246cff331aa892ef9dfdae523f17  siftec/FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+351e83cc2d90f47fb80cef61c6adc3f672c514d002578cf054b05c4802b22917  siftec/cgs-fabric-26.3.jar
+fe089016dc1c850e7119037d8ae49e4d30afb553d90f9acf97cc694b8711b01f  siftec/create-fly-26.3.jar
+c5d70743acd2fc03645f1e38516b1fdda62cb8ef0a2e4e40f249bac645bb79e5  siftec/create-new-age-26.3.jar
+7c81a5c8c3e76fd9117c0e9ccbbb1b10b731a230a787b6ff134a2aca73833aee  siftec/createdieselgenerators-fabric-26.3.jar
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  siftec/fabric-api.jar
+95cc2bd7a943f910a54baf2f65acde301dcfb3d8aeff2c989c04c416d5a4a1cd  siftec/forge-config-api-port.jar
+0e397991dae6e1aee9a342f80b740fe4fef6d161dc8abe694c6a555317163f82  siftec/geckolib-fabric-26.3-5.5.7.jar
+6f06d2c13e90d2dce09ae6ab0013b9257c997cc178e0ddb719198c45ab1175f2  siftec/mapmod-26.3.jar
+5b53b8bc2002d01d1bedd70e5c975c82c57f61e29726426b78affa9bfdcaf7bc  siftec/mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+aec3dae28e9fdba20ce594d25958bdf69f485b02058d5e92fcc3853e190d302c  siftec/ntgl-fabric-26.3.jar
+20910aec59b1f5e0255cc5c523acca0afc4e163d2e6ee13e59d88a3693c83351  siftec/siftec-26.3.jar
+0e08ce6e5e97b4e195df04c30b4d1929806f5a75ddadb211304ff74f79d8792d  siftec/siftec-selftest-26.3.jar
+edd8947f6c143dfbcb8b0a6aaab50e2435d784ca4dc33a087849ff3fca2b689c  siftec/travelersbackpack.jar
+87a5bb39f7e6e41106e77f122f82fc93f9d3bc0b6ebcb746b314172a446a287a  sodium/sodium.jar
