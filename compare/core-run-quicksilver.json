@@ -1,0 +1,133 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/core-vanilla-a/run/world",
+ "b": "/tmp/sres/core-quicksilver/run/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 1764,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 3,
+   "keys": [
+    "sf48,6,80",
+    "sf49,6,80",
+    "sf50,6,80"
+   ],
+   "examples": [
+    {
+     "scheduledTick": [
+      48,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-171,\"x\":48,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-169,\"x\":48,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      49,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-166,\"x\":49,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-164,\"x\":49,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      50,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-161,\"x\":50,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-159,\"x\":50,\"y\":6,\"z\":80}"
+     ]
+    }
+   ],
+   "entitiesA": 43,
+   "entitiesB": 43,
+   "entitiesExact": true,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:chicken": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:cow": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:item": {
+     "a": 27,
+     "b": 27,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:pig": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:sheep": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:villager": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 3,
+  "entities": 0,
+  "chunks": 1764,
+  "missingDimensions": 0,
+  "differences": 3
+ }
+}

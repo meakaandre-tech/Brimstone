@@ -1,0 +1,373 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/core-vanilla-a/run/world",
+ "b": "/tmp/sres/core-vanilla-c/run/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 1764,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 25,
+   "keys": [
+    "sf-71,-45,-6",
+    "sf-72,-45,-5",
+    "sf-73,-45,-4",
+    "sf40,6,80",
+    "sf41,6,80",
+    "sf42,6,80",
+    "sf44,6,80",
+    "sf45,6,80",
+    "sf46,6,80",
+    "sf47,6,80",
+    "sf48,6,80",
+    "sf49,6,80",
+    "sf50,6,80",
+    "sb74,132,-41",
+    "sb74,132,-43",
+    "sb75,132,-42",
+    "sb75,133,-41",
+    "sb75,133,-42",
+    "sb76,132,-42",
+    "sb76,133,-41",
+    "sb76,133,-42",
+    "sb76,133,-43",
+    "sb77,133,-42",
+    "sb77,134,-41",
+    "sb78,134,-42"
+   ],
+   "examples": [
+    {
+     "scheduledTick": [
+      -71,
+      -45,
+      -6
+     ],
+     "kind": "fluid_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:flowing_lava\",\"p\":0,\"t\":3,\"x\":-71,\"y\":-45,\"z\":-6}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      -72,
+      -45,
+      -5
+     ],
+     "kind": "fluid_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:flowing_lava\",\"p\":0,\"t\":3,\"x\":-72,\"y\":-45,\"z\":-5}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      -73,
+      -45,
+      -4
+     ],
+     "kind": "fluid_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:flowing_lava\",\"p\":0,\"t\":3,\"x\":-73,\"y\":-45,\"z\":-4}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      40,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-161,\"x\":40,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-162,\"x\":40,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      41,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-166,\"x\":41,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-167,\"x\":41,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      42,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-171,\"x\":42,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-172,\"x\":42,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      44,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-181,\"x\":44,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-182,\"x\":44,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      45,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-181,\"x\":45,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-182,\"x\":45,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      46,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-186,\"x\":46,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-187,\"x\":46,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      47,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-191,\"x\":47,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-192,\"x\":47,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      48,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-171,\"x\":48,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-139,\"x\":48,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      49,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-166,\"x\":49,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-134,\"x\":49,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      50,
+      6,
+      80
+     ],
+     "kind": "fluid_ticks",
+     "a": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-161,\"x\":50,\"y\":6,\"z\":80}"
+     ],
+     "b": [
+      "{\"i\":\"minecraft:flowing_water\",\"p\":0,\"t\":-129,\"x\":50,\"y\":6,\"z\":80}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      74,
+      132,
+      -41
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":74,\"y\":132,\"z\":-41}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      74,
+      132,
+      -43
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":74,\"y\":132,\"z\":-43}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      75,
+      132,
+      -42
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":75,\"y\":132,\"z\":-42}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      75,
+      133,
+      -41
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":75,\"y\":133,\"z\":-41}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      75,
+      133,
+      -42
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":75,\"y\":133,\"z\":-42}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      76,
+      132,
+      -42
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":76,\"y\":132,\"z\":-42}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      76,
+      133,
+      -41
+     ],
+     "kind": "block_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:dark_oak_leaves\",\"p\":0,\"t\":1,\"x\":76,\"y\":133,\"z\":-41}"
+     ]
+    }
+   ],
+   "entitiesA": 43,
+   "entitiesB": 43,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:chicken": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:cow": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:item": {
+     "a": 27,
+     "b": 27,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:pig": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:sheep": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:villager": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 25,
+  "entities": 0,
+  "chunks": 1764,
+  "missingDimensions": 0,
+  "differences": 25
+ }
+}

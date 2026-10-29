@@ -1,0 +1,18 @@
+{
+  "startupMs": 18219,
+  "worldLoadMs": 506,
+  "quicksilverLoaded": true,
+  "mode": "run",
+  "ticks": 1200,
+  "loadWaitTicks": 6,
+  "commandErrors": 0,
+  "lightSettleTicks": 200,
+  "heapAfterLoadMB": 281.478,
+  "msptAvg": 1.831,
+  "msptP50": 1.235,
+  "msptP99": 10.771,
+  "msptMax": 183.733,
+  "ticksOver50ms": 1,
+  "heapEndMB": 282.145,
+  "train": "arrivals\u003d11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed\u003d0.31499999295920134 derailed\u003dfalse entry\u003d1 state\u003dIN_TRANSIT"
+}

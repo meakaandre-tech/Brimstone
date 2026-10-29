@@ -1,0 +1,195 @@
+server suite=siftec run=vanilla-a
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+all Fabric versions of travelersbackpack:
+  GKDRZQKz 26.3-11.4.2 ['26.3'] 2026-10-27
+  SmhjfeWr 26.3-11.4.1 ['26.3'] 2026-09-29
+  I6Fg8UrJ 26.2-11.3.3 ['26.2'] 2026-09-29
+  NUbnGgy9 26.1.2-11.2.11 ['26.1.1', '26.1.2'] 2026-09-29
+  5rC23dXQ 26.3-11.4.0 ['26.3'] 2026-09-24
+  jp51VM8M 26.2-11.3.2 ['26.2'] 2026-09-01
+  7ltEXeO3 1.21.11-10.11.11 ['1.21.11'] 2026-09-01
+  Ah1lkxJY 26.1.2-11.2.10 ['26.1.1', '26.1.2'] 2026-09-01
+  npKsvQvE 1.21.1-10.1.39 ['1.21.1'] 2026-08-29
+  G60CBuLj 1.20.1-9.1.55 ['1.20.1'] 2026-08-29
+  LfmQsEdR 1.21.11-10.11.10 ['1.21.11'] 2026-08-03
+  mjQY8slD 26.2-11.3.1 ['26.2'] 2026-07-28
+  5I4utX2T 1.21.1-10.1.38 ['1.21.1'] 2026-07-28
+  ZgfhEJnC 26.1.2-11.2.9 ['26.1.1', '26.1.2'] 2026-07-28
+  NXJGtmmW 1.21.1-10.1.37 ['1.21.1'] 2026-07-22
+  5H4yAyuO 1.20.1-9.1.54 ['1.20.1'] 2026-07-22
+  8zYSDRGA 26.2-11.3.0 ['26.2'] 2026-07-17
+  YDNzgBWY 26.1.2-11.2.8 ['26.1.1', '26.1.2'] 2026-07-17
+  onVoNuy1 26.1.2-11.2.7 ['26.1.1', '26.1.2'] 2026-05-31
+  fTwokW7g 1.20.1-9.1.53 ['1.20.1'] 2026-05-27
+  ODmeRFc0 1.21.1-10.1.36 ['1.21.1'] 2026-05-20
+  Q6rEigkb 26.1.2-11.2.6 ['26.1.1', '26.1.2'] 2026-05-11
+  CoCSwzdR 26.1.2-11.2.5 ['26.1.1', '26.1.2'] 2026-05-09
+  ZP0ddKyI 26.1.2-11.2.4 ['26.1.1', '26.1.2'] 2026-05-05
+  FVGa8X6z 26.1.2-11.2.3 ['26.1.1', '26.1.2'] 2026-05-04
+  RfI8MfzH 1.21.1-10.1.35 ['1.21.1'] 2026-05-04
+  q2caASeP 1.20.1-9.1.52 ['1.20.1'] 2026-05-04
+  BgyhpzMJ 26.1.2-11.2.2 ['26.1.1', '26.1.2'] 2026-04-26
+  lGcINzRB 26.1.2-11.2.1 ['26.1.1', '26.1.2'] 2026-04-16
+  RKAxLV5H 26.1.2-11.2.0 ['26.1.1', '26.1.2'] 2026-04-15
+  G9VMJl43 26.1.1-11.1.0 ['26.1.1', '26.1.2'] 2026-04-08
+  XbEGJQSG 1.21.11-10.11.9 ['1.21.11'] 2026-03-28
+  D3V21Ir2 1.21.11-10.11.8 ['1.21.11'] 2026-03-27
+  3nT2UR2a 1.21.11-10.11.7 ['1.21.11'] 2026-03-26
+  85PLLyUF 1.21.1-10.1.34 ['1.21.1'] 2026-03-26
+  E4UZZZAV 1.20.1-9.1.51 ['1.20.1'] 2026-03-26
+  hIiloTnQ 1.20.1-9.1.50 ['1.20.1'] 2026-02-03
+  8JL58SeM 1.20.1-9.1.49 ['1.20.1'] 2026-01-29
+  uQ0xHxTz 1.21.10-10.10.6 ['1.21.10'] 2026-01-29
+  jDSDEMgY 1.21.11-10.11.5 ['1.21.11'] 2026-01-29
+travelersbackpack: 26.3-11.4.2 for 26.3 https://cdn.modrinth.com/data/rlloIFEV/versions/GKDRZQKz/travelersbackpack-fabric-26.3-11.4.2.jar
+  dependency optional: project fRiHVvU7 version None
+  dependency optional: project jtmvUHXj version None
+  dependency required: project ohNO6lps version None
+  forge-config-api-port: 26.3.1 for 26.3 https://cdn.modrinth.com/data/ohNO6lps/versions/JpKvrr9J/ForgeConfigAPIPort-v26.3.1-mc26.3.x-Fabric.jar
+    dependency required: project P7dR8mSH version None
+    fabric-api: the build's own (gradle.properties) is used
+    dependency optional: project mOgUt4GM version None
+  dependency optional: project DMu0oBKf version None
+  dependency optional: project SaCpeal4 version None
+  dependency optional: project tagwiZkJ version None
+  dependency optional: project vRYk0bv7 version None
+  dependency optional: project yn9u3ypm version None
+  dependency optional: project 5aaWibi9 version None
+  dependency optional: project HnD1GX6e version None
+  dependency optional: project u6dRKJwZ version None
+  dependency required: project P7dR8mSH version None
+  dependency optional: project yBW8D80W version None
+  dependency optional: project nfn13YXA version None
+modrinth:mielons-the-sift -> https://cdn.modrinth.com/data/j0IfTxBq/versions/QK8RaspH/mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+total 62732
+-rw-r--r-- 1 runner runner  3486296 Oct 29 04:35 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 29 04:35 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    42968 Oct 29 04:34 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 29 04:34 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 29 04:34 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 29 04:35 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 29 04:34 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 29 04:35 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 29 04:35 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner   182191 Oct 29 04:34 mapmod-26.3.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 29 04:35 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 29 04:35 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2036377 Oct 29 04:34 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   628410 Oct 29 04:34 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 29 04:35 travelersbackpack.jar
+total 62732
+-rw-r--r-- 1 runner runner  3486296 Oct 29 04:35 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 29 04:35 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    42968 Oct 29 04:34 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 29 04:34 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 29 04:34 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 29 04:35 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 29 04:34 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 29 04:35 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 29 04:35 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner   182191 Oct 29 04:34 mapmod-26.3.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 29 04:35 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 29 04:35 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2036377 Oct 29 04:34 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   628410 Oct 29 04:34 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 29 04:35 travelersbackpack.jar
+openjdk version "25.0.5" 2026-10-20 LTS
+[04:36:10] [Server thread/INFO]: Saving chunks for level 'ServerLevel[gen]'/minecraft:the_end
+[04:36:10] [Server thread/INFO]: Saving chunks for level 'ServerLevel[gen]'/minecraft:the_nether
+EXIT 0
+26M	/tmp/sout/siftec-vanilla-a/gen/world
+[04:37:43] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+[04:37:43] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+EXIT 0
+11M	/tmp/sout/siftec-vanilla-a/run/world
+SELFTEST style result: 85 passed, 0 failed
+SELFTEST progression done: 16 passed, 0 failed
+SELFTEST food done: 31 passed, 0 failed
+SELFTEST map done: 12 passed, 0 failed (a later check follows)
+SELFTEST guide done: 4 passed, 0 failed
+SELFTEST quality done: 8 passed, 0 failed
+SELFTEST state gun OK: 22 passed, 0 failed
+SELFTEST world pads result: 15 passed, 0 failed
+SELFTEST world drops result: 21 passed, 0 failed
+SELFTEST world restart setup result: 1 passed, 0 failed
+SELFTEST world clump result: 5 passed, 0 failed
+SELFTEST designer done: 41 passed, 0 failed
+SELFTEST ownership done: 15 passed, 0 failed
+SELFTEST datafix done: 20 passed, 0 failed
+SELFTEST world break result: 9 passed, 0 failed
+SELFTEST fixes done: 21 passed, 0 failed
+SELFTEST world regrow result: 10 passed, 0 failed
+SELFTEST buildingfix done: 13 passed, 0 failed
+SELFTEST exploration result: 34 passed, 0 failed
+SELFTEST world deployer result: 2 passed, 0 failed
+SELFTEST buildings result: 26 passed, 0 failed
+SELFTEST powerfix done: 10 passed, 0 failed
+SELFTEST exploits done: 40 passed, 0 failed
+SELFTEST polish done: 39 passed, 0 failed
+SELFTEST logistics done: 44 passed, 0 failed
+SELFTEST buildings_a result: 55 passed, 0 failed
+SELFTEST always edges result: 20 passed, 0 failed
+SELFTEST buildings_b result: 78 passed, 0 failed
+SELFTEST machines result: 60 passed, 0 failed
+SELFTEST vehicles done: 19 passed, 0 failed
+SELFTEST always result: 15 passed, 0 failed
+/tmp/sout/siftec-vanilla-a:
+bench
+gen
+gen-server.log
+run
+run-server.log
+run.txt
+selftest-server.log
+
+/tmp/sout/siftec-vanilla-a/bench:
+
+/tmp/sout/siftec-vanilla-a/gen:
+ci-harness-result.json
+world
+
+/tmp/sout/siftec-vanilla-a/gen/world:
+dimensions
+level.dat
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions:
+minecraft
+the_sift
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft:
+overworld
+the_nether
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft/overworld:
+entities
+poi
+region
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft/overworld/entities:
+r.6.6.mca
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft/overworld/poi:
+r.6.6.mca
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft/overworld/region:
+r.-1.-1.mca
+r.-1.0.mca
+r.0.-1.mca
+r.0.0.mca
+r.5.5.mca
+r.5.6.mca
+r.5.7.mca
+r.6.5.mca
+r.6.6.mca
+r.6.7.mca
+r.7.5.mca
+r.7.6.mca
+r.7.7.mca
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft/the_nether:
+entities
+region
+
+/tmp/sout/siftec-vanilla-a/gen/world/dimensions/minecraft/the_nether/entities:
+r.-1.-1.mca
+r.0.0.mca

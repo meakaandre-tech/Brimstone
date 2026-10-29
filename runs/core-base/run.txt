@@ -1,0 +1,10 @@
+server suite=core run=base
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+total 2604
+-rw-r--r-- 1 runner runner   42968 Oct 29 04:32 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 29 04:32 fabric-api.jar
+openjdk version "25.0.5" 2026-10-20 LTS
+[04:33:28] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+[04:33:28] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+EXIT 0
+-rw-r--r-- 1 runner runner 10035200 Oct 29 04:33 /home/runner/work/Quicksilver/Quicksilver/server-base.tar
