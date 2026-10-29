@@ -1,0 +1,98 @@
+suite=siftec run=quicksilver-old
+old-GPU profile: MESA_EXTENSION_OVERRIDE='-GL_ARB_multi_draw_indirect -GL_ARB_buffer_storage' MESA_GL_VERSION_OVERRIDE=3.3 MESA_GLSL_VERSION_OVERRIDE=330
+old-GPU Quicksilver run: -Dquicksilver.debug.forceIntelMdiIssue=true
+Quicksilver run JVM properties:-Dquicksilver.debug.forceIntelMdiIssue=true -Dquicksilver.debug.logUploadQueue=true -Dquicksilver.debug.verifyVisibility=true -Dquicksilver.debug.verifyTranslucency=true -Dquicksilver.debug.verifyRenderer=true -Dquicksilver.debug.animationUses=true
+total 63092
+-rw-r--r-- 1 runner runner  3486296 Oct 29 04:53 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 29 04:53 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 29 04:53 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 29 04:53 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 29 04:53 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 29 04:53 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 29 04:53 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 29 04:53 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner   182191 Oct 29 04:53 mapmod-26.3.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 29 04:53 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 29 04:53 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   411075 Oct 29 04:53 quicksilver.jar
+-rw-r--r-- 1 runner runner  2036377 Oct 29 04:53 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   628410 Oct 29 04:53 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 29 04:53 travelersbackpack.jar
+total 60552
+-rw-r--r-- 1 runner runner  3486296 Oct 29 04:54 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 29 04:54 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    16896 Oct 29 04:54 ci-pin.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 29 04:54 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 29 04:54 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 29 04:54 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   609574 Oct 29 04:54 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 29 04:54 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner   182191 Oct 29 04:54 mapmod-26.3.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 29 04:54 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 29 04:54 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner   411075 Oct 29 04:54 quicksilver.jar
+-rw-r--r-- 1 runner runner  2036377 Oct 29 04:54 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   628410 Oct 29 04:54 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 29 04:54 travelersbackpack.jar
+sessions: 8|-|factory,sift,hub,mam,ponder,map,hologram,hud,create_ct 8|ao=false|factory_flat
+preparing the suite
+scene factory: setting up
+scene factory: bench done
+scene sift: setting up
+scene sift: bench done
+scene hub: setting up
+scene hub: bench done
+scene mam: setting up
+scene mam: bench done
+scene ponder: setting up
+scene ponder: bench done
+scene map: setting up
+scene map: bench done
+scene hologram: setting up
+scene hologram: bench done
+scene hud: setting up
+scene hud: bench done
+scene create_ct: setting up
+scene create_ct: bench done
+session 2 client options: ao=false
+scene factory_flat: setting up
+scene factory_flat: bench done
+/tmp/out/siftec-quicksilver-old:
+bench
+client-1.log
+client-2.log
+client-gradle-1.log
+client-gradle-2.log
+drive-factory-sift-hub-mam-ponder-map-hologram-hud-create_ct.json
+drive-factory_flat.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+mod-ids.txt
+run.txt
+server.log
+shots
+
+/tmp/out/siftec-quicksilver-old/bench:
+20261029-045948-factory.json
+20261029-050121-sift.json
+20261029-050233-hub.json
+20261029-050344-mam.json
+20261029-050458-ponder.json
+20261029-050757-map.json
+20261029-050921-hologram.json
+20261029-051059-hud.json
+20261029-051237-create_ct.json
+20261029-051548-factory_flat.json
+
+/tmp/out/siftec-quicksilver-old/shots:
+create_ct.png
+factory.png
+factory_flat.png
+hologram.png
+hub.png
+hud.png
+mam.png
+map.png
+ponder.png
+sift.png

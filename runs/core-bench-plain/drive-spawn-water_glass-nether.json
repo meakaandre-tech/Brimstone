@@ -1,0 +1,29 @@
+[
+  {
+    "scene": "spawn",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "water_glass",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "nether",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  }
+]

@@ -1,0 +1,730 @@
+Picked up JAVA_TOOL_OPTIONS: -Dquicksilver.debug.forceIntelMdiIssue=true -Dquicksilver.debug.logUploadQueue=true -Dquicksilver.debug.verifyVisibility=true -Dquicksilver.debug.verifyTranslucency=true -Dquicksilver.debug.verifyRenderer=true -Dquicksilver.debug.animationUses=true
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Fabric Loom: 1.17.21
+
+> Task :generateLog4jConfig
+> Task :generateDLIConfig
+> Task :configureLaunch
+> Task :downloadAssets
+> Task :configureClientLaunch
+
+> Task :runClient
+Picked up JAVA_TOOL_OPTIONS: -Dquicksilver.debug.forceIntelMdiIssue=true -Dquicksilver.debug.logUploadQueue=true -Dquicksilver.debug.verifyVisibility=true -Dquicksilver.debug.verifyTranslucency=true -Dquicksilver.debug.verifyRenderer=true -Dquicksilver.debug.animationUses=true
+[04:55:08] [main/INFO] (FabricLoader/GameProvider) Loading Minecraft 26.3 with Fabric Loader 0.19.5
+[04:55:08] [main/INFO] (FabricLoader/Mappings) Mappings not present!
+[04:55:08] [main/INFO] (FabricLoader) Loading 53 mods:
+	- fabric-advancement-api-v1 1.0.0+38c7a2d55d
+	- fabric-api 0.161.0+26.3
+	- fabric-api-base 2.0.6+fcdff87f5d
+	- fabric-api-lookup-api-v1 2.0.24+3434d6d95d
+	- fabric-biome-api-v1 20.0.9+74ed1ea55d
+	- fabric-block-api-v1 3.1.0+0ae6f9115d
+	- fabric-block-getter-api-v2 2.0.9+3434d6d95d
+	- fabric-client-gametest-api-v1 6.0.7+4be74c3f5d
+	- fabric-command-api-v2 3.1.2+fcdff87f5d
+	- fabric-content-registries-v0 15.0.4+74ed1ea55d
+	- fabric-convention-tags-v2 4.10.3+6b5b47fd5d
+	- fabric-crash-report-info-v1 1.0.7+fcdff87f5d
+	- fabric-creative-tab-api-v1 5.0.21+fcdff87f5d
+	- fabric-data-attachment-api-v1 2.2.30+3434d6d95d
+	- fabric-data-generation-api-v1 27.2.4+427eab975d
+	- fabric-debug-api-v1 1.0.4+3434d6d95d
+	- fabric-dimensions-v1 5.1.19+47f74c985d
+	- fabric-entity-events-v1 6.0.4+3434d6d95d
+	- fabric-events-interaction-v0 5.3.6+3434d6d95d
+	- fabric-game-rule-api-v1 4.0.10+3434d6d95d
+	- fabric-gametest-api-v1 4.0.32+3434d6d95d
+	- fabric-item-api-v1 14.7.0+cf6bc2db5d
+	- fabric-key-mapping-api-v1 2.0.8+3434d6d95d
+	- fabric-lifecycle-events-v1 4.1.9+ffef5f675d
+	- fabric-loot-api-v3 4.0.8+4068fd645d
+	- fabric-menu-api-v1 2.0.27+ed66f0a35d
+	- fabric-message-api-v1 7.0.10+3434d6d95d
+	- fabric-model-loading-api-v1 8.0.35+fcdff87f5d
+	- fabric-networking-api-v1 6.3.8+fcdff87f5d
+	- fabric-object-builder-api-v1 24.1.9+3434d6d95d
+	- fabric-particles-v1 5.0.24+3434d6d95d
+	- fabric-permission-api-v1 1.0.8+fcdff87f5d
+	- fabric-recipe-api-v1 10.0.8+fcdff87f5d
+	- fabric-registry-sync-v0 8.0.1+fcdff87f5d
+	- fabric-renderer-api-v1 17.0.15+79385d0b5d
+	- fabric-renderer-indigo 9.1.23+b9d63e335d
+	- fabric-rendering-fluids-v1 6.0.6+3434d6d95d
+	- fabric-rendering-v1 27.0.14+901a437c5d
+	- fabric-resource-conditions-api-v1 6.1.5+3434d6d95d
+	- fabric-resource-loader-v0 3.3.26+4fc5413f5d
+	- fabric-resource-loader-v1 3.0.4+fcdff87f5d
+	- fabric-screen-api-v1 5.2.4+48607d035d
+	- fabric-serialization-api-v1 2.0.7+74ed1ea55d
+	- fabric-sound-api-v1 2.0.7+3434d6d95d
+	- fabric-tag-api-v1 2.1.10+fcdff87f5d
+	- fabric-transfer-api-v1 8.0.25+fcdff87f5d
+	- fabric-transitive-access-wideners-v1 8.1.16+52268a0e5d
+	- fabricloader 0.19.5
+	- java 25
+	- minecraft 26.3
+	- mixinextras 0.5.5
+	- quicksilver 0.0.1+26.3
+	- quicksilver_ci_pin 1
+[04:55:08] [main/INFO] (FabricLoader/Mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/5f66cc9f59b8efaa942155a3d5a30599bf6640dd/sponge-mixin-0.17.4+mixin.0.8.7.jar Service=Knot/Fabric Env=CLIENT
+[04:55:10] [main/INFO] (FabricLoader/MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+[04:55:11] [Datafixer Bootstrap #0/INFO] (Minecraft) 307 Datafixer optimizations took 624 milliseconds
+[04:55:17] [Render thread/INFO] (Minecraft) Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[04:55:17] [Render thread/INFO] (Minecraft) Setting user: QuicksilverCI
+[04:55:17] [Render thread/INFO] (Quicksilver) Quicksilver: Fabric Renderer API implementation registered (in place of Indigo)
+[04:55:17] [Render thread/INFO] (Indigo) [Indigo] Different rendering plugin detected; not applying Indigo.
+[04:55:17] [Render thread/INFO] (Minecraft) Backend library: LWJGL version 3.4.3-snapshot
+[04:55:18] [Render thread/INFO] (Minecraft) SDL [SYSTEM]: App name: Minecraft
+[04:55:18] [Render thread/INFO] (Minecraft) SDL [SYSTEM]: App version: 26.3
+[04:55:18] [Render thread/INFO] (Minecraft) SDL [SYSTEM]: App ID: com.mojang.minecraft
+[04:55:18] [Render thread/INFO] (Minecraft) SDL [SYSTEM]: SDL revision: SDL-3.4.14--128-NOTFOUND
+[04:55:18] [Render thread/WARN] (Quicksilver) Quicksilver debug: quicksilver.debug.forceIntelMdiIssue is set, marking multi-draw indirect as having known issues (vanilla's Intel workaround)
+[04:55:18] [Render thread/INFO] (Minecraft) Using graphics backend OpenGL, using drivers: 3.3 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4
+[04:55:18] [Render thread/INFO] (Minecraft) Using graphics device: llvmpipe (LLVM 20.1.2, 256 bits) (Mesa)
+[04:55:18] [Render thread/INFO] (Minecraft) Using graphics device extensions: GL_ARB_shader_draw_parameters, GL_ARB_base_instance, GL_KHR_debug, GL_ARB_clip_control, GL_ARB_vertex_attrib_binding, GL_ARB_direct_state_access, GL_EXT_texture_filter_anisotropic
+[04:55:18] [Render thread/INFO] (Minecraft) Created window using SDL video driver: x11
+[04:55:19] [Download-1/INFO] (Minecraft) Could not authorize you against Realms server: java.lang.RuntimeException: Failed to parse into SignedJWT: FabricMC
+[04:55:19] [Render thread/ERROR] (Minecraft) Error while loading the narrator
+
+com.mojang.text2speech.Narrator$InitializeException: Failed to load library flite
+	at knot//com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:82)
+	at knot//com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:19)
+	at knot//com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41)
+	at knot//net.minecraft.client.GameNarrator.<init>(GameNarrator.java:20)
+	at knot//net.minecraft.client.Minecraft.<init>(Minecraft.java:740)
+	at knot//net.minecraft.client.main.Main.main(Main.java:278)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.launch(MinecraftGameProvider.java:517)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:72)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86)
+Caused by: java.lang.UnsatisfiedLinkError: Unable to load library 'flite':
+libflite.so: cannot open shared object file: No such file or directory
+libflite.so: cannot open shared object file: No such file or directory
+Native library (linux-x86-64/libflite.so) not found in resource path (/home/runner/work/Quicksilver/Quicksilver/build/classes/java/main:/home/runner/work/Quicksilver/Quicksilver/build/resources/main:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/fabric-loader/0.19.5/ff9e65cffca4a67f31523e1807fe0855940fcbfa/fabric-loader-0.19.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.161.0+26.3/53f9ee02c3702734d90520aa8c9719bf0e1c8d4f/fabric-api-0.161.0+26.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm/9.10.1/ada2141c0cc52ee8f5c48cd5fa4ce0e794f22236/asm-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-analysis/9.10.1/8d49f14d51f632cb1d87c88d1ceaf50db0d8af1b/asm-analysis-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.10.1/4229e4c55fd8e01c23f9fe9884075cc628aacc50/asm-commons-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.10.1/e244332a17564c1d1572449399a842de35881be2/asm-tree-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-util/9.10.1/7bb9d450e8d4cbf9f9e04096c44bbfe7fba80b15/asm-util-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/5f66cc9f59b8efaa942155a3d5a30599bf6640dd/sponge-mixin-0.17.4+mixin.0.8.7.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-fabric/0.5.5/d1055b99c0ab08a8403fe2da3d79ca28e6340a76/mixinextras-fabric-0.5.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/dev-launch-injector/0.2.1+build.8/da8bef7e6e2f952da707f282bdb46882a0fce5e3/dev-launch-injector-0.2.1+build.8.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/fabric-log4j-util/1.0.2/ef0b3fb613356feb75a67d54f2fad6f03a006648/fabric-log4j-util-1.0.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/at.yawk.lz4/lz4-java/1.10.1/f541d7f910fe3d76f38f799c507c48cc81b12ecb/lz4-java-1.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.azure/azure-json/1.4.0/fcc1d354dbc3e0300e5276b1bf124d0247799cd8/azure-json-1.4.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.github.oshi/oshi-core/6.9.0/3224870731860cfcd7744581a05b559e94291e7/oshi-core-6.9.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.14.0/efc0e34ede4e3204eaefb84a00e55e8c86634382/gson-2.14.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/failureaccess/1.0.3/aeaffd00d57023a2c947393ed251f0354f0985fc/failureaccess-1.0.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/33.6.0-jre/c376b13067cc99a5774403530953f7b05a91e218/guava-33.6.0-jre.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.ibm.icu/icu4j/78.3/6a851a53bb1f25689fc418dcc8935b0d93580adf/icu4j-78.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.microsoft.azure/msal4j/1.24.1/c233f2d047b9755f7041adf21a858c680e4c9242/msal4j-1.24.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/authlib/10.0.77/add8754cda96cf0cd840441632875648836f8a71/authlib-10.0.77.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/blocklist/1.0.10/5c685c5ffa94c4cd39496c7184c1d122e515ecef/blocklist-1.0.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/brigadier/1.3.11/3373d1e7bf00c8b99bed1ea4efb8c47344e4a887/brigadier-1.3.11.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/datafixerupper/10.0.21/b6b2ae770c02e0c1eb90f9985b151e9085a38d0b/datafixerupper-10.0.21.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/jtracy/1.14.38/cc2ad81342001b4281c305a298d7f50332354058/jtracy-1.14.38.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/jtracy/1.14.38/d2433300f8a4e99595d513546d19ecddc3eaa15e/jtracy-1.14.38-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/logging/1.7.12/351cea64a5233361327d8d54c44277041beed97f/logging-1.7.12.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/patchy/2.2.10/da05971b07cbb379d002cf7eaec6a2048211fefc/patchy-2.2.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/text2speech/1.19.12/2e517a75c79d34d32de2b5d68422150836c2133e/text2speech-1.19.12.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.22.0/6b3eb4beb7058c2a638f5f17bcb388649fd339dd/commons-codec-1.22.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.20.0/36f3474daec2849c149e877614e7f979b2082cd2/commons-io-2.20.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-buffer/4.2.16.Final/5397ef65dcb60670e0e0dba4854522873af3070/netty-buffer-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec-base/4.2.16.Final/1a01d45a9efc228c6d747525848b065e0656b5f/netty-codec-base-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec-compression/4.2.16.Final/bdbbcfcdbe217b95c14a04df4fc5d31213d5c27c/netty-codec-compression-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec-http/4.2.16.Final/b5e0715df90047ee5a0138c8f704f43c751009e4/netty-codec-http-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-common/4.2.16.Final/c2bc7fa5acfa2afc777e944d84f0aa65559cc81e/netty-common-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-handler/4.2.16.Final/cc82873ae4b6d14effe480740ad838de09add70d/netty-handler-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-resolver/4.2.16.Final/fcea6d64273b59ab9127b68c16ae98af34642139/netty-resolver-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-classes-epoll/4.2.16.Final/cf90c7b892e284ba9f1545dce170168369b3b9d6/netty-transport-classes-epoll-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-classes-kqueue/4.2.16.Final/fa2bcf8c71626510f6fae173f78182117b70f7a/netty-transport-classes-kqueue-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.2.16.Final/eed34f3b37b4c46a0cbb49456ccc4e3bd7195e4c/netty-transport-native-epoll-4.2.16.Final-linux-aarch_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.2.16.Final/439c24f5c27c220deb042b42e4048d606edeb78d/netty-transport-native-epoll-4.2.16.Final-linux-x86_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-unix-common/4.2.16.Final/3cf32390f1b80af890ac44aa0698c2ff58c2a4d7/netty-transport-native-unix-common-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport/4.2.16.Final/ae87a3bec51d503475a19fbd718bf777f2fc06c6/netty-transport-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/fastutil/8.5.18/a6cff377eecc19c2037bf31568a6d7106b50ba1f/fastutil-8.5.18.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/5.17.0/a4934c44d25a9d8c2ddf4203affd20330cb3426f/jna-platform-5.17.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.17.0/33d12735bef894440780fce64f9758d420c7bae2/jna-5.17.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.28.0/e482f2c7a88dac3c497e96aa420b6a769f59c8d7/commons-compress-1.28.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.20.0/65897b3e5731220962e659e001904af3c3cbeba9/commons-lang3-3.20.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.26.0/ad52af0ecf054a7e3f275a2e180ee06d9c490951/log4j-api-2.26.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.26.0/d267ca60b27ddb075e0b4e75e7875859717bf85f/log4j-core-2.26.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-slf4j2-impl/2.26.0/668c0f0e813d83f00a7182533aa658ec7e7a0a0d/log4j-slf4j2-impl-2.26.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jcraft/jorbis/0.0.17/8872d22b293e8f5d7d56ff92be966e6dc28ebdc6/jorbis-0.0.17.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.joml/joml/1.10.9/438e036486bad66b189bff385dd07dea4f74a146/joml-1.10.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jspecify/jspecify/1.0.0/7425a601c1c7ec76645a78d22b8c6a627edee507/jspecify-1.0.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-freetype/3.4.3/d2b12961d44f92860fb1ab501f9c69b7a2975236/lwjgl-freetype-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-freetype/3.4.3/38f27c9a0fbe000bfb38b295c32944d699e246e9/lwjgl-freetype-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.4.3/350f317eaf5295b1e53f6664ef5fdeeaaa7dcbf0/lwjgl-jemalloc-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.4.3/ca21b4b4c6d223907de645a18436ef6f677a5d4f/lwjgl-jemalloc-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.4.3/32b52cda5af6937a4e4bd321bdb83082025cb332/lwjgl-openal-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.4.3/7daa62f9f7b38b30e8a3d3bc7069e9b2e3cd52f0/lwjgl-openal-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.4.3/b81769ee48050f8c71e70839505f350bf9219d90/lwjgl-opengl-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.4.3/ec6fb42167943e94f7f0b14707c1737653c4044b/lwjgl-opengl-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-sdl/3.4.3/c02146735d6ff70d070c73532b435e5c893a346b/lwjgl-sdl-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-sdl/3.4.3/6ed1b80b7c211a491612c70e43f27ba1f42cccd0/lwjgl-sdl-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-shaderc/3.4.3/ba9fbc8fc4d50b3e4b436cc958ddb4abdb05867c/lwjgl-shaderc-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-shaderc/3.4.3/37faa5824f75901f4961e56805aedf68e13cf8b/lwjgl-shaderc-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-spvc/3.4.3/98e5b5ef5159100b26a169a9aed6c24e820e3eaa/lwjgl-spvc-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-spvc/3.4.3/709eb01deec4bdafb7634b125a63fd8de172fc50/lwjgl-spvc-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.4.3/cdce54785bd3758e44a81f345d6260774d921c78/lwjgl-stb-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.4.3/3878e44ce27c12791e570b5c8754ef3b68401dd3/lwjgl-stb-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-vma/3.4.3/816a6ac87f1e447e5346ca0e7a1078353f51fbd6/lwjgl-vma-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-vma/3.4.3/3a9a95d3e83f7fc49c6ed8d0e1c853b77662d90e/lwjgl-vma-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-vulkan/3.4.3/ffdaf1898192059f059d66f9fa37e3debcac10e0/lwjgl-vulkan-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.4.3/7ab5265a73d8a959ed62332d546536ae6be2f0d5/lwjgl-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.4.3/2800e134537db1a175eba41c430b1018eddc48f0/lwjgl-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/2.0.17/d9e58ac9c7779ba3bf8142aff6c830617a7fe60f/slf4j-api-2.0.17.jar:/home/runner/work/Quicksilver/Quicksilver/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-7e9a32a5b8/26.3/minecraft-merged-7e9a32a5b8-26.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-kqueue/4.2.16.Final/dd9d41b06355a6a1815d902ee087a693aab83755/netty-transport-native-kqueue-4.2.16.Final-osx-x86_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-kqueue/4.2.16.Final/ddb942cad6c0e978caa2215757512b36c5ffacec/netty-transport-native-kqueue-4.2.16.Final-osx-aarch_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-advancement-api-v1/1.0.0+38c7a2d55d/54c209419f01d579761838892772d4196436752b/fabric-advancement-api-v1-1.0.0+38c7a2d55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-transfer-api-v1/8.0.25+fcdff87f5d/4680f760ffbd28c38f899488ded76fd7c26082c8/fabric-transfer-api-v1-8.0.25+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api-lookup-api-v1/2.0.24+3434d6d95d/29c412a6baf8e69bf71cab6b7a65b5096ff29a3/fabric-api-lookup-api-v1-2.0.24+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-block-api-v1/3.1.0+0ae6f9115d/78badf0c664259627830111f2ac0ad2f9f0ff2f7/fabric-block-api-v1-3.1.0+0ae6f9115d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-command-api-v2/3.1.2+fcdff87f5d/69de6c0f1f5926309dad2cd9569027a6d4d99493/fabric-command-api-v2-3.1.2+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-content-registries-v0/15.0.4+74ed1ea55d/c316198aeaa747228437e01f8c81efb134dca9f2/fabric-content-registries-v0-15.0.4+74ed1ea55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-data-generation-api-v1/27.2.4+427eab975d/55b45df85af5f43366fc4a0943f9bf3d5950d2c/fabric-data-generation-api-v1-27.2.4+427eab975d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-convention-tags-v2/4.10.3+6b5b47fd5d/4e4591576deeb6317809bc11e50ecf32a0212c1f/fabric-convention-tags-v2-4.10.3+6b5b47fd5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-creative-tab-api-v1/5.0.21+fcdff87f5d/c0d1736c1f7b6166f1925eb0bd79f9c97cd1494/fabric-creative-tab-api-v1-5.0.21+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-data-attachment-api-v1/2.2.30+3434d6d95d/b31a17053b2113fde7011d5caa54871071f38fe/fabric-data-attachment-api-v1-2.2.30+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-debug-api-v1/1.0.4+3434d6d95d/e4812b5812a9d92b97604bdf2737780d3cc7612e/fabric-debug-api-v1-1.0.4+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-dimensions-v1/5.1.19+47f74c985d/2d10026da0876c1e887b512b26d2813a1646c132/fabric-dimensions-v1-5.1.19+47f74c985d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-entity-events-v1/6.0.4+3434d6d95d/731754a9bdfc6784a41d8fb17cd6c08f58fe31e0/fabric-entity-events-v1-6.0.4+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-events-interaction-v0/5.3.6+3434d6d95d/de80f4728f8559f8e126b857288af8a27da57b81/fabric-events-interaction-v0-5.3.6+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-game-rule-api-v1/4.0.10+3434d6d95d/3f73b9e94995f6f8a0d38955b98b67ac8d6bb089/fabric-game-rule-api-v1-4.0.10+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-gametest-api-v1/4.0.32+3434d6d95d/ced6a55e4623994919224b07750f05231dad8c22/fabric-gametest-api-v1-4.0.32+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-item-api-v1/14.7.0+cf6bc2db5d/9d9e319928f67f49029c86ae56d0414997a534ac/fabric-item-api-v1-14.7.0+cf6bc2db5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-recipe-api-v1/10.0.8+fcdff87f5d/16ab72f3b3cc37f758a1ac01817b3909b02ce736/fabric-recipe-api-v1-10.0.8+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-model-loading-api-v1/8.0.35+fcdff87f5d/51079fee66e5b86d8092981bb1cd19d40a97491e/fabric-model-loading-api-v1-8.0.35+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-renderer-indigo/9.1.23+b9d63e335d/d3277e5c11edc7f939ac3ed7f189de56905561c7/fabric-renderer-indigo-9.1.23+b9d63e335d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-renderer-api-v1/17.0.15+79385d0b5d/48172c900e57dbf125490cd132e04fdfdecac7e8/fabric-renderer-api-v1-17.0.15+79385d0b5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-rendering-v1/27.0.14+901a437c5d/b7b356249f2c16fa58410e8c7694c75f0468a403/fabric-rendering-v1-27.0.14+901a437c5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-lifecycle-events-v1/4.1.9+ffef5f675d/4184b98a6c1dbfcf6c63dab29cf7f5812d9eaf73/fabric-lifecycle-events-v1-4.1.9+ffef5f675d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-loot-api-v3/4.0.8+4068fd645d/3f74e49f671c5ef812512b9ff6ca35a531f06cf7/fabric-loot-api-v3-4.0.8+4068fd645d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-menu-api-v1/2.0.27+ed66f0a35d/5f52c5da57fbbdd96604ed12bcec0a0fba779dfe/fabric-menu-api-v1-2.0.27+ed66f0a35d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-message-api-v1/7.0.10+3434d6d95d/5b224f019d030f7bb70584866f4f6329fa9a21b3/fabric-message-api-v1-7.0.10+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-client-gametest-api-v1/6.0.7+4be74c3f5d/b5512c68896b9692f81db7ddc5f2f6d72b18615/fabric-client-gametest-api-v1-6.0.7+4be74c3f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-particles-v1/5.0.24+3434d6d95d/f737b753bad5f3b94d9d07985853539f4c6ee416/fabric-particles-v1-5.0.24+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-object-builder-api-v1/24.1.9+3434d6d95d/24f679e28b1c3a4fd44b339a03161774f880139/fabric-object-builder-api-v1-24.1.9+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-registry-sync-v0/8.0.1+fcdff87f5d/7c5c6642c01a0d37abccc8546b86833ca2c9e667/fabric-registry-sync-v0-8.0.1+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-networking-api-v1/6.3.8+fcdff87f5d/1487018aa4c0cc74d0e32b89c5b2da9b1c00ebb8/fabric-networking-api-v1-6.3.8+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-permission-api-v1/1.0.8+fcdff87f5d/b5ffb6d1e882755032aa6b79265e32699be57c88/fabric-permission-api-v1-1.0.8+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-rendering-fluids-v1/6.0.6+3434d6d95d/f346710e5fb0751998cb84d4772b1b2827e1ad57/fabric-rendering-fluids-v1-6.0.6+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-tag-api-v1/2.1.10+fcdff87f5d/6b70d67fcea94ef97a08cda0d7810fd89238a83/fabric-tag-api-v1-2.1.10+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-resource-loader-v0/3.3.26+4fc5413f5d/2fd2238d86a13d9f43244d030ae0a33ee8e4d092/fabric-resource-loader-v0-3.3.26+4fc5413f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-resource-loader-v1/3.0.4+fcdff87f5d/23991cd88d413af9c9bc9fdaa43e1a4f7156917a/fabric-resource-loader-v1-3.0.4+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-screen-api-v1/5.2.4+48607d035d/43207d0cbe1a0098cc0281b62a9a246f05771f9d/fabric-screen-api-v1-5.2.4+48607d035d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api-base/2.0.6+fcdff87f5d/449053de5093613bbdf6d439bedd431a7ad77da2/fabric-api-base-2.0.6+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-biome-api-v1/20.0.9+74ed1ea55d/587c148a61dd7b76db105d39f556dd741fbbbe2f/fabric-biome-api-v1-20.0.9+74ed1ea55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-block-getter-api-v2/2.0.9+3434d6d95d/56fd2980cfdb2e557bd51dfa743d92bb7befcdb6/fabric-block-getter-api-v2-2.0.9+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-crash-report-info-v1/1.0.7+fcdff87f5d/a5531952f47841e359bc2ca8cb807add8c76c5c5/fabric-crash-report-info-v1-1.0.7+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-key-mapping-api-v1/2.0.8+3434d6d95d/89eb86ef13d05ebc9f725f0c55d9db69abc6fc06/fabric-key-mapping-api-v1-2.0.8+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-resource-conditions-api-v1/6.1.5+3434d6d95d/c009f3d1b43e3e26053d4809055b265bbbfa7044/fabric-resource-conditions-api-v1-6.1.5+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-serialization-api-v1/2.0.7+74ed1ea55d/6461e300b93b46986d74f092660dd9d39a1125c0/fabric-serialization-api-v1-2.0.7+74ed1ea55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-sound-api-v1/2.0.7+3434d6d95d/59e460c1b9e943d662fd0827f0461ff60b7f23d1/fabric-sound-api-v1-2.0.7+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-transitive-access-wideners-v1/8.1.16+52268a0e5d/8322e1bc6d3e3993dce826a41f4a199944269bcb/fabric-transitive-access-wideners-v1-8.1.16+52268a0e5d.jar)
+	at knot//com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:325)
+	at knot//com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:481)
+	at knot//com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:423)
+	at knot//com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:80)
+	... 9 more
+	Suppressed: java.lang.UnsatisfiedLinkError: libflite.so: cannot open shared object file: No such file or directory
+		at knot//com.sun.jna.Native.open(Native Method)
+		at knot//com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:213)
+		... 12 more
+	Suppressed: java.lang.UnsatisfiedLinkError: libflite.so: cannot open shared object file: No such file or directory
+		at knot//com.sun.jna.Native.open(Native Method)
+		at knot//com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:226)
+		... 12 more
+	Suppressed: java.io.IOException: Native library (linux-x86-64/libflite.so) not found in resource path (/home/runner/work/Quicksilver/Quicksilver/build/classes/java/main:/home/runner/work/Quicksilver/Quicksilver/build/resources/main:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/fabric-loader/0.19.5/ff9e65cffca4a67f31523e1807fe0855940fcbfa/fabric-loader-0.19.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.161.0+26.3/53f9ee02c3702734d90520aa8c9719bf0e1c8d4f/fabric-api-0.161.0+26.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm/9.10.1/ada2141c0cc52ee8f5c48cd5fa4ce0e794f22236/asm-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-analysis/9.10.1/8d49f14d51f632cb1d87c88d1ceaf50db0d8af1b/asm-analysis-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.10.1/4229e4c55fd8e01c23f9fe9884075cc628aacc50/asm-commons-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.10.1/e244332a17564c1d1572449399a842de35881be2/asm-tree-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-util/9.10.1/7bb9d450e8d4cbf9f9e04096c44bbfe7fba80b15/asm-util-9.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/5f66cc9f59b8efaa942155a3d5a30599bf6640dd/sponge-mixin-0.17.4+mixin.0.8.7.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-fabric/0.5.5/d1055b99c0ab08a8403fe2da3d79ca28e6340a76/mixinextras-fabric-0.5.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/dev-launch-injector/0.2.1+build.8/da8bef7e6e2f952da707f282bdb46882a0fce5e3/dev-launch-injector-0.2.1+build.8.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/fabric-log4j-util/1.0.2/ef0b3fb613356feb75a67d54f2fad6f03a006648/fabric-log4j-util-1.0.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/at.yawk.lz4/lz4-java/1.10.1/f541d7f910fe3d76f38f799c507c48cc81b12ecb/lz4-java-1.10.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.azure/azure-json/1.4.0/fcc1d354dbc3e0300e5276b1bf124d0247799cd8/azure-json-1.4.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.github.oshi/oshi-core/6.9.0/3224870731860cfcd7744581a05b559e94291e7/oshi-core-6.9.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.14.0/efc0e34ede4e3204eaefb84a00e55e8c86634382/gson-2.14.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/failureaccess/1.0.3/aeaffd00d57023a2c947393ed251f0354f0985fc/failureaccess-1.0.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/33.6.0-jre/c376b13067cc99a5774403530953f7b05a91e218/guava-33.6.0-jre.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.ibm.icu/icu4j/78.3/6a851a53bb1f25689fc418dcc8935b0d93580adf/icu4j-78.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.microsoft.azure/msal4j/1.24.1/c233f2d047b9755f7041adf21a858c680e4c9242/msal4j-1.24.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/authlib/10.0.77/add8754cda96cf0cd840441632875648836f8a71/authlib-10.0.77.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/blocklist/1.0.10/5c685c5ffa94c4cd39496c7184c1d122e515ecef/blocklist-1.0.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/brigadier/1.3.11/3373d1e7bf00c8b99bed1ea4efb8c47344e4a887/brigadier-1.3.11.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/datafixerupper/10.0.21/b6b2ae770c02e0c1eb90f9985b151e9085a38d0b/datafixerupper-10.0.21.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/jtracy/1.14.38/cc2ad81342001b4281c305a298d7f50332354058/jtracy-1.14.38.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/jtracy/1.14.38/d2433300f8a4e99595d513546d19ecddc3eaa15e/jtracy-1.14.38-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/logging/1.7.12/351cea64a5233361327d8d54c44277041beed97f/logging-1.7.12.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/patchy/2.2.10/da05971b07cbb379d002cf7eaec6a2048211fefc/patchy-2.2.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/text2speech/1.19.12/2e517a75c79d34d32de2b5d68422150836c2133e/text2speech-1.19.12.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.22.0/6b3eb4beb7058c2a638f5f17bcb388649fd339dd/commons-codec-1.22.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.20.0/36f3474daec2849c149e877614e7f979b2082cd2/commons-io-2.20.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-buffer/4.2.16.Final/5397ef65dcb60670e0e0dba4854522873af3070/netty-buffer-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec-base/4.2.16.Final/1a01d45a9efc228c6d747525848b065e0656b5f/netty-codec-base-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec-compression/4.2.16.Final/bdbbcfcdbe217b95c14a04df4fc5d31213d5c27c/netty-codec-compression-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec-http/4.2.16.Final/b5e0715df90047ee5a0138c8f704f43c751009e4/netty-codec-http-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-common/4.2.16.Final/c2bc7fa5acfa2afc777e944d84f0aa65559cc81e/netty-common-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-handler/4.2.16.Final/cc82873ae4b6d14effe480740ad838de09add70d/netty-handler-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-resolver/4.2.16.Final/fcea6d64273b59ab9127b68c16ae98af34642139/netty-resolver-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-classes-epoll/4.2.16.Final/cf90c7b892e284ba9f1545dce170168369b3b9d6/netty-transport-classes-epoll-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-classes-kqueue/4.2.16.Final/fa2bcf8c71626510f6fae173f78182117b70f7a/netty-transport-classes-kqueue-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.2.16.Final/eed34f3b37b4c46a0cbb49456ccc4e3bd7195e4c/netty-transport-native-epoll-4.2.16.Final-linux-aarch_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.2.16.Final/439c24f5c27c220deb042b42e4048d606edeb78d/netty-transport-native-epoll-4.2.16.Final-linux-x86_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-unix-common/4.2.16.Final/3cf32390f1b80af890ac44aa0698c2ff58c2a4d7/netty-transport-native-unix-common-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport/4.2.16.Final/ae87a3bec51d503475a19fbd718bf777f2fc06c6/netty-transport-4.2.16.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/fastutil/8.5.18/a6cff377eecc19c2037bf31568a6d7106b50ba1f/fastutil-8.5.18.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/5.17.0/a4934c44d25a9d8c2ddf4203affd20330cb3426f/jna-platform-5.17.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.17.0/33d12735bef894440780fce64f9758d420c7bae2/jna-5.17.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.28.0/e482f2c7a88dac3c497e96aa420b6a769f59c8d7/commons-compress-1.28.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.20.0/65897b3e5731220962e659e001904af3c3cbeba9/commons-lang3-3.20.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.26.0/ad52af0ecf054a7e3f275a2e180ee06d9c490951/log4j-api-2.26.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.26.0/d267ca60b27ddb075e0b4e75e7875859717bf85f/log4j-core-2.26.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-slf4j2-impl/2.26.0/668c0f0e813d83f00a7182533aa658ec7e7a0a0d/log4j-slf4j2-impl-2.26.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jcraft/jorbis/0.0.17/8872d22b293e8f5d7d56ff92be966e6dc28ebdc6/jorbis-0.0.17.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.joml/joml/1.10.9/438e036486bad66b189bff385dd07dea4f74a146/joml-1.10.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jspecify/jspecify/1.0.0/7425a601c1c7ec76645a78d22b8c6a627edee507/jspecify-1.0.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-freetype/3.4.3/d2b12961d44f92860fb1ab501f9c69b7a2975236/lwjgl-freetype-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-freetype/3.4.3/38f27c9a0fbe000bfb38b295c32944d699e246e9/lwjgl-freetype-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.4.3/350f317eaf5295b1e53f6664ef5fdeeaaa7dcbf0/lwjgl-jemalloc-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.4.3/ca21b4b4c6d223907de645a18436ef6f677a5d4f/lwjgl-jemalloc-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.4.3/32b52cda5af6937a4e4bd321bdb83082025cb332/lwjgl-openal-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.4.3/7daa62f9f7b38b30e8a3d3bc7069e9b2e3cd52f0/lwjgl-openal-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.4.3/b81769ee48050f8c71e70839505f350bf9219d90/lwjgl-opengl-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.4.3/ec6fb42167943e94f7f0b14707c1737653c4044b/lwjgl-opengl-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-sdl/3.4.3/c02146735d6ff70d070c73532b435e5c893a346b/lwjgl-sdl-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-sdl/3.4.3/6ed1b80b7c211a491612c70e43f27ba1f42cccd0/lwjgl-sdl-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-shaderc/3.4.3/ba9fbc8fc4d50b3e4b436cc958ddb4abdb05867c/lwjgl-shaderc-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-shaderc/3.4.3/37faa5824f75901f4961e56805aedf68e13cf8b/lwjgl-shaderc-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-spvc/3.4.3/98e5b5ef5159100b26a169a9aed6c24e820e3eaa/lwjgl-spvc-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-spvc/3.4.3/709eb01deec4bdafb7634b125a63fd8de172fc50/lwjgl-spvc-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.4.3/cdce54785bd3758e44a81f345d6260774d921c78/lwjgl-stb-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.4.3/3878e44ce27c12791e570b5c8754ef3b68401dd3/lwjgl-stb-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-vma/3.4.3/816a6ac87f1e447e5346ca0e7a1078353f51fbd6/lwjgl-vma-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-vma/3.4.3/3a9a95d3e83f7fc49c6ed8d0e1c853b77662d90e/lwjgl-vma-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-vulkan/3.4.3/ffdaf1898192059f059d66f9fa37e3debcac10e0/lwjgl-vulkan-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.4.3/7ab5265a73d8a959ed62332d546536ae6be2f0d5/lwjgl-3.4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.4.3/2800e134537db1a175eba41c430b1018eddc48f0/lwjgl-3.4.3-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/2.0.17/d9e58ac9c7779ba3bf8142aff6c830617a7fe60f/slf4j-api-2.0.17.jar:/home/runner/work/Quicksilver/Quicksilver/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-7e9a32a5b8/26.3/minecraft-merged-7e9a32a5b8-26.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-kqueue/4.2.16.Final/dd9d41b06355a6a1815d902ee087a693aab83755/netty-transport-native-kqueue-4.2.16.Final-osx-x86_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-kqueue/4.2.16.Final/ddb942cad6c0e978caa2215757512b36c5ffacec/netty-transport-native-kqueue-4.2.16.Final-osx-aarch_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-advancement-api-v1/1.0.0+38c7a2d55d/54c209419f01d579761838892772d4196436752b/fabric-advancement-api-v1-1.0.0+38c7a2d55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-transfer-api-v1/8.0.25+fcdff87f5d/4680f760ffbd28c38f899488ded76fd7c26082c8/fabric-transfer-api-v1-8.0.25+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api-lookup-api-v1/2.0.24+3434d6d95d/29c412a6baf8e69bf71cab6b7a65b5096ff29a3/fabric-api-lookup-api-v1-2.0.24+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-block-api-v1/3.1.0+0ae6f9115d/78badf0c664259627830111f2ac0ad2f9f0ff2f7/fabric-block-api-v1-3.1.0+0ae6f9115d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-command-api-v2/3.1.2+fcdff87f5d/69de6c0f1f5926309dad2cd9569027a6d4d99493/fabric-command-api-v2-3.1.2+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-content-registries-v0/15.0.4+74ed1ea55d/c316198aeaa747228437e01f8c81efb134dca9f2/fabric-content-registries-v0-15.0.4+74ed1ea55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-data-generation-api-v1/27.2.4+427eab975d/55b45df85af5f43366fc4a0943f9bf3d5950d2c/fabric-data-generation-api-v1-27.2.4+427eab975d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-convention-tags-v2/4.10.3+6b5b47fd5d/4e4591576deeb6317809bc11e50ecf32a0212c1f/fabric-convention-tags-v2-4.10.3+6b5b47fd5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-creative-tab-api-v1/5.0.21+fcdff87f5d/c0d1736c1f7b6166f1925eb0bd79f9c97cd1494/fabric-creative-tab-api-v1-5.0.21+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-data-attachment-api-v1/2.2.30+3434d6d95d/b31a17053b2113fde7011d5caa54871071f38fe/fabric-data-attachment-api-v1-2.2.30+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-debug-api-v1/1.0.4+3434d6d95d/e4812b5812a9d92b97604bdf2737780d3cc7612e/fabric-debug-api-v1-1.0.4+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-dimensions-v1/5.1.19+47f74c985d/2d10026da0876c1e887b512b26d2813a1646c132/fabric-dimensions-v1-5.1.19+47f74c985d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-entity-events-v1/6.0.4+3434d6d95d/731754a9bdfc6784a41d8fb17cd6c08f58fe31e0/fabric-entity-events-v1-6.0.4+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-events-interaction-v0/5.3.6+3434d6d95d/de80f4728f8559f8e126b857288af8a27da57b81/fabric-events-interaction-v0-5.3.6+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-game-rule-api-v1/4.0.10+3434d6d95d/3f73b9e94995f6f8a0d38955b98b67ac8d6bb089/fabric-game-rule-api-v1-4.0.10+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-gametest-api-v1/4.0.32+3434d6d95d/ced6a55e4623994919224b07750f05231dad8c22/fabric-gametest-api-v1-4.0.32+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-item-api-v1/14.7.0+cf6bc2db5d/9d9e319928f67f49029c86ae56d0414997a534ac/fabric-item-api-v1-14.7.0+cf6bc2db5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-recipe-api-v1/10.0.8+fcdff87f5d/16ab72f3b3cc37f758a1ac01817b3909b02ce736/fabric-recipe-api-v1-10.0.8+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-model-loading-api-v1/8.0.35+fcdff87f5d/51079fee66e5b86d8092981bb1cd19d40a97491e/fabric-model-loading-api-v1-8.0.35+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-renderer-indigo/9.1.23+b9d63e335d/d3277e5c11edc7f939ac3ed7f189de56905561c7/fabric-renderer-indigo-9.1.23+b9d63e335d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-renderer-api-v1/17.0.15+79385d0b5d/48172c900e57dbf125490cd132e04fdfdecac7e8/fabric-renderer-api-v1-17.0.15+79385d0b5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-rendering-v1/27.0.14+901a437c5d/b7b356249f2c16fa58410e8c7694c75f0468a403/fabric-rendering-v1-27.0.14+901a437c5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-lifecycle-events-v1/4.1.9+ffef5f675d/4184b98a6c1dbfcf6c63dab29cf7f5812d9eaf73/fabric-lifecycle-events-v1-4.1.9+ffef5f675d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-loot-api-v3/4.0.8+4068fd645d/3f74e49f671c5ef812512b9ff6ca35a531f06cf7/fabric-loot-api-v3-4.0.8+4068fd645d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-menu-api-v1/2.0.27+ed66f0a35d/5f52c5da57fbbdd96604ed12bcec0a0fba779dfe/fabric-menu-api-v1-2.0.27+ed66f0a35d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-message-api-v1/7.0.10+3434d6d95d/5b224f019d030f7bb70584866f4f6329fa9a21b3/fabric-message-api-v1-7.0.10+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-client-gametest-api-v1/6.0.7+4be74c3f5d/b5512c68896b9692f81db7ddc5f2f6d72b18615/fabric-client-gametest-api-v1-6.0.7+4be74c3f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-particles-v1/5.0.24+3434d6d95d/f737b753bad5f3b94d9d07985853539f4c6ee416/fabric-particles-v1-5.0.24+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-object-builder-api-v1/24.1.9+3434d6d95d/24f679e28b1c3a4fd44b339a03161774f880139/fabric-object-builder-api-v1-24.1.9+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-registry-sync-v0/8.0.1+fcdff87f5d/7c5c6642c01a0d37abccc8546b86833ca2c9e667/fabric-registry-sync-v0-8.0.1+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-networking-api-v1/6.3.8+fcdff87f5d/1487018aa4c0cc74d0e32b89c5b2da9b1c00ebb8/fabric-networking-api-v1-6.3.8+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-permission-api-v1/1.0.8+fcdff87f5d/b5ffb6d1e882755032aa6b79265e32699be57c88/fabric-permission-api-v1-1.0.8+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-rendering-fluids-v1/6.0.6+3434d6d95d/f346710e5fb0751998cb84d4772b1b2827e1ad57/fabric-rendering-fluids-v1-6.0.6+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-tag-api-v1/2.1.10+fcdff87f5d/6b70d67fcea94ef97a08cda0d7810fd89238a83/fabric-tag-api-v1-2.1.10+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-resource-loader-v0/3.3.26+4fc5413f5d/2fd2238d86a13d9f43244d030ae0a33ee8e4d092/fabric-resource-loader-v0-3.3.26+4fc5413f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-resource-loader-v1/3.0.4+fcdff87f5d/23991cd88d413af9c9bc9fdaa43e1a4f7156917a/fabric-resource-loader-v1-3.0.4+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-screen-api-v1/5.2.4+48607d035d/43207d0cbe1a0098cc0281b62a9a246f05771f9d/fabric-screen-api-v1-5.2.4+48607d035d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api-base/2.0.6+fcdff87f5d/449053de5093613bbdf6d439bedd431a7ad77da2/fabric-api-base-2.0.6+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-biome-api-v1/20.0.9+74ed1ea55d/587c148a61dd7b76db105d39f556dd741fbbbe2f/fabric-biome-api-v1-20.0.9+74ed1ea55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-block-getter-api-v2/2.0.9+3434d6d95d/56fd2980cfdb2e557bd51dfa743d92bb7befcdb6/fabric-block-getter-api-v2-2.0.9+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-crash-report-info-v1/1.0.7+fcdff87f5d/a5531952f47841e359bc2ca8cb807add8c76c5c5/fabric-crash-report-info-v1-1.0.7+fcdff87f5d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-key-mapping-api-v1/2.0.8+3434d6d95d/89eb86ef13d05ebc9f725f0c55d9db69abc6fc06/fabric-key-mapping-api-v1-2.0.8+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-resource-conditions-api-v1/6.1.5+3434d6d95d/c009f3d1b43e3e26053d4809055b265bbbfa7044/fabric-resource-conditions-api-v1-6.1.5+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-serialization-api-v1/2.0.7+74ed1ea55d/6461e300b93b46986d74f092660dd9d39a1125c0/fabric-serialization-api-v1-2.0.7+74ed1ea55d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-sound-api-v1/2.0.7+3434d6d95d/59e460c1b9e943d662fd0827f0461ff60b7f23d1/fabric-sound-api-v1-2.0.7+3434d6d95d.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-transitive-access-wideners-v1/8.1.16+52268a0e5d/8322e1bc6d3e3993dce826a41f4a199944269bcb/fabric-transitive-access-wideners-v1-8.1.16+52268a0e5d.jar)
+		at knot//com.sun.jna.Native.extractFromResourcePath(Native.java:1141)
+		at knot//com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:297)
+		... 12 more
+[04:55:19] [Render thread/INFO] (Minecraft) Reloading ResourceManager: vanilla, vanilla, fabric-advancement-api-v1, fabric-api, fabric-api-base, fabric-api-lookup-api-v1, fabric-biome-api-v1, fabric-block-api-v1, fabric-block-getter-api-v2, fabric-client-gametest-api-v1, fabric-command-api-v2, fabric-content-registries-v0, fabric-convention-tags-v2, fabric-crash-report-info-v1, fabric-creative-tab-api-v1, fabric-data-attachment-api-v1, fabric-data-generation-api-v1, fabric-debug-api-v1, fabric-dimensions-v1, fabric-entity-events-v1, fabric-events-interaction-v0, fabric-game-rule-api-v1, fabric-gametest-api-v1, fabric-item-api-v1, fabric-key-mapping-api-v1, fabric-lifecycle-events-v1, fabric-loot-api-v3, fabric-menu-api-v1, fabric-message-api-v1, fabric-model-loading-api-v1, fabric-networking-api-v1, fabric-object-builder-api-v1, fabric-particles-v1, fabric-permission-api-v1, fabric-recipe-api-v1, fabric-registry-sync-v0, fabric-renderer-api-v1, fabric-renderer-indigo, fabric-rendering-fluids-v1, fabric-rendering-v1, fabric-resource-conditions-api-v1, fabric-resource-loader-v0, fabric-resource-loader-v1, fabric-screen-api-v1, fabric-serialization-api-v1, fabric-sound-api-v1, fabric-tag-api-v1, fabric-transfer-api-v1, fabric-transitive-access-wideners-v1, fabricloader, quicksilver
+[04:55:20] [Worker-Main-2/INFO] (Minecraft) Found unifont_all_no_pua-17.0.01.hex, loading
+[04:55:20] [Worker-Main-1/INFO] (Minecraft) Found unifont_pua-17.0.01.hex, loading
+[04:55:20] [Worker-Main-2/INFO] (Minecraft) Found unifont_jp_patch-17.0.01.hex, loading
+[04:55:21] [Render thread/INFO] (Quicksilver) Quicksilver capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+[04:55:23] [Render thread/ERROR] (Minecraft) Error starting SoundSystem. Turning off sounds & music
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+java.lang.IllegalStateException: Failed to open OpenAL device
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+	at knot//com.mojang.blaze3d.audio.Library.openDeviceOrFallback(Library.java:274)
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+	at knot//com.mojang.blaze3d.audio.Library.init(Library.java:149)
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+	at knot//net.minecraft.client.sounds.SoundEngine.loadLibrary(SoundEngine.java:121)
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+	at knot//net.minecraft.client.sounds.SoundEngine.reload(SoundEngine.java:110)
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+	at knot//net.minecraft.client.sounds.SoundManager.apply(SoundManager.java:122)
+	at knot//net.minecraft.client.sounds.SoundManager.apply(SoundManager.java:41)
+	at knot//net.minecraft.server.packs.resources.SimplePreparableReloadListener.lambda$reload$1(SimplePreparableReloadListener.java:15)
+	at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:739)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:503)
+	at knot//net.minecraft.server.packs.resources.SimpleReloadInstance.lambda$prepareTasks$3(SimpleReloadInstance.java:59)
+	at knot//net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:173)
+	at knot//net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:23)
+	at knot//net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:147)
+	at knot//net.minecraft.util.thread.BlockableEventLoop.runAllTasks(BlockableEventLoop.java:127)
+	at knot//net.minecraft.client.Minecraft.runTick(Minecraft.java:1240)
+	at knot//net.minecraft.client.Minecraft.run(Minecraft.java:967)
+	at knot//net.minecraft.client.main.Main.main(Main.java:292)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.launch(MinecraftGameProvider.java:517)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:72)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86)
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 256x128x0 minecraft:textures/atlas/celestials.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 128x128x0 minecraft:textures/atlas/decorated_pot.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 1024x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 1024x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 2048x2048x4 minecraft:textures/atlas/blocks.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 1024x512x0 minecraft:textures/atlas/items.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 1024x1024x0 minecraft:textures/atlas/gui.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 128x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 512x512x0 minecraft:textures/atlas/chest.png-atlas
+[04:55:23] [Render thread/INFO] (Minecraft) Created: 512x512x0 minecraft:textures/atlas/shulker_boxes.png-atlas
+[04:55:24] [Render thread/INFO] (Minecraft) Connecting to localhost, 25565
+[04:55:27] [Render thread/INFO] (Minecraft) Loaded 2 advancements
+[04:55:28] [Render thread/INFO] (Quicksilver) Quicksilver visibility: on (sections: vanilla's frustum and cave graph, unchanged; allow-listed vanilla entities (13 types) and block entities (12 types) hidden only when an opaque slab proves them unseen; budget 2.0 ms per frame; every hidden object checked with rays)
+[04:55:28] [Render thread/WARN] (Minecraft) Requested post effect does not exist: minecraft:end_of_frame
+[04:55:28] [Render thread/INFO] (Minecraft) Resizing Dynamic Transforms UBO, capacity limit of 2 reached during a single frame. New capacity will be 4.
+[04:55:29] [Render thread/INFO] (Quicksilver) Quicksilver renderer self-test: passed (21 checks)
+[04:55:29] [Render thread/INFO] (Quicksilver) Quicksilver terrain: on (16-byte vertex for every layer, off-grid positions and UVs rounded to its grid (at most 1/4096 block); vanilla's is 28; solid, cutout and translucent layers (translucent with vanilla's own sorted index lists, drawn in vanilla's order); plain draw path: plain, one multi-draw per region and layer; GPU error check: the device's debug output)
+[04:55:29] [Render thread/INFO] (Quicksilver) Quicksilver translucency: per-frame check on (debug; every frame Quicksilver's translucent draws are checked against vanilla's order and latest sort)
+[04:55:30] [Render thread/INFO] (Minecraft) Resizing Dynamic Transforms UBO, capacity limit of 4 reached during a single frame. New capacity will be 8.
+[04:55:30] [Render thread/INFO] (Quicksilver) Quicksilver animation: on (56 animated block-atlas sprites; each redrawn only when seen: in a visible section's mesh, or used outside terrain)
+[04:55:33] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (3 meshes)
+[04:55:33] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:55:34] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (5 meshes)
+[04:55:34] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:55:37] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (2 meshes)
+[04:55:37] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:56:13] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (47 meshes)
+[04:56:14] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:56:32] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[04:56:33] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (9 meshes)
+[04:56:33] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:56:44] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=spawn seconds=20
+[04:56:44] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench spawn: setting up (needs commands allowed), then 20 s of measuring.
+[04:56:45] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[04:56:45] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[04:56:45] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[04:56:45] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[04:57:05] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=spawn directBuffersMB=3.73
+[04:57:25] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: spawn (World spawn of seed 12345, 8 chunks, daylight (fixed camera height above the terrain)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 11.02, 1% low 8.07, 0.1% low 7.89 (220 frames)
+  frame time ms: p50 87.79, p95 113.73, p99 120.21, max 126.72, frames over 50 ms 220
+  draw calls/frame: avg 49.45, median 49, p95 50, max 50  by kind {"single":10.45,"multi":39.0,"indirect":0.0}
+  uploads/frame: avg 13.17, median 13, p95 17, max 25  by kind {"write_buffer":2.72,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.45}
+  upload bytes/frame: avg 26174.87, median 1492, p95 163476, max 402788  by kind {"write_buffer":24856.47,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":1318.4}
+  heap MB: used avg 357.34, max 449.49, after GC 260.11, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 199.34
+  terrain GPU MB: reserved 40.0, used 22.445 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 40.0 / 22.445)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 45 sections, ms per section avg 5.653 (vanilla mesher avg 4.86, p95 8.571; transcode per layer 0.29)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 42.4% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 39.177 for 792.586 section layers, 11 regions in 3 arenas (22.445 of 40.0 MB used; vanilla's format would need 36.18 MB), layers taken 2489, kept by vanilla 0
+  backFaces: on, triangles/frame 442955.564 of 680427.527 with every face (34.9% left out), index ranges per section layer 1.774
+  uploadBudget: on, bytes/frame avg 25494.335, max in one frame 401408 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.018, max 0.256
+  visibility: on (on), fallbacks 0, sections visible/frame 345.0, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 11.0 (tested 1.0, hidden 0.0), ms/frame 0.03 (max 0.165, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 155.0 in 17.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 35 (ms avg 0.058, p95 0.062, max 1.046; on the render thread 0), new index lists uploaded 0, check on (34255 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 1966054/0, mesh quads Quicksilver/vanilla 0/5
+  animation: on (on), fallbacks 0, 56 animated sprites (0 used outside terrain), per tick changed 23.0 / redrawn 1.0 / left out 22.0, caught up 0, seen per frame 10.0, frames with unread meshes 0, late 0 (since start: left out 25057, caught up 2, on first use 0, late 0), mesh read 0.068 ms/layer
+  effects: draws/frame {"other":41.0,"animation":5.0,"particles":0.45,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 85.012 (max 96), drawn/frame 0.452, tick 0.026 ms/tick, extract 0.011 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (221 of 221 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 3759575, out 11763
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[04:57:25] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=spawn json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-045725-spawn.json
+[04:57:25] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench spawn done: results are in latest.log and quicksilver/bench/.
+[04:57:35] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (5 meshes)
+[04:57:35] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:58:00] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[04:58:00] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (1 meshes)
+[04:58:01] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:58:12] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=water_glass seconds=20
+[04:58:12] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench water_glass: setting up (needs commands allowed), then 20 s of measuring.
+[04:58:12] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[04:58:12] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[04:58:12] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[04:58:12] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[04:58:18] [Render thread/INFO] (Minecraft) [System] [CHAT] No blocks were filled
+[04:58:39] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=water_glass directBuffersMB=3.73
+[04:58:59] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: water_glass (Water, ice and stained glass in a glass tank), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 20.66, 1% low 15.89, 0.1% low 15.19 (413 frames)
+  frame time ms: p50 47.84, p95 51.15, p99 60.28, max 65.84, frames over 50 ms 42
+  draw calls/frame: avg 19.96, median 20, p95 20, max 20  by kind {"single":5.96,"multi":14.0,"indirect":0.0}
+  uploads/frame: avg 12.96, median 13, p95 13, max 13  by kind {"write_buffer":2.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.96}
+  upload bytes/frame: avg 7269.81, median 7316, p95 8660, max 9220  by kind {"write_buffer":112.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":7157.81}
+  heap MB: used avg 417.7, max 451.1, after GC 245.18, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 201.09
+  terrain GPU MB: reserved 40.0, used 12.475 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 40.0 / 12.475)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 0 sections, ms per section avg null (vanilla mesher avg null, p95 null; transcode per layer null)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 34.564% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 14.034 for 273.661 section layers, 7 regions in 3 arenas (12.475 of 40.0 MB used; vanilla's format would need 20.721 MB), layers taken 3137, kept by vanilla 0
+  backFaces: on, triangles/frame 216665.346 of 388929.443 with every face (44.292% left out), index ranges per section layer 1.117
+  uploadBudget: on, bytes/frame avg 0.0, max in one frame 0 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.0
+  visibility: on (on), fallbacks 0, sections visible/frame 140.0, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 0.0 (tested 0.0, hidden 0.0), ms/frame 0.001 (max 0.001, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 4.0 in 1.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (1656 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 2148213/0, mesh quads Quicksilver/vanilla 0/5
+  animation: on (on), fallbacks 0, 56 animated sprites (0 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 1.0, frames with unread meshes 0, late 0 (since start: left out 63812, caught up 2, on first use 0, late 0), mesh read 0.056 ms/layer
+  effects: draws/frame {"other":15.964,"animation":0.0,"particles":1.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 52.589 (max 70), drawn/frame 52.614, tick 0.013 ms/tick, extract 0.024 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (414 of 414 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 5988457, out 21350
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[04:58:59] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=water_glass json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-045859-water_glass.json
+[04:58:59] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench water_glass done: results are in latest.log and quicksilver/bench/.
+[04:59:05] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/nether_portal is used outside terrain (TextureAtlasSprite.getU0 < GuiGraphicsExtractor.blitSprite < GuiGraphicsExtractor.blitSprite < LevelLoadingScreen.extractBackground < Screen.extractRenderStateWithTooltipAndSubtitles < Gui.mixinextras$bridge$extractRenderStateWithTooltipAndSubtitles$41, thread Render thread, up to date)
+[04:59:05] [Render thread/INFO] (Minecraft) [System] [CHAT] QuicksilverCI has made the advancement [We Need to Go Deeper]
+[04:59:05] [Render thread/INFO] (Minecraft) Loaded 29 advancements
+[04:59:06] [Render thread/INFO] (Minecraft) Loaded 29 advancements
+[04:59:08] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (11 meshes)
+[04:59:08] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[04:59:25] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[04:59:38] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=nether seconds=20
+[04:59:38] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench nether: setting up (needs commands allowed), then 20 s of measuring.
+[04:59:38] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[04:59:38] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[04:59:38] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[04:59:38] [Render thread/INFO] (Minecraft) [System] [CHAT] There is no default clock in dimension minecraft:the_nether
+[04:59:59] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=nether directBuffersMB=3.73
+[05:00:19] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: nether (The nether), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 19.28, 1% low 15.06, 0.1% low 13.61 (385 frames)
+  frame time ms: p50 51.45, p95 54.15, p99 63.06, max 73.47, frames over 50 ms 382
+  draw calls/frame: avg 33.75, median 34, p95 34, max 34  by kind {"single":13.75,"multi":20.0,"indirect":0.0}
+  uploads/frame: avg 10.05, median 10, p95 10, max 18  by kind {"write_buffer":2.05,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":8.0}
+  upload bytes/frame: avg 6453.01, median 4176, p95 5856, max 361984  by kind {"write_buffer":2272.21,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":4180.8}
+  heap MB: used avg 395.29, max 446.62, after GC 265.77, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 191.85
+  terrain GPU MB: reserved 20.0, used 15.194 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 20.0 / 15.194)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 10 sections, ms per section avg 6.772 (vanilla mesher avg 5.213, p95 20.745; transcode per layer 0.82)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 29.069% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 20.052 for 470.218 section layers, 11 regions in 2 arenas (15.194 of 20.0 MB used; vanilla's format would need 25.433 MB), layers taken 4167, kept by vanilla 0
+  backFaces: on, triangles/frame 269007.948 of 477433.912 with every face (43.655% left out), index ranges per section layer 1.704
+  uploadBudget: on, bytes/frame avg 2154.611, max in one frame 357248 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.001, max 0.087
+  visibility: on (on), fallbacks 0, sections visible/frame 300.0, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 1.0 (tested 1.0, hidden 0.0), ms/frame 0.014 (max 0.058, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 0.0 in 0.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (0 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 3615984/0, mesh quads Quicksilver/vanilla 0/5
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 2.0 / left out 21.0, caught up 0, seen per frame 7.0, frames with unread meshes 0, late 0 (since start: left out 94377, caught up 6, on first use 0, late 0), mesh read 0.054 ms/layer
+  effects: draws/frame {"other":23.0,"animation":10.0,"particles":0.745,"sky":0.0,"weather":0.0,"clouds":0.0}; particles alive avg 41.02 (max 90), drawn/frame 7.083, tick 0.079 ms/tick, extract 0.01 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (386 of 386 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 7311077, out 28884
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:00:19] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=nether json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-050019-nether.json
+[05:00:19] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench nether done: results are in latest.log and quicksilver/bench/.
+[05:01:12] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:01:12] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (5 meshes)
+[05:01:12] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[05:01:23] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=mobs seconds=20
+[05:01:23] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench mobs: setting up (needs commands allowed), then 20 s of measuring.
+[05:01:23] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:01:23] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:01:23] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:01:23] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:01:30] [Render thread/INFO] (Minecraft) [System] [CHAT] No blocks were filled
+[05:01:31] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1071, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:31] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1104, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:32] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1048, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:32] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1057, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:32] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1064, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:32] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1078, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:32] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1097, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:32] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1112, l='ClientLevel', x=2100.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:01:53] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=mobs directBuffersMB=3.73
+[05:02:13] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: mobs (A crowd of 64 mobs (no AI, fixed variants, so they hold still and look the same every run)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 23.1, 1% low 17.84, 0.1% low 17.66 (461 frames)
+  frame time ms: p50 43.0, p95 45.58, p99 55.12, max 56.63, frames over 50 ms 8
+  draw calls/frame: avg 28.86, median 29, p95 29, max 29  by kind {"single":17.86,"multi":11.0,"indirect":0.0}
+  uploads/frame: avg 14.86, median 15, p95 15, max 15  by kind {"write_buffer":2.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":12.86}
+  upload bytes/frame: avg 610663.23, median 610676, p95 610676, max 610676  by kind {"write_buffer":112.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":610551.23}
+  heap MB: used avg 376.57, max 461.93, after GC 264.4, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 190.46
+  terrain GPU MB: reserved 16.0, used 9.599 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 16.0 / 9.599)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 0 sections, ms per section avg null (vanilla mesher avg null, p95 null; transcode per layer null)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 26.412% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 11.024 for 197.427 section layers, 6 regions in 2 arenas (9.599 of 16.0 MB used; vanilla's format would need 16.038 MB), layers taken 4607, kept by vanilla 0
+  backFaces: on, triangles/frame 166486.36 of 300951.41 with every face (44.68% left out), index ranges per section layer 0.99
+  uploadBudget: on, bytes/frame avg 0.0, max in one frame 0 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.0
+  visibility: on (on), fallbacks 0, sections visible/frame 107.0, entities/frame 65.0 (tested 64.0, hidden 0.0), block entities/frame 0.0 (tested 0.0, hidden 0.0), ms/frame 0.139 (max 0.305, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 0.0 in 0.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (0 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 3767227/0, mesh quads Quicksilver/vanilla 196188/196229
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 1.0, frames with unread meshes 0, late 0 (since start: left out 145427, caught up 6, on first use 0, late 0), mesh read 0.051 ms/layer
+  effects: draws/frame {"other":25.861,"animation":0.0,"particles":0.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 0.0 (max 0), drawn/frame 0.0, tick 0.003 ms/tick, extract 0.0 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (462 of 462 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 9249335, out 46699
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:02:13] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=mobs json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-050213-mobs.json
+[05:02:13] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench mobs done: results are in latest.log and quicksilver/bench/.
+[05:02:36] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:02:56] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=outline seconds=20
+[05:02:56] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench outline: setting up (needs commands allowed), then 20 s of measuring.
+[05:02:56] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:02:56] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:02:56] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:02:56] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:03:02] [Render thread/INFO] (Minecraft) [System] [CHAT] No entity was found
+[05:03:13] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=outline directBuffersMB=3.73
+[05:03:33] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: outline (The crosshair's block outline round a stone block on a smooth stone floor (package 7)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 30.0, 1% low 25.13, 0.1% low 24.21 (599 frames)
+  frame time ms: p50 32.71, p95 36.21, p99 38.65, max 41.3, frames over 50 ms 0
+  draw calls/frame: avg 19.67, median 20, p95 20, max 20  by kind {"single":8.67,"multi":11.0,"indirect":0.0}
+  uploads/frame: avg 15.67, median 16, p95 16, max 16  by kind {"write_buffer":2.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":13.67}
+  upload bytes/frame: avg 4981.28, median 5012, p95 5012, max 5012  by kind {"write_buffer":112.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":4869.28}
+  heap MB: used avg 347.28, max 382.39, after GC 264.21, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 191.27
+  terrain GPU MB: reserved 16.0, used 1.539 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 16.0 / 1.539)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 0 sections, ms per section avg null (vanilla mesher avg null, p95 null; transcode per layer null)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 25.897% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 11.018 for 42.07 section layers, 7 regions in 2 arenas (1.539 of 16.0 MB used; vanilla's format would need 2.588 MB), layers taken 4702, kept by vanilla 0
+  backFaces: on, triangles/frame 28291.152 of 48530.885 with every face (41.705% left out), index ranges per section layer 1.0
+  uploadBudget: on, bytes/frame avg 0.0, max in one frame 0 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.0
+  visibility: on (on), fallbacks 0, sections visible/frame 28.0, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 0.0 (tested 0.0, hidden 0.0), ms/frame 0.0 (max 0.002, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 0.0 in 0.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (0 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 3829345/0, mesh quads Quicksilver/vanilla 207132/207173
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 2.0, frames with unread meshes 0, late 0 (since start: left out 181974, caught up 6, on first use 0, late 0), mesh read 0.05 ms/layer
+  effects: draws/frame {"other":16.666,"animation":0.0,"particles":0.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 0.0 (max 0), drawn/frame 0.0, tick 0.002 ms/tick, extract 0.001 ms/frame
+  gui: draws/frame 3.0 (listed 3.0, preparation 0.0), elements 4.0, states 3.0, reordered 3.0 (ignoring text 3.0; pipelines 3.0, texture setups 2.0, scissor areas 1.0) (600 of 600 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 11153094, out 54709
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:03:33] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=outline json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-050333-outline.json
+[05:03:33] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench outline done: results are in latest.log and quicksilver/bench/.
+[05:04:13] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:04:25] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=occlusion seconds=20
+[05:04:25] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench occlusion: setting up (needs commands allowed), then 20 s of measuring.
+[05:04:25] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:04:25] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:04:25] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:04:25] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:04:34] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1609, l='ClientLevel', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:04:34] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1613, l='ClientLevel', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:04:53] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=occlusion directBuffersMB=3.73
+[05:05:13] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: occlusion (Mobs, chests, a banner and signs behind a stone wall and under a stone floor, some seen through a glass window, a doorway and a glass floor (package 2)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 30.0, 1% low 25.9, 0.1% low 24.97 (599 frames)
+  frame time ms: p50 33.11, p95 35.73, p99 36.83, max 40.05, frames over 50 ms 0
+  draw calls/frame: avg 22.67, median 23, p95 23, max 23  by kind {"single":12.67,"multi":10.0,"indirect":0.0}
+  uploads/frame: avg 12.67, median 13, p95 13, max 14  by kind {"write_buffer":2.01,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.67}
+  upload bytes/frame: avg 98554.92, median 98148, p95 98148, max 258760  by kind {"write_buffer":549.64,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":98005.28}
+  heap MB: used avg 341.27, max 383.36, after GC 269.89, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 190.7
+  terrain GPU MB: reserved 20.0, used 2.428 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 20.0 / 2.428)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 2 sections, ms per section avg 4.684 (vanilla mesher avg 3.953, p95 4.863; transcode per layer 0.365)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 24.851% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 10.017 for 70.117 section layers, 6 regions in 3 arenas (2.428 of 20.0 MB used; vanilla's format would need 4.034 MB), layers taken 4927, kept by vanilla 0
+  backFaces: on, triangles/frame 43396.427 of 75656.184 with every face (42.64% left out), index ranges per section layer 1.214
+  uploadBudget: on, bytes/frame avg 436.907, max in one frame 160704 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.05
+  visibility: on (on), fallbacks 0, sections visible/frame 49.0, entities/frame 11.0 (tested 10.0, hidden 2.0), block entities/frame 9.0 (tested 9.0, hidden 4.0), ms/frame 0.073 (max 0.38, frames over budget 0), section layers missing 0, ray check: 3600 objects, 1629600 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 2.0 in 2.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (1200 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 3950840/0, mesh quads Quicksilver/vanilla 207132/207173
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 1.0, frames with unread meshes 0, late 0 (since start: left out 227905, caught up 6, on first use 0, late 0), mesh read 0.048 ms/layer
+  effects: draws/frame {"other":19.666,"animation":0.0,"particles":0.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 0.0 (max 0), drawn/frame 0.0, tick 0.001 ms/tick, extract 0.001 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (600 of 600 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 12824772, out 66467
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:05:13] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=occlusion json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-050513-occlusion.json
+[05:05:13] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench occlusion done: results are in latest.log and quicksilver/bench/.
+[05:05:27] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1631, l='ClientLevel', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:05:27] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1635, l='ClientLevel', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:05:52] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:06:45] [Render thread/INFO] (Minecraft) Villager Villager['Villager'/1670, l='ClientLevel', x=2300.50, y=-200.00, z=-2000.50] died, message: 'Villager died'
+[05:07:29] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=occlusion_move seconds=20
+[05:07:29] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench occlusion_move: setting up (needs commands allowed), then 20 s of measuring.
+[05:07:29] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:07:29] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:07:29] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:07:29] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:07:35] [Render thread/INFO] (Minecraft) [System] [CHAT] No entity was found
+[05:07:56] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=occlusion_move directBuffersMB=3.73
+[05:07:58] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=2.0 command=tp @e[tag=qs_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5
+[05:08:00] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=4.0 command=tp @e[tag=qs_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5
+[05:08:02] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=6.0 command=fill 2301 200 -1997 2305 204 -1996 minecraft:air
+[05:08:05] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=9.0 command=tp @e[tag=qs_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5
+[05:08:07] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=11.0 command=tp @e[tag=qs_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2304.5 200 -2003.5
+[05:08:09] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=13.0 command=fill 2301 200 -1997 2305 204 -1996 minecraft:stone
+[05:08:12] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=15.0 command=tp @e[tag=qs_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2309.5 200 -2003.5
+[05:08:14] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=occlusion_move t=17.0 command=tp @e[tag=qs_mover,x=2283,y=190,z=-2012,dx=34,dy=22,dz=32] 2306.5 200 -2003.5
+[05:08:17] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: occlusion_move (The occlusion layout with the camera sliding along the wall at 0.8 blocks/s while a pig is moved in and out of view and part of the wall is opened and closed again (package 2)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 29.78, 1% low 21.64, 0.1% low 18.11 (596 frames)
+  frame time ms: p50 33.23, p95 36.42, p99 42.24, max 55.22, frames over 50 ms 2
+  draw calls/frame: avg 24.04, median 24, p95 28, max 28  by kind {"single":13.06,"multi":10.97,"indirect":0.0}
+  uploads/frame: avg 12.87, median 13, p95 15, max 26  by kind {"write_buffer":2.19,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.67}
+  upload bytes/frame: avg 76743.77, median 79984, p95 91308, max 658620  by kind {"write_buffer":2934.98,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":73808.79}
+  heap MB: used avg 414.93, max 459.85, after GC 270.44, committed 508.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 188.36
+  terrain GPU MB: reserved 20.0, used 3.229 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 20.0 / 3.229)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 18 sections, ms per section avg 6.997 (vanilla mesher avg 5.997, p95 12.64; transcode per layer 0.5)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 23.637% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 10.99 for 75.424 section layers, 7 regions in 3 arenas (3.229 of 20.0 MB used; vanilla's format would need 5.381 MB), layers taken 5196, kept by vanilla 0
+  backFaces: on, triangles/frame 47931.664 of 83686.567 with every face (42.725% left out), index ranges per section layer 1.239
+  uploadBudget: on, bytes/frame avg 2741.601, max in one frame 583552 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.002, max 0.161
+  visibility: on (on), fallbacks 0, sections visible/frame 51.347, entities/frame 10.0 (tested 9.0, hidden 2.357), block entities/frame 6.0 (tested 6.0, hidden 2.28), ms/frame 0.067 (max 0.281, frames over budget 0), section layers missing 0, ray check: 2768 objects, 1497614 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 2.0 in 2.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 36 (ms avg 0.009, p95 0.012, max 0.052; on the render thread 0), new index lists uploaded 32, check on (1194 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 4125832/0, mesh quads Quicksilver/vanilla 207132/207173
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 1.0, frames with unread meshes 0, late 0 (since start: left out 312246, caught up 6, on first use 0, late 0), mesh read 0.045 ms/layer
+  effects: draws/frame {"other":21.035,"animation":0.0,"particles":0.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 0.0 (max 0), drawn/frame 0.0, tick 0.001 ms/tick, extract 0.001 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (597 of 597 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 13392639, out 96800
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:08:17] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=occlusion_move json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-050817-occlusion_move.json
+[05:08:17] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench occlusion_move done: results are in latest.log and quicksilver/bench/.
+[05:08:57] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:08:57] [Render thread/INFO] (Quicksilver) Quicksilver uploads: waiting (10 meshes)
+[05:08:57] [Render thread/INFO] (Quicksilver) Quicksilver uploads: caught up
+[05:10:00] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=translucent_move seconds=20
+[05:10:00] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench translucent_move: setting up (needs commands allowed), then 20 s of measuring.
+[05:10:00] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:10:00] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:10:00] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:10:00] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:10:06] [Render thread/INFO] (Minecraft) [System] [CHAT] No entity was found
+[05:10:27] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=translucent_move directBuffersMB=3.73
+[05:10:48] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: translucent_move (Water in a glass tank, a wall of stained glass in stripes of six colours, ice and glass panes, with the camera sliding past at 1.5 blocks/s (package 3)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 18.64, 1% low 14.9, 0.1% low 14.7 (372 frames)
+  frame time ms: p50 53.78, p95 57.55, p99 66.54, max 68.04, frames over 50 ms 320
+  draw calls/frame: avg 17.99, median 18, p95 18, max 18  by kind {"single":5.99,"multi":12.0,"indirect":0.0}
+  uploads/frame: avg 13.79, median 13, p95 19, max 29  by kind {"write_buffer":2.8,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.99}
+  upload bytes/frame: avg 26831.29, median 2836, p95 190780, max 758132  by kind {"write_buffer":24148.43,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":2682.86}
+  heap MB: used avg 408.06, max 448.71, after GC 272.15, committed 528.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 186.74
+  terrain GPU MB: reserved 28.0, used 12.877 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 28.0 / 12.877)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 34 sections, ms per section avg 8.694 (vanilla mesher avg 8.033, p95 19.955; transcode per layer 0.352)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 20.599% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 12.032 for 248.43 section layers, 7 regions in 3 arenas (12.877 of 28.0 MB used; vanilla's format would need 21.157 MB), layers taken 5950, kept by vanilla 0
+  backFaces: on, triangles/frame 198865.226 of 352638.608 with every face (43.607% left out), index ranges per section layer 1.179
+  uploadBudget: on, bytes/frame avg 23827.003, max in one frame 755968 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.01, max 0.154
+  visibility: on (on), fallbacks 0, sections visible/frame 136.07, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 0.0 (tested 0.0, hidden 0.0), ms/frame 0.0 (max 0.025, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 7.0 in 2.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 180 (ms avg 0.106, p95 0.164, max 0.23; on the render thread 0), new index lists uploaded 180, check on (2611 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 4720830/0, mesh quads Quicksilver/vanilla 207132/207173
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 3.0, frames with unread meshes 0, late 0 (since start: left out 379130, caught up 6, on first use 0, late 0), mesh read 0.041 ms/layer
+  effects: draws/frame {"other":13.995,"animation":0.0,"particles":1.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 12.68 (max 24), drawn/frame 12.638, tick 0.006 ms/tick, extract 0.017 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (373 of 373 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 14650304, out 123529
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:10:48] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=translucent_move json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-051048-translucent_move.json
+[05:10:48] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench translucent_move done: results are in latest.log and quicksilver/bench/.
+[05:10:54] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: player now in pin area particles (was none)
+[05:11:44] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:11:53] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: player now in pin area none (was particles)
+[05:11:55] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: player now in pin area particles (was none)
+[05:12:05] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=particles seconds=20
+[05:12:05] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench particles: setting up (needs commands allowed), then 20 s of measuring.
+[05:12:05] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:12:05] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:12:05] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:12:06] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:12:12] [Render thread/INFO] (Minecraft) [System] [CHAT] No entity was found
+[05:12:37] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=particles directBuffersMB=3.73
+[05:12:57] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: particles (About 65 kinds of particle at fixed places 3 blocks in front of the camera, before a stone wall, the same in every run (package 8)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 30.0, 1% low 26.86, 0.1% low 25.93 (599 frames)
+  frame time ms: p50 32.81, p95 35.94, p99 36.83, max 38.57, frames over 50 ms 0
+  draw calls/frame: avg 10.67, median 11, p95 11, max 11  by kind {"single":8.67,"multi":2.0,"indirect":0.0}
+  uploads/frame: avg 12.67, median 13, p95 13, max 13  by kind {"write_buffer":2.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.67}
+  upload bytes/frame: avg 8741.28, median 8772, p95 8772, max 8772  by kind {"write_buffer":112.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":8629.28}
+  heap MB: used avg 373.2, max 409.2, after GC 267.53, committed 528.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 187.15
+  terrain GPU MB: reserved 28.0, used 0.131 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 28.0 / 0.131)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 0 sections, ms per section avg null (vanilla mesher avg null, p95 null; transcode per layer null)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 20.55% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 2.003 for 12.02 section layers, 2 regions in 3 arenas (0.131 of 28.0 MB used; vanilla's format would need 0.225 MB), layers taken 5992, kept by vanilla 0
+  backFaces: on, triangles/frame 1927.212 of 4215.025 with every face (54.278% left out), index ranges per section layer 1.0
+  uploadBudget: on, bytes/frame avg 0.0, max in one frame 0 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.0
+  visibility: on (on), fallbacks 0, sections visible/frame 12.0, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 0.0 (tested 0.0, hidden 0.0), ms/frame 0.0 (max 0.002, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 0.0 in 0.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (0 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 4724626/0, mesh quads Quicksilver/vanilla 207132/207173
+  animation: on (on), fallbacks 0, 56 animated sprites (1 used outside terrain), per tick changed 23.0 / redrawn 0.0 / left out 23.0, caught up 0, seen per frame 1.0, frames with unread meshes 0, late 0 (since start: left out 438631, caught up 6, on first use 0, late 0), mesh read 0.041 ms/layer
+  effects: draws/frame {"other":3.666,"animation":0.0,"particles":4.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 66.0 (max 66), drawn/frame 66.0, tick 0.005 ms/tick, extract 0.056 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (600 of 600 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 16564460, out 140984
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:12:57] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=particles json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-051257-particles.json
+[05:12:57] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench particles done: results are in latest.log and quicksilver/bench/.
+[05:13:04] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: every animated texture back to its first frame, then 70 texture ticks of animation
+[05:13:04] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: player now in pin area animation (was particles)
+[05:13:08] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: 70 texture ticks of animation done (69 client ticks), held from the next one
+[05:13:21] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/repeating_command_block_back is used outside terrain (TextureAtlasSprite.getU < TerrainParticle.getU0 < SingleQuadParticle.extractRotatedQuad < SingleQuadParticle.extractRotatedQuad < SingleQuadParticle.extract < QuadParticleGroup.extractRenderState, thread Render thread, stale)
+[05:13:41] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:14:09] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=animation seconds=20
+[05:14:09] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench animation: setting up (needs commands allowed), then 20 s of measuring.
+[05:14:09] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:14:09] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:14:09] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:14:10] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Too many blocks in the specified area (maximum 32768, but specified 39884)
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] No entity was found
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] No blocks were filled
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] No blocks were filled
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] No blocks were filled
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:16] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:17] [Render thread/INFO] (Minecraft) [System] [CHAT] Could not set the block
+[05:14:39] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=animation directBuffersMB=3.73
+[05:14:40] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=animation t=1.0 command=setblock 2630 194 -2000 minecraft:redstone_block
+[05:14:40] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: animation runs freely (marker set, measuring)
+[05:14:43] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=animation t=4.0 command=particle minecraft:block{block_state:"minecraft:chain_command_block"} 2629.5 206.5 -1991.5 0 0 0 0 0 force @a
+[05:14:43] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/chain_command_block_back is used outside terrain (TextureAtlasSprite.getU < TerrainParticle.getU0 < SingleQuadParticle.extractRotatedQuad < SingleQuadParticle.extractRotatedQuad < SingleQuadParticle.extract < QuadParticleGroup.extractRenderState, thread Render thread, stale)
+[05:14:47] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=animation t=8.0 command=setblock 2627 205 -1995 minecraft:repeating_command_block[facing=south]
+[05:14:59] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: animation (Animated blocks in front of the camera and 34 blocks behind it, with animation run for a fixed number of ticks in every run (package 8)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 30.0, 1% low 25.69, 0.1% low 21.94 (599 frames)
+  frame time ms: p50 32.81, p95 36.34, p99 36.98, max 45.57, frames over 50 ms 0
+  draw calls/frame: avg 39.95, median 49, p95 67, max 75  by kind {"single":37.95,"multi":2.0,"indirect":0.0}
+  uploads/frame: avg 12.68, median 13, p95 13, max 16  by kind {"write_buffer":2.01,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":10.67}
+  upload bytes/frame: avg 1905.62, median 1716, p95 1716, max 86324  by kind {"write_buffer":354.96,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":1550.66}
+  heap MB: used avg 418.17, max 449.84, after GC 265.03, committed 528.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 187.49
+  terrain GPU MB: reserved 28.0, used 0.302 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 28.0 / 0.302)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 4 sections, ms per section avg 2.822 (vanilla mesher avg 2.64, p95 7.705; transcode per layer 0.121)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 20.376% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 2.003 for 14.023 section layers, 1 regions in 3 arenas (0.302 of 28.0 MB used; vanilla's format would need 0.518 MB), layers taken 6094, kept by vanilla 0
+  backFaces: on, triangles/frame 3217.743 of 5631.766 with every face (42.864% left out), index ranges per section layer 1.071
+  uploadBudget: on, bytes/frame avg 242.56, max in one frame 84608 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.054
+  visibility: on (on), fallbacks 0, sections visible/frame 13.0, entities/frame 1.0 (tested 0.0, hidden 0.0), block entities/frame 2.595 (tested 0.0, hidden 0.0), ms/frame 0.001 (max 0.004, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 0.0 in 0.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (0 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 4738474/0, mesh quads Quicksilver/vanilla 207132/207173
+  animation: on (on), fallbacks 0, 56 animated sprites (3 used outside terrain), per tick changed 40.58 / redrawn 9.245 / left out 31.335, caught up 3, seen per frame 10.987, frames with unread meshes 0, late 0 (since start: left out 488923, caught up 36, on first use 2, late 0), mesh read 0.041 ms/layer
+  effects: draws/frame {"other":3.666,"animation":32.287,"particles":1.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 2.8 (max 3), drawn/frame 2.797, tick 0.004 ms/tick, extract 0.012 ms/frame
+  gui: draws/frame 1.0 (listed 1.0, preparation 0.0), elements 1.0, states 1.0, reordered 1.0 (ignoring text 1.0; pipelines 1.0, texture setups 1.0, scissor areas 1.0) (600 of 600 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 17886920, out 154300
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:14:59] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=animation json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-051459-animation.json
+[05:14:59] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench animation done: results are in latest.log and quicksilver/bench/.
+[05:15:04] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: every animated texture back to its first frame, then 70 texture ticks of animation
+[05:15:04] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: animation pinned again
+[05:15:04] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: player now in pin area animated items (was animation)
+[05:15:08] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: 70 texture ticks of animation done (69 client ticks), held from the next one
+[05:15:12] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/magma is used outside terrain (BakedQuad.packedUV < VertexConsumer.putBakedQuad < ItemFeatureRenderer.prepareMainSubmit < ItemFeatureRenderer.prepareSubmit < ItemFeatureRenderer.buildGroup < RenderTypeFeatureRenderer.prepareGroup, thread Render thread, stale)
+[05:15:13] [Render thread/INFO] (Minecraft) Resizing Dynamic Transforms UBO, capacity limit of 8 reached during a single frame. New capacity will be 16.
+[05:15:13] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/fire_0 is used outside terrain (TextureAtlasSprite.getU0 < FlameFeatureRenderer.prepare < FlameFeatureRenderer.buildGroup < RenderTypeFeatureRenderer.prepareGroup < FeatureRenderDispatcher$PreparedGroup.prepare < FeatureRenderDispatcher.prepareFrameWithContext, thread Render thread, stale)
+[05:15:13] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/fire_1 is used outside terrain (TextureAtlasSprite.getU0 < FlameFeatureRenderer.prepare < FlameFeatureRenderer.buildGroup < RenderTypeFeatureRenderer.prepareGroup < FeatureRenderDispatcher$PreparedGroup.prepare < FeatureRenderDispatcher.prepareFrameWithContext, thread Render thread, stale)
+[05:15:14] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/sea_lantern is used outside terrain (BakedQuad.packedUV < VertexConsumer.putBakedQuad < ItemFeatureRenderer.prepareMainSubmit < ItemFeatureRenderer.prepareSubmit < ItemFeatureRenderer.buildGroup < RenderTypeFeatureRenderer.prepareGroup, thread Render thread, stale)
+[05:15:14] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/prismarine is used outside terrain (BakedQuad.packedUV < VertexConsumer.putBakedQuad < ItemFeatureRenderer.prepareMainSubmit < ItemFeatureRenderer.prepareSubmit < ItemFeatureRenderer.buildGroup < RenderTypeFeatureRenderer.prepareGroup, thread Render thread, stale)
+[05:15:14] [Render thread/INFO] (Quicksilver) Quicksilver animation: minecraft:block/stonecutter_saw is used outside terrain (BakedQuad.packedUV < VertexConsumer.putBakedQuad < ItemFeatureRenderer.prepareMainSubmit < ItemFeatureRenderer.prepareSubmit < ItemFeatureRenderer.buildGroup < RenderTypeFeatureRenderer.prepareGroup, thread Render thread, stale)
+[05:15:14] [Render thread/INFO] (Minecraft) Loaded 35 advancements
+[05:15:14] [Render thread/INFO] (Minecraft) [System] [CHAT] QuicksilverCI has made the advancement [Hot Stuff]
+[05:15:14] [Render thread/INFO] (Minecraft) Loaded 35 advancements
+[05:15:15] [Render thread/INFO] (Minecraft) Loaded 36 advancements
+[05:15:37] [Render thread/INFO] (Minecraft) [System] [CHAT] [Debug]: Reloading all chunks
+[05:15:49] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH START scene=animated_items seconds=20
+[05:15:49] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench animated_items: setting up (needs commands allowed), then 20 s of measuring.
+[05:15:49] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_time is already set to false
+[05:15:49] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule advance_weather is already set to false
+[05:15:49] [Render thread/INFO] (Minecraft) [System] [CHAT] Game rule send_command_feedback is already set to false
+[05:15:49] [Render thread/INFO] (Minecraft) [System] [CHAT] Clock minecraft:overworld is already set to 6000 tick(s)
+[05:16:18] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH MEASURING scene=animated_items directBuffersMB=3.73
+[05:16:19] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH STEP scene=animated_items t=1.0 command=setblock 2730 194 -2000 minecraft:redstone_block
+[05:16:19] [Render thread/INFO] (quicksilver_ci_pin) Quicksilver CI pin: animation runs freely (marker set, measuring)
+[05:16:38] [Render thread/INFO] (Quicksilver) 
+===== QUICKSILVER BENCH BEGIN =====
+  scene: animated_items (Animated block sprites outside terrain: a hotbar with a magma block, a sea lantern, prismarine and buckets, an item frame and a block display with a magma block, a burning cow; animation run a fixed number of ticks (package 8)), 20 s
+  versions: quicksilver 0.0.1+26.3, minecraft 26.3
+  fps: avg 30.0, 1% low 26.35, 0.1% low 24.11 (599 frames)
+  frame time ms: p50 33.25, p95 35.22, p99 36.46, max 41.47, frames over 50 ms 0
+  draw calls/frame: avg 46.73, median 60, p95 68, max 71  by kind {"single":45.73,"multi":1.0,"indirect":0.0}
+  uploads/frame: avg 20.67, median 21, p95 21, max 23  by kind {"write_buffer":2.0,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":18.67}
+  upload bytes/frame: avg 21573.66, median 21508, p95 21508, max 79236  by kind {"write_buffer":208.37,"write_texture":0.0,"create_buffer":0.0,"transient":0.0,"map_write":21365.28}
+  heap MB: used avg 338.19, max 483.45, after GC 240.17, committed 528.0, max allowed 3996.0
+  off-heap MB: direct buffers 3.73 (33; at the start of measuring 3.73, peak 3.73 at tick 0), mapped 0.0, non-heap 189.4
+  terrain GPU MB: reserved 28.0, used 0.153 (vanilla's heaps 0.0 / 0.0, Quicksilver's arenas 28.0 / 0.153)
+  capabilities: gpuVendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" driver="Mesa 25.2.8-0ubuntu0.24.04.4" gl=3.3 backend=OpenGL os="Linux 7.0.0-1017-azure amd64" windowSystem=X11 cpuCores=4 GL_ARB_multi_draw_indirect=no GL_ARB_buffer_storage=no deviceType=CPU vanilla.multiDrawIndirect=no vanilla.persistentMapping=no vanilla.mdiKnownIssues=yes
+  display: 1280x720, render distance 8 (effective 8), max fps 30, vsync true
+  mods: 53 mods, list hash bc5193fcfad85981
+  meshing: 2 sections, ms per section avg 1.374 (vanilla mesher avg 1.217, p95 1.935; transcode per layer 0.157)
+  terrain: active (on), fallbacks 0, 16-byte vertices (vanilla 28; 20.315% with a position rounded to the grid), path plain, one multi-draw per region and layer, draws/frame 1.002 for 13.022 section layers, 1 regions in 3 arenas (0.153 of 28.0 MB used; vanilla's format would need 0.261 MB), layers taken 6143, kept by vanilla 0
+  backFaces: on, triangles/frame 2271.786 of 4890.15 with every face (53.544% left out), index ranges per section layer 1.0
+  uploadBudget: on, bytes/frame avg 96.213, max in one frame 57728 (budget avg 2097152.0), sections waiting avg 0.0, max 0 (0 frames), upload ms avg 0.0, max 0.042
+  visibility: on (on), fallbacks 0, sections visible/frame 13.0, entities/frame 4.0 (tested 1.0, hidden 0.0), block entities/frame 0.0 (tested 0.0, hidden 0.0), ms/frame 0.009 (max 0.038, frames over budget 0), section layers missing 0, ray check: 0 objects, 0 rays, 0 violations, 0 unchecked
+  translucency: section layers/frame 0.0 in 0.0 draws (vanilla's own 0.0, mixed frames 0), OIT frames 0, sorts 0 (ms avg null, p95 null, max null; on the render thread 0), new index lists uploaded 0, check on (0 checked, 0 violations, 0 since start-up)
+  renderer: block renderer on, blocks Quicksilver/vanilla 4744144/0, mesh quads Quicksilver/vanilla 207132/351073
+  animation: on (on), fallbacks 0, 56 animated sprites (9 used outside terrain), per tick changed 40.58 / redrawn 7.98 / left out 32.6, caught up 0, seen per frame 9.0, frames with unread meshes 0, late 0 (since start: left out 534758, caught up 42, on first use 8, late 0), mesh read 0.041 ms/layer
+  effects: draws/frame {"other":15.666,"animation":28.063,"particles":0.0,"sky":3.0,"weather":0.0,"clouds":0.0}; particles alive avg 0.0 (max 0), drawn/frame 0.0, tick 0.001 ms/tick, extract 0.0 ms/frame
+  gui: draws/frame 4.0 (listed 4.0, preparation 3.0), elements 9.0, states 4.0, reordered 4.0 (ignoring text 4.0; pipelines 4.0, texture setups 3.0, scissor areas 1.0) (600 of 600 frames)
+  server: no server in this game (a remote server); client start-up ms to title null, to first join 20478; client bytes in 18405024, out 164662
+  counters: 59 applied, missing [], not loaded (backend not in use) ["VulkanGpuBuffer$Direct","VulkanTransientMemory"]
+===== QUICKSILVER BENCH END =====
+[05:16:38] [Render thread/INFO] (Quicksilver) QUICKSILVER BENCH END scene=animated_items json=/home/runner/work/Quicksilver/Quicksilver/run/quicksilver/bench/20261029-051638-animated_items.json
+[05:16:38] [Render thread/INFO] (Minecraft) [System] [CHAT] [Quicksilver] Bench animated_items done: results are in latest.log and quicksilver/bench/.
+
+> Task :runClient FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1793249700309.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':runClient' (registered by plugin 'fabric-loom').
+> Process 'command '/usr/lib/jvm/temurin-25-jdk-amd64/bin/java'' finished with non-zero exit value 143 (this value may indicate that the process was terminated with the SIGTERM signal)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 21m 47s
+4 actionable tasks: 4 executed
+EXIT 1
