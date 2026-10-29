@@ -1,0 +1,25 @@
+{
+  "startupMs": 24311,
+  "worldLoadMs": 5190,
+  "quicksilverLoaded": true,
+  "generated": [
+    {
+      "area": "minecraft:overworld 200 200 211 211",
+      "chunks": 144,
+      "ms": 13207
+    },
+    {
+      "area": "minecraft:the_nether -6 -6 5 5",
+      "chunks": 144,
+      "ms": 7892
+    },
+    {
+      "area": "minecraft:the_end -6 -6 5 5",
+      "chunks": 144,
+      "ms": 2261
+    }
+  ],
+  "mode": "gen",
+  "lightSettleTicks": 20,
+  "heapAfterGenMB": 301.338
+}

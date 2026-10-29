@@ -1,0 +1,44 @@
+{
+ "mode": "gen",
+ "a": "/tmp/sres/core-vanilla-a/gen/world",
+ "b": "/tmp/sres/core-vanilla-b/gen/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "differ": 0,
+   "unreadable": 0,
+   "keys": []
+  },
+  "dimensions/minecraft/the_end/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "differ": 0,
+   "unreadable": 0,
+   "keys": []
+  },
+  "dimensions/minecraft/the_nether/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "differ": 0,
+   "unreadable": 0,
+   "keys": []
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 432,
+  "missingDimensions": 0,
+  "differences": 0
+ }
+}
