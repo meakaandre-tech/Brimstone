@@ -316,10 +316,15 @@ public final class Harness implements ModInitializer {
                     if (all.isEmpty()) continue;
                     long before = 0;
                     for (Object c : containers.values()) before += ((net.minecraft.world.ticks.LevelChunkTicks<?>) c).count();
-                    all.sort(java.util.Comparator.<net.minecraft.world.ticks.ScheduledTick>comparingLong(t -> t.triggerTick())
-                        .thenComparing(t -> (Comparable) t.priority())
-                        .thenComparingInt(t -> t.pos().getX()).thenComparingInt(t -> t.pos().getZ()).thenComparingInt(t -> t.pos().getY())
-                        .thenComparing(t -> String.valueOf(t.type())));
+                    all.sort((x, y) -> {
+                        int c = Long.compare(x.triggerTick(), y.triggerTick());
+                        if (c == 0) c = ((Enum) x.priority()).compareTo((Enum) y.priority());
+                        if (c == 0) c = Integer.compare(x.pos().getX(), y.pos().getX());
+                        if (c == 0) c = Integer.compare(x.pos().getZ(), y.pos().getZ());
+                        if (c == 0) c = Integer.compare(x.pos().getY(), y.pos().getY());
+                        if (c == 0) c = String.valueOf(x.type()).compareTo(String.valueOf(y.type()));
+                        return c;
+                    });
                     ticks.clearArea(new net.minecraft.world.level.levelgen.structure.BoundingBox(minX * 16, -4096, minZ * 16,
                         maxX * 16 + 15, 4096, maxZ * 16 + 15));
                     long order = 0;
