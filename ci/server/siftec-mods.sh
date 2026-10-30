@@ -26,3 +26,5 @@ while read -r url; do
   case "$url" in http*) curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o "$mods/$(basename "$url")" "$url" || echo "could not fetch $url";; esac
 done < "$S/smoke-pack-mods"
 ls -l "$mods"
+# the pack lock (ci/pack-lock.txt): the jars fetched here (Fabric API may be added to this folder separately)
+bash ci/pack-check.sh "$mods" siftec partial || { echo "the pack changed (see above)"; exit 1; }

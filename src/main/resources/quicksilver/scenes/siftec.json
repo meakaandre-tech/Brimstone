@@ -32,6 +32,9 @@
     },
     {
       "id": "factory_flat",
+      "ciStrictMask": [[1056, 0, 1280, 240]],
+      "ciGatedCounts": ["uploadsPerFrame", "uploadBytesPerFrame", "heapUsedAfterGcMB", "directBuffersMB"],
+      "ciMapModNote": "MapMod is being finished (Andre, 2026-10-30): MapMod's minimap shows here, so the strict check leaves its screen area out (ciStrictMask) and draw calls are gated against vanilla in the same run only, not main's baselines (any MapMod build is taken).",
       "title": "The SIFTEC factory scene (the buildings_a row) with smooth lighting off: flat lighting of SIFTEC and Create models (package 4)",
       "renderDistance": 8,
       "settleSeconds": 20,
@@ -140,6 +143,7 @@
     {
       "id": "map",
       "title": "SIFTEC fullscreen map, centred on a pinned player",
+      "skip": "MapMod is being finished (Andre, 2026-10-30): the map scene is out of the bench and CI until then; with it, its limits are re-collected",
       "renderDistance": 8,
       "settleSeconds": 15,
       "setup": [
@@ -165,6 +169,9 @@
     },
     {
       "id": "hologram",
+      "ciStrictMask": [[1056, 0, 1280, 240]],
+      "ciGatedCounts": ["uploadsPerFrame", "uploadBytesPerFrame", "heapUsedAfterGcMB", "directBuffersMB"],
+      "ciMapModNote": "MapMod is being finished (Andre, 2026-10-30): MapMod's minimap shows here, so the strict check leaves its screen area out (ciStrictMask) and draw calls are gated against vanilla in the same run only, not main's baselines (any MapMod build is taken).",
       "ciDrawCallGate": "median",
       "title": "SIFTEC Build Gun hologram (green where the building fits) in front of a water pool, high above the terrain (package 3)",
       "renderDistance": 8,
@@ -197,6 +204,7 @@
     },
     {
       "id": "hud",
+      "skip": "MapMod is being finished (Andre, 2026-10-30): the HUD scene (its minimap) is out of the bench and CI until then; with it, its limits are re-collected",
       "title": "Normal play with the HUD on: hotbar with items, the chat open with a few lines, SIFTEC's compass strip and minimap, on a platform in front of a wall (package 7)",
       "renderDistance": 8,
       "settleSeconds": 10,

@@ -93,6 +93,9 @@ os.replace(jar + ".tmp", jar)
 print("measure run: contains_renderer taken out of the jar's fabric.mod.json (Indigo draws)")
 PY
 fi
+# the pack lock (ci/pack-lock.txt): this run's server jars, as checked in the world jobs (the hashes go to the logs)
+if [ "$SUITE" = siftec ]; then pset=siftec; else pset=core; fi
+bash ci/pack-check.sh server/mods $pset complete "$OUT/pack-sha256.txt" || { echo "the pack changed (see above)"; exit 1; }
 cd server
 # SIFTEC's own settings, plus a view distance that covers the 12-chunk fly-through and no console echo in chat
 printf 'level-seed=12345\nwhite-list=false\nenforce-whitelist=false\nonline-mode=false\nmax-tick-time=-1\nview-distance=12\ngamemode=creative\ndifficulty=peaceful\nspawn-protection=0\npause-when-empty-seconds=-1\nbroadcast-console-to-ops=false\n' > server.properties
@@ -127,6 +130,8 @@ for v in vs[:1]: print(v['version_number'], file=sys.stderr)")
     if [ -z "$surl" ]; then echo "no Sodium 0.9.2 build for Minecraft $mc on Modrinth"; exit 1; fi
     curl -fsSL -o run/mods/sodium.jar "$surl" || { echo "could not download Sodium from $surl"; exit 1; }
     echo "Sodium: $surl"
+    mkdir -p /tmp/sodium-check && cp run/mods/sodium.jar /tmp/sodium-check/
+    bash ci/pack-check.sh /tmp/sodium-check sodium complete "$OUT/pack-sha256.txt" || { echo "the pack changed (see above)"; exit 1; }
   fi
 fi
 # every run, vanilla and Quicksilver alike: CI's lightmap pin (ci/pin-mod), which holds the block-light flicker still
