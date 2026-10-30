@@ -1,0 +1,4 @@
+quicksilver_ci_pin
+quicksilver_bench
+sodium
+minecraft fabricloader fabric-api

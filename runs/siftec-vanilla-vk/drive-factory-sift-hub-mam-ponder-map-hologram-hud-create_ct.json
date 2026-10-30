@@ -1,0 +1,62 @@
+[
+  {
+    "scene": "factory",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "ponder",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "map",
+    "skipped": "MapMod is being finished (Andre, 2026-10-30): the map scene is out of the bench and CI until then; with it, its limits are re-collected"
+  },
+  {
+    "scene": "hologram",
+    "skipped": "not run in vanilla-vk: Mesa's lavapipe Vulkan driver segfaults drawing Create's outliner (the hologram), in vanilla's run too"
+  },
+  {
+    "scene": "hud",
+    "skipped": "MapMod is being finished (Andre, 2026-10-30): the HUD scene (its minimap) is out of the bench and CI until then; with it, its limits are re-collected"
+  },
+  {
+    "scene": "create_ct",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  }
+]

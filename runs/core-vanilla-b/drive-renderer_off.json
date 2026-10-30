@@ -1,0 +1,10 @@
+[
+  {
+    "scene": "renderer_off",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  }
+]
