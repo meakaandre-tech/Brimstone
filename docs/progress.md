@@ -2397,6 +2397,19 @@ memory fallback), `docs/ci-limits.md` ("Server suite").
    holds and how it is pinned is in `docs/ci-limits.md`, "Server suite". Vanilla against vanilla: equal on every key,
    the same counts in every run (892 random ticks in the scenes, 2021 precipitation draws let through, 4 monsters).
 
+### Final run
+
+Full mode, `d8c3219`: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40984377782 (based on main
+`67aa601`, unchanged since). Server suite **PASS** (all three suites: worldgen, world diffs, random-tick run,
+GameTests, SIFTEC self-tests, Create train, network check, heap gates; logs on `ci-logs-server-p2-1`). Phase 1's client
+compare **fails on 24 lines, all from MapMod's current build** (logs on `ci-logs-p2-1`): siftec/map and siftec/hud
+pixels, including the measure runs (vanilla's stand-ins, every Quicksilver module off) against vanilla, and the
+draw-call baselines of factory_flat, map, hud and hologram (about +97 draws in every profile against main's baselines,
+which predate MapMod's minimap; in the same run Quicksilver stays at or under vanilla, e.g. hologram 129 against 222).
+Every other client check passes (core and SIFTEC pixels, strict checks, the Memory module on with no fallback in every
+Quicksilver client run, off in the measure runs). Not re-run, no baseline touched: Andre's MapMod decision for the
+phase 1 track covers these scenes.
+
 ### What was built (P2-1 proper)
 
 Measured first (heap run, every suite: the base world's area loaded, then 12000 ticks sprinting; live heap and class
