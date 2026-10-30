@@ -1,0 +1,1071 @@
+{
+ "fails": [],
+ "suites": {
+  "core": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_end/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_end/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "run": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 111,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": [
+      "sb-10,53,-24",
+      "sb-10,54,-24",
+      "sb-12,53,-21",
+      "sb-12,53,-22",
+      "sb-12,53,-23",
+      "sb-12,54,-21",
+      "sb-12,54,-22",
+      "sb-12,54,-23",
+      "sb-13,53,-20",
+      "sb-13,53,-21",
+      "sb-13,53,-22",
+      "sb-13,53,-23",
+      "sb-13,54,-20",
+      "sb-13,54,-21",
+      "sb-13,54,-22",
+      "sb-13,54,-23",
+      "sb-14,53,-20",
+      "sb-14,53,-21",
+      "sb-14,53,-22",
+      "sb-14,53,-23",
+      "sb-14,53,-24",
+      "sb-14,54,-20",
+      "sb-14,54,-21",
+      "sb-14,54,-22",
+      "sb-14,54,-23",
+      "sb-14,54,-24",
+      "sb-15,53,-20",
+      "sb-15,53,-21",
+      "sb-15,53,-22",
+      "sb-15,53,-23",
+      "sb-15,53,-24",
+      "sb-15,54,-20",
+      "sb-15,54,-21",
+      "sb-15,54,-22",
+      "sb-15,54,-23",
+      "sb-15,54,-24",
+      "sb-16,53,-19",
+      "sb-16,53,-20",
+      "sb-16,53,-21",
+      "sb-16,53,-22",
+      "sb-16,53,-23",
+      "sb-16,53,-24",
+      "sb-16,54,-19",
+      "sb-16,54,-20",
+      "sb-16,54,-21",
+      "sb-16,54,-22",
+      "sb-16,54,-23",
+      "sb-16,54,-24",
+      "sb-17,53,-20",
+      "sb-17,53,-21"
+     ]
+    }
+   },
+   "gametests": {
+    "vanilla-a": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "vanilla-b": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "vanilla-c": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "quicksilver": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    }
+   },
+   "run-numbers-vanilla-a": {
+    "startupMs": 12563,
+    "worldLoadMs": 636,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 150.96,
+    "msptAvg": 1.948,
+    "msptP50": 1.296,
+    "msptP99": 12.746,
+    "msptMax": 111.259,
+    "ticksOver50ms": 2,
+    "heapEndMB": 151.391
+   },
+   "run-numbers-vanilla-b": {
+    "startupMs": 7582,
+    "worldLoadMs": 468,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 4,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 150.76,
+    "msptAvg": 1.55,
+    "msptP50": 1.121,
+    "msptP99": 7.438,
+    "msptMax": 59.92,
+    "ticksOver50ms": 1,
+    "heapEndMB": 151.226
+   },
+   "run-numbers-vanilla-c": {
+    "startupMs": 12162,
+    "worldLoadMs": 603,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 151.36,
+    "msptAvg": 1.623,
+    "msptP50": 1.003,
+    "msptP99": 11.379,
+    "msptMax": 88.094,
+    "ticksOver50ms": 2,
+    "heapEndMB": 151.935
+   },
+   "run-numbers-quicksilver": {
+    "startupMs": 13321,
+    "worldLoadMs": 792,
+    "quicksilverLoaded": true,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 152.764,
+    "msptAvg": 1.976,
+    "msptP50": 1.311,
+    "msptP99": 11.43,
+    "msptMax": 121.879,
+    "ticksOver50ms": 2,
+    "heapEndMB": 153.092
+   },
+   "bench": {
+    "kind": "server",
+    "seconds": 50,
+    "time": "2026-10-30T00:02:11.145141049",
+    "quicksilver": "0.0.1+26.3",
+    "minecraft": "26.3",
+    "server": {
+     "side": "dedicated",
+     "ticks": 1003,
+     "tps": 20.06,
+     "msptAvg": 2.169,
+     "msptP50": 1.409,
+     "msptP99": 14.839,
+     "msptMax": 121.487,
+     "ticksOver50ms": 2,
+     "heapUsedMB": 294.764,
+     "heapUsedAfterGcMB": 154.085,
+     "startupMs": 15755,
+     "worldLoadMs": 3223,
+     "network": {
+      "counting": true,
+      "serverBytesInWindow": 0,
+      "serverBytesIn": 0,
+      "serverBytesOut": 0,
+      "clientBytesIn": 0,
+      "clientBytesOut": 0
+     },
+     "players": 0
+    }
+   }
+  },
+  "siftec": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/the_sift/the_sift/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/the_sift/the_sift/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "run": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 7,
+     "quicksilver": 3,
+     "gated": 0,
+     "noiseKeys": [
+      "e2,200,11/cooking_time_spent",
+      "e2,200,11/lit_time_remaining",
+      "e2,201,2/Angle",
+      "sf47,6,80",
+      "sf48,6,80",
+      "sf49,6,80",
+      "sf50,6,80"
+     ]
+    }
+   },
+   "run-numbers-vanilla-a": {
+    "startupMs": 18998,
+    "worldLoadMs": 517,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 4,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 283.894,
+    "msptAvg": 1.762,
+    "msptP50": 1.17,
+    "msptP99": 12.029,
+    "msptMax": 188.41,
+    "ticksOver50ms": 1,
+    "heapEndMB": 289.73,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "run-numbers-vanilla-b": {
+    "startupMs": 14839,
+    "worldLoadMs": 494,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 283.729,
+    "msptAvg": 1.888,
+    "msptP50": 1.353,
+    "msptP99": 9.096,
+    "msptMax": 167.562,
+    "ticksOver50ms": 1,
+    "heapEndMB": 289.288,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "run-numbers-vanilla-c": {
+    "startupMs": 19017,
+    "worldLoadMs": 657,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 4,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 283.423,
+    "msptAvg": 2.069,
+    "msptP50": 1.451,
+    "msptP99": 10.143,
+    "msptMax": 194.912,
+    "ticksOver50ms": 1,
+    "heapEndMB": 289.25,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "run-numbers-quicksilver": {
+    "startupMs": 14052,
+    "worldLoadMs": 446,
+    "quicksilverLoaded": true,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 4,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 286.116,
+    "msptAvg": 1.561,
+    "msptP50": 1.052,
+    "msptP99": 7.727,
+    "msptMax": 164.645,
+    "ticksOver50ms": 1,
+    "heapEndMB": 292.04,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "bench": {
+    "kind": "server",
+    "seconds": 50,
+    "time": "2026-10-30T00:03:05.035297566",
+    "quicksilver": "0.0.1+26.3",
+    "minecraft": "26.3",
+    "server": {
+     "side": "dedicated",
+     "ticks": 1004,
+     "tps": 20.08,
+     "msptAvg": 1.802,
+     "msptP50": 1.227,
+     "msptP99": 9.19,
+     "msptMax": 164.57,
+     "ticksOver50ms": 1,
+     "heapUsedMB": 466.814,
+     "heapUsedAfterGcMB": 292.929,
+     "startupMs": 15873,
+     "worldLoadMs": 2265,
+     "network": {
+      "counting": true,
+      "serverBytesInWindow": 0,
+      "serverBytesIn": 0,
+      "serverBytesOut": 0,
+      "clientBytesIn": 0,
+      "clientBytesOut": 0
+     },
+     "players": 0
+    }
+   },
+   "train": {
+    "vanilla-a": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT",
+    "vanilla-b": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT",
+    "vanilla-c": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT",
+    "quicksilver": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "selftests": {
+    "vanilla-a": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    },
+    "vanilla-b": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    },
+    "vanilla-c": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    },
+    "quicksilver": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    }
+   }
+  },
+  "terralith": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   }
+  },
+  "network": {
+   "net-vanilla-client": {
+    "joined": true,
+    "finished": true,
+    "leftEarly": false,
+    "problems": [],
+    "network": {
+     "counting": true,
+     "serverBytesInWindow": 620266,
+     "serverBytesIn": 6395,
+     "serverBytesOut": 2595095,
+     "clientBytesIn": 0,
+     "clientBytesOut": 0
+    }
+   },
+   "net-qs-client": {
+    "joined": true,
+    "finished": true,
+    "leftEarly": false,
+    "problems": [],
+    "network": {}
+   }
+  }
+ }
+}

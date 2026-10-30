@@ -1,0 +1,37 @@
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/same: 2 chunks, 0 differences ()
+ok   identical worlds: no difference  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 0}
+gen diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/same: 2 chunks, 0 differences ()
+ok   identical worlds, gen: no difference  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 0}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/block: 2 chunks, 1 differences (blocks 1)
+ok   one changed block found  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 1, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/pal: 2 chunks, 0 differences ()
+ok   palette order alone: no block difference  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 0}
+gen diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/pal2: 2 chunks, 1 differences (differ 1)
+ok   palette order: a byte difference in gen mode  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 1, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/chest: 2 chunks, 1 differences (blockEntities 1)
+ok   block entity change found  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 1, "scheduledTicks": 0, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/cowmove: 2 chunks, 1 differences (entities 1)
+ok   entity moved  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 1, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/cowhurt: 2 chunks, 1 differences (entities 1)
+ok   entity health changed  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 1, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/cow2: 2 chunks, 1 differences (entities 1)
+ok   extra entity  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 1, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/drift: 2 chunks, 1 differences (entities 1)
+ok   entity moved by 1e-7 (exact comparison)  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 1, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/item1 vs /tmp/tmpatyce_oy/item2: 2 chunks, 1 differences (entities 1)
+ok   item entity holding another stack  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 1, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/tick1 vs /tmp/tmpatyce_oy/tick2: 2 chunks, 1 differences (scheduledTicks 1)
+ok   scheduled tick differs  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 1, "entities": 0, "chunks": 2, "missingDimensions": 0, "differences": 1}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/chest3: 2 chunks, 1 differences (blockEntities 1)
+ok   block entity keyed by field  {"keys": ["e1,1,1/Items"]}
+ok   unknown palette shape never collapses two states  {}
+world diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/nonether: 1 chunks, 1 differences ()
+ok   missing dimension  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 1, "missingDimensions": 1, "differences": 1}
+gen diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/pal3: 1 chunks, 1 differences (differ 1)
+ok   areas: overworld chunk compared, nether left out  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 1, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 1, "missingDimensions": 0, "differences": 1}
+gen diff /tmp/tmpatyce_oy/base vs /tmp/tmpatyce_oy/same: 0 chunks, 0 differences ()
+ok   areas: chunks outside the area left out  {"onlyA": 0, "onlyB": 0, "unreadable": 0, "differ": 0, "blocks": 0, "blockEntities": 0, "scheduledTicks": 0, "entities": 0, "chunks": 0, "missingDimensions": 0, "differences": 0}
+ok   palette entries in 26.x's forms  {}
+ok   palette entries as strings  {}
+ok   5-bit unpack  {"n": 4096}
+worlddiff self-test: passed

@@ -1,0 +1,406 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/core-vanilla-a/run/world",
+ "b": "/tmp/sres/core-vanilla-c/run/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 1764,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 78,
+   "keys": [
+    "sf-71,-45,-6",
+    "sf-72,-45,-5",
+    "sf-73,-45,-4",
+    "sb-10,53,-24",
+    "sb-10,54,-24",
+    "sb-12,53,-21",
+    "sb-12,53,-22",
+    "sb-12,53,-23",
+    "sb-12,54,-21",
+    "sb-12,54,-22",
+    "sb-12,54,-23",
+    "sb-13,53,-20",
+    "sb-13,53,-21",
+    "sb-13,53,-22",
+    "sb-13,53,-23",
+    "sb-13,54,-20",
+    "sb-13,54,-21",
+    "sb-13,54,-22",
+    "sb-13,54,-23",
+    "sb-14,53,-20",
+    "sb-14,53,-21",
+    "sb-14,53,-22",
+    "sb-14,53,-23",
+    "sb-14,53,-24",
+    "sb-14,54,-20",
+    "sb-14,54,-21",
+    "sb-14,54,-22",
+    "sb-14,54,-23",
+    "sb-14,54,-24",
+    "sb-15,53,-20",
+    "sb-15,53,-21",
+    "sb-15,53,-22",
+    "sb-15,53,-23",
+    "sb-15,53,-24",
+    "sb-15,54,-20",
+    "sb-15,54,-21",
+    "sb-15,54,-22",
+    "sb-15,54,-23",
+    "sb-15,54,-24",
+    "sb-16,53,-19",
+    "sb-16,53,-20",
+    "sb-16,53,-21",
+    "sb-16,53,-22",
+    "sb-16,53,-23",
+    "sb-16,53,-24",
+    "sb-16,54,-19",
+    "sb-16,54,-20",
+    "sb-16,54,-21",
+    "sb-16,54,-22",
+    "sb-16,54,-23",
+    "sb-16,54,-24",
+    "sf-12,55,-22",
+    "sf-14,41,-29",
+    "sf-14,55,-24",
+    "sf-15,36,-29",
+    "sf-15,55,-21",
+    "sf-15,55,-22",
+    "sf-15,55,-24",
+    "sf-16,55,-20",
+    "sf-16,55,-23",
+    "sf-2,19,-26",
+    "sf6,15,-25",
+    "sf7,54,-26",
+    "sf8,-1,-18",
+    "sf9,-1,-18",
+    "sb24,47,-30",
+    "sb24,49,-31",
+    "sb25,47,-30",
+    "sb25,48,-31",
+    "sb26,47,-30",
+    "sb26,47,-31",
+    "sb26,48,-32",
+    "sb27,47,-30",
+    "sb27,47,-31",
+    "sf26,48,-30",
+    "sf36,4,-30",
+    "sf55,19,-22",
+    "sf56,19,-23"
+   ],
+   "examples": [
+    {
+     "scheduledTick": [
+      -71,
+      -45,
+      -6
+     ],
+     "kind": "fluid_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:flowing_lava\",\"p\":0,\"t\":2,\"x\":-71,\"y\":-45,\"z\":-6}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      -72,
+      -45,
+      -5
+     ],
+     "kind": "fluid_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:flowing_lava\",\"p\":0,\"t\":2,\"x\":-72,\"y\":-45,\"z\":-5}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      -73,
+      -45,
+      -4
+     ],
+     "kind": "fluid_ticks",
+     "a": null,
+     "b": [
+      "{\"i\":\"minecraft:flowing_lava\",\"p\":0,\"t\":2,\"x\":-73,\"y\":-45,\"z\":-4}"
+     ]
+    },
+    {
+     "scheduledTick": [
+      -10,
+      53,
+      -24
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-10,\"y\":53,\"z\":-24}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -10,
+      54,
+      -24
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-10,\"y\":54,\"z\":-24}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -12,
+      53,
+      -21
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-12,\"y\":53,\"z\":-21}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -12,
+      53,
+      -22
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-12,\"y\":53,\"z\":-22}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -12,
+      53,
+      -23
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-12,\"y\":53,\"z\":-23}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -12,
+      54,
+      -21
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-12,\"y\":54,\"z\":-21}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -12,
+      54,
+      -22
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-12,\"y\":54,\"z\":-22}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -12,
+      54,
+      -23
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-12,\"y\":54,\"z\":-23}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      53,
+      -20
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":53,\"z\":-20}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      53,
+      -21
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":53,\"z\":-21}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      53,
+      -22
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":53,\"z\":-22}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      53,
+      -23
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":53,\"z\":-23}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      54,
+      -20
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":54,\"z\":-20}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      54,
+      -21
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":54,\"z\":-21}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      54,
+      -22
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":54,\"z\":-22}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -13,
+      54,
+      -23
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-13,\"y\":54,\"z\":-23}"
+     ],
+     "b": null
+    },
+    {
+     "scheduledTick": [
+      -14,
+      53,
+      -20
+     ],
+     "kind": "block_ticks",
+     "a": [
+      "{\"i\":\"minecraft:sand\",\"p\":0,\"t\":2,\"x\":-14,\"y\":53,\"z\":-20}"
+     ],
+     "b": null
+    }
+   ],
+   "entitiesA": 43,
+   "entitiesB": 43,
+   "entitiesExact": true,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:chicken": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:cow": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:item": {
+     "a": 27,
+     "b": 27,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:pig": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:sheep": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:villager": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 78,
+  "entities": 0,
+  "chunks": 1764,
+  "missingDimensions": 0,
+  "differences": 78
+ }
+}

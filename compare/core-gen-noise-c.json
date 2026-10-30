@@ -1,0 +1,88 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/core-vanilla-a/gen/world",
+ "b": "/tmp/sres/core-vanilla-c/gen/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 14,
+   "entitiesB": 14,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:polar_bear": {
+     "a": 11,
+     "b": 11,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  },
+  "dimensions/minecraft/the_end/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 10,
+   "entitiesB": 10,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:end_crystal": {
+     "a": 10,
+     "b": 10,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  },
+  "dimensions/minecraft/the_nether/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 0,
+   "entitiesB": 0,
+   "entitiesExact": true,
+   "entityTypes": {},
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 432,
+  "missingDimensions": 0,
+  "differences": 0
+ }
+}
