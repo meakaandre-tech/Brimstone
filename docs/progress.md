@@ -16,7 +16,7 @@ the `brim*` outputs are `QsCell`, `QsTint`, `QsTexel`, `QsRegion` and `qs*`; the
 
 | track | branch | status |
 |---|---|---|
-| phase 2, P2-1 (memory) | merged | harness fixes (scheduled ticks, furnace and bearing gated again; random-tick and spawning run), Memory module; heap 7% (core), 22% (SIFTEC), 32% (Terralith) below vanilla; see "Phase 2, P2-1" below |
+| phase 2, P2-1 (memory) | merged | `5c98187` (squash of `p2-1`; branch green full run 40989347563), **main full run 41137485459 green, `latest` rebuilt with `quicksilver-26.3.jar` and `quicksilver-bench-26.3.jar`**; harness fixes (scheduled ticks, furnace and bearing gated again; random-tick and spawning run), Memory module; heap 7% (core), 22% (SIFTEC), 32% (Terralith) below vanilla; see "Phase 2, P2-1" below |
 | phase 2, P2-0 (server harness) | merged | server suite, server bench numbers, research; see "Phase 2, P2-0" below |
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
@@ -2368,7 +2368,7 @@ around the scripted area finishing loading at different moments), each fixed in 
   direct-buffer baselines (not touched here).
 
 
-## Phase 2, P2-1: Memory (merged)
+## Phase 2, P2-1: Memory (merged as `5c98187`; main green, run 41137485459)
 
 Design doc: [Quicksilver Phase 2: Design](https://claude.ai/artifact/6QVKeDHfvCQDDDppdrxu45), P2-1. Files: the Memory
 module (`src/main/java/com/meakaandre/quicksilver/memory/`, `mixin/memory/`, `quicksilver.memory.mixins.json`), the
