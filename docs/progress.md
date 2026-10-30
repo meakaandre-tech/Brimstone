@@ -16,7 +16,7 @@ the `brim*` outputs are `QsCell`, `QsTint`, `QsTexel`, `QsRegion` and `qs*`; the
 
 | track | branch | status |
 |---|---|---|
-| phase 2, P2-1 (memory) | `p2-1`, not merged | harness fixes (scheduled ticks, furnace and bearing gated again; random-tick and spawning run), Memory module; heap 7% (core), 22% (SIFTEC), 32% (Terralith) below vanilla; see "Phase 2, P2-1" below |
+| phase 2, P2-1 (memory) | merged | harness fixes (scheduled ticks, furnace and bearing gated again; random-tick and spawning run), Memory module; heap 7% (core), 22% (SIFTEC), 32% (Terralith) below vanilla; see "Phase 2, P2-1" below |
 | phase 2, P2-0 (server harness) | merged | server suite, server bench numbers, research; see "Phase 2, P2-0" below |
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
@@ -1695,6 +1695,710 @@ fog matching vanilla).
 
 ### Final run
 
+Full run 40293774852 on `da3614e` (rebased on main `d65510a`, with the review fixes): **passed**, every gate in both
+suites; the animation scene's bench ran all three catch-up paths inside its measured window (quick run 40288502378:
+12,510 left out, 2 redrawn before terrain, 1 on first use, 0 late).
+
+### Review
+
+Independent review by a headless `claude -p` reviewer with read-only tools (no agent tool in the package's session),
+of `2b98814` and run 40281351708; findings kept in the session's scratchpad (`p8/review-findings.md`). Verdict "request
+changes": F1 must be fixed, F2 documented, F3 and F4 cheap to fix. What was done:
+- **F1 (major) fixed:** the scene requirement read since-start totals that the whole client session shares (spawn
+  alone had left out 21,138 sprites before the animation scene). The bench now counts catch-ups by path (on a tick,
+  before terrain, on first use) inside the measured window, the animation scene's steps make the before-terrain and
+  first-use paths run there, and compare.py gates on those.
+- **F2 (major) documented** (Known limits): a first use outside terrain inside a render pass or on another thread
+  can't be redrawn before that draw; it is counted as late and CI fails on any, but CI only exercises render-thread
+  first uses outside a pass (none was late in any run).
+- **F3 fixed:** a batch whose redraw throws is marked stale again, so the redraw of every stale sprite after the
+  failure covers it.
+- **F4 fixed:** a handler injected into several methods (8 sprite getters, 5 baked-quad UV accessors, 2 terrain
+  prepares) counts as applied only when every target method calls it; otherwise the module stays off.
+- **F5 fixed:** after a failure on another thread, the redraw of every stale sprite also happens at a first use on the
+  render thread outside a pass, not only before the next frame's terrain.
+- **F6:** the negative control is the earlier broken run (40253963481: 5,881 and 3,179 strict pixels; see Scenes).
+- **F7 (banner pin):** left for Andre (Choices to confirm): the evidence is Brimstone against vanilla only; the pin
+  removes banner sway from CI's coverage.
+- **F8:** the new scenes' direct-buffer baselines differ between the two full runs (4.24 and 5.99 MB on full, the
+  JVM's 2 MB pool steps, as in package 3's notes); highest value kept by the rule. Existing draw-call baselines not
+  lowered (Choices to confirm).
+- **F9:** Fabric API's renderer module (`SpriteFinderImpl`, Apache-2.0, not Indigo) was opened only to see where its
+  sprite finder is built; no code taken. Listed for the lead.
+- **F10 fixed:** doc counts (66 commands, 49 visible, 66 alive in the bench), run references.
+- **F11 (note):** UV reads before the block atlas's upload finishes are not uses; recorded in Known limits.
+
+### Andre's follow-ups (2026-10-27) and the rebase onto package 4
+
+- `core/animated_items`: animated block sprites shown only outside terrain (the hotbar and held magma block, a sea
+  lantern, prismarine, lava and water buckets; an item frame and a block display holding magma; a burning cow), in a
+  third pin area where animation runs 70 ticks from frame 0 like the animation scene. Every one of those sprites is
+  stale at its first use and redrawn on the spot (quick run 40404276347: magma, fire_0, fire_1, sea_lantern and
+  prismarine each redrawn on first use, 0 late; Brimstone identical to vanilla). CI's late gate covers every scene,
+  this one included.
+- `siftec/factory`: a Create fluid tank full of lava floats in front of the camera (the shot had no lava).
+- `core/particles`: strict limit 4 (was 10), below the smallest particle (9 pixels).
+- Rebased onto main with package 4 (`ccf47501`) as one squashed commit (the branch before it is tagged locally as
+  `p8-pre-squash`). Package 4's `flat_plants` and `renderer_off` scenes stand where the particle scene and its pin
+  area were (x 2480-2560), so the particle scene and its area moved 300 blocks east (x 2800-2880); the core world now
+  pregenerates x 2496-2959 for package 8's scenes. Shared files merged by hand, keeping both packages' additions:
+  `ci/client-run.sh` (both debug properties), `BenchReport` (renderer, effects and animation lines), `fabric.mod.json`
+  (both mixin configs), the core baselines and `core.json` (main's entries plus package 8's three scenes).
+
+**Package 4's block renderer stays inside the not-a-use scope** (full run 40412755923 on the rebased branch, `7059fbe`;
+Brimstone's block renderer on in every Brimstone session, e.g. 1.9-3.6 million blocks meshed by it per session, 0 by
+vanilla's): animated sprites "used outside terrain" stay at 0-1 in every terrain scene (as before the rebase), so no
+terrain sprite leaks out of the scope; Brimstone's animation draws per frame (vanilla's in brackets, full profile):
+spawn 5.0 (115.0), flythrough 5.0 (115.0), nether 10.0 (97.0), water_glass, mobs, occlusion, translucent_move, the OIT
+scenes, flat_plants, renderer_off and particles 0.0 (76.6-115.0); the animation scene with animation running while
+measuring 32.3 (136.4), the same as before the rebase (32.3 in run 40293774852); animated_items 28.0 (136.4), with 9
+sprites used outside terrain (the scene's own). That run failed only on compare's renderer-registration check reading a
+truncated copy of one client log (core brimstone-full session 5's `client-5.log` holds only the last 34 lines; that
+session's console log shows the renderer registered and its self-test passed) and on the then missing baselines of
+animated_items, added from it.
+
+**Green full run on the rebased branch: 40425375596** (`eb3db84`, on main `ccf4750` with package 4): every gate in both
+suites. Brimstone's animation draws per frame (full / old-GPU / Vulkan): spawn and flythrough 5.0 / 5.0 / 5.0, nether
+9.9 / 10.0 / 10.0, every other pinned scene (package 4's flat_plants and renderer_off included) 0.0, against vanilla's
+76.6-115.0; animation (animation running) 32.3 in every profile against 136.4; animated_items 28.0 against 136.4-136.6,
+identical to vanilla (0 strict pixels in every profile), 0 late redraws. SIFTEC's factory: the lava tank's sprite is
+read by Create's fluid renderer on the render thread (logged as a use outside terrain), 0 strict pixels, 0 late.
+
+### For package 6's plan (Andre, 2026-10-27)
+
+CI now holds banner sway still in every run (`BannerSwayMixin`, package 8), so banner animation is untested: package 6
+(entities and block entities) must add a scene with banner sway running (made repeatable, as the animation scene's pin
+does for textures) and check Brimstone's banners against vanilla there.
+
+### Choices to confirm (Andre)
+
+1. The banner sway CI pin (`BannerSwayMixin`) instead of re-collecting occlusion_move.x2309's strict limit.
+2. Existing draw-call baselines left as they are (70-130 draws of room per scene since the animation module); lower
+   them after the packages 4, 7 and 8 merges?
+3. No cloud or rain scene, as Brimstone leaves clouds, weather, sky and fog to vanilla.
+4. Particles, weather, sky and clouds not optimised (vanilla spends 1-4 draws on each).
+
+### Known limits
+
+- A first use outside terrain of a stale sprite inside a render pass or on another thread (an item, entity or block
+  entity whose UVs are read while a pass is open; a Create or Flywheel worker) is drawn one frame with the stale frame:
+  it is counted as late (CI fails on any; none in any run), redrawn at the next safe point, but not prevented. CI's
+  scenes only exercise render-thread first uses outside a pass.
+- UV reads made before the block atlas's upload finishes (during the resource reload) are not uses.
+
+- A mod that copies an animated sprite's UVs without going through the sprite's getters or a baked quad (e.g. reading
+  the fields through its own accessor) would see a stale frame while nothing else shows that sprite.
+- One particle of the 49 visible in the particle scene (9 pixels) is smaller than the strict limit's floor (10).
+- Animated sprites of other atlases (items, particles, GUI) are left to vanilla; the module handles the block atlas
+  (56 animated sprites in the core suite, 119 with SIFTEC's pack).
+
+### Risks
+
+- Vanilla's AnimationState internals (where the frame's interpolation goes) are not in the bytecode dump: the design
+  only relies on drawing the current state with vanilla's own `drawToAtlas`, and the animation scene checks the
+  result against vanilla.
+- A mod that copies an animated sprite's UVs without the getters or baked quads would see a stale frame; the hooks
+  cover vanilla's paths and every mod path that reads UVs through the game's classes.
+- New scenes need limits and baselines collected by the documented rules (at least three runs).
+
+---
+
+## Package 7a: GUI measurement
+
+**Branch** `package-7` (not merged; Andre: merges after packages 4 and 8 as "7a: GUI measurement", its counters and
+scenes, without claiming GUI batching). **CI logs:** `ci-logs-package-7`.
+
+**Package 7's done-when (doc) is NOT met:** "Batched GUI, text and item icons; SIFTEC's HUD, map, HUB, MAM and Ponder
+screens unchanged." The screens are unchanged and now checked strictly, but nothing is batched: no GUI batching code
+was written. 7a delivers the measurement (the `gui` bench block) and the CI scenes; batching is the separate plan "7b"
+below, for Andre to decide from the numbers.
+
+Original scope:
+Fewer draw calls for GUI, text and item icons with an identical picture; the GUI scenes able to see a wrong GUI
+element (strict limit below the smallest thing each must catch, `docs/ci-limits.md`); the map strict-gated if its
+noise can be pinned; the block outline checked in CI again.
+
+### Plan
+
+1. **Measure first.** Vanilla 26.3's `GuiRenderer` already does much of what a GUI batcher does: every element goes
+   into one vertex buffer, elements are put into layers by overlap and sorted by scissor, pipeline and texture inside a
+   layer, runs of the same state merge into one draw, and item icons are drawn once into an item atlas and blitted.
+   A count-only mixin on `GuiRenderer` adds a `gui` block to the bench (both in Brimstone and measure runs, so vanilla's
+   numbers come from the same run): the GUI pass's draw calls per frame, its preparation draws (item atlas,
+   picture-in-picture), elements, distinct states (the fewest draws any reordering could reach) and the draws a
+   batcher would leave if each element joined the latest earlier draw of its state that nothing in between overlaps
+   (what Brimstone could realistically win). If that leaves little, report it with the numbers and keep the package
+   minimal (brief: ask the lead before building something large).
+2. **Make the GUI scenes able to see a GUI element.** Sources found in the package-4 run's screenshots (vanilla a
+   against b): the dev launcher's random player name (`Player<digits>`), which picks the default skin (the
+   first-person arm, ~40,000 pixels) and is printed on the HUB and MAM screens (`<player>'s Company`); the MAM's
+   selected tab has an enchantment glint whose phase follows the wall clock (~450 pixels). Pins, the same in every
+   run: `--username BrimstoneCI`, `glintSpeed:0.0`. Then re-collect hub and mam by the standing rule.
+3. **Map.** Its tiles differ pixel by pixel between runs: the area round 300 -200 is generated in each run (SIFTEC's
+   map records chunks as they load) and the markers sit relative to a `spreadplayers` landing that varies by a block.
+   Pins: that area is pre-generated in the SIFTEC CI world (`ci/siftec-world.sh`), the player is put on the ground at
+   a fixed spot, random ticks are off in the CI world (water freezing, grass spreading). If the vanilla runs then
+   agree, give the map a strict limit by the rule.
+4. **Block outline.** CI's pin mod draws it again round one block (a new core scene, `outline`), so it is checked; its
+   old-GPU row flicker is noise to be sampled.
+5. **Ponder.** A scene only if it can be made deterministic (Create's `/ponder <item>` client command opens it; most
+   scenes keep moving: belts, kinetics, the nixie scene's dancing parrot).
+
+**Risks:** vanilla leaves too little to batch (then the package is mostly CI coverage); the map's server-side tiles
+may still differ; new pins change the core and SIFTEC pictures for vanilla and Brimstone alike (limits re-collected
+only by the rule).
+
+### Outcome: in the measured scenes vanilla already groups GUI draws; no batcher built
+
+The `gui` bench block (count-only `GuiRendererMixin`, `gui/GuiStats.java`; reported by compare.py next to vanilla's
+numbers from the measure runs) on run 40254531258, full profile (Brimstone and vanilla equal within 0.03 draws per
+frame in every profile and run):
+
+| scene | all draw calls/frame (median) | GUI pass draws/frame | item atlas / PiP draws | elements | distinct states (floor) | reordered without changing the picture (text as overlapping nothing) |
+|---|---|---|---|---|---|---|
+| core scenes (HUD in spectator) | 121-135 | 1 | 0 | 1 | 1 | 1 (1) |
+| core outline (creative HUD) | 127 | 3 | 0 | 4 | 3 | 3 (3) |
+| siftec factory, sift | 151-153 | 5 | 0 | 20-21 | 3 | 5 (3) |
+| siftec hub | 161 | 13.87 | 0 | 571 | 6 | 13.87 (8) |
+| siftec mam | 162 | 13.86 | 1 | 110 | 7 | 13.86 (8) |
+| siftec map | 170 | 23 | 0 | 317 | 12 | 21 (15) |
+| siftec hologram | 173 | 18 | 0 | 128 | 12 | 18 (12) |
+| siftec ponder (Create's Ponder index; run 40273668937) | 227 | 82.6 | 0.1 | 203 | 73 | 81.6 (75) |
+
+Vanilla 26.3's `GuiRenderer` already does much of what a GUI batcher (ImmediatelyFast's job in older versions) did:
+one vertex buffer for every element, elements placed into layers by overlap and sorted by scissor, pipeline and
+texture inside a layer, runs of one state merged into one draw, item icons drawn once into an item atlas and blitted,
+text as glyph quads in the same buffer. What was measured, and only that: **reordering** (joining each element to the
+latest earlier draw of its state that nothing in between overlaps) saves 2 draws per frame in the map (of 170) and 1
+in the Ponder index (of 227), none elsewhere. If text glyphs carried bounds (they do not), up to about 6 more in hub
+and mam (13.9 -> 8, about 3.7% of 161) and 8 in the map would be reachable.
+
+**Gaps, not measured or not modelled** (review of `5ee7696`):
+- The Ponder index's 73 states differ almost only by **texture**: 72 distinct texture setups per frame for 6 pipelines
+  and 1 scissor area (run 40288414898): Create draws each item box from a texture of its own. A batcher that put those
+  into one atlas could merge up to about 70 of its 83 GUI draws; that technique (and dropping scissors for quads
+  wholly inside them) is not modelled here.
+- Heavy GUIs are not in CI: the F3 overlay, a full inventory or creative tab with tooltips, chat history, item-list
+  mods.
+
+So no GUI batching code was written (the brief: keep it minimal when vanilla leaves little); the `gui` block stays
+(reported, not gated). Andre's decision (2026-10-27): this branch merges as "7a: GUI measurement"; batching is the
+"7b" plan below.
+
+### 7b: GUI batching (deferred, not built)
+
+**Deferred (Andre, 2026-10-28): revisit after package 6**, with three heavy GUIs measured first: the inventory with
+tooltips, the F3 overlay and a long chat history (scenes for each, vanilla's numbers from the measure runs). Until
+then nothing below is built.
+
+
+Where the GUI pass's draws go, from the `gui` counters (Brimstone and vanilla equal within 0.03 draws per frame; full
+profile; whole-frame draws are vanilla's median per frame; with package 8's animated textures Brimstone's whole frames
+are smaller, e.g. hud 31 against vanilla's 171, run 40444035980):
+
+| scene | whole frame | GUI pass | elements | states (pipelines / texture setups / scissor areas) | reordered (text as overlapping nothing) |
+|---|---|---|---|---|---|
+| core scenes, spectator HUD | 121-135 | 1 | 1 | 1 (1 / 1 / 1) | 1 (1) |
+| hub | 161 | 13.9 | 572 | 6 (6 / 5 / 1) | 13.9 (8) |
+| mam | 162 | 13.9 | 110 | 7 (6 / 6 / 1) | 13.9 (8) |
+| map | 170 | 23 | 317 | 12 (5 / 6 / 3) | 21 (15) |
+| hud (hotbar with items, open chat, compass, minimap; runs 40436256016, 40444035980) | 171 | 23 | 279 | 11 (6 / 7 / 2) | 23 (13) |
+| ponder (Create's Ponder index) | 227 | 82.6 | 203 | 73 (6 / 72 / 1) | 81.6 (75) |
+
+Where batching would actually save draws, roughly:
+1. **Per-item textures (Create's Ponder index): about 70 draws per frame.** Its 73 states are 72 texture setups:
+   each item box is drawn from a texture of its own. Copying those into one atlas (or drawing them through the game's
+   item atlas) would let the boxes merge into a few draws: 82.6 -> about 12 GUI draws, about 30% of that frame's 227.
+   The biggest and the only large win measured; it touches Create's (Ponder's) own rendering path, so it needs a
+   Ponder-specific hook that falls back to vanilla's path.
+2. **Text-aware reordering: up to about 6-10 draws per frame** in screens that alternate panels and text (hud 23 ->
+   13, map 21 -> 15, hub and mam 13.9 -> 8). Glyphs carry no bounds today; a batcher would need each text run's
+   bounds (from the game's text render state) to move text past panels it does not overlap. About 4-6% of those
+   frames.
+3. **Plain reordering: 0-2 draws** (map 2, Ponder 1, nothing elsewhere). Not worth code on its own.
+4. **Not measured yet:** the F3 overlay (alternating fills and text per line), a full inventory or creative tab with
+   tooltips, a long chat history, item-list mods (none in SIFTEC's pack). A 7b would add scenes for these first; they
+   are the classic cases where older versions needed a GUI batcher.
+
+On real hardware a GUI draw is cheap next to terrain and entities, so outside Ponder the frame-time gain would be
+small; the laptop bench would tell. 7b's done-when would be the doc's: fewer GUI draws per frame against vanilla in
+these scenes, every GUI scene's strict picture unchanged (limits 10).
+
+### What was built
+
+1. **`gui` bench block** (above).
+2. **CI pins** (every client run, vanilla and Brimstone alike): `--username BrimstoneCI` (the random dev name picked
+   the arm's skin and was printed on the HUB and MAM screens), `glintSpeed:0.0` (the MAM tab's glint),
+   `menuBackgroundBlurriness:0` (the menu blur behind the Ponder index differs between Vulkan and OpenGL); in the
+   SIFTEC CI world: the map scene's area pre-generated, `random_tick_speed 0`, `mob_griefing false`; the map scene's
+   player put at a fixed spot (was `spreadplayers`).
+3. **Strict limits** (`docs/ci-limits.md`, "GUI scenes, the block outline and Ponder"): hub 12,506 -> **10**, mam
+   155,106 -> **10**, map not gated -> **10** (`ciNoStrict` removed), 8/255 limits 8.75 / 9.3 / 11.35 -> **0.25**.
+   Samples with the pins: vanilla b/a and a/b 0/0, every Brimstone and measure run 0.
+4. **Block outline back in CI:** core scene `outline` (the pin mod draws the crosshair outline round its one stone
+   block only) with a `bare` shot in adventure mode (no outline): the outline covers 2,318 pixels; limit 10.
+5. **Ponder:** SIFTEC scene `ponder`, Create's Ponder index opened with `/ponder index` typed in chat (drive.py
+   `ciChat`); the Ponder scenes themselves keep moving, so the index is what is checked. Limit 10.
+6. **HUD scene** (SIFTEC `hud`, after the hologram scene, before create_ct which hides the GUI): normal play in creative
+   with nine hotbar items, the chat open with its last 6 lines (eight `tellraw` lines; `chatHeightFocused:0.25` in CI),
+   SIFTEC's compass strip and minimap, on a gray concrete platform high above 400 -110 facing a gray concrete wall.
+   Pins: the pin mod holds a focused text box's cursor on (`EditBoxCursorMixin`); drive.py clears the chat (F3+D,
+   `ciClearChat`) before the setup, so Brimstone and measure runs (whose benches add chat messages) show the same
+   scrollbar; drive.py presses a screen's key again every 15 s while a bench waits for it (one measure run's key press
+   was lost). Placement: the map scene's markers (doubled in bench runs) stay off the minimap and, facing south, the
+   compass; concrete because Vulkan samples a textured wall differently from GL.
+   GUI numbers there (Brimstone / vanilla, every profile, runs 40436256016 to 40454752063): 23 / 23 GUI draws per frame,
+   279 elements, 11 distinct states: 6 pipelines, 7 texture setups, 2 scissor areas; reordering leaves 23 (13 with
+   text as overlapping nothing). Whole frame: Brimstone 31, vanilla 171 (package 8's animated textures). Limits 10
+   (strict) and 0.25 (8/255); the strict check sees 44% of this frame (Vulkan shades the wall differently).
+7. **Rebased on main after packages 4 and 8** (squashed first; the history is on the local branch
+   `package-7-presquash`). Shared CI files hand-merged keeping all three packages' additions; the core `outline`
+   scene moved from x 2500 to x 2680 (package 4's flat_plants clears 2483-2517 there, and the pin mod's outline block
+   could have been under its crosshair).
+
+### Decisions made on Andre's behalf
+
+- No GUI batcher: reordering wins at most 2 draws/frame (map) and 1 (Ponder index); the texture gap in Ponder and the
+  heavy GUIs are open (above).
+- The finer limit rule (largest sample x 1.5, rounded up to 10, at least 10) for the GUI scenes and the outline, as a
+  wrong glyph covers only a few dozen pixels; all samples were 0 (ponder 0-5).
+- 8/255 limits of hub, mam and map re-collected by package 0's rule (0.25), lowered.
+- CI world pins (random ticks and mob griefing off, map area pre-generated) and client pins (fixed player name, glint
+  speed 0, menu blur 0); each the same for vanilla and Brimstone.
+- `outline` gated against vanilla on the median (it failed only on the average at a different frame rate, equal
+  medians; Andre's rule). `ponder` is gated on average and median like hub.
+- Ponder: the index screen, not a Ponder scene (scenes keep animating); it runs before the map scene and looks up.
+
+### Evidence and runs
+
+**Full run after the review fixes: https://github.com/meakaandre-tech/Brimstone/actions/runs/40297472649 on `64b7865`:
+green**; before the review: run 40276630375 on `2801baa`, green, every profile and both suites. Strict counts there: hub, mam, map, ponder, outline, outline.bare
+0 in every Brimstone and measure run, vanilla b/a and a/b 0/0; the GUI pass counts identical between Brimstone and
+vanilla in every scene.
+
+**Final full run, rebased on main after packages 4 and 8 (with the HUD scene):
+https://github.com/meakaandre-tech/Brimstone/actions/runs/40459438787 on `d30b966`: green.** Runs since the rebase:
+40436256016 (failed: factory_flat showed the map markers twice), 40444035980 (green), 40450860976 (failed: a hole in
+the hud wall in a measure run), 40454752063 (green), 40459438787 (green, final). The branch was rebased once more on
+main's docs-only `57a02bc` after it (no code change).
+
+Runs: 40249146134 (measurement + pins: green), 40254531258 (mob griefing off, ponder and outline.bare added: green),
+40260765722 (menu blur off: green), 40260847921 (outline.bare in adventure; failed on ponder's provisional limit: the
+minimap edge), 40266027605 (limits; failed on ponder (map markers twice in bench runs) and outline's Vulkan average),
+40269199055 (ponder moved; failed: no terrain in view), 40273668937 (green), 40276630375 (green, reviewed),
+40288414898 (review fixes: green), 40297472649 (green).
+
+### Review
+
+Independent review (fresh agent, of `5ee7696`; `scratchpad/rv7/review-package-7.md`): the Brimstone code only counts,
+the counters agree with vanilla's own draw list, the pins apply to every run alike, every limit and baseline went down
+or is new. Fixed: B1 (ponder was gated median-only without a frame-rate swing: now average and median, like hub), S1
+(ponder's limits and baselines re-derived from the three runs of its final setup), S2 (the batching claim limited to
+what was measured, gaps named, `gui` reports distinct pipelines, textures and scissors), S3 (stale docs), N1 (the
+per-element hook is gone: the elements are read once per frame and only while a bench measures; outside it nothing is
+allocated), N2 (the `gui` note says the menu blur's draws count as GUI draws), N3 (render-thread comment). Recorded,
+not changed: N4 (typing in chat can misfire into keybinds; it would fail the scene, never pass it), N5 (the CI world's
+gamerules are only in the world-build artifact, not ci-logs), N6 (not tested: the menu blur and the glint's motion),
+N7 (hub and mam count baselines are loose from earlier packages: for the lead), N8 (outline flicker, below).
+
+### Known limits
+
+- The old-GPU crosshair-outline row flicker (why the pin exists) did not show in eight runs; if it shows in the
+  outline scene, its limit of 10 fails on vanilla noise and must be re-collected (still far below the 2,318-pixel
+  outline).
+- mam's strict check covers 88-98% of the frame (vanilla runs differ by 1/255 on the sky and floor behind the screen);
+  the screen itself is covered.
+
+### Laptop bench (Andre, when back)
+
+Nothing new to bench for speed (no rendering change). The `gui` line of any `/brimstone bench` block shows the GUI
+pass's draws per frame.
+
+---
+
+## Package 4b: terrain speed-ups (merged as `5a2d927`; main green, run 40760999456)
+
+**Done when (doc):** "pixel checks unchanged in every profile; triangles drawn per frame down in every scene (reported);
+fly-through frame-time p99 and frames over 50 ms down on the laptop bench, and in CI the largest upload bytes in one
+frame down; draw calls at or under vanilla on full and Vulkan (the direction groups are ranges inside the same
+multi-draw, not extra draws)." Plus the bench-only jar and a laptop-bench section for vanilla, Sodium and Brimstone.
+
+### What was built (`terrain/BackFaces`, `terrain/UploadBudget`, `CompactVertex`, `TerrainStore.upload`, `bench/BenchModules`)
+
+1. **Skip back faces.** Solid and cutout layers are stored with their quads grouped by facing (unaligned, +X, +Y, +Z,
+   -X, -Y, -Z; vanilla's order kept inside each group), classified on the 16-byte grid the GPU draws: a quad is in an
+   axis group only if its four corners lie in one axis plane and every corner triangle winds the same way, so any split
+   into triangles faces one side; everything else (plants, slopes, rotated parts, degenerate quads) is unaligned and
+   always drawn. Each frame the axis groups that face away from the camera for the whole section (camera at least
+   1 block, plus twice the camera's move since the last frame, behind the nearest plane of the group) are left out; the
+   groups that stay are index ranges of the shared quad index list: on the plain multi-draw paths (old-GPU, the laptop)
+   entries of the same multi-draw; on the indirect path one span per section layer from the first kept group to the
+   last, since each extra range there is one more indirect command uploaded every frame (see run 6), except that up to
+   128 extra commands per frame (2.5 KB) go to the layers whose full ranges leave out the most quads per extra command;
+   where a device has no multi-draw, one span. Group order unaligned, +X, +Y, +Z, -X, -Z, -Y: bottoms last, so a span trims them most often. Translucent layers are untouched (vanilla's sorted lists). Every group is
+   drawn when the pipelines don't cull, without a camera position, after a jump of more than 16 blocks, and with
+   `-Dbrimstone.debug.drawAllFaces=true`. The camera position comes from a new optional terrain hook on
+   `LevelExtractor.extractVisibleEntities`. Common idea (Sodium does something similar); no Sodium code read or used.
+2. **Upload budget.** At the end of each frame staged meshes go into the arenas in priority order: the camera's section
+   and its 26 neighbours always (never held back), then sections in vanilla's visible list, then the rest, nearest
+   first; a mesh's layers always together; a translucent layer's new index list for a mesh already in at once. Budget:
+   64 KiB per ms of measured frame time (average over the last frames), between 256 KiB and 2 MiB, and an eighth of the
+   frame time (1-6 ms); the first mesh outside the camera's sections goes in every frame even when it alone is over, so
+   nothing waits for ever. What waits stays staged in its order; on an exception everything not yet copied goes back to
+   the staged list, so the hand-back completes it through vanilla's callback.
+3. **Bench-only jar** `brimstone-bench` (Gradle `benchJar`, `src/bench/fabric.mod.json`, mod id `brimstone_bench`,
+   `breaks` Brimstone): the bench command, counters, capability probe and scenes, with no module. The bench's module
+   blocks moved into a registry (`bench/BenchModules`; the full jar registers them in `BenchSections`, same JSON keys).
+   CI builds it, runs it in two new full-mode core runs (`bench-plain`, `bench-sodium` with Sodium 0.9.2 from Modrinth;
+   spawn, flythrough, water_glass, nether), and the release job publishes it as `brimstone-bench-26.3.jar` next to
+   `brimstone-26.3.jar` (on the merge to main). `docs/laptop-bench.md`: "Vanilla, Sodium and Brimstone side by side".
+4. **Bench and CI.** New bench blocks `backFaces` (triangles per frame drawn and with every face, index ranges per
+   section layer) and `uploadBudget` (bytes per frame and the largest frame, budget, sections waiting, upload ms).
+   compare.py fails a Brimstone bench whose triangles aren't below the every-face count, or whose budget or camera hook
+   is off, and reports a "Package 4b" table per suite and profile and a "Bench-only jar" table. CI shots wait for the
+   upload queue: Brimstone runs log when meshes wait and when they caught up (`brimstone.debug.logUploadQueue`) and
+   `ci/drive.py` waits for "caught up" before each screenshot (quick run 40588031898 caught one water section still
+   waiting after F3+A in the spawn shot, ~1,300 px, under the steady-shot check's 1%); runs without the line don't wait.
+
+5. **Review fixes** (below): a camera position that wasn't updated this frame, vanilla's wireframe view, or index ranges
+   longer than the device's multi-draw limit draw every group; a layer where an unaligned quad lies within one grid
+   step of an aligned quad's plane keeps vanilla's quad order (`layersKeptInVanillaOrder`); a visible section's mesh
+   waits at most 15 frames from when it is first seen visible, then goes in whatever the budget (gated); past 64 MiB
+   of staged meshes the budget takes the excess.
+
+### Evidence (full run 40593712100 on `59801d9`, before the review fixes; main for "before": run 40585312798 on `14c74fd`)
+
+Every gate passed in both suites and every profile: pixels (8/255 and strict) within their limits, the same as main
+within run noise (strict spawn 296 / 230 / 310 against main's 296 / 250 / 235; flythrough 47 / 47 / 51 against
+53 / 53 / 57), draw calls at or under vanilla's measure run in every scene and profile, no limit or baseline changed.
+
+Triangles per frame are Brimstone's terrain triangles (solid and cutout after leaving groups out, plus translucent whole);
+in brackets the same frames with every face drawn, which is what Brimstone drew before 4b. Largest upload bytes in one
+frame: the frame with the most bytes uploaded of all kinds (the bench's `gpu.uploadBytesPerFrame.max`), before
+(main) and after, per profile; vanilla from this run's measure-full. Frames over 50 ms on llvmpipe (5-30 fps) say
+little; the laptop bench decides that part of the done-when.
+
+| suite / scene | triangles/frame, full: after (every face, = before) | left out | largest upload bytes in one frame, before -> after (full / old-GPU / Vulkan) | vanilla, full | frames over 50 ms, full: before -> after | sections waiting max |
+|---|---|---|---|---|---|---|
+| core / animated_items | 2,272 (4,890) | 54% | 79,704 -> 79,704 / 79,236 -> 79,144 / 79,864 -> 79,772 | 123,000 | 0 -> 0 | 0 |
+| core / animation | 3,218 (5,632) | 43% | 86,812 -> 86,812 / 86,324 -> 86,324 / 86,812 -> 86,812 | 150,176 | 0 -> 0 | 0 |
+| core / flat_plants | 238,881 (437,794) | 45% | 271,768 -> 10,580 / 2,164 -> 1,828 / 10,016 -> 10,468 | 271,600 | 37 -> 13 | 0 |
+| core / flythrough | 560,468 (897,108) | 38% | 4,481,644 -> 2,319,320 / 4,227,204 -> 2,107,564 / 4,543,640 -> 2,124,020 | 7,380,064 | 156 -> 175 | 71 |
+| core / mobs | 167,241 (302,673) | 45% | 616,348 -> 616,324 / 818,356 -> 610,516 / 616,348 -> 616,324 | 616,364 | 4 -> 0 | 0 |
+| core / nether | 267,554 (475,408) | 44% | 261,684 -> 196,016 / 232,000 -> 252,596 / 181,240 -> 251,508 | 384,352 | 134 -> 5 | 0 |
+| core / occlusion | 46,235 (81,246) | 43% | 474,624 -> 273,348 / 179,144 -> 448,996 / 100,408 -> 263,164 | 411,048 | 0 -> 0 | 0 |
+| core / occlusion_move | 50,639 (89,015) | 43% | 652,736 -> 657,268 / 642,684 -> 647,200 / 652,792 -> 678,628 | 1,157,680 | 0 -> 0 | 0 |
+| core / outline | 24,238 (40,423) | 40% | 6,300 -> 6,300 / 5,012 -> 5,012 / 6,300 -> 6,300 | 14,812 | 0 -> 0 | 0 |
+| core / particles | 1,927 (4,215) | 54% | 9,204 -> 9,204 / 8,772 -> 8,772 / 9,204 -> 9,204 | 9,204 | 0 -> 0 | 0 |
+| core / renderer_off | 150,643 (272,587) | 45% | 7,292 -> 7,352 / 1,380 -> 1,380 / 7,292 -> 7,352 | 7,272 | 2 -> 1 | 0 |
+| core / spawn | 446,601 (684,783) | 35% | 687,372 -> 539,848 / 485,284 -> 338,836 / 365,720 -> 540,356 | 1,054,544 | 230 -> 241 | 0 |
+| core / translucent_move | 200,787 (356,275) | 44% | 765,976 -> 767,100 / 758,724 -> 759,300 / 820,756 -> 766,948 | 1,333,236 | 34 -> 10 | 0 |
+| core / translucent_move_oit | 201,067 (356,581) | 44% | 742,580 -> 748,344 / 738,692 -> 743,300 / 742,524 -> 748,008 | 1,301,072 | 222 -> 217 | 0 |
+| core / water_glass | 214,820 (385,714) | 44% | 150,824 -> 17,708 / 8,996 -> 9,892 / 17,464 -> 17,372 | 17,068 | 86 -> 13 | 0 |
+| core / water_glass_oit | 215,234 (386,456) | 44% | 17,464 -> 18,156 / 10,004 -> 8,548 / 17,240 -> 19,052 | 16,508 | 241 -> 242 | 0 |
+| siftec / create_ct | 2,538 (5,313) | 52% | 1,596 -> 1,596 / 1,124 -> 1,124 / 1,596 -> 1,596 | 1,596 | 1 -> 0 | 0 |
+| siftec / factory | 25,071 (45,892) | 45% | 94,716 -> 94,716 / 136,784 -> 136,792 / 139,276 -> 139,368 | 155,244 | 9 -> 8 | 0 |
+| siftec / factory_flat | 25,071 (45,891) | 45% | 97,700 -> 97,700 / 139,776 -> 139,776 / 142,352 -> 142,360 | 158,228 | 1 -> 2 | 0 |
+| siftec / hologram | 3,912 (6,875) | 43% | 75,664 -> 74,072 / 74,244 -> 75,260 / not run | 75,440 | 35 -> 31 | 0 |
+| siftec / hub | 33,473 (58,846) | 43% | 84,940 -> 84,960 / 83,332 -> 83,332 / 84,940 -> 84,960 | 84,940 | 7 -> 7 | 0 |
+| siftec / hud | 261,917 (454,024) | 42% | 71,672 -> 81,680 / 59,972 -> 59,972 / 72,776 -> 83,764 | 71,544 | 316 -> 346 | 0 |
+| siftec / mam | 66,787 (117,208) | 43% | 304,164 -> 304,276 / 39,492 -> 39,492 / 42,112 -> 42,132 | 304,256 | 0 -> 5 | 0 |
+| siftec / map | 368,169 (630,685) | 42% | 46,360 -> 57,876 / 30,924 -> 30,924 / 46,284 -> 57,876 | 46,440 | 211 -> 217 | 0 |
+| siftec / ponder | 10 (12) | 17% | 60,840 -> 60,860 / 60,804 -> 60,804 / 60,840 -> 60,860 | 60,840 | 1 -> 4 | 0 |
+| siftec / sift | 145,930 (205,045) | 29% | 16,632 -> 20,672 / 4,148 -> 4,148 / 16,632 -> 20,672 | 16,632 | 309 -> 316 | 0 |
+
+- **Triangles:** down 29-54% in every scene and profile (fly-through 37.5%, spawn 34.8%; ponder 10 of 12, the index
+  screen in front of almost no terrain).
+- **Upload spike:** fly-through's largest frame halves in every profile (full 4.48 -> 2.32 MB, old-GPU 4.23 -> 2.11,
+  Vulkan 4.54 -> 2.12; vanilla 7.38 MB); in the other scenes nothing is meshing while measuring, so their largest frames
+  are other uploads and stay where they were (flat_plants' and water_glass's 0.27 MB and 0.15 MB before were one-off
+  mesh frames).
+- **Draw calls:** full and Vulkan at or under vanilla in every scene (fly-through 13.06 against 123.06). Old-GPU against
+  main: spawn 49.37 against 47.46, nether 32.59 against 31.08; the rise is all translucent runs breaking at region borders
+  (spawn: translucent draws 14 -> 17 with 150 -> 152.7 translucent section layers and 314 -> 344 visible sections), not
+  solid or cutout (equal). Main's own runs put old-GPU spawn at 46.0, 47.46, 48.37 and 49.0 (runs 40526712029,
+  40585312798, 40471457759, 40516650792), so it is run-to-run noise in what is visible; the review fixes' run is another
+  sample (below).
+- **Bench-only jar:** both runs passed; `bench-sodium` loaded `sodium@0.9.2+mc26.3` and `brimstone_bench`, every counter
+  applied. CI's numbers (llvmpipe): plain spawn 9.3 fps, Sodium 19.1; fly-through 5.6 and 14.8; Sodium's draws are
+  counted (129-159 per frame), so it draws through renderpearl.
+- The spawn shot's dark-grey water hole (quick run 40588031898, which led to the shot wait) is vanilla's own late
+  section: the same hole shows in this run's vanilla-old, measure-full and measure-old and in main's vanilla-a (review
+  N8). It was noise, not the budget; the shot wait stays (it is what makes a waiting section impossible to photograph).
+
+### Runs
+
+1. `20e3ef6` quick run 40588031898: green (the spawn hole above in the old-GPU shot, within limits).
+2. `59801d9` full run 40593712100: green (reviewed).
+3. `b317196` full run 40605316942 (review fixes): every picture, count and 4b gate passed, but compare failed on log
+   checks in every Brimstone and measure run's first session (renderer registration, self-test, measure-only lines):
+   the run crossed midnight UTC and the game rolled `latest.log` over into a dated `.log.gz`, so the session's early
+   lines were not in the collected log (measure runs, which have none of 4b's log lines, failed the same way). CI fix,
+   no check changed: `ci/client-run.sh` keeps the session's rolled parts in front of `latest.log`, and `ci/drive.py`
+   follows a rolled-over `latest.log`. Its numbers: visible sections waited at most 7 frames (fly-through old-GPU;
+   bound 15, nothing forced past the budget), no layer needed the coplanar fallback, fly-through's largest upload frame
+   2.21 / 2.11 / 2.13 MB, old-GPU spawn 49.11 draws per frame (median 49; main's spread 46-49).
+4. `c23b9ff` full run 40610247676: every picture, count and 4b gate passed; compare failed only on core's block-renderer-off
+   check in session 4 of the three Brimstone runs: at start-up the game archives a leftover log into a dated `.log.gz`,
+   which the new collection prepended (session 4's file began with session 3's renderer_off log). Fixed in
+   `ci/client-run.sh`: a session's log is kept from its own last "Loading Minecraft" line on. No check changed.
+5. **`0fe3631` full run 40619534606: green** (every gate, both suites, every profile, both bench-only runs). Fly-through's
+   largest upload frame 2.31 / 2.11 / 2.12 MB (main 4.48 / 4.23 / 4.54, vanilla 7.38); triangles per frame down 35-54%
+   in the core scenes (fly-through full 552,438 of 884,736); visible sections waited at most 9 frames (bound 15).
+   Old-GPU draw calls against main's run 40585312798: spawn 49 against 47 (median), fly-through 66 against 64; the
+   fly-through's terrain draws are identical (57.37 per frame) and its totals were 64-68 in main's last runs; spawn's
+   +3 are translucent runs breaking at region borders over a larger visible set, and main read 48 and 49 there in runs
+   40481430766 and 40516650792. Run-to-run noise in what is visible, not the facing groups.
+
+The commit after `0fe3631` is docs only (this list and the hand-off), `[skip ci]`.
+6. **Upload bytes on the indirect path.** The rename branch's run 40624564347 (4b plus only the rename) failed core full
+   spawn's upload-bytes gate: median 46,732 bytes per frame against a gate of 41,107 (baseline 22,476). 4b's own green
+   run 40619534606 already had 40,776 (full) and 41,492 (Vulkan) there against main's 21,004 and 28,044: a real rise from
+   4b, passing by 331 bytes, not noise. Cause: on the indirect path every index range is an indirect command (20 bytes)
+   uploaded each frame, about 2 ranges per section layer. Fix (no baseline changed): one span per section layer on the
+   indirect path, bottoms ordered last so the span trims them; the plain multi-draw paths keep every range (CPU-side
+   arrays, nothing uploaded).
+7. `c5383c5` full run 40632113264: spawn's upload bytes back near main on full and Vulkan (28,500 and 23,068), but two
+   failures: (a) siftec ponder's triangles were no longer down on full and Vulkan (12.02 of 12.02: the index screen
+   shows a few quads, and a span can't trim the middle), fixed by the 128-command allowance above; (b) core old-GPU
+   spawn's upload bytes per frame, median 28,164 against a gate of 23,393 (baseline 6,372). The old-GPU path has no
+   indirect commands; the budget held nothing there (0 sections waiting), and the median is almost all MAP_WRITE
+   (the game's own writes into mapped buffers, 28,052), which moves in steps of about 6.7 KB: Brimstone old-GPU 1,380,
+   1,380, 15,204 (main), 7,428 (the same old-GPU code in the rename run), 28,164; vanilla's measure-old 6,868-13,012 and
+   measure-full 20,968-29,644 in the same runs. No baseline changed; see the next run.
+8. **`be01dda` full run 40638313286: green** (every gate, both suites, every profile, both bench-only runs). Old-GPU
+   spawn's upload bytes median 1,492 with the same old-GPU code: run 7's 28,164 was that MAP_WRITE noise. Triangles per
+   frame left out (full / old-GPU / Vulkan): fly-through 38 / 38 / 38%, spawn 26 / 35 / 26%, nether 33 / 44 / 33%, most
+   scenes 40-54%, sift 28%, ponder 17%; the indirect path leaves out less where a span can't trim the middle. Largest
+   upload frame in the fly-through 4.48 -> 2.36 MB (full), 4.23 -> 2.11 (old-GPU), 4.54 -> 2.12 (Vulkan), vanilla 7.93.
+   Spawn's upload bytes median 25,536 (full) and 25,480 (Vulkan) against main's 21,004 and 28,044. Draw calls per frame
+   (median) equal to main's in every scene and profile but old-GPU spawn 49 (47) and nether 34 (33), both inside main's
+   own run-to-run spread (see run 5), and at or under vanilla everywhere. Visible sections waited at most 11 frames.
+   The commit after `be01dda` is docs only, `[skip ci]`.
+
+### Review (fresh agent, of `59801d9` and run 40593712100; `scratchpad/review-4b.md` in the session)
+
+No blocker. Fixed: S1 (`sectionLayersPerFrame` counted index ranges: counts section layers again), S2 (a camera
+position not updated in a frame was still used: now that frame draws every group), S3 (reordering could flip an
+equal-depth winner between an unaligned quad lying in an aligned quad's plane and that quad: such layers keep vanilla's
+order), S4 (the wait of visible sections was unbounded and unmeasured: bounded at 15 frames, reported and gated; a shot
+wait that times out fails), S6 (the report header was written before the bench-only checks), S7 (these docs and
+`docs/ci-limits.md`), N1 (wireframe view draws every group; the cull check is against Brimstone's own pipelines), N2
+(index ranges longer than the device's multi-draw limit turn grouping off for the session, so draw calls can't rise),
+N3 (staged-memory cap), N5, N6, N7, N9. S5 (old-GPU draw calls) answered with main's own spread above. Not changed: N4
+(boxed sort keys, once per frame), N10 (BrimstoneClient in the bench jar names classes it lacks; only in the full jar's
+entrypoint method, which the bench jar never calls).
+
+### Deviations and choices to confirm
+
+Andre's decisions (2026-10-29): 1 keep, 2 keep, 3 keep, the rest as below; 4b merges first, then the rename.
+
+1. **Margin 1 block** (plus twice the camera's move since the last frame; all groups after a jump of 16 blocks).
+2. **Budget numbers:** 64 KiB per ms of frame time, 256 KiB to 2 MiB; an eighth of the frame time, 1-6 ms; at most 15
+   frames' wait for a visible section; 64 MiB staged cap.
+3. **CI shots wait for the upload queue** (Brimstone runs only; vanilla uploads at once). Without it, a section still
+   waiting after F3+A could be photographed; with it, the budget's delay shows only in the bench (`uploadBudget`).
+4. **Bench-only jar**: `brimstone-bench`, mod id `brimstone_bench`, breaks Brimstone; published on the next merge to main
+   (the release job runs on main only). Sodium in CI is downloaded from Modrinth for the run, never committed.
+5. **The camera hook is optional** (not in the terrain module's required hooks): without it the module still runs, with
+   every group drawn and uploads in staging order; CI fails such a run.
+
+### Known limits
+
+- **Known trade (Andre, 2026-10-29; in the release notes):** while flying into new terrain, a visible section can appear
+  up to 15 frames later than in vanilla (the upload budget's bound; at most 11 seen in CI, run 40638313286), in return
+  for smoother frame times (no upload spike when many sections finish meshing at once). The camera's own section and its
+  neighbours are never held back.
+- Done-when on the laptop (fly-through p99 and frames over 50 ms down) is for Andre's bench; CI's llvmpipe frame times are
+  too noisy to show it.
+- A layer is grouped or not as a whole; the coplanar test is per layer, conservative (no overlap test).
+- Grouping by facing is solid and cutout only; translucent keeps vanilla's sorted lists.
+
+### Laptop bench (Andre, when back)
+
+`docs/laptop-bench.md`, "Vanilla, Sodium and Brimstone side by side": the same plain instance three ways (bench-only jar,
+bench-only jar plus Sodium 0.9.2, Brimstone), seed 12345, new world each time, `flythrough`, `spawn`, `water_glass`,
+`nether`, `mobs`. The fly-through's `frame time ms` (p99, frames over 50 ms) decides 4b's laptop done-when; the
+Brimstone instance's `backFaces` and `uploadBudget` lines show the triangles left out and the sections that waited.
+
+---
+
+## Phase 2, P2-0: server harness (branch `p2-0`)
+
+Design doc: [Quicksilver Phase 2: Design](https://claude.ai/artifact/6QVKeDHfvCQDDDppdrxu45). Phase 2's files are
+apart from phase 1's: `ci/server/` (scripts, the comparator, the CI-only harness mod), jobs `server-base`, `server`,
+`server-net` and `server-compare` in `build.yml` (logs on `ci-logs-server-<branch>`), and Java under
+`src/main/java/com/meakaandre/quicksilver/phase2/`. Shared files touched: `build.yml` (one build step, the new jobs,
+release also needs `server-compare`), `fabric.mod.json` (one mixin config, one client entrypoint), `Quicksilver.java`
+(one line), `BenchReport.java` (two lines), the bench-only jar (its classes, one mixin config, two lines in
+`BenchOnlyClient.java`: it carries the server numbers too), `.gitignore` (`server/` anchored to the root), `docs/laptop-bench.md`
+and `docs/ci-limits.md` (new sections at the end).
+
+**Final run:** full mode, green: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40803126672 (SHA
+`121dd44`, attempt 2; server suite logs on `ci-logs-server-p2-0`, client suite on `ci-logs-p2-0`). Attempt 1 passed
+the server suite and failed phase 1's direct-buffer gate in three SIFTEC scenes of the Quicksilver full profile (8.24
+to 13.9 MB, one +8 MB step at the map scene for the rest of that session, not in the measure run). Re-running that
+one client job gave 5.9 MB in the same scenes and the run passed. Phase 2 allocates no direct buffers on the client,
+the same code passed this gate on `d6aed08`, and main's own runs move between about 5.5, 7.7 and 8.2 MB there; the
+13.9 MB step hasn't been seen in a vanilla run, so no baseline was touched (listed under known limits). Rebased on main after package 4b and the rename (`94503ad`): one commit ported from the earlier branch
+(based on `14c74fd`), with the rename applied to everything phase 2 added (package `com.meakaandre.quicksilver.phase2`,
+`/quicksilver bench` and `/qs bench`, `quicksilver/bench/`, `dist/quicksilver.jar`).
+
+### Done-when
+
+1. **Server suite: done.** Dedicated servers only, on every branch (quick mode: core only; full mode: all three;
+   `[siftec]` adds SIFTEC's to a quick run), three suites: core (Fabric
+   API only), siftec (SIFTEC's pack from its latest release, with `siftec-selftest-26.3.jar`), terralith (Terralith
+   and Lithostitched from Modrinth). Each suite runs vanilla three times and Quicksilver once; every gate and its
+   noise are in `docs/ci-limits.md`, "Server suite".
+   - **World diff:** a vanilla base world per suite (`ci/server/base-area-<suite>.txt`, seed 12345), then a scripted
+     run of 1200 ticks (`scripted-run-<suite>.txt`): core has a hopper chain, furnaces, an observer clock driving a
+     sticky piston, crops, animals in a pen, villagers with job sites, item entities over a hopper; SIFTEC adds
+     Create's contraptions (a mechanical bearing and a mechanical piston on creative motors) and a Create train
+     (below, "Create train": 11 arrivals between two stations at the same ticks in every run). The saved worlds are
+     compared block by block, block entity by block entity (each top-level field), scheduled block and fluid ticks,
+     and entity by entity (type, exact position, health, the stack an item entity holds; an entity left without an
+     exact match on the other side is a difference, keyed by its type and block).
+   - **GameTests** (Fabric's GameTest API, `ci/server/harness/.../HarnessTests.java`): hopper chain, observer clock,
+     piston machine, piston door, item sorter, crop farm, mob farm, villager job and trade. Each logs its result and
+     the tick it finished. Create contraption and train: **not as GameTests** (the GameTest server can't load
+     SIFTEC's pack: its registries fail on Create: New Age's recipes there); both are in SIFTEC's scripted run.
+   - **SIFTEC's self-tests:** SIFTEC's `.github/smoke-commands.txt` on a fresh SIFTEC world with Quicksilver loaded;
+     each suite's passed/failed counts against vanilla (30 suites, 712 checks).
+   - **Worldgen diff:** 144 chunks per dimension byte for byte: vanilla's overworld, nether and end; SIFTEC's
+     overworld, nether and the Sift; Terralith's overworld. Generated one step at a time with one worldgen thread
+     (your decision A); no fall-back to B was needed: vanilla's runs agree byte for byte.
+   - **Network check:** a vanilla client on a Quicksilver server and a Quicksilver client on a vanilla server,
+     through the core scripted run: joined, stayed to the end, no protocol error.
+   - **Green on vanilla against vanilla:** the harness repeats (worldgen exactly; world diff, GameTests and self-tests
+     where vanilla repeats; the noise that is left is listed in ci-limits).
+   - **Not covered yet (open gaps, before the packages that need them):** random ticks and natural mob spawning are
+     off in the scripted runs (both draw on vanilla's shared random, and Lithium changes both: before P2-3/P2-4 they
+     need their own targeted tests); the crop farm is judged on its state, not its bone meal count; pending scheduled ticks are
+     reported, not gated; threaded worldgen (`max.bg.threads=1` everywhere: P2-6 needs a threaded-generation check of its own).
+2. **`/quicksilver bench` server numbers: done** (`phase2/ServerNumbers.java`, `NetworkBytes.java`,
+   `ClientTimes.java`, one count-only mixin on `Connection`). The client bench's JSON and log block gain a `server`
+   section: MSPT average, p50, p99, max and ticks over 50 ms over the bench's seconds, heap used, start-up (to the title
+   screen and to the first world joined) and world-load time, bytes on the wire. On a dedicated server
+   `/quicksilver bench [seconds]` (or `/qs bench`; console or an admin) writes the same numbers to
+   `quicksilver/bench/<time>-server.json`
+   and a `QUICKSILVER SERVER BENCH` block, with heap after a GC. Heap after load and after 10 minutes come from benches
+   at those times (laptop steps). Measurement only: nothing in the game changes.
+3. **Research: done,** `docs/phase2-research.md` (licences from each mod's repo; what 26.3 already does; your order A
+   is in the phase 2 doc).
+4. **Laptop steps: done,** `docs/laptop-bench.md`, "Phase 2: server numbers". Pending on you.
+
+### How the harness repeats
+
+`ci/server/harness` is a CI-only mod (built like the pin mod, never released) in every server run, vanilla's and
+Quicksilver's alike. What it pins and why is in `docs/ci-limits.md`, "Server suite". The comparator
+(`ci/server/worlddiff.py`) reads saved worlds itself (no game code) and has a self-test on synthetic worlds that runs
+first in `server-compare`.
+
+### Measurements (CI, relative only)
+
+Scripted run: MSPT average and p99 for vanilla and Quicksilver are in the report's "Scripted run" table; across the
+branch's runs about 1.2 to 2.7 ms average and 6 to 15 ms p99 on CI runners, swinging with the runner, not the mod.
+Heap after load about 151 MB core and 279 MB SIFTEC (Quicksilver about +2 MB: its own classes); start-up 7.5 to 13 s
+core, 12.8 to 18.7 s SIFTEC. Network: the vanilla client's session sent about 2.6 to 2.8 MB from the Quicksilver
+server. CI measures relatively; the laptop decides the real numbers.
+
+### Andre's decisions (2026-10-29)
+
+1. **Modded worldgen in CI:** the SIFTEC suite checks what SIFTEC's pack generates; no other worldgen data pack is
+   used in CI or kept in this repo.
+2. **Create train:** added to SIFTEC's scripted run (below, "Create train").
+3. **Three vanilla runs per suite:** kept.
+4. **Quick mode runs the core server suite only;** SIFTEC's and Terralith's run in full mode. A commit with
+   `[siftec]` in its message adds SIFTEC's server suite to a quick run.
+5. **Pending scheduled ticks:** reported, not gated, for now; before P2-3, find what makes them vary at the cave
+   (chunk -1,-2 of seed 12345) and gate them again.
+
+### Before later packages (Andre, 2026-10-29)
+
+Each is a small CI package of its own, done before the package it guards and recorded in that package's plan:
+
+- **Before P2-3:** find what makes the pending scheduled ticks vary at the cave (chunk -1,-2 of seed 12345; core and
+  SIFTEC alike) and gate scheduled ticks again (`REPORT_ONLY` in `ci/server/compare-server.py` emptied).
+- **Before P2-3:** make the harness start SIFTEC's furnace (e2,200,11) and bearing (e2,201,2) on a fixed tick, as
+  it does for the train, then gate `cooking_time_spent`, `lit_time_remaining` and `Angle` again (`KNOWN_NOISE` in
+  `ci/server/compare-server.py` emptied). P2-3 changes block-entity ticking, so these must be gated before it starts.
+- **Before P2-3 and P2-4:** random-tick tests and natural-spawning tests (both are off in the scripted runs, both draw
+  on the level's shared random, and Lithium changes both: `world.chunk_ticking.random_block_ticking`,
+  `minimal_nonvanilla.spawning`): targeted, repeatable scenes, e.g. a pinned random per chunk as in the GameTest
+  server, with growth, spreading and spawn counts compared with vanilla.
+- **Before P2-6:** a threaded-worldgen check (every run today generates with one worldgen thread): generation with the
+  normal thread count, compared block by block with the single-threaded vanilla result where vanilla's own threaded
+  runs agree.
+
+### Create train
+
+`ci/server/harness/.../CiTrain.java`, in SIFTEC's scripted run: straight track and two stations placed with
+commands (the stations face opposite ways: a station takes trains from one direction only); at tick 20 the harness
+names the stations, at 40 it puts station A in assembly mode and builds a one-bogey carriage behind it (a bogey, three
+casings, a blaze burner and two controls facing it, so the blaze conducts both ways) with Super Glue over it (centred
+on the carriage: Create keeps a glue entity's box centred on its position), at 45 it assembles it and takes station A
+out of assembly mode (Create doesn't route to a station in assembly mode), at 60 it gives the train a cycling schedule
+A to B and back. Create has no commands for assembling or scheduling, so those steps use reflection (the harness is
+compiled without Create). Every arrival is logged with its tick; CI requires the same line in every run and at least
+two arrivals, and the carriage is an entity in the world diff. Result in every run: 11 arrivals, B at 136, A at 235,
+and so on to B at 1131, the same final speed.
+
+### Review
+
+Independent review by a fresh agent (scratchpad `review-p2-0.md`): 2 must-fix, 9 should-fix, 6 nits; all fixed.
+The must-fixes: entity positions were rounded to 6 decimals before comparing (a 1e-7 drift, Lithium's
+`empty_space` kind, passed): now exact; and this section's final-run placeholder. The should-fixes: palette shapes
+that could merge two states, block entities ungated over one noisy field (now per field), scheduled ticks and item
+stacks not compared, unreadable entity chunks not counted, harness pins that could silently not apply (now required),
+worldgen not falling back to blocks where bytes are noisy, generation failures and chunk counts unchecked, the
+network check not confirming which side had Quicksilver, coverage gaps not listed. Fixing them showed three more
+vanilla noise sources (random ticks; entities spawned by worldgen keep no UUID between runs; the ring of chunks
+around the scripted area finishing loading at different moments), each fixed in the harness or the comparator.
+
+### Known limits
+
+- Noise vanilla shows against itself can't be gated (it's reported): see ci-limits.
+- The item sorter GameTest ends with 19 of 20 diamonds sorted and one held in its lock hopper, the same in every
+  run: the cell's design, not a fault.
+- The crop farm is judged on its state at tick 200, not the bone meal count (vanilla's own runs differ there).
+- The bench's network bytes are 0 in single player (an in-memory connection carries no bytes).
+- Phase 1's direct-buffer gate: one +8 MB step in the SIFTEC full profile from the map scene on, seen once (attempt 1
+  of the final run), gone on a re-run; never seen in a vanilla run. If it comes back, it belongs to phase 1's
+  direct-buffer baselines (not touched here).
+
+
+## Phase 2, P2-1: Memory (merged)
+
+Design doc: [Quicksilver Phase 2: Design](https://claude.ai/artifact/6QVKeDHfvCQDDDppdrxu45), P2-1. Files: the Memory
+module (`src/main/java/com/meakaandre/quicksilver/memory/`, `mixin/memory/`, `quicksilver.memory.mixins.json`), the
+server harness and comparator (`ci/server/`), and small shared edits: `fabric.mod.json` (one mixin config),
+`Quicksilver.java` (one line), `ServerNumbers.java` and `BenchRun.java` (the bench buffers), `build.gradle` (the
+FerriteCore licence in the jar), `NOTICE`, `LICENSE-MIT-FerriteCore`, `build.yml` (Terralith gets a base world; a
+`[terralith]` marker adds its server suite to a quick run, as `[siftec]` does), `ci/compare.py` (client runs fail on a
+memory fallback), `docs/ci-limits.md` ("Server suite").
+
+### Harness first (from "Before later packages")
+
+1. **SIFTEC's furnace and bearing:** their creative motor and furnace are placed at tick 1, but that alone didn't
+   make them repeat: logged every few ticks (`report` lines), they were equal in every vanilla run up to the last tick
+   and still differed on disk. The game saves chunks during a run on a wall-clock timer, and a chunk it doesn't count
+   as changed since (a turning bearing or SIFTEC's furnace doesn't mark it) isn't written again when the server stops,
+   so the saved fields were those of whatever tick the clock picked. The harness now marks every loaded chunk of the
+   run's areas and three rings around them changed at the run's end. `KNOWN_NOISE` is empty; `cooking_time_spent`, `lit_time_remaining` and `Angle` are gated.
+2. **The cave's pending ticks** (chunk -1,-2): a trace of every scheduled tick there (`Trace.java`, off by default)
+   showed the same set of ticks in every run, scheduled in a different order: chunks are post-processed (their
+   generation's pending shape and fluid updates applied) as they finish loading, in a different order each run, and
+   each update takes the level's next sub-tick number. Water and falling sand due on the same tick then ran in a
+   different order. The harness now schedules every pending tick again in one fixed order just before tick 0 (and the
+   end-of-run save above fixed the rest: ticks pending in chunks the game hadn't counted as changed). `REPORT_ONLY` is
+   empty; pending block and fluid ticks are gated. Vanilla's three runs now agree on every key in every check.
+3. **Random-tick and natural-spawning run** (core, every quick run): `ci/server/scripted-run-core-random.txt`; what it
+   holds and how it is pinned is in `docs/ci-limits.md`, "Server suite". Vanilla against vanilla: equal on every key,
+   the same counts in every run (892 random ticks in the scenes, 2021 precipitation draws let through, 4 monsters).
+
+### Final run
+
 Full mode, green: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40989347563 (`6c6f8f2`, rebased on main
 `b75c71c`, which takes MapMod out of the gates). Server suite logs on `ci-logs-server-p2-1`, client suite on
 `ci-logs-p2-1`. Before the rebase, run 40984377782 on `d8c3219` passed everything except 24 lines from MapMod's current
@@ -1744,7 +2448,11 @@ hashCode as a key) on the server thread.
   package with the worldgen diff.
 - Thread detectors (one per palette, 1.8 MiB core): FerriteCore's own option is opt-in for rare crashes; not done.
 
-### Choices for Andre
+### Andre's decisions (2026-10-31)
+
+All four choices below confirmed as built: heap judged on 12000 ticks sprinting; `datafixer-caches` stays in P2-1;
+property values and light layers go to a later memory package ("Phase 2 plan: later memory package", below); the
+`[terralith]` marker stays.
 
 1. Heap is judged in CI as the live heap after a full GC (the JVM's class histogram) after 12000 ticks sprinting, not
    10 minutes of wall-clock time (same ticks, a fraction of the CI time).
@@ -1782,6 +2490,19 @@ face shapes and vanilla's identity-keyed caches, the spawner's re-seed (above), 
 (works on Java 25; a later JDK may refuse), the config file rewritten without the user's comments when keys are
 added.
 
+## Phase 2 plan: later memory package (Andre, 2026-10-31)
+
+Measured in P2-1, not built there: a memory package of its own after P2-1 and before P2-7's sign-off, with its own
+toggles, fallbacks and the same heap gate.
+
+- **Per-state property values:** each block state's `Comparable[]` of property values (1.2 MiB core, 5.2 MiB SIFTEC),
+  read from the state's shared table instead (FerriteCore's `replacePropertyMap`, MIT). First find every reader of the
+  array in 26.3 (the bytecode dump) and redirect each; a reader left out would read null.
+- **Light-layer compaction:** section light layers that hold one value throughout kept as that value instead of a
+  2 KiB array (5845 layers, 11.4 MiB in the loaded area of core and SIFTEC; the heap run's `CI LIGHT` line counts the
+  uniform ones). It touches the light engine, so it needs the worldgen diff (light is saved) and the world diffs, and a
+  check that every read of a compacted layer gives what the array gave.
+
 ## Open bugs
 
 - **When MapMod is finished** (Andre, 2026-10-30): put it back in the pack lock, restore the map and hud scenes,
@@ -1812,7 +2533,8 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now (P2-1):** branch `p2-1` waits for Andre's check (see "Phase 2, P2-1"). Phase 2 reads: the server suite's
+**Now (P2-1):** merged (see "Phase 2, P2-1"); next in phase 2 is P2-2 (Logic I), with the later memory package
+above in the plan. Phase 2 reads: the server suite's
 reports are on `ci-logs-server-<branch>` (`compare/report.md`, `compare/<suite>-heap.md`, every run's logs and
 histograms under `runs/`); quick runs take `[siftec]` and `[terralith]`.
 
