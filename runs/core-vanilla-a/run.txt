@@ -1,0 +1,101 @@
+suite=core run=vanilla-a
+core server and world: from the core-world job
+pack lock: set core matches ci/pack-lock.txt
+total 2560
+-rw-r--r-- 1 runner runner 2620967 Oct 30 02:54 fabric-api.jar
+total 20
+-rw-r--r-- 1 runner runner 16896 Oct 30 02:55 ci-pin.jar
+sessions: 8|-|spawn,water_glass,nether,mobs,outline,occlusion,occlusion_move,translucent_move,particles,animation,animated_items 8|ao=false|flat_plants 8|ao=false,quicksilver.block-renderer=off|renderer_off 8|improvedTransparency=true|water_glass_oit,translucent_move_oit 12|-|flythrough
+scene spawn: setting up
+scene water_glass: setting up
+scene nether: setting up
+scene mobs: setting up
+scene outline: setting up
+scene occlusion: setting up
+scene occlusion_move: setting up
+scene translucent_move: setting up
+scene particles: setting up
+scene animation: setting up
+scene animated_items: setting up
+session 2 client options: ao=false
+scene flat_plants: setting up
+session 3 client options: ao=false,quicksilver.block-renderer=off
+scene renderer_off: setting up
+session 4 client options: improvedTransparency=true
+scene water_glass_oit: setting up
+scene translucent_move_oit: setting up
+scene flythrough: setting up
+/tmp/out/core-vanilla-a:
+bench
+client-1.log
+client-2.log
+client-3.log
+client-4.log
+client-5.log
+client-gradle-1.log
+client-gradle-2.log
+client-gradle-3.log
+client-gradle-4.log
+client-gradle-5.log
+drive-flat_plants.json
+drive-flythrough.json
+drive-renderer_off.json
+drive-spawn-water_glass-nether-mobs-outline-occlusion-occlusion_move-translucent_move-particles-animation-animated_items.json
+drive-water_glass_oit-translucent_move_oit.json
+gfx.txt
+joined-1.txt
+joined-2.txt
+joined-3.txt
+joined-4.txt
+joined-5.txt
+mod-ids.txt
+pack-sha256.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-vanilla-a/bench:
+
+/tmp/out/core-vanilla-a/shots:
+animated_items.png
+animation.behind.png
+animation.front.png
+animation.png
+flat_plants.png
+flythrough.png
+mobs.png
+nether.png
+occlusion.png
+occlusion_move.bare_open.png
+occlusion_move.bare_x2297.png
+occlusion_move.bare_x2300.png
+occlusion_move.bare_x2305.png
+occlusion_move.bare_x2309.png
+occlusion_move.closed.png
+occlusion_move.open.png
+occlusion_move.png
+occlusion_move.x2297.png
+occlusion_move.x2305.png
+occlusion_move.x2309.png
+outline.bare.png
+outline.png
+particles.bare.png
+particles.png
+renderer_off.png
+spawn.png
+translucent_move.back.png
+translucent_move.bare_back.png
+translucent_move.low.png
+translucent_move.png
+translucent_move.x2404.png
+translucent_move.x2414.png
+translucent_move.x2424.png
+translucent_move_oit.back.png
+translucent_move_oit.bare_back.png
+translucent_move_oit.low.png
+translucent_move_oit.png
+translucent_move_oit.x2404.png
+translucent_move_oit.x2414.png
+translucent_move_oit.x2424.png
+water_glass.png
+water_glass_oit.png

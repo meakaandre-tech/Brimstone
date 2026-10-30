@@ -1,0 +1,66 @@
+[
+  {
+    "scene": "factory",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "sift",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "hub",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "mam",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "ponder",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "map",
+    "skipped": "MapMod is being finished (Andre, 2026-10-30): the map scene is out of the bench and CI until then; with it, its limits are re-collected"
+  },
+  {
+    "scene": "hologram",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "hud",
+    "skipped": "MapMod is being finished (Andre, 2026-10-30): the HUD scene (its minimap) is out of the bench and CI until then; with it, its limits are re-collected"
+  },
+  {
+    "scene": "create_ct",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  }
+]
