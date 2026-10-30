@@ -1,0 +1,92 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/terralith-vanilla-a/gen/world",
+ "b": "/tmp/sres/terralith-quicksilver/gen/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 32,
+   "entitiesB": 32,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:chicken": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:cow": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:pig": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:polar_bear": {
+     "a": 13,
+     "b": 13,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:rabbit": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:sheep": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:villager": {
+     "a": 8,
+     "b": 8,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 144,
+  "missingDimensions": 0,
+  "differences": 0
+ }
+}

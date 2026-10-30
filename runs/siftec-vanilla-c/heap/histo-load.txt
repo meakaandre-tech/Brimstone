@@ -1,0 +1,401 @@
+ num     #instances         #bytes  class name (module)
+-------------------------------------------------------
+   1:        474496       57701848  [B (java.base@25.0.5)
+   2:        262734       14713104  net.minecraft.world.phys.shapes.SubShape
+   3:        130085       13528840  net.minecraft.world.level.block.state.BlockState
+   4:        102439       13079296  [Ljava.lang.Object; (java.base@25.0.5)
+   5:        196968       10372152  [D (java.base@25.0.5)
+   6:        410140        9843360  java.lang.String (java.base@25.0.5)
+   7:        262734        8407488  net.minecraft.world.phys.shapes.SliceShape
+   8:        301607        8141088  [Lnet.minecraft.world.level.block.state.StateHolder;
+   9:         68808        7907424  [J (java.base@25.0.5)
+  10:         17287        7549128  [Ljdk.internal.vm.FillerElement; (java.base@25.0.5)
+  11:        225382        7212224  java.util.HashMap$Node (java.base@25.0.5)
+  12:         40553        6654336  [I (java.base@25.0.5)
+  13:        157809        6312232  [Lnet.minecraft.world.phys.shapes.VoxelShape;
+  14:        130290        5476520  [Ljava.lang.Comparable; (java.base@25.0.5)
+  15:        128022        5422088  [[Lnet.minecraft.world.level.block.state.StateHolder;
+  16:        129971        5218128  [Z (java.base@25.0.5)
+  17:        196943        4726632  it.unimi.dsi.fastutil.doubles.DoubleArrayList
+  18:         37301        4687328  java.lang.Class (java.base@25.0.5)
+  19:        108740        4349600  java.util.LinkedHashMap$Entry (java.base@25.0.5)
+  20:         53099        4207456  [Ljava.util.HashMap$Node; (java.base@25.0.5)
+  21:         59920        3355520  net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape
+  22:         50284        3218176  java.util.LinkedHashMap (java.base@25.0.5)
+  23:        129717        3113208  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase$Cache
+  24:         67434        2697360  it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
+  25:         55938        2237520  jdk.nio.zipfs.ZipFileSystem$IndexNode (jdk.zipfs@25.0.5)
+  26:         66118        2115776  net.minecraft.world.phys.shapes.ArrayVoxelShape
+  27:         76210        1829040  com.google.common.collect.ImmutableMapEntry
+  28:         52339        1674848  java.util.concurrent.ConcurrentHashMap$Node (java.base@25.0.5)
+  29:         67178        1612272  java.util.ArrayList (java.base@25.0.5)
+  30:         62278        1494672  java.util.BitSet (java.base@25.0.5)
+  31:         25301        1416856  org.objectweb.asm.Label
+  32:         27355        1313040  java.lang.invoke.MemberName (java.base@25.0.5)
+  33:           719        1145696  [S (java.base@25.0.5)
+  34:         47595        1142280  net.minecraft.core.BlockPos
+  35:         19981        1118936  org.spongepowered.asm.mixin.transformer.ClassInfo$Method
+  36:         26871        1074840  org.objectweb.asm.tree.VarInsnNode
+  37:         43315        1039560  java.util.ImmutableCollections$List12 (java.base@25.0.5)
+  38:          2758         983624  [Lcom.google.common.collect.ImmutableMapEntry;
+  39:         24382         975280  net.minecraft.core.Holder$Reference
+  40:         27270         872640  com.mojang.datafixers.types.templates.Product$ProductType
+  41:         36042         865008  net.minecraft.resources.Identifier
+  42:         21060         842400  org.objectweb.asm.tree.LabelNode
+  43:         17505         840240  java.util.HashMap (java.base@25.0.5)
+  44:         14685         822360  org.objectweb.asm.tree.MethodInsnNode
+  45:         25182         805824  com.google.common.collect.MapMakerInternalMap$WeakValueReferenceImpl
+  46:         15936         764928  org.objectweb.asm.tree.LineNumberNode
+  47:         30433         730392  com.google.common.collect.ImmutableMapEntry$NonTerminalImmutableMapEntry
+  48:         15192         729216  com.google.gson.internal.LinkedTreeMap$Node
+  49:         17962         718480  java.lang.invoke.MethodType (java.base@25.0.5)
+  50:         21829         698528  com.mojang.datafixers.types.templates.Tag$TagType
+  51:         21023         672736  net.minecraft.world.level.biome.Climate$Parameter
+  52:         20730         663360  com.mojang.datafixers.types.templates.Sum$SumType
+  53:         20404         652928  org.spongepowered.asm.mixin.transformer.ClassInfo$FrameData
+  54:         20216         646912  com.mojang.datafixers.types.templates.Named$NamedType
+  55:         39500         632000  com.mojang.datafixers.types.templates.Const
+  56:         39344         629504  java.util.Optional (java.base@25.0.5)
+  57:         19278         616896  java.util.Hashtable$Entry (java.base@25.0.5)
+  58:         15244         609760  java.lang.invoke.BoundMethodHandle$Species_L (java.base@25.0.5)
+  59:         19054         609728  java.util.concurrent.locks.ReentrantLock$NonfairSync (java.base@25.0.5)
+  60:         37888         606208  java.util.jar.Attributes (java.base@25.0.5)
+  61:         25181         604344  net.minecraft.resources.ResourceKey$InternKey
+  62:         25177         604248  net.minecraft.resources.ResourceKey
+  63:         18817         602144  java.util.concurrent.Semaphore$NonfairSync (java.base@25.0.5)
+  64:         18816         602112  net.minecraft.util.ThreadingDetector
+  65:         24273         582552  net.minecraft.core.component.DataComponentInitializers$BakedEntry
+  66:         17995         575840  jdk.internal.util.WeakReferenceKey (java.base@25.0.5)
+  67:         13419         536760  java.lang.invoke.DirectMethodHandle (java.base@25.0.5)
+  68:         20915         501960  com.google.common.collect.MapMakerInternalMap$StrongKeyWeakValueEntry
+  69:         12318         492720  org.objectweb.asm.tree.InsnNode
+  70:         20310         487440  java.lang.invoke.ResolvedMethodName (java.base@25.0.5)
+  71:         10011         480528  org.objectweb.asm.Frame
+  72:         19073         457752  java.util.LinkedHashMap$LinkedEntrySet (java.base@25.0.5)
+  73:         18816         451584  net.minecraft.world.level.chunk.PalettedContainer
+  74:         18816         451584  net.minecraft.world.level.chunk.PalettedContainer$Data
+  75:         15908         449184  [Ljava.lang.Class; (java.base@25.0.5)
+  76:           279         445552  [Ljava.util.concurrent.ConcurrentHashMap$Node; (java.base@25.0.5)
+  77:         13921         445472  com.mojang.serialization.MapCodec$2
+  78:         10805         432200  net.minecraft.world.ticks.ScheduledTick
+  79:         17788         426912  net.minecraft.core.HolderSet$Direct
+  80:         17490         419760  com.mojang.datafixers.types.templates.Sum
+  81:         14807         413992  [Lnet.minecraft.util.parsing.packrat.Term;
+  82:          4136         405152  [C (java.base@25.0.5)
+  83:         16533         396792  com.mojang.datafixers.types.templates.Product
+  84:          4430         389840  java.lang.reflect.Method (java.base@25.0.5)
+  85:         16237         389688  com.mojang.datafixers.types.templates.Tag
+  86:          8035         385680  [Lnet.minecraft.world.level.biome.Climate$Parameter;
+  87:         15933         382392  net.minecraft.core.Holder$Direct
+  88:          7609         365232  net.minecraft.world.level.biome.Climate$ParameterPoint
+  89:           725         340896  [F (java.base@25.0.5)
+  90:          9964         318848  net.minecraft.network.chat.MutableComponent
+  91:         12762         306288  net.minecraft.util.parsing.packrat.DelayedException$$Lambda/0x000000003a6d38d0
+  92:         18889         302224  java.util.concurrent.locks.ReentrantLock (java.base@25.0.5)
+  93:         18817         301072  java.util.concurrent.Semaphore (java.base@25.0.5)
+  94:          9408         301056  net.minecraft.world.level.chunk.LevelChunkSection
+  95:         18754         300064  java.lang.Object (java.base@25.0.5)
+  96:          2415         289800  net.minecraft.world.level.block.state.BlockBehaviour$Properties
+  97:          5597         268656  java.lang.invoke.DirectMethodHandle$Constructor (java.base@25.0.5)
+  98:          6692         267680  org.objectweb.asm.tree.LocalVariableNode
+  99:         11110         266640  com.mojang.datafixers.schemas.Schema$$Lambda/0x000000003a855de8
+ 100:         16611         265776  net.minecraft.util.ZeroBitStorage
+ 101:         16611         265776  net.minecraft.world.level.chunk.SingleValuePalette
+ 102:          5517         264816  org.spongepowered.asm.mixin.transformer.ClassInfo$Field
+ 103:          2043         245160  org.objectweb.asm.tree.MethodNode
+ 104:          7512         240384  net.minecraft.network.chat.contents.TranslatableContents
+ 105:          9967         239208  com.mojang.datafixers.util.Pair
+ 106:          9422         226128  org.objectweb.asm.Edge
+ 107:          5653         226120  org.objectweb.asm.tree.JumpInsnNode
+ 108:          9378         225072  net.minecraft.util.parsing.packrat.Dictionary$Reference
+ 109:          3463         221632  it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap
+ 110:          4562         218976  org.objectweb.asm.tree.FrameNode
+ 111:          3735         209160  com.google.gson.internal.LinkedTreeMap
+ 112:          8460         203040  net.minecraft.util.parsing.packrat.commands.StringReaderTerms$1
+ 113:          4152         199296  org.objectweb.asm.tree.FieldInsnNode
+ 114:         12201         195216  net.minecraft.util.parsing.packrat.commands.StringReaderTerms$TerminalCharacters$$Lambda/0x000000003a6d3f10
+ 115:          7993         191832  java.util.ImmutableCollections$ListN (java.base@25.0.5)
+ 116:         11953         191248  com.google.gson.JsonPrimitive
+ 117:          5895         188640  net.minecraft.world.ticks.SavedTick
+ 118:         11788         188608  com.mojang.datafixers.types.templates.RecursivePoint
+ 119:          3323         186088  net.minecraft.network.chat.Style
+ 120:          7682         184368  com.mojang.serialization.Codec$$Lambda/0x000000003a2768d8
+ 121:          7682         184368  com.mojang.serialization.codecs.FieldDecoder
+ 122:          7682         184368  com.mojang.serialization.codecs.FieldEncoder
+ 123:         11452         183232  net.minecraft.util.parsing.packrat.Term$Sequence
+ 124:          7609         182616  net.minecraft.world.level.biome.Climate$RTree$Leaf
+ 125:          2350         178600  [Ljava.lang.ref.SoftReference; (java.base@25.0.5)
+ 126:          7309         175416  net.minecraft.advancements.triggers.Criterion
+ 127:          3105         173880  net.minecraft.world.entity.ai.attributes.AttributeInstance
+ 128:         10806         172896  net.minecraft.world.item.crafting.display.SlotDisplay$TagSlotDisplay
+ 129:          5393         172576  com.mojang.datafixers.types.templates.CompoundList$CompoundListType
+ 130:          3550         170400  it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet
+ 131:          4093         163720  java.util.EnumMap (java.base@25.0.5)
+ 132:            15         163456  [Ljava.util.Hashtable$Entry; (java.base@25.0.5)
+ 133:          3384         162432  net.minecraft.util.SimpleBitStorage
+ 134:          6677         160248  com.mojang.datafixers.types.templates.List$ListType
+ 135:          6588         158112  net.minecraft.core.component.DataComponentInitializers$Initializer$$Lambda/0x000000003a6c4b38
+ 136:          6522         156528  net.minecraft.util.parsing.packrat.Dictionary$Entry
+ 137:          9731         155696  net.minecraft.world.item.crafting.Ingredient
+ 138:          6447         154728  com.mojang.serialization.MapDecoder$4
+ 139:          3850         154000  net.minecraft.world.level.storage.loot.entries.LootItem
+ 140:          2131         153432  java.lang.reflect.Field (java.base@25.0.5)
+ 141:          6239         149736  com.mojang.serialization.MapEncoder$1
+ 142:          6236         149664  com.mojang.serialization.codecs.RecordCodecBuilder
+ 143:          3678         147120  org.objectweb.asm.tree.TypeInsnNode
+ 144:          3541         141640  net.minecraft.advancements.Advancement
+ 145:          5845         140280  net.minecraft.world.level.chunk.DataLayer
+ 146:          8715         139440  java.util.HashSet (java.base@25.0.5)
+ 147:          5797         139128  net.minecraft.util.parsing.packrat.Term$Marker
+ 148:          5738         137712  java.util.concurrent.CompletableFuture (java.base@25.0.5)
+ 149:          4267         136544  com.google.common.collect.MapMakerInternalMap$StrongKeyWeakValueEntry$LinkedStrongKeyWeakValueEntry
+ 150:          8460         135360  it.unimi.dsi.fastutil.chars.CharLists$Singleton
+ 151:          5526         132624  net.minecraft.world.item.crafting.RecipeHolder
+ 152:          5524         132576  com.mojang.serialization.MapCodec$4
+ 153:          5524         132576  com.mojang.serialization.codecs.PairMapCodec
+ 154:          5517         132408  com.mojang.serialization.MapCodec$6
+ 155:          5517         132408  net.minecraft.world.level.block.state.StateDefinition$$Lambda/0x000000003a44e9b0
+ 156:          1156         129472  [Lit.unimi.dsi.fastutil.shorts.ShortSet;
+ 157:          1156         129472  net.minecraft.server.level.ChunkHolder
+ 158:          3130         125200  com.mojang.datafixers.types.templates.RecursivePoint$RecursivePointType
+ 159:          1331         117128  org.spongepowered.asm.mixin.transformer.ClassInfo
+ 160:          4854         116496  net.minecraft.world.item.ItemStackTemplate
+ 161:          7270         116320  net.minecraft.util.parsing.packrat.Atom
+ 162:          3541         113312  net.minecraft.advancements.AdvancementNode
+ 163:          3509         112288  org.objectweb.asm.tree.AnnotationNode
+ 164:          3395         108640  net.fabricmc.fabric.impl.transfer.item.ItemVariantImpl
+ 165:          4497         107928  net.minecraft.util.parsing.packrat.Rule$WrappedTerm
+ 166:          3331         106592  java.util.ImmutableCollections$MapN (java.base@25.0.5)
+ 167:          3273         104736  net.minecraft.advancements.AdvancementRewards
+ 168:          3273         104736  net.minecraft.world.item.crafting.display.RecipeDisplayEntry
+ 169:          4302         103248  net.minecraft.advancements.predicates.DataComponentMatchers
+ 170:          6239          99824  com.mojang.serialization.MapCodec$$Lambda/0x000000003a2a1160
+ 171:           574          98328  [Ljava.util.Map$Entry; (java.base@25.0.5)
+ 172:          3067          98144  java.lang.invoke.LambdaForm$Name (java.base@25.0.5)
+ 173:          3908          93792  net.minecraft.world.level.storage.loot.entries.SingleEntryContainerBase$1
+ 174:          3859          92616  com.mojang.datafixers.types.templates.Named
+ 175:          3841          92184  jdk.internal.net.http.hpack.QuickHuffman$ImmutableNode (java.net.http@25.0.5)
+ 176:          5729          91664  net.minecraft.world.level.storage.loot.providers.number.ints.ConstantValue
+ 177:          3810          91440  net.minecraft.advancements.predicates.ItemPredicate
+ 178:          2281          91240  jdk.internal.util.SoftReferenceKey (java.base@25.0.5)
+ 179:          3740          89760  net.minecraft.util.parsing.packrat.commands.StringReaderTerms$2
+ 180:          5517          88272  com.mojang.datafixers.DataFixUtils$$Lambda/0x000000003a44edf0
+ 181:          5517          88272  net.minecraft.world.level.block.state.StateDefinition$$Lambda/0x000000003a44f4e0
+ 182:          5517          88272  net.minecraft.world.level.block.state.StateDefinition$$Lambda/0x000000003a44f730
+ 183:          5461          87376  com.google.common.collect.RegularImmutableList
+ 184:          2726          87232  net.minecraft.world.level.storage.loot.LootPool
+ 185:          1792          86016  com.google.common.collect.SingletonImmutableBiMap
+ 186:          3541          84984  net.minecraft.advancements.AdvancementHolder
+ 187:          3475          83400  net.minecraft.advancements.triggers.InventoryChangeTrigger$TriggerInstance
+ 188:          5202          83232  com.mojang.datafixers.types.templates.List
+ 189:          1727          82896  net.minecraft.world.item.BlockItem
+ 190:          3395          81480  net.minecraft.core.component.DataComponentInitializers$InitializerEntry
+ 191:          3395          81480  net.minecraft.world.item.Item$Properties$$Lambda/0x000000003a6c48e8
+ 192:          2037          81480  org.spongepowered.asm.util.ClassSignature$Token
+ 193:          2512          80384  net.minecraft.world.level.block.state.StateDefinition
+ 194:          3273          78552  net.minecraft.world.item.crafting.RecipeManager$ServerDisplayInfo
+ 195:          2452          78464  net.minecraft.world.level.storage.loot.LootTable
+ 196:          3267          78408  net.minecraft.world.item.crafting.PlacementInfo
+ 197:          3246          77904  net.minecraft.advancements.triggers.RecipeUnlockedTrigger$TriggerInstance
+ 198:          2086          76992  [Ljava.lang.String; (java.base@25.0.5)
+ 199:          1900          76000  java.lang.ref.SoftReference (java.base@25.0.5)
+ 200:          3164          75936  java.util.ImmutableCollections$SetN (java.base@25.0.5)
+ 201:          1345          75320  com.mojang.brigadier.tree.LiteralCommandNode
+ 202:          3130          75120  com.mojang.datafixers.types.families.RecursiveTypeFamily$$Lambda/0x000000003a86a4e0
+ 203:          1334          74704  com.mojang.brigadier.tree.ArgumentCommandNode
+ 204:          3102          74448  net.minecraft.world.entity.ai.attributes.AttributeSupplier$Builder$$Lambda/0x000000003ae151c8
+ 205:          1853          74120  com.google.common.collect.ImmutableSortedMap
+ 206:          3043          73032  net.minecraft.core.component.DataComponentInitializers$Initializer$$Lambda/0x000000003a801b18
+ 207:          3003          72072  java.util.ImmutableCollections$Set12 (java.base@25.0.5)
+ 208:           579          69480  org.objectweb.asm.tree.ClassNode
+ 209:          4192          67072  com.google.common.collect.SingletonImmutableList
+ 210:             7          65984  [Lnet.minecraft.world.level.pathfinder.PathType;
+ 211:          2047          65504  org.objectweb.asm.tree.InsnList
+ 212:          4086          65376  net.minecraft.world.item.crafting.display.SlotDisplay$ItemStackSlotDisplay
+ 213:          2719          65256  com.mojang.serialization.MapCodec$10
+ 214:          1630          65200  java.lang.invoke.BoundMethodHandle$Species_LL (java.base@25.0.5)
+ 215:          3990          63840  java.util.HashMap$KeySet (java.base@25.0.5)
+ 216:          1550          62000  com.google.common.collect.RegularImmutableMap
+ 217:           958          61312  java.util.concurrent.ConcurrentHashMap (java.base@25.0.5)
+ 218:          2512          60288  net.minecraft.world.level.block.state.StateDefinition$$Lambda/0x000000003a43aff0
+ 219:          3741          59856  it.unimi.dsi.fastutil.chars.CharImmutableList
+ 220:          3726          59616  com.google.gson.JsonObject
+ 221:          1489          59560  java.lang.invoke.MethodTypeForm (java.base@25.0.5)
+ 222:          1489          59560  net.minecraft.world.item.crafting.ShapedRecipePattern
+ 223:          1853          59296  com.google.common.collect.RegularImmutableSortedSet
+ 224:          2386          57264  it.unimi.dsi.fastutil.ints.IntArrayList
+ 225:          1426          57040  it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap
+ 226:          1853          56920  [Lnet.minecraft.world.level.block.state.properties.Property;
+ 227:          3542          56672  net.minecraft.advancements.AdvancementRequirements
+ 228:          3498          55968  net.minecraft.core.component.DataComponentMap$Builder$SimpleMap
+ 229:          2278          54672  net.minecraft.world.item.crafting.CraftingRecipe$CraftingBookInfo
+ 230:          1703          54496  com.zurrtum.create.content.processing.recipe.ProcessingOutput
+ 231:          2245          53880  net.minecraft.nbt.SnbtGrammar$IntegerSuffix
+ 232:          3355          53680  net.minecraft.util.parsing.packrat.Term$Alternative
+ 233:          3350          53600  com.mojang.serialization.codecs.RecordCodecBuilder$$Lambda/0x000000003a277060
+ 234:          2231          53544  net.minecraft.sounds.SoundEvent
+ 235:          1665          53280  net.minecraft.world.level.levelgen.structure.pools.LegacySinglePoolElement
+ 236:           825          52800  java.lang.Class$ReflectionData (java.base@25.0.5)
+ 237:          3273          52368  net.minecraft.world.item.crafting.display.RecipeDisplayId
+ 238:          3273          52368  net.minecraft.world.item.crafting.display.SlotDisplay$ItemSlotDisplay
+ 239:          3262          52192  net.minecraft.world.item.crafting.Recipe$CommonInfo
+ 240:          2125          51000  com.mojang.serialization.Codec$2
+ 241:           579          50952  org.spongepowered.asm.mixin.transformer.MixinInfo
+ 242:          1028          50272  [Ljava.lang.invoke.LambdaForm$Name; (java.base@25.0.5)
+ 243:          1551          49632  sun.security.util.ObjectIdentifier (java.base@25.0.5)
+ 244:          1023          49104  java.lang.invoke.LambdaForm (java.base@25.0.5)
+ 245:          1516          48512  com.google.common.collect.MapMakerInternalMap$WeakKeyDummyValueEntry
+ 246:           588          47040  it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
+ 247:          1444          46208  net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay
+ 248:           718          45952  it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+ 249:           637          45864  java.lang.reflect.Constructor (java.base@25.0.5)
+ 250:          1420          45440  net.minecraft.world.item.crafting.ShapedRecipe
+ 251:          1881          45144  net.minecraft.references.BlockItemId
+ 252:          1852          44448  com.google.common.collect.ImmutableSortedMap$1EntrySet
+ 253:           392          43904  [Lit.unimi.dsi.fastutil.shorts.ShortList;
+ 254:           392          43904  [Lnet.minecraft.world.level.chunk.LevelChunkSection;
+ 255:          1356          43392  java.util.LinkedList (java.base@25.0.5)
+ 256:          2666          42656  com.google.gson.internal.LazilyParsedNumber
+ 257:          2633          42128  net.minecraft.util.parsing.packrat.Term$Maybe
+ 258:          1748          41952  net.minecraft.tags.TagKey
+ 259:          1720          41280  net.minecraft.core.HolderSet$Named
+ 260:           426          40640  [Lnet.minecraft.world.level.biome.Climate$RTree$Node;
+ 261:          1254          40128  com.mojang.serialization.codecs.OptionalFieldCodec
+ 262:          1248          39936  java.lang.Package (java.base@25.0.5)
+ 263:           987          39480  java.util.IdentityHashMap (java.base@25.0.5)
+ 264:          2448          39168  net.minecraft.util.datafix.schemas.V1460$$Lambda/0x000000003a894980
+ 265:          1630          39120  net.minecraft.world.phys.shapes.CubeVoxelShape
+ 266:           792          38016  it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet
+ 267:          2360          37760  java.util.concurrent.atomic.AtomicReference (java.base@25.0.5)
+ 268:           931          37240  sun.security.util.DerInputStream (java.base@25.0.5)
+ 269:          1158          37056  org.spongepowered.asm.util.ClassSignature
+ 270:            11          37040  [Ljava.nio.ByteBuffer; (java.base@25.0.5)
+ 271:          1152          36864  java.util.Locale (java.base@25.0.5)
+ 272:          1152          36864  sun.util.locale.BaseLocale (java.base@25.0.5)
+ 273:          1142          36544  org.objectweb.asm.Type
+ 274:           912          36480  net.minecraft.world.phys.Vec3
+ 275:            66          36432  io.netty.util.internal.shaded.org.jctools.queues.atomic.MpmcAtomicArrayQueue
+ 276:          1495          35880  jdk.jfr.AnnotationElement (jdk.jfr@25.0.5)
+ 277:          1491          35784  net.minecraft.util.random.Weighted
+ 278:          1489          35736  net.minecraft.world.item.crafting.ShapedRecipePattern$Data
+ 279:           891          35640  java.math.BigInteger (java.base@25.0.5)
+ 280:          2216          35456  com.google.gson.JsonArray
+ 281:          2202          35232  com.mojang.datafixers.util.Either$Left
+ 282:           160          35024  [Ljava.lang.invoke.MethodHandle; (java.base@25.0.5)
+ 283:           539          34496  it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+ 284:          1430          34320  jdk.jfr.internal.AnnotationConstruct (jdk.jfr@25.0.5)
+ 285:          2112          33792  net.minecraft.server.level.ChunkResult$Success
+ 286:          1406          33744  net.minecraft.world.level.chunk.LinearPalette
+ 287:           524          33536  net.minecraft.world.level.lighting.LeveledPriorityQueue$1
+ 288:          2069          33104  java.util.HashMap$EntrySet (java.base@25.0.5)
+ 289:             1          32848  [Lio.netty.channel.epoll.EpollIoEvent;
+ 290:           799          31960  java.util.WeakHashMap$Entry (java.base@25.0.5)
+ 291:           998          31936  org.objectweb.asm.Handle
+ 292:          1319          31656  com.mojang.serialization.Decoder$1
+ 293:           790          31600  jdk.jfr.ValueDescriptor (jdk.jfr@25.0.5)
+ 294:          1303          31272  com.google.common.collect.ImmutableSortedAsList
+ 295:          1297          31128  net.minecraft.world.level.ChunkPos
+ 296:           554          31024  org.objectweb.asm.tree.InvokeDynamicInsnNode
+ 297:           774          30960  net.minecraft.world.item.crafting.ShapelessRecipe
+ 298:          1287          30888  org.spongepowered.asm.mixin.transformer.MethodMapper
+ 299:           586          30288  [Ljava.lang.reflect.Method; (java.base@25.0.5)
+ 300:          1890          30240  net.minecraft.util.parsing.packrat.Term$1
+ 301:           748          29920  java.util.TreeMap$Entry (java.base@25.0.5)
+ 302:           931          29792  sun.security.util.DerValue (java.base@25.0.5)
+ 303:          1235          29640  com.mojang.serialization.Decoder$5
+ 304:          1235          29640  com.mojang.serialization.codecs.RecordCodecBuilder$2
+ 305:          1852          29632  com.google.common.collect.ImmutableSortedMap$1EntrySet$1
+ 306:           730          29200  net.minecraft.world.item.Item
+ 307:           298          28992  [Ljava.util.WeakHashMap$Entry; (java.base@25.0.5)
+ 308:           722          28880  org.objectweb.asm.tree.LdcInsnNode
+ 309:          1201          28824  com.mojang.serialization.Encoder$1
+ 310:           512          28672  com.google.common.cache.LocalCache$WeakAccessEntry
+ 311:           582          27936  java.lang.invoke.DirectMethodHandle$Accessor (java.base@25.0.5)
+ 312:           579          27792  org.spongepowered.asm.mixin.transformer.MixinInfo$State
+ 313:          1154          27696  net.minecraft.nbt.LongTag
+ 314:           865          27680  net.minecraft.world.level.material.FluidState
+ 315:           428          27392  java.net.URL (java.base@25.0.5)
+ 316:          1139          27336  net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
+ 317:          1110          26640  com.mojang.datafixers.types.templates.Check
+ 318:          1107          26568  net.fabricmc.loader.impl.lib.classtweaker.utils.EntryTriple
+ 319:           800          25600  net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap
+ 320:          1058          25392  java.util.OptionalInt (java.base@25.0.5)
+ 321:           527          25296  jdk.internal.ref.CleanerImpl$PhantomCleanableRef (java.base@25.0.5)
+ 322:           196          25088  net.minecraft.world.level.chunk.LevelChunk
+ 323:          1042          25008  java.lang.invoke.LambdaForm$NamedFunction (java.base@25.0.5)
+ 324:           610          24400  net.fabricmc.fabric.impl.base.event.ArrayBackedEvent
+ 325:           302          24160  net.minecraft.world.level.block.Block
+ 326:           748          23936  net.minecraft.util.parsing.packrat.Term$RepeatedWithSeparator
+ 327:          1483          23728  net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList
+ 328:           196          23520  net.minecraft.world.level.chunk.ImposterProtoChunk
+ 329:           365          23360  java.security.Provider$Service (java.base@25.0.5)
+ 330:           962          23088  java.security.Provider$ServiceKey (java.base@25.0.5)
+ 331:          1421          22736  java.util.concurrent.atomic.AtomicInteger (java.base@25.0.5)
+ 332:           706          22592  net.minecraft.world.item.crafting.StonecutterRecipe
+ 333:          1404          22464  java.util.concurrent.atomic.AtomicReferenceArray (java.base@25.0.5)
+ 334:           931          22344  [Lsun.security.x509.AVA; (java.base@25.0.5)
+ 335:           931          22344  sun.security.x509.AVA (java.base@25.0.5)
+ 336:           931          22344  sun.security.x509.RDN (java.base@25.0.5)
+ 337:           911          21864  com.mojang.serialization.Encoder$2
+ 338:          1361          21776  net.minecraft.world.phys.shapes.CubePointRange
+ 339:           338          21632  sun.security.ssl.CipherSuite (java.base@25.0.5)
+ 340:            12          21184  [Ljava.util.concurrent.ForkJoinTask; (java.base@25.0.5)
+ 341:           330          21120  org.objectweb.asm.tree.FieldNode
+ 342:           876          21024  java.util.jar.Attributes$Name (java.base@25.0.5)
+ 343:           328          20992  it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
+ 344:          1283          20528  java.lang.Integer (java.base@25.0.5)
+ 345:           853          20472  net.minecraft.world.level.biome.MobSpawnSettings$SpawnerData
+ 346:          1277          20432  java.lang.Float (java.base@25.0.5)
+ 347:          1277          20432  net.minecraft.world.level.block.state.BlockBehaviour$Properties$$Lambda/0x000000003a4335f0
+ 348:           630          20160  com.llamalad7.mixinextras.lib.antlr.runtime.atn.ATNConfig
+ 349:           834          20016  com.google.common.collect.RegularImmutableMap$KeySet
+ 350:           624          19968  it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap$Entry
+ 351:           192          19968  java.util.jar.JarFile$JarFileEntry (java.base@25.0.5)
+ 352:          1235          19760  com.mojang.serialization.Decoder$$Lambda/0x000000003a27c000
+ 353:          1235          19760  com.mojang.serialization.codecs.RecordCodecBuilder$Instance
+ 354:          1231          19696  com.google.common.collect.SingletonImmutableSet
+ 355:           819          19656  net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay
+ 356:           614          19648  it.unimi.dsi.fastutil.ints.IntAVLTreeSet$Entry
+ 357:          1227          19632  com.mojang.serialization.codecs.RecordCodecBuilder$$Lambda/0x000000003a277948
+ 358:           408          19584  com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$2
+ 359:           805          19320  com.zurrtum.create.foundation.recipe.IngredientTextContent
+ 360:           401          19248  net.minecraft.world.item.trading.VillagerTrade
+ 361:           799          19176  net.minecraft.world.level.chunk.HashMapPalette
+ 362:           797          19128  net.minecraft.core.BlockPos$MutableBlockPos
+ 363:          1195          19120  net.minecraft.world.level.block.state.BlockBehaviour$Properties$$Lambda/0x000000003a455d20
+ 364:           796          19104  com.mojang.serialization.Decoder$2
+ 365:           784          18816  net.minecraft.world.level.levelgen.Heightmap
+ 366:           180          18720  jdk.jfr.internal.PlatformEventType (jdk.jfr@25.0.5)
+ 367:           777          18648  sun.reflect.annotation.AnnotationInvocationHandler (java.base@25.0.5)
+ 368:           580          18560  net.minecraft.advancements.predicates.BlockPredicate
+ 369:           578          18496  com.mojang.serialization.codecs.RecordCodecBuilder$Instance$$Lambda/0x000000003a27c768
+ 370:           578          18496  com.mojang.serialization.codecs.RecordCodecBuilder$Instance$3
+ 371:          1156          18496  net.minecraft.server.level.ChunkMap$$Lambda/0x000000003b7a54d8
+ 372:          1153          18448  net.minecraft.nbt.IntTag
+ 373:          1153          18448  net.minecraft.nbt.ShortTag
+ 374:           461          18440  com.google.common.collect.MapMakerInternalMap$WeakKeyStrongValueEntry
+ 375:           378          18144  java.lang.invoke.MethodHandleImpl$CountingWrapper (java.base@25.0.5)
+ 376:           748          17952  net.minecraft.util.parsing.packrat.Term$LookAhead
+ 377:           371          17808  it.unimi.dsi.fastutil.longs.LongOpenHashSet
+ 378:           739          17736  net.minecraft.world.level.storage.loot.providers.number.ints.UniformGenerator
+ 379:           554          17728  com.zurrtum.create.content.kinetics.deployer.DeployerApplicationRecipe
+ 380:           552          17664  net.minecraft.world.item.alchemy.PotionContents
+ 381:          1102          17632  net.minecraft.util.valueproviders.ConstantInt
+ 382:           546          17472  org.objectweb.asm.tree.InnerClassNode
+ 383:           544          17408  com.mojang.datafixers.types.templates.Hook$HookType
+ 384:          1088          17408  net.minecraft.core.component.DataComponentPatch
+ 385:           536          17152  net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement
+ 386:           532          17024  java.lang.ref.WeakReference (java.base@25.0.5)
+ 387:           706          16944  net.minecraft.world.item.crafting.SelectableRecipe
+ 388:           706          16944  net.minecraft.world.item.crafting.SelectableRecipe$SingleInputEntry
+ 389:           706          16944  net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay
+ 390:          1043          16688  it.unimi.dsi.fastutil.ints.IntLists$Singleton
+ 391:           695          16680  it.unimi.dsi.fastutil.shorts.ShortArrayList
+ 392:           688          16512  com.zurrtum.create.content.processing.recipe.SizedIngredient
+ 393:           206          16480  net.minecraft.world.entity.EntityType
+ 394:             1          16400  [Ljdk.internal.ref.PhantomCleanable; (java.base@25.0.5)
+ 395:           409          16360  com.llamalad7.mixinextras.lib.antlr.runtime.atn.BasicState
+ 396:           406          16240  com.mojang.serialization.codecs.RecordCodecBuilder$Instance$5
+ 397:           253          16192  java.util.zip.Inflater (java.base@25.0.5)
+ 398:           667          16008  com.meakaandre.siftec.hub.Milestone$Cost
+Total       6346692      296696400

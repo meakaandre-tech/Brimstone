@@ -1,0 +1,15 @@
+{
+  "startupMs": 19703,
+  "worldLoadMs": 3316,
+  "quicksilverLoaded": false,
+  "generated": [
+    {
+      "area": "minecraft:overworld -6 -6 5 5",
+      "chunks": 144,
+      "ms": 10015
+    }
+  ],
+  "mode": "gen",
+  "lightSettleTicks": 20,
+  "heapAfterGenMB": 357.041
+}

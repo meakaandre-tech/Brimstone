@@ -1,0 +1,1192 @@
+{
+ "fails": [],
+ "suites": {
+  "core": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_end/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_end/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "run": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "random": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gametests": {
+    "vanilla-a": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "vanilla-b": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "vanilla-c": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "quicksilver": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    }
+   },
+   "run-numbers-vanilla-a": {
+    "startupMs": 7356,
+    "worldLoadMs": 494,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 2,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 150.999,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.233,
+    "msptP50": 0.858,
+    "msptP99": 6.719,
+    "msptMax": 61.154,
+    "ticksOver50ms": 1,
+    "heapEndMB": 151.474,
+    "chunksResaved": 144
+   },
+   "run-numbers-vanilla-b": {
+    "startupMs": 7555,
+    "worldLoadMs": 336,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 149.196,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.412,
+    "msptP50": 1.044,
+    "msptP99": 7.392,
+    "msptMax": 70.469,
+    "ticksOver50ms": 1,
+    "heapEndMB": 149.749,
+    "chunksResaved": 144
+   },
+   "run-numbers-vanilla-c": {
+    "startupMs": 11187,
+    "worldLoadMs": 572,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 151.057,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.863,
+    "msptP50": 1.236,
+    "msptP99": 10.59,
+    "msptMax": 103.391,
+    "ticksOver50ms": 1,
+    "heapEndMB": 151.753,
+    "chunksResaved": 144
+   },
+   "run-numbers-quicksilver": {
+    "startupMs": 13299,
+    "worldLoadMs": 683,
+    "quicksilverLoaded": true,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 5,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 139.708,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.939,
+    "msptP50": 1.323,
+    "msptP99": 13.619,
+    "msptMax": 99.778,
+    "ticksOver50ms": 2,
+    "heapEndMB": 141.714,
+    "chunksResaved": 144
+   },
+   "memory": {
+    "gametest-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "gen-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "heap-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "random-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "run-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries"
+   },
+   "heap": {
+    "vanilla-a": {
+     "heapLiveLoadMB": 149.941,
+     "heapLiveEndMB": 150.729,
+     "heapAfterLoadMB": 151.471,
+     "heapEndMB": 152.729
+    },
+    "vanilla-b": {
+     "heapLiveLoadMB": 147.905,
+     "heapLiveEndMB": 148.582,
+     "heapAfterLoadMB": 149.434,
+     "heapEndMB": 150.582
+    },
+    "vanilla-c": {
+     "heapLiveLoadMB": 149.441,
+     "heapLiveEndMB": 150.299,
+     "heapAfterLoadMB": 150.974,
+     "heapEndMB": 152.298
+    },
+    "quicksilver": {
+     "heapLiveLoadMB": 137.488,
+     "heapLiveEndMB": 138.37,
+     "heapAfterLoadMB": 139.017,
+     "heapEndMB": 140.37
+    }
+   },
+   "bench": {
+    "kind": "server",
+    "seconds": 50,
+    "time": "2026-10-30T02:55:47.876186254",
+    "quicksilver": "0.0.1+26.3",
+    "minecraft": "26.3",
+    "server": {
+     "side": "dedicated",
+     "ticks": 1003,
+     "tps": 20.06,
+     "msptAvg": 2.112,
+     "msptP50": 1.422,
+     "msptP99": 13.861,
+     "msptMax": 99.173,
+     "ticksOver50ms": 2,
+     "heapUsedMB": 226.69,
+     "heapUsedAfterGcMB": 142.704,
+     "startupMs": 15654,
+     "worldLoadMs": 3036,
+     "network": {
+      "counting": true,
+      "serverBytesInWindow": 0,
+      "serverBytesIn": 0,
+      "serverBytesOut": 0,
+      "clientBytesIn": 0,
+      "clientBytesOut": 0
+     },
+     "players": 0
+    }
+   }
+  },
+  "siftec": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 2,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": [
+      "c200,205",
+      "c201,204"
+     ]
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 5,
+     "quicksilver": 5,
+     "gated": 0,
+     "noiseKeys": [
+      "c-3,3",
+      "c-3,4",
+      "c-4,3",
+      "c-4,4",
+      "c0,5"
+     ]
+    },
+    "dimensions/the_sift/the_sift/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 226,
+     "quicksilver": 226,
+     "gated": 0,
+     "noiseKeys": [
+      "b-45,61,63",
+      "b-45,62,63",
+      "b-45,63,63",
+      "b-45,64,63",
+      "b-46,61,63",
+      "b-46,62,63",
+      "b-46,63,63",
+      "b-47,61,63",
+      "b-47,62,63",
+      "b-47,63,63",
+      "b-48,61,63",
+      "b-48,62,63",
+      "b-48,63,63",
+      "b-48,64,63",
+      "b-49,57,67",
+      "b-49,57,68",
+      "b-49,57,69",
+      "b-49,57,70",
+      "b-49,57,71",
+      "b-49,58,67",
+      "b-49,59,65",
+      "b-49,59,66",
+      "b-49,59,67",
+      "b-49,59,72",
+      "b-49,59,73",
+      "b-49,60,64",
+      "b-49,60,65",
+      "b-49,60,66",
+      "b-49,60,67",
+      "b-49,60,72",
+      "b-49,60,73",
+      "b-49,60,74",
+      "b-49,61,63",
+      "b-49,61,64",
+      "b-49,61,65",
+      "b-49,61,66",
+      "b-49,61,67",
+      "b-49,61,73",
+      "b-49,61,74",
+      "b-49,61,75",
+      "b-49,62,63",
+      "b-49,62,64",
+      "b-49,62,65",
+      "b-49,62,66",
+      "b-49,62,74",
+      "b-49,62,75",
+      "b-49,63,64",
+      "b-49,63,74",
+      "b-50,57,68",
+      "b-50,57,69"
+     ]
+    },
+    "dimensions/the_sift/the_sift/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "run": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "run-numbers-vanilla-a": {
+    "startupMs": 17818,
+    "worldLoadMs": 574,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 7,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 284.502,
+    "ticksRenumbered": 3702,
+    "msptAvg": 2.131,
+    "msptP50": 1.466,
+    "msptP99": 12.245,
+    "msptMax": 116.718,
+    "ticksOver50ms": 2,
+    "heapEndMB": 290.409,
+    "chunksResaved": 144,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "run-numbers-vanilla-b": {
+    "startupMs": 12768,
+    "worldLoadMs": 420,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 284.0,
+    "ticksRenumbered": 3702,
+    "msptAvg": 1.211,
+    "msptP50": 0.754,
+    "msptP99": 7.223,
+    "msptMax": 100.224,
+    "ticksOver50ms": 1,
+    "heapEndMB": 290.3,
+    "chunksResaved": 144,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "run-numbers-vanilla-c": {
+    "startupMs": 18788,
+    "worldLoadMs": 507,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 6,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 283.977,
+    "ticksRenumbered": 3702,
+    "msptAvg": 1.822,
+    "msptP50": 1.192,
+    "msptP99": 10.821,
+    "msptMax": 124.184,
+    "ticksOver50ms": 2,
+    "heapEndMB": 289.894,
+    "chunksResaved": 144,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "run-numbers-quicksilver": {
+    "startupMs": 12061,
+    "worldLoadMs": 377,
+    "quicksilverLoaded": true,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 14,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 222.35,
+    "ticksRenumbered": 3702,
+    "msptAvg": 0.857,
+    "msptP50": 0.457,
+    "msptP99": 5.987,
+    "msptMax": 84.588,
+    "ticksOver50ms": 1,
+    "heapEndMB": 229.438,
+    "chunksResaved": 144,
+    "train": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "memory": {
+    "gen-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 1852 blocks, 130289 states (660 with one state, unchanged); shapes: 130084 states, 264264 shapes sharing internals, 135699 face slots and 95415 face arrays shared, 129622 sturdiness arrays shared; data fixer caches emptied: 1 times, 15055 entries",
+    "heap-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 1852 blocks, 130289 states (660 with one state, unchanged); shapes: 130084 states, 264264 shapes sharing internals, 135699 face slots and 95415 face arrays shared, 129622 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "run-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 1852 blocks, 130289 states (660 with one state, unchanged); shapes: 130084 states, 264264 shapes sharing internals, 135699 face slots and 95415 face arrays shared, 129622 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "selftest-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 1852 blocks, 130289 states (660 with one state, unchanged); shapes: 130084 states, 264264 shapes sharing internals, 135699 face slots and 95415 face arrays shared, 129622 sturdiness arrays shared; data fixer caches emptied: 1 times, 15055 entries"
+   },
+   "heap": {
+    "vanilla-a": {
+     "heapLiveLoadMB": 282.708,
+     "heapLiveEndMB": 288.746,
+     "heapAfterLoadMB": 284.28,
+     "heapEndMB": 290.745
+    },
+    "vanilla-b": {
+     "heapLiveLoadMB": 282.105,
+     "heapLiveEndMB": 288.477,
+     "heapAfterLoadMB": 283.64,
+     "heapEndMB": 290.477
+    },
+    "vanilla-c": {
+     "heapLiveLoadMB": 282.952,
+     "heapLiveEndMB": 289.119,
+     "heapAfterLoadMB": 284.601,
+     "heapEndMB": 291.118
+    },
+    "quicksilver": {
+     "heapLiveLoadMB": 220.088,
+     "heapLiveEndMB": 226.449,
+     "heapAfterLoadMB": 221.709,
+     "heapEndMB": 228.449
+    }
+   },
+   "bench": {
+    "kind": "server",
+    "seconds": 50,
+    "time": "2026-10-30T02:43:18.345816675",
+    "quicksilver": "0.0.1+26.3",
+    "minecraft": "26.3",
+    "server": {
+     "side": "dedicated",
+     "ticks": 1004,
+     "tps": 20.08,
+     "msptAvg": 1.029,
+     "msptP50": 0.538,
+     "msptP99": 7.162,
+     "msptMax": 86.081,
+     "ticksOver50ms": 1,
+     "heapUsedMB": 392.81,
+     "heapUsedAfterGcMB": 230.422,
+     "startupMs": 13412,
+     "worldLoadMs": 1726,
+     "network": {
+      "counting": true,
+      "serverBytesInWindow": 0,
+      "serverBytesIn": 0,
+      "serverBytesOut": 0,
+      "clientBytesIn": 0,
+      "clientBytesOut": 0
+     },
+     "players": 0
+    }
+   },
+   "train": {
+    "vanilla-a": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT",
+    "vanilla-b": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT",
+    "vanilla-c": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT",
+    "quicksilver": "arrivals=11 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131 speed=0.31499999295920134 derailed=false entry=1 state=IN_TRANSIT"
+   },
+   "selftests": {
+    "vanilla-a": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    },
+    "vanilla-b": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    },
+    "vanilla-c": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    },
+    "quicksilver": {
+     "style": [
+      85,
+      0
+     ],
+     "progression": [
+      16,
+      0
+     ],
+     "food": [
+      31,
+      0
+     ],
+     "map": [
+      12,
+      0
+     ],
+     "guide": [
+      4,
+      0
+     ],
+     "quality": [
+      8,
+      0
+     ],
+     "state gun": [
+      22,
+      0
+     ],
+     "world pads": [
+      15,
+      0
+     ],
+     "world drops": [
+      21,
+      0
+     ],
+     "world restart setup": [
+      1,
+      0
+     ],
+     "world clump": [
+      5,
+      0
+     ],
+     "designer": [
+      41,
+      0
+     ],
+     "ownership": [
+      15,
+      0
+     ],
+     "datafix": [
+      20,
+      0
+     ],
+     "world break": [
+      9,
+      0
+     ],
+     "fixes": [
+      21,
+      0
+     ],
+     "world regrow": [
+      10,
+      0
+     ],
+     "buildingfix": [
+      13,
+      0
+     ],
+     "exploration": [
+      34,
+      0
+     ],
+     "world deployer": [
+      2,
+      0
+     ],
+     "buildings": [
+      26,
+      0
+     ],
+     "powerfix": [
+      10,
+      0
+     ],
+     "exploits": [
+      40,
+      0
+     ],
+     "polish": [
+      39,
+      0
+     ],
+     "logistics": [
+      44,
+      0
+     ],
+     "buildings_a": [
+      55,
+      0
+     ],
+     "buildings_b": [
+      78,
+      0
+     ],
+     "machines": [
+      60,
+      0
+     ],
+     "vehicles": [
+      19,
+      0
+     ],
+     "always edges": [
+      20,
+      0
+     ],
+     "always": [
+      15,
+      0
+     ]
+    }
+   }
+  },
+  "terralith": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "memory": {
+    "gen-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 1 times, 197618 entries",
+    "heap-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 1 times, 154119 entries"
+   },
+   "heap": {
+    "vanilla-a": {
+     "heapLiveLoadMB": 261.813,
+     "heapLiveEndMB": 262.811,
+     "heapAfterLoadMB": 263.345,
+     "heapEndMB": 264.809
+    },
+    "vanilla-b": {
+     "heapLiveLoadMB": 260.697,
+     "heapLiveEndMB": 262.714,
+     "heapAfterLoadMB": 262.226,
+     "heapEndMB": 264.714
+    },
+    "vanilla-c": {
+     "heapLiveLoadMB": 260.611,
+     "heapLiveEndMB": 262.813,
+     "heapAfterLoadMB": 262.141,
+     "heapEndMB": 265.43
+    },
+    "quicksilver": {
+     "heapLiveLoadMB": 179.245,
+     "heapLiveEndMB": 180.093,
+     "heapAfterLoadMB": 180.775,
+     "heapEndMB": 182.092
+    }
+   }
+  },
+  "network": {
+   "net-vanilla-client": {
+    "joined": true,
+    "finished": true,
+    "leftEarly": false,
+    "problems": [],
+    "network": {
+     "counting": true,
+     "serverBytesInWindow": 1190487,
+     "serverBytesIn": 6375,
+     "serverBytesOut": 2484402,
+     "clientBytesIn": 0,
+     "clientBytesOut": 0
+    }
+   },
+   "net-qs-client": {
+    "joined": true,
+    "finished": true,
+    "leftEarly": false,
+    "problems": [],
+    "network": {}
+   }
+  }
+ }
+}

@@ -1,0 +1,23 @@
+{
+  "startupMs": 12440,
+  "worldLoadMs": 343,
+  "quicksilverLoaded": false,
+  "mode": "heap",
+  "ticks": 12000,
+  "loadWaitTicks": 3,
+  "commandErrors": 0,
+  "lightSettleTicks": 200,
+  "heapAfterLoadMB": 283.64,
+  "heapLiveLoadMB": 282.105,
+  "ticksRenumbered": 3702,
+  "msptAvg": 0.3,
+  "msptP50": 0.19,
+  "msptP99": 1.588,
+  "msptMax": 91.467,
+  "ticksOver50ms": 1,
+  "heapEndMB": 290.477,
+  "chunksResaved": 144,
+  "heapLiveEndMB": 288.477,
+  "lightLayers": "SKY: layers\u003d1629 arrays\u003d423 uniform\u003d212 uniformValues\u003d{15\u003d212}; BLOCK: layers\u003d1629 arrays\u003d762 uniform\u003d11 uniformValues\u003d{0\u003d11}; ",
+  "train": "arrivals\u003d120 B@136,A@235,B@335,A@434,B@534,A@633,B@733,A@832,B@932,A@1031,B@1131,A@1230,B@1330,A@1429,B@1529,A@1628,B@1728,A@1827,B@1927,A@2026,B@2126,A@2225,B@2325,A@2424,B@2524,A@2623,B@2723,A@2822,B@2922,A@3021,B@3121,A@3220,B@3320,A@3419,B@3519,A@3618,B@3718,A@3817,B@3917,A@4016,B@4116,A@4215,B@4315,A@4414,B@4514,A@4613,B@4713,A@4812,B@4912,A@5011,B@5111,A@5210,B@5310,A@5409,B@5509,A@5608,B@5708,A@5807,B@5907,A@6006,B@6106,A@6205,B@6305,A@6404,B@6504,A@6603,B@6703,A@6802,B@6902,A@7001,B@7101,A@7200,B@7300,A@7399,B@7499,A@7598,B@7698,A@7797,B@7897,A@7996,B@8096,A@8195,B@8295,A@8394,B@8494,A@8593,B@8693,A@8792,B@8892,A@8991,B@9091,A@9190,B@9290,A@9389,B@9489,A@9588,B@9688,A@9787,B@9887,A@9986,B@10086,A@10185,B@10285,A@10384,B@10484,A@10583,B@10683,A@10782,B@10882,A@10981,B@11081,A@11180,B@11280,A@11379,B@11479,A@11578,B@11678,A@11777,B@11877,A@11976 speed\u003d0.0 derailed\u003dfalse entry\u003d0 state\u003dPRE_TRANSIT"
+}

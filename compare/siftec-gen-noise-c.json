@@ -1,0 +1,102 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/siftec-vanilla-a/gen/world",
+ "b": "/tmp/sres/siftec-vanilla-c/gen/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 14,
+   "entitiesB": 14,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:polar_bear": {
+     "a": 11,
+     "b": 11,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  },
+  "dimensions/minecraft/the_nether/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 0,
+   "entitiesB": 0,
+   "entitiesExact": true,
+   "entityTypes": {},
+   "entities": 0
+  },
+  "dimensions/the_sift/the_sift/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 7,
+   "entitiesB": 7,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:sniffer": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "the_sift:blub": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "the_sift:echo_golem": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 432,
+  "missingDimensions": 0,
+  "differences": 0
+ }
+}

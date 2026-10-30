@@ -1,0 +1,92 @@
+{
+ "mode": "gen",
+ "a": "/tmp/sres/siftec-vanilla-a/gen/world",
+ "b": "/tmp/sres/siftec-vanilla-b/gen/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "differ": 0,
+   "unreadable": 0,
+   "keys": []
+  },
+  "dimensions/minecraft/the_nether/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "differ": 5,
+   "unreadable": 0,
+   "keys": [
+    "c-4,3",
+    "c-4,4",
+    "c-3,3",
+    "c-3,4",
+    "c0,5"
+   ],
+   "examples": [
+    {
+     "chunk": [
+      -4,
+      3
+     ],
+     "what": "bytes differ",
+     "first": "/sections[3]/BlockLight[1661]"
+    },
+    {
+     "chunk": [
+      -4,
+      4
+     ],
+     "what": "bytes differ",
+     "first": "/sections[3]/BlockLight[1302]"
+    },
+    {
+     "chunk": [
+      -3,
+      3
+     ],
+     "what": "bytes differ",
+     "first": "/sections[3]/BlockLight[1784]"
+    },
+    {
+     "chunk": [
+      -3,
+      4
+     ],
+     "what": "bytes differ",
+     "first": "/sections[3]/BlockLight[1296]"
+    },
+    {
+     "chunk": [
+      0,
+      5
+     ],
+     "what": "bytes differ",
+     "first": "/sections[3]/block_states/data[247]"
+    }
+   ]
+  },
+  "dimensions/the_sift/the_sift/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "differ": 0,
+   "unreadable": 0,
+   "keys": []
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 5,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 432,
+  "missingDimensions": 0,
+  "differences": 5
+ }
+}

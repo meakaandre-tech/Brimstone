@@ -1,0 +1,511 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/siftec-vanilla-a/gen/world",
+ "b": "/tmp/sres/siftec-quicksilver/gen/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 14,
+   "entitiesB": 14,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 3,
+     "b": 3,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:polar_bear": {
+     "a": 11,
+     "b": 11,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  },
+  "dimensions/minecraft/the_nether/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 226,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [
+    "b-49,61,63",
+    "b-49,62,63",
+    "b-49,57,67",
+    "b-50,57,68",
+    "b-49,57,68",
+    "b-50,57,69",
+    "b-49,57,69",
+    "b-50,57,70",
+    "b-49,57,70",
+    "b-49,57,71",
+    "b-49,58,67",
+    "b-49,59,65",
+    "b-50,59,66",
+    "b-49,59,66",
+    "b-50,59,67",
+    "b-49,59,67",
+    "b-51,59,71",
+    "b-50,59,71",
+    "b-50,59,72",
+    "b-49,59,72",
+    "b-49,59,73",
+    "b-49,60,64",
+    "b-50,60,65",
+    "b-49,60,65",
+    "b-51,60,66",
+    "b-50,60,66",
+    "b-49,60,66",
+    "b-51,60,67",
+    "b-50,60,67",
+    "b-49,60,67",
+    "b-52,60,71",
+    "b-49,60,72",
+    "b-50,60,73",
+    "b-49,60,73",
+    "b-49,60,74",
+    "b-49,61,64",
+    "b-52,61,65",
+    "b-51,61,65",
+    "b-50,61,65",
+    "b-49,61,65",
+    "b-52,61,66",
+    "b-51,61,66",
+    "b-50,61,66",
+    "b-49,61,66",
+    "b-53,61,67",
+    "b-50,61,67",
+    "b-49,61,67",
+    "b-52,61,72",
+    "b-52,61,73",
+    "b-51,61,73",
+    "b-50,61,73",
+    "b-49,61,73",
+    "b-51,61,74",
+    "b-50,61,74",
+    "b-49,61,74",
+    "b-49,61,75",
+    "b-51,62,64",
+    "b-50,62,64",
+    "b-49,62,64",
+    "b-52,62,65",
+    "b-51,62,65",
+    "b-50,62,65",
+    "b-49,62,65",
+    "b-50,62,66",
+    "b-49,62,66",
+    "b-51,62,74",
+    "b-50,62,74",
+    "b-49,62,74",
+    "b-49,62,75",
+    "b-49,63,64",
+    "b-50,63,66",
+    "b-49,63,74",
+    "b-50,64,66",
+    "b-50,65,66",
+    "b-50,66,66",
+    "b-50,67,66",
+    "b-48,61,63",
+    "b-47,61,63",
+    "b-46,61,63",
+    "b-45,61,63",
+    "b-48,62,63",
+    "b-47,62,63",
+    "b-46,62,63",
+    "b-45,62,63",
+    "b-48,63,63",
+    "b-47,63,63",
+    "b-46,63,63",
+    "b-45,63,63",
+    "b-48,64,63",
+    "b-45,64,63",
+    "b15,63,87",
+    "b15,63,88",
+    "b15,63,89",
+    "b15,64,88",
+    "b15,64,89",
+    "b14,65,87",
+    "b15,65,87",
+    "b14,65,88",
+    "b15,65,88",
+    "b14,65,89",
+    "b15,65,89",
+    "b14,65,90",
+    "b15,65,90",
+    "b15,65,91",
+    "b15,66,84",
+    "b14,66,85",
+    "b13,66,86",
+    "b14,66,86",
+    "b15,66,86",
+    "b13,66,87",
+    "b14,66,87",
+    "b15,66,87",
+    "b13,66,88",
+    "b14,66,88",
+    "b15,66,88",
+    "b13,66,89",
+    "b14,66,89",
+    "b15,66,89",
+    "b13,66,90",
+    "b14,66,90",
+    "b15,66,90",
+    "b14,66,91",
+    "b15,66,91",
+    "b15,66,92",
+    "b14,67,83",
+    "b15,67,83",
+    "b13,67,84",
+    "b14,67,84",
+    "b15,67,84",
+    "b13,67,85",
+    "b14,67,85",
+    "b15,67,85",
+    "b12,67,86",
+    "b13,67,86",
+    "b14,67,86",
+    "b15,67,86",
+    "b12,67,87",
+    "b13,67,87",
+    "b14,67,87",
+    "b15,67,87",
+    "b12,67,88",
+    "b13,67,88",
+    "b14,67,88",
+    "b15,67,88",
+    "b12,67,89",
+    "b13,67,89",
+    "b14,67,89",
+    "b15,67,89",
+    "b12,67,90",
+    "b13,67,90",
+    "b14,67,90",
+    "b15,67,90",
+    "b13,67,91",
+    "b14,67,91",
+    "b15,67,91",
+    "b13,67,92",
+    "b14,67,92",
+    "b15,67,92",
+    "b14,67,93",
+    "b15,67,93",
+    "b14,68,83",
+    "b15,68,83",
+    "b13,68,84",
+    "b14,68,84",
+    "b15,68,84",
+    "b13,68,85",
+    "b14,68,85",
+    "b15,68,85",
+    "b12,68,86",
+    "b13,68,86",
+    "b14,68,86",
+    "b15,68,86",
+    "b12,68,87",
+    "b13,68,87",
+    "b14,68,87",
+    "b15,68,87",
+    "b12,68,88",
+    "b13,68,88",
+    "b14,68,88",
+    "b15,68,88",
+    "b12,68,89",
+    "b13,68,89",
+    "b14,68,89",
+    "b15,68,89",
+    "b12,68,90",
+    "b13,68,90",
+    "b14,68,90",
+    "b15,68,90",
+    "b13,68,91",
+    "b14,68,91",
+    "b15,68,91",
+    "b13,68,92",
+    "b14,68,92",
+    "b15,68,92",
+    "b14,68,93",
+    "b15,68,93",
+    "b14,69,83",
+    "b15,69,83",
+    "b13,69,84",
+    "b14,69,84",
+    "b15,69,84",
+    "b13,69,85",
+    "b14,69,85",
+    "b15,69,85",
+    "b12,69,86",
+    "b13,69,86",
+    "b14,69,86",
+    "b15,69,86",
+    "b12,69,87",
+    "b13,69,87",
+    "b14,69,87",
+    "b15,69,87",
+    "b12,69,88",
+    "b13,69,88",
+    "b14,69,88",
+    "b15,69,88",
+    "b12,69,89",
+    "b13,69,89",
+    "b14,69,89",
+    "b15,69,89",
+    "b12,69,90",
+    "b13,69,90",
+    "b14,69,90",
+    "b15,69,90",
+    "b13,69,91",
+    "b15,69,92"
+   ],
+   "examples": [
+    {
+     "block": [
+      -49,
+      61,
+      63
+     ],
+     "a": "cgs:sulfur_ore",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -49,
+      62,
+      63
+     ],
+     "a": "minecraft:crimson_nylium",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -49,
+      57,
+      67
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -50,
+      57,
+      68
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -49,
+      57,
+      68
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -50,
+      57,
+      69
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -49,
+      57,
+      69
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -50,
+      57,
+      70
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -49,
+      57,
+      70
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -49,
+      57,
+      71
+     ],
+     "a": "minecraft:netherrack",
+     "b": "siftec:netherrack_patch"
+    },
+    {
+     "block": [
+      -49,
+      58,
+      67
+     ],
+     "a": "minecraft:netherrack",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -49,
+      59,
+      65
+     ],
+     "a": "minecraft:netherrack",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -50,
+      59,
+      66
+     ],
+     "a": "minecraft:netherrack",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -49,
+      59,
+      66
+     ],
+     "a": "minecraft:netherrack",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -50,
+      59,
+      67
+     ],
+     "a": "minecraft:netherrack",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -49,
+      59,
+      67
+     ],
+     "a": "minecraft:netherrack",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -51,
+      59,
+      71
+     ],
+     "a": "minecraft:crimson_nylium",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -50,
+      59,
+      71
+     ],
+     "a": "minecraft:crimson_nylium",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -50,
+      59,
+      72
+     ],
+     "a": "minecraft:crimson_nylium",
+     "b": "minecraft:air"
+    },
+    {
+     "block": [
+      -49,
+      59,
+      72
+     ],
+     "a": "minecraft:crimson_nylium",
+     "b": "minecraft:air"
+    }
+   ],
+   "entitiesA": 0,
+   "entitiesB": 0,
+   "entitiesExact": true,
+   "entityTypes": {},
+   "entities": 0
+  },
+  "dimensions/the_sift/the_sift/region": {
+   "chunks": 144,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 7,
+   "entitiesB": 7,
+   "entitiesExact": false,
+   "entityTypes": {
+    "minecraft:sniffer": {
+     "a": 2,
+     "b": 2,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "the_sift:blub": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "the_sift:echo_golem": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 226,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 432,
+  "missingDimensions": 0,
+  "differences": 226
+ }
+}
