@@ -35,13 +35,13 @@ ERRORS = []  # the comparator's own crashes, reported (and failed) at the end
 RUNS = ("vanilla-a", "vanilla-b", "vanilla-c", "quicksilver")
 OTHER_VANILLA = ("vanilla-b", "vanilla-c")  # each compared with vanilla-a: their differences are vanilla's noise
 # keys reported but not gated, per suite and check, and why (docs/ci-limits.md, "Server suite")
-WHY_TICKS = ("which sand, gravel and fluid ticks are still pending when the world is saved varies between vanilla's "
-             "own runs, at one cave (chunk -1,-2 of seed 12345: sand and gravel over water), in core and SIFTEC alike; "
-             "cause not found yet. Blocks, block entities and entities stay gated")
-REPORT_ONLY = {("core", "run"): (("sb", "sf"), WHY_TICKS), ("siftec", "run"): (("sb", "sf"), WHY_TICKS)}
+# (P2-1: empty. The cave's pending ticks repeat since the harness schedules every pending tick in a fixed order before
+# tick 0; docs/ci-limits.md, "Server suite".)
+REPORT_ONLY = {}
 # keys vanilla has shown differing against itself in recent runs, even when its three runs in this run agree (the
 # standing noise rule); evidence in docs/ci-limits.md, "Server suite"
-KNOWN_NOISE = {("siftec", "run"): {"e2,200,11/cooking_time_spent", "e2,200,11/lit_time_remaining", "e2,201,2/Angle"}}
+# (P2-1: empty. SIFTEC's furnace and bearing differed until the harness started them on a fixed tick.)
+KNOWN_NOISE = {}
 TESTS = ("hopper_chain", "redstone_clock", "piston_machine", "piston_door", "item_sorter", "crop_farm", "mob_farm",
          "villager_trade")
 QS_IDS = ("quicksilver",)
@@ -100,6 +100,70 @@ def selftests(log):
     return out
 
 
+RANDOM_MIN_Y = 192  # scripted-run-core-random.txt's random-ticks line
+
+
+def key_y(k):
+    """The block y of a world-diff key (block, block entity, scheduled tick, entity), or None (chunk keys)."""
+    m = re.match(r"(?:b|e|sb|sf)(-?\d+),(-?\d+),(-?\d+)", k) or re.match(r"t[^@]*@(-?\d+),(-?\d+),(-?\d+)", k)
+    return int(m.group(2)) if m else None
+
+
+def histogram(path):
+    """A class histogram (the harness's histo-*.txt): {class: (instances, bytes)} and the total bytes."""
+    out, total = {}, None
+    for line in text(path).splitlines():
+        p = line.split()
+        if len(p) >= 4 and p[0].endswith(":"):
+            out[p[3]] = (int(p[1]), int(p[2]))
+        elif p and p[0] == "Total" and len(p) >= 3:
+            total = int(p[2])
+    return out, total
+
+
+def heap_report(suite, d, rep, lines, s, fails):
+    """The heap run (P2-1): live heap after load and after ten minutes of game time per run, and where it goes (the top
+    classes of vanilla-a's histogram against Quicksilver's) in REPORT_DIR/<suite>-heap.md. Gated (P2-1): Quicksilver below every vanilla run, after load and at the end."""
+    res = {r: load(os.path.join(d[r], "heap", "ci-harness-result.json"), {}) for r in RUNS}
+    has_heap = os.path.exists(os.path.join(HERE, "heap-%s.txt" % suite)) or os.path.exists(os.path.join(HERE, "scripted-run-%s.txt" % suite))
+    if not has_heap:
+        return
+    for r in RUNS:
+        j = res[r]
+        if j.get("mode") != "heap" or "msptAvg" not in j or "error" in j:
+            fails.append("%s heap run %s: no finished heap run (%s)" % (suite, r, j.get("error", "no result")))
+    lines.append("### Heap run (live heap after a full GC, MiB; ten minutes of game time)\n\n| run | after load | after 10 min | finished |\n|---|---|---|---|")
+    for r in RUNS:
+        j = res[r]
+        lines.append("| %s | %s | %s | %s |" % (r, j.get("heapLiveLoadMB"), j.get("heapLiveEndMB"), "yes" if "msptAvg" in j and "error" not in j else "no (%s)" % j.get("error")))
+    s["heap"] = {r: {k: res[r].get(k) for k in ("heapLiveLoadMB", "heapLiveEndMB", "heapAfterLoadMB", "heapEndMB")} for r in RUNS}
+    # P2-1's gate: Quicksilver's live heap below every vanilla run's, after load and after ten minutes
+    for key, when in (("heapLiveLoadMB", "after load"), ("heapLiveEndMB", "after ten minutes")):
+        v = [res[r].get(key) for r in RUNS if r != "quicksilver"]
+        q = res["quicksilver"].get(key)
+        if q is None or None in v:
+            fails.append("%s heap run: no live heap %s in every run" % (suite, when))
+        elif q >= min(v):
+            fails.append("%s heap run: Quicksilver's live heap %s is %.1f MiB, not below vanilla's lowest %.1f MiB" % (suite, when, q, min(v)))
+        else:
+            lines.append("Heap %s: Quicksilver %.1f MiB, vanilla %.1f to %.1f MiB (%.1f MiB, %.0f%% below the lowest)" % (
+                when, q, min(v), max(v), min(v) - q, 100 * (min(v) - q) / min(v)))
+    md = ["# %s heap run: where the live heap goes\n" % suite]
+    for when in ("load", "end"):
+        ha, ta = histogram(os.path.join(d["vanilla-a"], "heap", "histo-%s.txt" % when))
+        hq, tq = histogram(os.path.join(d["quicksilver"], "heap", "histo-%s.txt" % when))
+        md.append("## %s (vanilla-a %s MiB, quicksilver %s MiB)\n" % (when, ta and round(ta / 1048576, 1), tq and round(tq / 1048576, 1)))
+        md.append("| class | vanilla-a instances | vanilla-a KiB | quicksilver instances | quicksilver KiB | KiB difference |\n|---|---|---|---|---|---|")
+        names = sorted(set(ha) | set(hq), key=lambda c: -max(ha.get(c, (0, 0))[1], hq.get(c, (0, 0))[1]))[:120]
+        for c in names:
+            a, q = ha.get(c, (0, 0)), hq.get(c, (0, 0))
+            md.append("| `%s` | %d | %d | %d | %d | %+d |" % (c, a[0], a[1] // 1024, q[0], q[1] // 1024, (q[1] - a[1]) // 1024))
+        md.append("")
+    with open(os.path.join(rep, "%s-heap.md" % suite), "w") as f:
+        f.write("\n".join(md) + "\n")
+    lines.append("\nWhere it goes: %s-heap.md.\n" % suite)
+
+
 def junit_failures(path):
     t = text(path)
     if not t:
@@ -134,6 +198,7 @@ def main(res, rep):
         # where vanilla-a, vanilla-b and vanilla-c agree (the noise rule: 3 vanilla samples). Keys where vanilla disagrees with itself are its noise: reported, and
         # how much of the world they leave ungated.
         has_run = os.path.exists(os.path.join(HERE, "scripted-run-%s.txt" % suite))
+        has_random = os.path.exists(os.path.join(HERE, "scripted-run-%s-random.txt" % suite))
         # worldgen: byte for byte per chunk, and the same chunks block by block (blocks, block entities, scheduled
         # ticks, entities): where vanilla's bytes ever differ from its own, the block-level check still gates them
         # (Andre's decision: byte for byte, per block where vanilla a/b differ)
@@ -154,6 +219,8 @@ def main(res, rep):
                 fails.append("%s worldgen %s: no CI HARNESS GEN DONE in its log" % (suite, r))
         if has_run:
             checks.append(("World diff after the scripted run", "run", "world", "blocks, block entities, entity types"))
+        if has_random:
+            checks.append(("World diff after the random-tick run", "random", "world", "blocks, block entities, entity types"))
         for title, sub, mode, unit in checks:
             lines.append("### %s\n\n| dimension | chunks | vanilla noise (a vs b, a vs c) | quicksilver vs vanilla-a | quicksilver where vanilla agrees |\n|---|---|---|---|---|" % title)
             wa, wq = os.path.join(d["vanilla-a"], sub, "world"), os.path.join(d["quicksilver"], sub, "world")
@@ -196,6 +263,14 @@ def main(res, rep):
                                  "details in %s-%s-quicksilver.json)" % (suite, title.lower(), len(bad), dim, ", ".join(bad[:5]), suite, tag))
                 s.setdefault(tag, {})[dim] = {"chunks": q.get("chunks", 0), "noise": len(nk), "quicksilver": len(qk), "gated": len(bad),
                                               "noiseKeys": sorted(nk)[:50]}
+                if tag == "random":
+                    # the random-tick run's scenes (at or above its pinned MIN_Y) must repeat in vanilla, or the test
+                    # gates nothing there
+                    # and every entity (the spawned mobs, which walk the terrain below the scenes)
+                    in_scene = sorted(k for k in nk if (key_y(k) is not None and key_y(k) >= RANDOM_MIN_Y) or k.startswith("t"))
+                    if in_scene:
+                        fails.append("%s random-tick run: vanilla differs from itself in its scenes in %s (%d keys, first: %s)"
+                                     % (suite, dim, len(in_scene), ", ".join(in_scene[:5])))
             if sub == "gen":
                 for dim_id, n in expected.items():
                     dirs = [os.path.normpath(os.path.join(x, "region")) for x in worlddiff_mod.dimension_dirs(dim_id)]
@@ -256,10 +331,46 @@ def main(res, rep):
                 fails.append("%s: Quicksilver not in the quicksilver run's mod list" % suite)
             if r != "quicksilver" and loaded:
                 fails.append("%s: Quicksilver loaded in vanilla run %s" % (suite, r))
+            # P2-1: the Memory module on in every server start of the quicksilver run, every optimisation on, no fallback
+            if r == "quicksilver":
+                for p in sorted(glob.glob(os.path.join(d[r], "*-server.log"))):
+                    t = text(p)
+                    st = re.findall(r"Quicksilver memory: (.*)", t)
+                    if not st:
+                        fails.append("%s %s: no Quicksilver memory status line" % (suite, os.path.basename(p)))
+                    elif re.search(r"=(off|fallback)|^off", st[-1]):
+                        fails.append("%s %s: Quicksilver memory not fully on: %s" % (suite, os.path.basename(p), st[-1][:300]))
+                    s.setdefault("memory", {})[os.path.basename(p)] = st[-1] if st else None
+            fb = [l for l in log.splitlines() if "Quicksilver memory fallback:" in l]
+            if fb:
+                fails.append("%s %s: %d memory fallbacks (first: %s)" % (suite, r, len(fb), fb[0][:300]))
             errs = [l for l in log.splitlines() if re.search(r"/(ERROR|FATAL)\]", l) and re.search(r"quicksilver", l, re.I)]
             if errs:
                 fails.append("%s %s: %d error lines naming Quicksilver (first: %s)" % (suite, r, len(errs), errs[0][:200]))
         lines.append("")
+        if has_random:
+            lines.append("### Random-tick run\n\n| run | finished | random ticks, pins and spawns |\n|---|---|---|")
+            rr = {}
+            for r in RUNS:
+                j = load(os.path.join(d[r], "random", "ci-harness-result.json"), {})
+                ok = "msptAvg" in j and "error" not in j
+                rr[r] = j.get("random")
+                lines.append("| %s | %s | %s |" % (r, "yes" if ok else "no (%s)" % j.get("error", "no result"), rr[r]))
+                if not ok:
+                    fails.append("%s random-tick run %s: did not finish (%s)" % (suite, r, j.get("error", "no result")))
+                if j.get("commandErrors", 0):
+                    fails.append("%s random-tick run %s: %d commands failed" % (suite, r, j["commandErrors"]))
+                counts = dict(x.split("=") for x in (rr[r] or "").split() if "=" in x)
+                for k in ("positions", "ticks", "sectionsOn", "sectionsOff", "precipOn", "monsters"):
+                    if int(counts.get(k, 0)) <= 0:
+                        fails.append("%s random-tick run %s: %s is %s (a pin or the spawner did nothing)" % (suite, r, k, counts.get(k, "missing")))
+            for v in OTHER_VANILLA:
+                if rr["vanilla-a"] != rr[v]:
+                    fails.append("%s random-tick run: vanilla-a and %s differ (%s / %s)" % (suite, v, rr["vanilla-a"], rr[v]))
+            if rr["vanilla-a"] != rr["quicksilver"]:
+                fails.append("%s random-tick run: quicksilver differs from vanilla (%s / %s)" % (suite, rr["quicksilver"], rr["vanilla-a"]))
+            lines.append("")
+        heap_report(suite, d, rep, lines, s, fails)
         if has_run:
             bench = sorted(glob.glob(os.path.join(d["quicksilver"], "bench", "*.json")))
             if not bench:
@@ -358,6 +469,14 @@ def main(res, rep):
                                                  "problems": problems[:5], "network": net}
     lines.append("")
 
+    # P2-1: the Memory module asks for no identity hash (it would move every identity hash the server thread hands out
+    # later, and with them the order of vanilla's hash sets): a plain check of its sources
+    mem = os.path.join(HERE, "..", "..", "src", "main", "java", "com", "meakaandre", "quicksilver", "memory")
+    bad = re.compile(r"identityHashCode|IdentityHashMap|getClass\(\)\.hashCode\(\)|Reference2|ReferenceOpen|Identity")
+    for f in sorted(glob.glob(os.path.join(mem, "*.java"))):
+        for i, l in enumerate(text(f).splitlines(), 1):
+            if bad.search(l) and not l.strip().startswith(("*", "//", "/*")):
+                fails.append("identity hash in the Memory module: %s:%d: %s" % (os.path.basename(f), i, l.strip()[:120]))
     for e in ERRORS:
         fails.append("comparator crashed: " + e)
     lines.append("## Result\n")

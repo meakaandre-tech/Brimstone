@@ -314,6 +314,16 @@ def main():
             for sid in drive_upload_timeouts(d):
                 failures.append(f"{name}/{r}/{sid}: a screenshot was taken while Quicksilver's terrain uploads were still waiting (the wait timed out)")
             t = logs(d)
+            # phase 2, P2-1: the Memory module fully on in every Quicksilver run (its integrated server logs the status
+            # line), off in the measure runs (vanilla's stand-in)
+            if os.path.isdir(d) and r.startswith("quicksilver"):
+                mem = re.findall(r"Quicksilver memory: (.*)", t)
+                if not mem:
+                    failures.append(f"{name}/{r}: no Quicksilver memory status line in the client log")
+                elif any(re.search(r"=(off|fallback)|^off", x) for x in mem):
+                    failures.append(f"{name}/{r}: the Memory module was not fully on: {[x for x in mem if re.search(r'=(off|fallback)|^off', x)][0][:200]}")
+            if os.path.isdir(d) and r.startswith("measure") and "Quicksilver memory: off, quicksilver.ci.measureOnly is set" not in t:
+                failures.append(f"{name}/{r}: the Memory module did not stay off for measuring (no measure-only line in the client log)")
             if os.path.isdir(d) and "quicksilver_ci_pin" not in t:
                 failures.append(f"{name}/{r}: CI's pin mod (ci/pin-mod: lightmap flicker, texture animation, feature batch order, no crosshair outline, no particles in the Sift, the particle and animation areas, banner sway) is not among the loaded mods")
             # the animation scenes test animation only if the pin really ran its fixed number of texture ticks there
@@ -383,6 +393,10 @@ def main():
                                 failures.append(f"{name}/{r}/{sess}: Quicksilver's Fabric Renderer API implementation was not registered")
                             if "[Indigo] Registering Indigo renderer" in st:
                                 failures.append(f"{name}/{r}/{sess}: Indigo registered as the renderer next to Quicksilver")
+                            # phase 2, P2-1: the Memory module (both sides) never falls back
+                            nmem = len(re.findall(r"Quicksilver memory fallback:", st))
+                            if nmem:
+                                failures.append(f"{name}/{r}/{sess}: the Memory module fell back to vanilla's code {nmem} times (see client log)")
                             nwarn = len(re.findall(r"Quicksilver renderer fallback:", st))
                             if nwarn:
                                 failures.append(f"{name}/{r}/{sess}: the Fabric Renderer API implementation fell back to vanilla's code {nwarn} times (see client log)")

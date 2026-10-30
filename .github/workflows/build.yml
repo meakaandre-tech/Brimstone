@@ -44,9 +44,11 @@ jobs:
             matrix='{"suite":["core"],"run":["vanilla-a","vanilla-b","quicksilver-old"]}'
             # phase 2's server suite in quick mode: core only (Andre, 2026-10-29); SIFTEC and Terralith in full mode.
             # A commit with [siftec] in its message adds SIFTEC's server suite to a quick run (to work on it without
-            # the whole client matrix)
-            server_suites='["core"]'
-            case "$MESSAGE" in *"[siftec]"*) server_suites='["core","siftec"]';; esac
+            # the whole client matrix); [terralith] adds Terralith's the same way (P2-1)
+            suites='"core"'
+            case "$MESSAGE" in *"[siftec]"*) suites="$suites,\"siftec\"";; esac
+            case "$MESSAGE" in *"[terralith]"*) suites="$suites,\"terralith\"";; esac
+            server_suites="[$suites]"
           fi
           echo "server_suites=$server_suites" >> "$GITHUB_OUTPUT"
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
@@ -405,10 +407,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # the suites with a scripted run (terralith has none); in quick mode core only
+        # every suite: core's and SIFTEC's scripted runs start from it, and every suite's heap run (P2-1); in quick
+        # mode core only
         suite: ${{ fromJSON(needs.mode.outputs.server_suites) }}
-        exclude:
-          - suite: terralith
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -479,7 +480,6 @@ jobs:
           name: ci-server-harness-jar
           path: ci-server-harness
       - uses: actions/download-artifact@v4
-        if: matrix.suite != 'terralith'
         continue-on-error: true
         with:
           name: server-base-${{ matrix.suite }}

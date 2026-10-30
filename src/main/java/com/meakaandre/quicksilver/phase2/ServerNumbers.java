@@ -35,8 +35,10 @@ public final class ServerNumbers {
     public static final String BEGIN = "===== QUICKSILVER SERVER BENCH BEGIN =====";
     public static final String END = "===== QUICKSILVER SERVER BENCH END =====";
     private static final int CAP = 72_000; // an hour of ticks at 20 per second
-    // allocated when a server first ticks (a client that never opens a single-player world doesn't pay for them)
+    // allocated when a server first ticks with a bench asking for them (P2-1, memory.bench-buffers: 1.7 MB kept for the
+    // whole session before; with that switch off, from the first tick as before: keepAlways)
     private static long[] DUR, AT, BYTES;
+    private static volatile boolean recording = false;
     private static int head = 0, size = 0;
     private static long tickStart = 0;
     private static volatile long startingMs = 0, startedMs = 0;
@@ -63,6 +65,14 @@ public final class ServerNumbers {
             dedicated = server.isDedicatedServer();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> startedMs = System.currentTimeMillis());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            synchronized (ServerNumbers.class) {
+                DUR = AT = BYTES = null;
+                head = 0;
+                size = 0;
+                recording = false;
+            }
+        });
         ServerTickEvents.START_SERVER_TICK.register(server -> tickStart = System.nanoTime());
         ServerTickEvents.END_SERVER_TICK.register(ServerNumbers::endTick);
         CommandRegistrationCallback.EVENT.register((dispatcher, ctx, selection) -> {
@@ -77,8 +87,26 @@ public final class ServerNumbers {
         });
     }
 
+    /**
+     * Starts keeping the tick history (a bench is starting: the dedicated server's command, or the client's bench in
+     * single player); it is kept until the server stops. Every bench measures from its own start, so nothing before
+     * it is needed.
+     */
+    public static void record() {
+        recording = true;
+    }
+
+    /** Quicksilver's memory.bench-buffers=off (set by the Memory module): keep the history from the first tick, as before
+     * P2-1. The bench-only jar has no Memory module and always waits for a bench. */
+    public static volatile boolean keepAlways = false;
+
+    private static boolean keeping() {
+        return recording || keepAlways;
+    }
+
     private static void endTick(MinecraftServer server) {
         if (off) return;
+        if (!keeping()) return;
         try {
             long now = System.nanoTime();
             long bytes = NetworkBytes.SERVER_IN.sum() + NetworkBytes.SERVER_OUT.sum();
@@ -106,6 +134,7 @@ public final class ServerNumbers {
             c.getSource().sendSystemMessage(Component.literal("[Quicksilver] A server bench is already running."));
             return 0;
         }
+        record();
         benchSeconds = seconds;
         benchEnd = System.currentTimeMillis() + seconds * 1000L;
         benchSource = c.getSource();

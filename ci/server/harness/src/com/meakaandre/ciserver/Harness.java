@@ -39,6 +39,12 @@ import org.slf4j.LoggerFactory;
  * </ul>
  * Either way it writes {@code ci-harness-result.json} to {@code ci.harness.out} (default: the server directory):
  * milliseconds per tick over the run, heap after load and at the end (after a GC), start-up and world-load time.
+ *
+ * <p>P2-1: {@code -Dci.harness.heap=true} (the heap run) plays the run script's scene for {@code ci.harness.ticks}
+ * ticks (12000, ten minutes of game time) sprinting, and writes the live heap and a class histogram right after load
+ * and at the end ({@code histo-load.txt}, {@code histo-end.txt}). Script lines {@code random-ticks MIN_Y} (random ticks
+ * pinned per chunk, only at or above MIN_Y: {@link Pins}) and {@code spawn CX CZ} (natural spawning in that chunk
+ * every tick, from a pinned random) make the random-tick run.
  */
 public final class Harness implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger("ci_server_harness");
@@ -50,6 +56,19 @@ public final class Harness implements ModInitializer {
 
     private record At(int tick, String command, boolean quicksilverOnly) {
     }
+
+    private record Spawn(int cx, int cz) {
+    }
+
+    /** P2-1: the heap run (histograms, sprinting, no bench). */
+    private static final boolean HEAP = Boolean.getBoolean("ci.harness.heap");
+    private static final List<Spawn> spawns = new ArrayList<>();
+    /** P2-1 diagnosis (script line {@code report X Y Z}): block entities whose saved fields are logged during the run. */
+    private static final List<BlockPos> reports = new ArrayList<>();
+    private static long monstersSpawned = 0, creaturesSpawned = 0;
+    private static final int SPAWN_CAP = 24;  // per chunk and category over the run
+    private static final java.util.Map<String, Integer> spawnedIn = new java.util.HashMap<>();
+    static volatile long gameTime = 0;
 
     /** The GameTest server only: the CI pins in mixin/ChunkTickRandomMixin apply. */
     public static volatile boolean gameTestPins = false;
@@ -65,10 +84,18 @@ public final class Harness implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        Trace.init();
         ServerLifecycleEvents.SERVER_STARTING.register(server -> startingAt = System.currentTimeMillis());
         ServerLifecycleEvents.SERVER_STARTED.register(Harness::started);
         ServerTickEvents.START_SERVER_TICK.register(Harness::startTick);
         ServerTickEvents.END_SERVER_TICK.register(Harness::endTick);
+        // P2-1 diagnosis: the reported block entities once more while the server stops (before it saves) and after
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            if (!reports.isEmpty()) {
+                LOG.info("CI REPORT stopping");
+                report(server);
+            }
+        });
     }
 
     private static void started(MinecraftServer server) {
@@ -183,10 +210,27 @@ public final class Harness implements ModInitializer {
                 case "cmd" -> setup.add(line.substring(4).strip());
                 case "ticks" -> ticks = Integer.parseInt(p[1]);
                 case "at" -> timed.add(new At(Integer.parseInt(p[1]), p[2], false));
-                case "qs-at" -> timed.add(new At(Integer.parseInt(p[1]), p[2], true));
+                case "qs-at" -> {
+                    // the heap run measures the game, not Quicksilver's bench
+                    if (!HEAP) timed.add(new At(Integer.parseInt(p[1]), p[2], true));
+                }
+                case "random-ticks" -> Pins.randomTickMinY = Integer.parseInt(p[1]);
+                case "report" -> {
+                    String[] a = line.split("\\s+");
+                    reports.add(new BlockPos(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3])));
+                }
+                case "spawn-player" -> {
+                    String[] a = line.split("\\s+");
+                    spawnPlayerAt = new double[] {Double.parseDouble(a[1]), Double.parseDouble(a[2]), Double.parseDouble(a[3])};
+                }
+                case "spawn" -> {
+                    String[] a = line.split("\\s+");
+                    spawns.add(new Spawn(Integer.parseInt(a[1]), Integer.parseInt(a[2])));
+                }
                 default -> throw new IllegalArgumentException("unknown script line: " + line);
             }
         }
+        if (Integer.getInteger("ci.harness.ticks") != null) ticks = Integer.getInteger("ci.harness.ticks");
         if (ticks <= 0) throw new IllegalArgumentException("script has no 'ticks N'");
         server.tickRateManager().setFrozen(true);
         for (Area a : areas) {
@@ -199,7 +243,7 @@ public final class Harness implements ModInitializer {
                 }
             }
         }
-        result.addProperty("mode", "run");
+        result.addProperty("mode", HEAP ? "heap" : "run");
         result.addProperty("ticks", ticks);
         stage = Stage.LOADING;
         LOG.info("CI HARNESS RUN: frozen, waiting for {} areas to load", areas.size());
@@ -242,6 +286,72 @@ public final class Harness implements ModInitializer {
         }
     }
 
+    /**
+     * P2-1: the pending scheduled block and fluid ticks in a fixed order. Chunks are post-processed (their generation's
+     * pending shape and fluid updates applied) as they finish loading, which happens in a different order in every run;
+     * each update schedules its ticks with the level's next sub-tick number, so the same ticks (the same set in every
+     * run) got a different order among those due on the same game tick, and where water and falling sand meet (the cave
+     * at chunk -1,-2) the world then went different ways. Here, just before tick 0, every tick still pending in every
+     * level is taken out and scheduled again in one fixed order (trigger tick, priority, position, type), so the order
+     * no longer depends on loading. The game's own ordering rules are unchanged from there on. The same in vanilla's runs
+     * and Quicksilver's.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void renumberTicks(MinecraftServer server) {
+        long total = 0;
+        try {
+            for (ServerLevel level : server.getAllLevels()) {
+                for (net.minecraft.world.ticks.LevelTicks<?> ticks : List.of(level.getBlockTicks(), level.getFluidTicks())) {
+                    java.lang.reflect.Field containersField = null;
+                    for (java.lang.reflect.Field f : net.minecraft.world.ticks.LevelTicks.class.getDeclaredFields()) {
+                        if (it.unimi.dsi.fastutil.longs.Long2ObjectMap.class.isAssignableFrom(f.getType())) containersField = f;
+                    }
+                    if (containersField == null) throw new IllegalStateException("LevelTicks has no chunk container map");
+                    containersField.setAccessible(true);
+                    it.unimi.dsi.fastutil.longs.Long2ObjectMap<?> containers = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) containersField.get(ticks);
+                    List<net.minecraft.world.ticks.ScheduledTick> all = new ArrayList<>();
+                    int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
+                    for (var e : containers.long2ObjectEntrySet()) {
+                        net.minecraft.world.ticks.LevelChunkTicks<?> c = (net.minecraft.world.ticks.LevelChunkTicks<?>) e.getValue();
+                        c.getAll().forEach(t -> all.add((net.minecraft.world.ticks.ScheduledTick) t));
+                        int cx = (int) e.getLongKey(), cz = (int) (e.getLongKey() >> 32);
+                        minX = Math.min(minX, cx);
+                        minZ = Math.min(minZ, cz);
+                        maxX = Math.max(maxX, cx);
+                        maxZ = Math.max(maxZ, cz);
+                    }
+                    if (all.isEmpty()) continue;
+                    long before = 0;
+                    for (Object c : containers.values()) before += ((net.minecraft.world.ticks.LevelChunkTicks<?>) c).count();
+                    all.sort((x, y) -> {
+                        int c = Long.compare(x.triggerTick(), y.triggerTick());
+                        if (c == 0) c = ((Enum) x.priority()).compareTo((Enum) y.priority());
+                        if (c == 0) c = Integer.compare(x.pos().getX(), y.pos().getX());
+                        if (c == 0) c = Integer.compare(x.pos().getZ(), y.pos().getZ());
+                        if (c == 0) c = Integer.compare(x.pos().getY(), y.pos().getY());
+                        if (c == 0) c = String.valueOf(x.type()).compareTo(String.valueOf(y.type()));
+                        return c;
+                    });
+                    ticks.clearArea(new net.minecraft.world.level.levelgen.structure.BoundingBox(minX * 16, -4096, minZ * 16,
+                        maxX * 16 + 15, 4096, maxZ * 16 + 15));
+                    long order = 0;
+                    for (net.minecraft.world.ticks.ScheduledTick t : all) {
+                        ((net.minecraft.world.ticks.LevelTicks) ticks).schedule(new net.minecraft.world.ticks.ScheduledTick(t.type(), t.pos(), t.triggerTick(), t.priority(), order++));
+                    }
+                    long left = 0;
+                    for (Object c : containers.values()) left += ((net.minecraft.world.ticks.LevelChunkTicks<?>) c).count();
+                    if (left != before) throw new IllegalStateException(level.dimension() + ": " + before + " ticks before renumbering, " + left + " after");
+                    total += all.size();
+                }
+            }
+            result.addProperty("ticksRenumbered", total);
+            LOG.info("CI HARNESS RUN: {} pending scheduled ticks put in a fixed order", total);
+        } catch (Throwable e) {
+            LOG.error("CI HARNESS FAILED: renumbering the scheduled ticks", e);
+            result.addProperty("error", "renumbering ticks: " + e);
+        }
+    }
+
     /** A chunk position packed as the game packs it: x in the low 32 bits, z in the high. */
     private static long chunkKey(int cx, int cz) {
         return (cx & 0xFFFFFFFFL) | (cz & 0xFFFFFFFFL) << 32;
@@ -262,9 +372,14 @@ public final class Harness implements ModInitializer {
         result.addProperty("commandErrors", commandErrors);
     }
 
+    private static int extraTicks = 0;
+
     private static void startTick(MinecraftServer server) {
         tickStart = System.nanoTime();
+        if (stage == Stage.DONE && ++extraTicks <= 20) LOG.info("CI HARNESS EXTRA TICK {} after the run", extraTicks);
+        gameTime = server.overworld().getGameTime();
         if (stage != Stage.RUNNING) return;
+        if (HEAP && tick == 0) command(server, "tick sprint " + ticks);
         for (At a : timed) {
             if (a.tick() != tick || (a.quicksilverOnly() && !quicksilver())) continue;
             if (a.command().startsWith("ci-train ")) {
@@ -322,8 +437,11 @@ public final class Harness implements ModInitializer {
                 result.addProperty("lightSettleTicks", settleWaited);
                 if (settleWaited >= 6000) result.addProperty("error", "light engine still busy after 6000 ticks");
                 heap("heapAfterLoadMB");
+                if (HEAP) histogram("load");
                 // tick 0: every random source from a fixed point, whatever order things loaded in
                 reseed(server);
+                // and every pending scheduled tick in a fixed order (P2-1: see renumberTicks)
+                renumberTicks(server);
                 tickNanos = new long[ticks];
                 tick = 0;
                 stage = Stage.RUNNING;
@@ -334,6 +452,8 @@ public final class Harness implements ModInitializer {
                 // the first tick after unfreezing is the run's tick 0
                 tickNanos[tick] = dt;
                 CiTrain.tick(server, tick);
+                spawn(server);
+                if (!reports.isEmpty() && (tick <= 3 || tick == 10 || tick == 20 || tick % 100 == 0 || tick == ticks - 1)) report(server);
                 tick++;
                 if (tick >= ticks) {
                     server.tickRateManager().setFrozen(true);
@@ -352,6 +472,15 @@ public final class Harness implements ModInitializer {
                     result.addProperty("msptMax", round(s[s.length - 1] / 1e6));
                     result.addProperty("ticksOver50ms", over);
                     heap("heapEndMB");
+                    removeSpawnPlayer(server);
+                    markUnsaved(server);
+                    if (HEAP) histogram("end");
+                    if (HEAP) lightLayers(server);
+                    if (Pins.on() || !spawns.isEmpty()) {
+                        String r = Pins.summary() + " monsters=" + monstersSpawned + " creatures=" + creaturesSpawned;
+                        result.addProperty("random", r);
+                        LOG.info("CI RANDOM result={}", r);
+                    }
                     String train = CiTrain.result(server);
                     if (train != null) {
                         result.addProperty("train", train);
@@ -364,6 +493,256 @@ public final class Harness implements ModInitializer {
             }
             default -> {
             }
+        }
+    }
+
+    /**
+     * P2-1 diagnosis, the heap run: the light engine's section layers in the overworld's loaded area (the run's areas
+     * and two rings around them): how many there are, how many hold a 2048-byte array, and how many of those arrays
+     * hold one value throughout (which a layer could keep as a single number).
+     */
+    private static void lightLayers(MinecraftServer server) {
+        try {
+            ServerLevel level = server.overworld();
+            java.lang.reflect.Field data = null;
+            for (java.lang.reflect.Field f : net.minecraft.world.level.chunk.DataLayer.class.getDeclaredFields()) {
+                if (f.getType() == byte[].class && !java.lang.reflect.Modifier.isStatic(f.getModifiers())) data = f;
+            }
+            data.setAccessible(true);
+            StringBuilder out = new StringBuilder();
+            for (net.minecraft.world.level.LightLayer layer : net.minecraft.world.level.LightLayer.values()) {
+                long layers = 0, arrays = 0, uniform = 0;
+                java.util.Map<Integer, Integer> values = new java.util.TreeMap<>();
+                var listener = level.getLightEngine().getLayerListener(layer);
+                for (Area a : areas) {
+                    for (int cz = a.z1() - 2; cz <= a.z2() + 2; cz++) {
+                        for (int cx = a.x1() - 2; cx <= a.x2() + 2; cx++) {
+                            for (int sy = level.getMinSectionY() - 1; sy <= level.getMaxSectionY() + 1; sy++) {
+                                net.minecraft.world.level.chunk.DataLayer d = listener.getDataLayerData(net.minecraft.core.SectionPos.of(cx, sy, cz));
+                                if (d == null) continue;
+                                layers++;
+                                byte[] b = (byte[]) data.get(d);
+                                if (b == null) continue;
+                                arrays++;
+                                boolean same = true;
+                                for (byte x : b) if (x != b[0]) {
+                                    same = false;
+                                    break;
+                                }
+                                if (same) {
+                                    uniform++;
+                                    values.merge(b[0] & 15, 1, Integer::sum);
+                                }
+                            }
+                        }
+                    }
+                }
+                out.append(layer).append(": layers=").append(layers).append(" arrays=").append(arrays).append(" uniform=").append(uniform)
+                    .append(" uniformValues=").append(values).append("; ");
+            }
+            result.addProperty("lightLayers", out.toString());
+            LOG.info("CI LIGHT {}", out);
+        } catch (Throwable t) {
+            LOG.warn("CI LIGHT diagnosis failed", t);
+        }
+    }
+
+    /** Logs each reported block entity's saved fields (CI REPORT lines), through whichever save method this game has. */
+    private static void report(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        for (BlockPos p : reports) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(p);
+            String nbt = "none";
+            if (be != null) {
+                nbt = "?";
+                for (java.lang.reflect.Method m : be.getClass().getMethods()) {
+                    if (m.getName().equals("saveWithoutMetadata") && m.getParameterCount() == 1
+                        && m.getParameterTypes()[0].isInstance(level.registryAccess())) {
+                        try {
+                            nbt = String.valueOf(m.invoke(be, level.registryAccess()));
+                        } catch (Throwable t) {
+                            nbt = "error " + t;
+                        }
+                        break;
+                    }
+                }
+            }
+            LOG.info("CI REPORT t={} {} {} {} {}", tick, p.getX(), p.getY(), p.getZ(), nbt);
+        }
+    }
+
+    /**
+     * P2-1: every loaded chunk of the run's areas (and three rings around them) marked as changed, so the save as the
+     * server stops writes each one as it is at the run's last tick. The game also saves chunks during the run, each
+     * when ten seconds of wall-clock time have passed since its last save, and a chunk the run hasn't changed since
+     * (by the game's own account: a Create bearing turning or a SIFTEC furnace cooking doesn't count, nor do ticks being
+     * scheduled) isn't written again at the end: its saved block entities and pending ticks were those of whatever tick
+     * the clock picked (the furnace's cooking time, the bearing's angle, the cave's pending ticks, all equal in every
+     * run up to the last tick and different on disk). The same in vanilla's runs and Quicksilver's.
+     */
+    private static void markUnsaved(MinecraftServer server) {
+        int n = 0;
+        for (Area a : areas) {
+            ServerLevel level = server.getLevel(a.dim());
+            if (level == null) continue;
+            for (int cz = a.z1() - 3; cz <= a.z2() + 3; cz++) {
+                for (int cx = a.x1() - 3; cx <= a.x2() + 3; cx++) {
+                    net.minecraft.world.level.chunk.LevelChunk c = level.getChunkSource().getChunkNow(cx, cz);
+                    if (c == null) continue;
+                    c.markUnsaved();
+                    n++;
+                }
+            }
+        }
+        result.addProperty("chunksResaved", n);
+        LOG.info("CI HARNESS RUN: {} chunks marked to be saved as they are now", n);
+    }
+
+    /** Where the harness is, for trace lines: its stage, the run's tick, the game time. */
+    static String where() {
+        return "stage=" + stage + " t=" + tick + " gt=" + gameTime;
+    }
+
+    /**
+     * Natural spawning in the random-tick run's spawn chunks, every tick, as the game spawns in a chunk near a player
+     * (CI has no player, and without one the game spawns nowhere): a monster attempt every tick and a creature attempt
+     * every 400 game ticks, as NaturalSpawner's own schedule, up to SPAWN_CAP mobs per chunk and category. The level's
+     * random is re-seeded from the chunk and the game time first, so where mobs appear doesn't depend on every other
+     * draw on it this tick. The same in vanilla's runs and Quicksilver's.
+     */
+    private static void spawn(MinecraftServer server) {
+        if (spawns.isEmpty()) return;
+        ServerLevel level = server.overworld();
+        if (spawnPlayer == null) addSpawnPlayer(level);
+        long t = level.getGameTime();
+        for (Spawn s : spawns) {
+            net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(s.cx(), s.cz());
+            for (net.minecraft.world.entity.MobCategory cat : new net.minecraft.world.entity.MobCategory[] {
+                net.minecraft.world.entity.MobCategory.MONSTER, net.minecraft.world.entity.MobCategory.CREATURE}) {
+                boolean creature = cat == net.minecraft.world.entity.MobCategory.CREATURE;
+                if (creature && t % 400 != 0) continue;
+                String key = s.cx() + "," + s.cz() + "/" + cat;
+                if (spawnedIn.getOrDefault(key, 0) >= SPAWN_CAP) continue;
+                level.getRandom().setSeed(SeedPin.mix(s.cx() * 31L + s.cz() * 1_000_003L + t * 0x9E3779B97F4A7C15L + cat.ordinal()));
+                spawnCategory(cat, level, chunk, () -> {
+                    spawnedIn.merge(key, 1, Integer::sum);
+                    if (creature) creaturesSpawned++;
+                    else monstersSpawned++;
+                });
+            }
+        }
+    }
+
+    private static java.lang.reflect.Method spawnMethod = null;
+
+    /**
+     * NaturalSpawner#spawnCategoryForChunk(category, level, chunk, predicate, after-spawn callback), called through
+     * reflection with its two callbacks as proxies (every spawn allowed, as the game's own predicate allows outside a
+     * charged area; every spawn counted), so the harness doesn't depend on the callbacks' exact shapes.
+     */
+    private static void spawnCategory(net.minecraft.world.entity.MobCategory cat, ServerLevel level,
+                                      net.minecraft.world.level.chunk.LevelChunk chunk, Runnable spawned) {
+        try {
+            if (spawnMethod == null) {
+                for (java.lang.reflect.Method m : net.minecraft.world.level.NaturalSpawner.class.getDeclaredMethods()) {
+                    if (m.getName().equals("spawnCategoryForChunk") && m.getParameterCount() == 5) spawnMethod = m;
+                }
+                if (spawnMethod == null) throw new NoSuchMethodException("NaturalSpawner.spawnCategoryForChunk/5");
+                spawnMethod.setAccessible(true);
+            }
+            Class<?>[] t = spawnMethod.getParameterTypes();
+            Object predicate = java.lang.reflect.Proxy.newProxyInstance(t[3].getClassLoader(), new Class<?>[] {t[3]},
+                (proxy, m, args) -> m.getDeclaringClass() == Object.class ? objectMethod(proxy, m, args) : Boolean.TRUE);
+            Object after = java.lang.reflect.Proxy.newProxyInstance(t[4].getClassLoader(), new Class<?>[] {t[4]}, (proxy, m, args) -> {
+                if (m.getDeclaringClass() == Object.class) return objectMethod(proxy, m, args);
+                spawned.run();
+                return null;
+            });
+            spawnMethod.invoke(null, cat, level, chunk, predicate, after);
+        } catch (Throwable e) {
+            if (result.get("error") == null) {
+                LOG.error("CI HARNESS FAILED: natural spawning", e);
+                result.addProperty("error", "spawning: " + e);
+            }
+        }
+    }
+
+    private static Object objectMethod(Object proxy, java.lang.reflect.Method m, Object[] args) {
+        return switch (m.getName()) {
+            case "equals" -> proxy == args[0];
+            // an identity hash, but asked for in every run alike (vanilla's and Quicksilver's), so it moves nothing between them
+            case "hashCode" -> System.identityHashCode(proxy);
+            default -> "ci-harness-spawn-callback";
+        };
+    }
+
+    private static Object spawnPlayer = null;
+
+    /**
+     * The game spawns a mob only where a player is near enough (and at least 24 blocks away), and CI has none: a
+     * Fabric API fake player, in creative mode at the run's player point (script line {@code spawn-player X Y Z}), is
+     * put in the overworld's player list only (not in the world as an entity: it loads no chunks, isn't saved, and
+     * never ticks), so the spawner and mobs' despawn checks find it as they would a real player. Random-tick run only.
+     */
+    @SuppressWarnings("unchecked")
+    private static void addSpawnPlayer(ServerLevel level) {
+        try {
+            net.fabricmc.fabric.api.entity.FakePlayer p = net.fabricmc.fabric.api.entity.FakePlayer.get(level);
+            p.setPos(spawnPlayerAt[0], spawnPlayerAt[1], spawnPlayerAt[2]);
+            try {
+                p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+            } catch (Throwable t) {
+                LOG.warn("CI HARNESS spawn player: game mode not set", t);
+            }
+            java.lang.reflect.Field f = ServerLevel.class.getDeclaredField("players");
+            f.setAccessible(true);
+            ((List<Object>) f.get(level)).add(p);
+            spawnPlayer = p;
+            LOG.info("CI HARNESS spawn player at {} {} {}, creative {}", spawnPlayerAt[0], spawnPlayerAt[1], spawnPlayerAt[2], p.isCreative());
+        } catch (Throwable t) {
+            LOG.error("CI HARNESS FAILED: no spawn player", t);
+            result.addProperty("error", "spawn player: " + t);
+            spawnPlayer = Boolean.FALSE;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void removeSpawnPlayer(MinecraftServer server) {
+        if (spawnPlayer == null || spawnPlayer == Boolean.FALSE) return;
+        try {
+            java.lang.reflect.Field f = ServerLevel.class.getDeclaredField("players");
+            f.setAccessible(true);
+            ((List<Object>) f.get(server.overworld())).remove(spawnPlayer);
+        } catch (Throwable t) {
+            LOG.warn("CI HARNESS spawn player not removed", t);
+        }
+    }
+
+    private static double[] spawnPlayerAt = {0.5, 64, 0.5};
+
+    /** The live heap's class histogram (the JVM's own, after a full GC): its top classes to histo-NAME.txt and the
+     * live total to the result as heapLiveNAMEMB. */
+    private static void histogram(String name) {
+        try {
+            javax.management.MBeanServer s = ManagementFactory.getPlatformMBeanServer();
+            javax.management.ObjectName n = new javax.management.ObjectName("com.sun.management:type=DiagnosticCommand");
+            String out = (String) s.invoke(n, "gcClassHistogram", new Object[] {new String[0]}, new String[] {String[].class.getName()});
+            String[] rows = out.split("\n");
+            StringBuilder top = new StringBuilder();
+            for (int i = 0; i < rows.length; i++) {
+                if (i < 400 || rows[i].startsWith("Total")) top.append(rows[i]).append('\n');
+                if (rows[i].startsWith("Total")) {
+                    String[] p = rows[i].trim().split("\\s+");
+                    result.addProperty("heapLive" + Character.toUpperCase(name.charAt(0)) + name.substring(1) + "MB",
+                        round(Long.parseLong(p[2]) / 1048576.0));
+                }
+            }
+            Path dir = Path.of(System.getProperty("ci.harness.out", "."));
+            Files.createDirectories(dir);
+            Files.writeString(dir.resolve("histo-" + name + ".txt"), top.toString(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            LOG.error("CI HARNESS histogram failed", e);
+            result.addProperty("error", "histogram: " + e);
         }
     }
 

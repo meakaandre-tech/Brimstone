@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.quicksilver.mixin.memory",
+  "plugin": "com.meakaandre.quicksilver.memory.MemoryMixins",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BlockStateBaseMixin",
+    "StateDefinitionMixin",
+    "StateHolderMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

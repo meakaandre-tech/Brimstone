@@ -16,7 +16,8 @@ the `brim*` outputs are `QsCell`, `QsTint`, `QsTexel`, `QsRegion` and `qs*`; the
 
 | track | branch | status |
 |---|---|---|
-| phase 2, P2-0 (server harness) | `p2-0`, not merged | server suite, server bench numbers, research; see "Phase 2, P2-0" below |
+| phase 2, P2-1 (memory) | merged | harness fixes (scheduled ticks, furnace and bearing gated again; random-tick and spawning run), Memory module; heap 7% (core), 22% (SIFTEC), 32% (Terralith) below vanilla; see "Phase 2, P2-1" below |
+| phase 2, P2-0 (server harness) | merged | server suite, server bench numbers, research; see "Phase 2, P2-0" below |
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
 | quick CI | merged | `7a8e678`: main full run 40247412514 green, `latest` rebuilt from it; branch full run 40242749965 and quick run 40245473211 green |
 | package 4 (Fabric Renderer API) | merged | `ccf4750` (squash of `package-4`), main full run 40409788393 green, `latest` rebuilt |
@@ -2366,6 +2367,142 @@ around the scripted area finishing loading at different moments), each fixed in 
   of the final run), gone on a re-run; never seen in a vanilla run. If it comes back, it belongs to phase 1's
   direct-buffer baselines (not touched here).
 
+
+## Phase 2, P2-1: Memory (merged)
+
+Design doc: [Quicksilver Phase 2: Design](https://claude.ai/artifact/6QVKeDHfvCQDDDppdrxu45), P2-1. Files: the Memory
+module (`src/main/java/com/meakaandre/quicksilver/memory/`, `mixin/memory/`, `quicksilver.memory.mixins.json`), the
+server harness and comparator (`ci/server/`), and small shared edits: `fabric.mod.json` (one mixin config),
+`Quicksilver.java` (one line), `ServerNumbers.java` and `BenchRun.java` (the bench buffers), `build.gradle` (the
+FerriteCore licence in the jar), `NOTICE`, `LICENSE-MIT-FerriteCore`, `build.yml` (Terralith gets a base world; a
+`[terralith]` marker adds its server suite to a quick run, as `[siftec]` does), `ci/compare.py` (client runs fail on a
+memory fallback), `docs/ci-limits.md` ("Server suite").
+
+### Harness first (from "Before later packages")
+
+1. **SIFTEC's furnace and bearing:** their creative motor and furnace are placed at tick 1, but that alone didn't
+   make them repeat: logged every few ticks (`report` lines), they were equal in every vanilla run up to the last tick
+   and still differed on disk. The game saves chunks during a run on a wall-clock timer, and a chunk it doesn't count
+   as changed since (a turning bearing or SIFTEC's furnace doesn't mark it) isn't written again when the server stops,
+   so the saved fields were those of whatever tick the clock picked. The harness now marks every loaded chunk of the
+   run's areas and three rings around them changed at the run's end. `KNOWN_NOISE` is empty; `cooking_time_spent`, `lit_time_remaining` and `Angle` are gated.
+2. **The cave's pending ticks** (chunk -1,-2): a trace of every scheduled tick there (`Trace.java`, off by default)
+   showed the same set of ticks in every run, scheduled in a different order: chunks are post-processed (their
+   generation's pending shape and fluid updates applied) as they finish loading, in a different order each run, and
+   each update takes the level's next sub-tick number. Water and falling sand due on the same tick then ran in a
+   different order. The harness now schedules every pending tick again in one fixed order just before tick 0 (and the
+   end-of-run save above fixed the rest: ticks pending in chunks the game hadn't counted as changed). `REPORT_ONLY` is
+   empty; pending block and fluid ticks are gated. Vanilla's three runs now agree on every key in every check.
+3. **Random-tick and natural-spawning run** (core, every quick run): `ci/server/scripted-run-core-random.txt`; what it
+   holds and how it is pinned is in `docs/ci-limits.md`, "Server suite". Vanilla against vanilla: equal on every key,
+   the same counts in every run (892 random ticks in the scenes, 2021 precipitation draws let through, 4 monsters).
+
+### Final run
+
+Full mode, green: https://github.com/meakaandre-tech/Quicksilver/actions/runs/40989347563 (`6c6f8f2`, rebased on main
+`b75c71c`, which takes MapMod out of the gates). Server suite logs on `ci-logs-server-p2-1`, client suite on
+`ci-logs-p2-1`. Before the rebase, run 40984377782 on `d8c3219` passed everything except 24 lines from MapMod's current
+build (siftec/map and siftec/hud pixels, the measure runs included, and draw-call baselines from before MapMod's
+minimap), which main's MapMod change now takes out of the gates.
+
+### What was built (P2-1 proper)
+
+Measured first (heap run, every suite: the base world's area loaded, then 12000 ticks sprinting; live heap and class
+histograms after load and at the end, `compare/<suite>-heap.md`). Where vanilla's live heap went, and what 26.3
+already does: block states had their property maps replaced by arrays in 26.1 (`docs/phase2-research.md`), but every
+state still keeps its own neighbour arrays, and its own shapes and face shapes. Each optimisation below has its switch
+in `config/quicksilver.properties` (`memory=on|off` for the module, `memory.<name>=on|off`; read at start-up; off
+means its mixins aren't applied) and falls back to vanilla's code with one `Quicksilver memory fallback:` line when
+anything is unexpected (CI fails on it). With FerriteCore installed, or in CI's measure-only runs, the module is off.
+
+| optimisation | what | where it came from | saved after 10 min (core / SIFTEC / Terralith, MiB) |
+|---|---|---|---|
+| `state-neighbours` | one bit-packed table per block for `BlockState#setValue` instead of every state's neighbour arrays; vanilla's arrays are built as usual, each table is checked against them entry by entry, then they are dropped | FerriteCore's fastmap (MIT, `StateTable.java` carries its licence; NOTICE) | 2.8 / 12.9 / 2.8 |
+| `shape-dedup` | equal shapes share internals (point lists, voxel data, face-shape cache); per-face occlusion arrays and sturdiness arrays shared between states; fields found by type | FerriteCore's blockstatecache idea; Quicksilver's own code | 9.7 / 50.1 / 12.7 |
+| `datafixer-caches` | DataFixerUpper's rewrite caches (rules kept for the session after upgrading old data: Terralith's structure files at start-up) emptied once the server has started | own (DFU is MIT, names only) | 0 / 0 / 48.9 |
+| `bench-buffers` | the server bench's tick history (3 x 72000 longs) kept only once a bench starts | own | 1.7 in each (Quicksilver's own: it was 1.7 above vanilla before) |
+
+Heap after a full GC, MiB (final run 40989347563):
+
+| suite | vanilla after load (3 runs) | Quicksilver after load | vanilla after 10 min | Quicksilver after 10 min |
+|---|---|---|---|---|
+| core | 147.9 to 149.9 | 137.5 (-7%) | 148.6 to 150.7 | 138.4 (-7%) |
+| SIFTEC | 282.1 to 283.0 | 220.1 (-22%) | 288.5 to 289.1 | 226.4 (-22%) |
+| Terralith | 260.6 to 261.8 | 179.2 (-31%) | 262.7 to 262.8 | 180.1 (-31%) |
+
+The design doc's target (heap after 10 minutes 30% below vanilla) is met in Terralith only; the laptop bench decides.
+
+**A Quicksilver-only difference found and fixed:** the first shape sharing keyed its tables by lists of shapes and by
+classes, which asked the JVM for some hundred thousand identity hashes on the server thread. Every identity hash
+handed out after that changed, so hash sets of blocks and entities iterated in another order than in vanilla's runs:
+villager_trade finished at tick 43 instead of 46 and the cave's ticks differed. Everything the module hashes is now
+hashed by its contents. Rule for later packages: no identity hash (no identity-keyed map, no object without its own
+hashCode as a key) on the server thread.
+
+### Candidates not built (measured, for later)
+
+- A state's property values array (`Comparable[]`): 1.2 MiB core, 5.2 SIFTEC (FerriteCore's `replacePropertyMap`).
+  Needs every reader of the array redirected; left out until the readers in 26.3 are known.
+- Light: 5845 section light layers (2 KiB each, 11.4 MiB in core and SIFTEC) in the loaded area; the heap run now logs
+  how many hold one value throughout (`CI LIGHT`). A layer kept as one number would change the light engine: its own
+  package with the worldgen diff.
+- Thread detectors (one per palette, 1.8 MiB core): FerriteCore's own option is opt-in for rare crashes; not done.
+
+### Andre's decisions (2026-10-31)
+
+All four choices below confirmed as built: heap judged on 12000 ticks sprinting; `datafixer-caches` stays in P2-1;
+property values and light layers go to a later memory package ("Phase 2 plan: later memory package", below); the
+`[terralith]` marker stays.
+
+1. Heap is judged in CI as the live heap after a full GC (the JVM's class histogram) after 12000 ticks sprinting, not
+   10 minutes of wall-clock time (same ticks, a fraction of the CI time).
+2. `datafixer-caches` is in P2-1 although it isn't FerriteCore's: it is Terralith's largest item. It empties the caches
+   once, at start-up: emptying them again during play (as first built) would make the next upgrade of old data ask for
+   identity hashes vanilla doesn't, so whatever is upgraded later in a session (old chunks, more structure files)
+   stays cached as in vanilla.
+3. The random-tick run's spawning drives the game's spawner for two chunks with a fake player in the player list; the
+   game's own choice of chunks near a real player is not covered.
+4. `[terralith]` marker for quick runs (added for this package).
+
+### Known limits
+
+- Light layers, property values and thread detectors: above.
+- The shape tables are dropped once a server has started; a client joining a server rebuilds its states' caches after
+  the server's tags arrive, and those tables stay until a single-player world starts.
+- 4 monsters and no creature spawn in the random-tick run: a small sample of the spawner. The spawner re-seeds the
+  shared level random before each call, so a change in how often other code draws on it isn't seen there.
+- Shared face shapes: vanilla's own identity-keyed shape caches (the full-face cache, the client's occlusion cache)
+  now see one shape where vanilla had several equal ones, so they ask for fewer identity hashes than vanilla. Nothing
+  in the gated runs shows it (every check is equal); a later package that sees an order difference should look here
+  first.
+
+### Review
+
+Independent review by a fresh agent (of `a775156`; scratchpad `review-p2-1.md`): 2 must-fix, 8 should-fix, 8 nits.
+Fixed: the heap gate passed silently without heap data (now every suite with a heap scene must have a finished heap run
+in every run); one identity hash left in the shape hashing (beyond 8 levels; and CI now rejects identity-hash calls in
+the module's sources); the data fixer caches emptied only at start-up (the idle clearing was never exercised by a gated
+run and could shift identity hashes); shape tables dropped again after a reload or a client's rebuild; both entry
+points synchronised; the hook check matches named handlers; the random-tick run also requires vanilla to repeat every
+entity (the spawned mobs); client runs must log the module fully on (measure runs: off) and every server start of the
+quicksilver run is checked, GameTest's included; `WHY_TICKS` removed; docs corrected. Left as known limits: the shared
+face shapes and vanilla's identity-keyed caches, the spawner's re-seed (above), writing final fields by reflection
+(works on Java 25; a later JDK may refuse), the config file rewritten without the user's comments when keys are
+added.
+
+## Phase 2 plan: later memory package (Andre, 2026-10-31)
+
+Measured in P2-1, not built there: a memory package of its own after P2-1 and before P2-7's sign-off, with its own
+toggles, fallbacks and the same heap gate.
+
+- **Per-state property values:** each block state's `Comparable[]` of property values (1.2 MiB core, 5.2 MiB SIFTEC),
+  read from the state's shared table instead (FerriteCore's `replacePropertyMap`, MIT). First find every reader of the
+  array in 26.3 (the bytecode dump) and redirect each; a reader left out would read null.
+- **Light-layer compaction:** section light layers that hold one value throughout kept as that value instead of a
+  2 KiB array (5845 layers, 11.4 MiB in the loaded area of core and SIFTEC; the heap run's `CI LIGHT` line counts the
+  uniform ones). It touches the light engine, so it needs the worldgen diff (light is saved) and the world diffs, and a
+  check that every read of a compacted layer gives what the array gave.
+
 ## Open bugs
 
 - **When MapMod is finished** (Andre, 2026-10-30): put it back in the pack lock, restore the map and hud scenes,
@@ -2396,7 +2533,12 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now:** package 4b merged (`5a2d927`, main green 40760999456); the rename to Quicksilver merged (`a26a24a`, main green
+**Now (P2-1):** merged (see "Phase 2, P2-1"); next in phase 2 is P2-2 (Logic I), with the later memory package
+above in the plan. Phase 2 reads: the server suite's
+reports are on `ci-logs-server-<branch>` (`compare/report.md`, `compare/<suite>-heap.md`, every run's logs and
+histograms under `runs/`); quick runs take `[siftec]` and `[terralith]`.
+
+**Before (phase 1):** package 4b merged (`5a2d927`, main green 40760999456); the rename to Quicksilver merged (`a26a24a`, main green
 40781235357, `latest` has `quicksilver-26.3.jar` and `quicksilver-bench-26.3.jar`). The repo is
 meakaandre-tech/Quicksilver. The repo is now
 meakaandre-tech/Quicksilver (GitHub redirects the old URL).

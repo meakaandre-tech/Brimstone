@@ -14,7 +14,12 @@
 #          2. GameTests: Fabric's headless GameTest server with the harness's tests, $OUT/gametest.xml and the log;
 #          3. scripted run: the base world, ci/server/scripted-run-<suite>.txt (N ticks), saved to $OUT/run (world diff),
 #             with ci-harness-result.json (milliseconds per tick, heap, start-up) and, in quicksilver runs, the
-#             server bench's JSON.
+#             server bench's JSON;
+#          3b. random-tick run (core, P2-1): the base world, ci/server/scripted-run-core-random.txt (random ticks pinned
+#             per chunk, precipitation, natural spawning), saved to $OUT/random (world diff);
+#          5. heap run (P2-1, every suite): the base world, the suite's scene (ci/server/heap-<suite>.txt or its
+#             scripted run's) for ten minutes of game time sprinting; live heap and class histograms after load and at
+#             the end in $OUT/heap.
 set +e
 root=$PWD
 SUITE=${SUITE:-core}
@@ -93,12 +98,36 @@ fi
 if [ -f "ci/server/scripted-run-$SUITE.txt" ] && [ -f server-base.tar ]; then
   (cd "$srv" && tar xf "$root/server-base.tar" && mv base world)
   props world normal
+  # (to see why something varies: -Dci.harness.trace=x1,y1,z1,x2,y2,z2;... logs every scheduled tick in those boxes and
+  # every chunk's post-processing, CI TRACE lines; ci/server/harness/.../Trace.java)
   serve run 1800 -Dci.harness.run="$root/ci/server/scripted-run-$SUITE.txt"
   grep -q 'CI HARNESS RUN DONE' "$OUT/run-server.log" || echo "scripted run: did not finish"
   keep_world "$srv/world" "$OUT/run/world"
   mkdir -p "$OUT/bench" && cp "$srv"/quicksilver/bench/*.json "$OUT/bench/" 2>/dev/null
+  rm -rf "$srv/world" "$srv/quicksilver"
 elif [ -f "ci/server/scripted-run-$SUITE.txt" ]; then
   echo "no base world (server-base.tar): scripted run skipped"
+fi
+
+# 3b. the random-tick run (core): random ticks, precipitation and natural spawning, pinned (P2-1)
+if [ -f "ci/server/scripted-run-$SUITE-random.txt" ] && [ -f server-base.tar ]; then
+  (cd "$srv" && tar xf "$root/server-base.tar" && mv base world)
+  props world normal
+  serve random 1800 -Dci.harness.run="$root/ci/server/scripted-run-$SUITE-random.txt"
+  grep -q 'CI HARNESS RUN DONE' "$OUT/random-server.log" || echo "random-tick run: did not finish"
+  keep_world "$srv/world" "$OUT/random/world"
+  rm -rf "$srv/world"
+fi
+
+# 5. the heap run (every suite with a base world, P2-1): the scene for ten minutes of game time, sprinting
+heap_script=ci/server/heap-$SUITE.txt
+[ -f "$heap_script" ] || heap_script=ci/server/scripted-run-$SUITE.txt
+if [ -f "$heap_script" ] && [ -f server-base.tar ]; then
+  (cd "$srv" && tar xf "$root/server-base.tar" && mv base world)
+  props world normal
+  serve heap 1800 -Dci.harness.run="$root/$heap_script" -Dci.harness.heap=true -Dci.harness.ticks=12000
+  grep -q 'CI HARNESS RUN DONE' "$OUT/heap-server.log" || echo "heap run: did not finish"
+  rm -rf "$srv/world" "$srv/quicksilver"
 fi
 
 # 4. SIFTEC's self-tests, on a fresh world, as SIFTEC's own CI runs them (its .github/smoke-commands.txt)

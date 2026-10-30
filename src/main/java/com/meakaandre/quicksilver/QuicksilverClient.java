@@ -31,6 +31,11 @@ public final class QuicksilverClient implements ClientModInitializer {
         // what each module reports in the bench (package 4b: the bench-only jar has the bench without them)
         BenchSections.register();
         init();
+        // phase 2, P2-1: a client's later rebuilds of the states' caches (a server's tags arriving) leave no shape tables
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
+            mc -> com.meakaandre.quicksilver.memory.ShapeDedup.dropTables());
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(
+            mc -> com.meakaandre.quicksilver.memory.Memory.report());
         // CI: the renderer's self-test, once in a world (package 4)
         if (Boolean.getBoolean("quicksilver.debug.verifyRenderer")) {
             ClientTickEvents.END_CLIENT_TICK.register(com.meakaandre.quicksilver.frapi.RendererSelfTest::tick);

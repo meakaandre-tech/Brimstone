@@ -1,0 +1,10 @@
+# The Terralith suite's heap run (P2-1): the base world's area loaded, then ten minutes of game time (12000 ticks,
+# ci.harness.ticks, sprinting) with nothing built; the live heap and a class histogram right after load and at the end.
+# Core and SIFTEC run their scripted run's scene instead (scripted-run-<suite>.txt).
+area minecraft:overworld -4 -4 3 3
+
+cmd time set 1000
+cmd weather clear 100000
+cmd gamerule spawn_mobs false
+
+ticks 12000

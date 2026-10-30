@@ -858,12 +858,15 @@ pixel check gates only where every vanilla run agrees. Three vanilla samples are
 | check | key | gate |
 |---|---|---|
 | worldgen | each chunk the harness generated (`ci/server/gen-<suite>.txt`), its whole saved NBT byte for byte; and the same chunks block by block (below), which gates any chunk whose bytes vanilla doesn't repeat; every listed dimension with exactly its area's chunk count | equal where vanilla agrees |
-| world diff (core, SIFTEC) | each block's state; each block entity's top-level fields; each pending scheduled block and fluid tick; each entity (type, exact position, health, the stack an item entity holds; one without an exact match on the other side is keyed by type and block; UUIDs aren't compared, as worldgen's entities don't repeat theirs) | equal where vanilla agrees |
+| world diff (core, SIFTEC; and core's random-tick run, P2-1) | each block's state; each block entity's top-level fields; each pending scheduled block and fluid tick; each entity (type, exact position, health, the stack an item entity holds; one without an exact match on the other side is keyed by type and block; UUIDs aren't compared, as worldgen's entities don't repeat theirs) | equal where vanilla agrees |
 | GameTests (core) | each test's result and the tick it finished | equal to vanilla-a; vanilla-b and c must equal vanilla-a too |
 | SIFTEC self-tests | each suite's passed/failed counts | equal to vanilla-a; vanilla-b and c too |
 | Create train (SIFTEC) | every arrival at a station with its tick, final speed, schedule state | the same line in every run; at least 2 arrivals |
 | network check | the client joins, stays until the run ends, no protocol error or desync line | always |
 | scripted run | every setup command succeeds, the run finishes its ticks | always |
+| random-tick run (core, P2-1) | the same counts in every run (random positions drawn, random ticks, sections let through and held, precipitation, mobs spawned), each above zero; vanilla's runs equal on every key at or above the scenes' y 192 and on every entity | always |
+| heap run (every suite, P2-1) | live heap after a full GC (the JVM's class histogram total) after load and after 12000 ticks (ten minutes of game time, sprinting); every run must finish it | Quicksilver below the lowest of the three vanilla runs, both times |
+| Memory module (P2-1) | every server start of the quicksilver run logs `Quicksilver memory:` with every optimisation on; no `Quicksilver memory fallback:` line in any run (client runs too, ci/compare.py) | always |
 
 **What makes runs repeat** (all in vanilla's runs and Quicksilver's alike; CI only):
 
@@ -879,26 +882,41 @@ pixel check gates only where every vanilla run agrees. Three vanilla samples are
   (before this, a furnace's cooking time and a bearing's angle differed between vanilla runs).
 - No natural mob spawning in the scripted runs: where a mob may spawn reads light from the light engine's thread.
 - No random ticks in the scripted runs: they draw on the shared level random over every loaded chunk, and vanilla's
-  own runs differed in 600 to 900 blocks with them on (cave vines growing and berrying, vines spreading). Random-tick
-  behaviour needs its own tests when phase 2 touches chunk ticking (P2-4).
+  own runs differed in 600 to 900 blocks with them on (cave vines growing and berrying, vines spreading). They are tested
+  in core's random-tick run instead (below).
+- Just before tick 0 every pending scheduled tick is taken out and scheduled again in one fixed order (trigger tick,
+  priority, x, z, y, type) (P2-1). Chunks are post-processed as they finish loading, in a different order in every run,
+  and each update gave its ticks the level's next sub-tick number: the same ticks, in a different order, and where water
+  and falling sand meet (the cave at chunk -1,-2) the cave went different ways.
+- When the run ends every loaded chunk (the areas and three rings) is marked changed, so the save as the server stops
+  writes each as it is at the last tick (P2-1). The game also saves chunks during a run on a wall-clock timer, and one
+  it didn't count as changed since wasn't written again: SIFTEC's furnace (cooking time) and Create's bearing (angle),
+  and the cave's pending ticks, were equal in every run at the last tick and differed on disk.
+- SIFTEC's bearing motor and furnace are placed at tick 1 (Create and SIFTEC tick them through their own hooks while the
+  game is frozen before tick 0). Their saved fields are logged during the run (`report` lines, `CI REPORT`).
 - GameTest server only: the ticking-chunk shuffle and the chunk tick's weather draws use their own randoms (they drew
   on the shared level random once per loaded chunk). The crop farm is still judged on its state at tick 200, not on
   how many bone meals it took: growth draws on the shared random, which the GameTest world uses in ways that depend
   on chunk loading.
 
-**Reported, not gated:** the scripted runs' pending scheduled block and fluid ticks (core and SIFTEC). Which sand,
-gravel and fluid ticks are still pending when the world is saved varies between vanilla's own runs at one cave (chunk
--1,-2 of seed 12345: sand and gravel over water), in core and SIFTEC alike (in 1 or 2 of every 3 runs; once 101 ticks);
-the cause isn't found yet (waiting for the ring of chunks around the area fixed the rest). The blocks, block entity
-fields and entities those ticks lead to stay gated, so a mis-scheduled tick that changes the world is still caught.
+**Everything gated (P2-1):** `REPORT_ONLY` and `KNOWN_NOISE` in `ci/server/compare-server.py` are empty. The pending
+scheduled ticks (reported only in P2-0) and SIFTEC's furnace and bearing fields (known noise in P2-0) repeat since the
+two harness fixes above; vanilla's three runs agree on every key (run 40963578144).
 
-**Known noise, gated as noise even when this run's vanilla agrees** (`KNOWN_NOISE` in `ci/server/compare-server.py`,
-the standing noise rule): SIFTEC's scripted run, the furnace at 2 200 11 (`cooking_time_spent`,
-`lit_time_remaining`) and the mechanical bearing at 2 201 2 (`Angle`). Vanilla's own runs differed on exactly these in
-runs 40632202272 and 40645807938 (and earlier); in run 40792634386 its three runs happened to agree and Quicksilver's
-didn't. Every other field of both block entities stays gated.
+**The random-tick run** (core, `ci/server/scripted-run-core-random.txt`, P2-1): the base world with crops on farmland,
+melon and pumpkin stems, sugar cane, cactus, bamboo, a berry bush, three saplings, grass spreading over dirt, copper,
+a block of leaves with no log, and a snowy patch with a pool and two cauldrons in rain, on a platform at y 198 to 205;
+1200 ticks at random tick speed 20. Random ticks and precipitation are pinned (`Pins.java`): each chunk draws on its own
+random seeded by its position and the game time, and only sections at or above y 192 tick, so the terrain below (whose
+grass and cave vines read light the light engine's thread may not have finished) can't move anything. Natural spawning:
+CI has no player and the game spawns only near one, so a Fabric API fake player is put in the overworld's player list
+only (creative, at 16.5 64 16.5: not an entity, it loads nothing and is never saved), and the harness runs the game's
+spawner for two chunks (-3,2 and 2,-3) every tick from a random pinned per chunk and tick (monsters every tick,
+creatures every 400 game ticks, up to 24 per chunk and category). 4 monsters spawn in every run, no creature. Not
+covered: which chunks the game picks to spawn in near a real player; and since the shared level random is re-seeded
+before each spawner call, a change in how often other code draws on it isn't seen there.
 
-**Known vanilla noise** (three vanilla runs, run 40645807938; reported, not gated):
+**History, P2-0's vanilla noise** (three vanilla runs, run 40645807938; all of it fixed in P2-1):
 
 | suite / check | keys where vanilla differs from itself | what |
 |---|---|---|
@@ -910,4 +928,5 @@ didn't. Every other field of both block entities stays gated.
 
 Smallest thing each check must catch: one block state, one block entity field, one scheduled tick, one entity's
 existence, type, position (exactly: a 1e-7 drift is caught) or health, one item stack, one chunk's byte; one GameTest
-tick or result; one self-test.
+tick or result; one self-test. The heap gate has no tolerance either: Quicksilver below vanilla's lowest run (vanilla's
+own runs spread up to 1.7 MiB, in core; Quicksilver is 10.6 MiB below in core, 61 in SIFTEC, 82 in Terralith).

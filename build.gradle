@@ -41,6 +41,7 @@ jar {
     from("COPYING") { rename { "COPYING_quicksilver" } }
     from("NOTICE") { rename { "NOTICE_quicksilver" } }
     from("LICENSE-APACHE-2.0") { rename { "LICENSE-APACHE-2.0_quicksilver" } }
+    from("LICENSE-MIT-FerriteCore") { rename { "LICENSE-MIT-FerriteCore_quicksilver" } }
 }
 
 // Package 4b: the bench-only jar (quicksilver-bench): /quicksilver bench, its counters, the capability probe and the
