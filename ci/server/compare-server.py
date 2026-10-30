@@ -338,7 +338,7 @@ def main(res, rep):
                     st = re.findall(r"Quicksilver memory: (.*)", t)
                     if not st:
                         fails.append("%s %s: no Quicksilver memory status line" % (suite, os.path.basename(p)))
-                    elif re.search(r"=(off|fallback)", st[-1]):
+                    elif re.search(r"=(off|fallback)|^off", st[-1]):
                         fails.append("%s %s: Quicksilver memory not fully on: %s" % (suite, os.path.basename(p), st[-1][:300]))
                     s.setdefault("memory", {})[os.path.basename(p)] = st[-1] if st else None
             fb = [l for l in log.splitlines() if "Quicksilver memory fallback:" in l]

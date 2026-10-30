@@ -320,8 +320,8 @@ def main():
                 mem = re.findall(r"Quicksilver memory: (.*)", t)
                 if not mem:
                     failures.append(f"{name}/{r}: no Quicksilver memory status line in the client log")
-                elif any(re.search(r"=(off|fallback)", x) for x in mem):
-                    failures.append(f"{name}/{r}: the Memory module was not fully on: {[x for x in mem if re.search(r'=(off|fallback)', x)][0][:200]}")
+                elif any(re.search(r"=(off|fallback)|^off", x) for x in mem):
+                    failures.append(f"{name}/{r}: the Memory module was not fully on: {[x for x in mem if re.search(r'=(off|fallback)|^off', x)][0][:200]}")
             if os.path.isdir(d) and r.startswith("measure") and "Quicksilver memory: off, quicksilver.ci.measureOnly is set" not in t:
                 failures.append(f"{name}/{r}: the Memory module did not stay off for measuring (no measure-only line in the client log)")
             if os.path.isdir(d) and "quicksilver_ci_pin" not in t:
