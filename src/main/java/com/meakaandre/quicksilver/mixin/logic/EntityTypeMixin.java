@@ -5,19 +5,28 @@ import net.minecraft.world.entity.EntityType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-/** P2-2, logic.entity-collisions: what the last class seen with this type overrides ({@link EntityCollisions#kind}). */
+/** P2-2, logic.entity-collisions: the last class seen with this type and its kind bits ({@link EntityCollisions}). */
 @Mixin(EntityType.class)
 public abstract class EntityTypeMixin implements EntityCollisions.TypeMemo {
     @Unique
-    private volatile EntityCollisions.Kind quicksilver$kind;
+    private volatile Class<?> quicksilver$class;
+    @Unique
+    private byte quicksilver$kindBits;
 
     @Override
-    public EntityCollisions.Kind quicksilver$kind() {
-        return quicksilver$kind;
+    public Class<?> quicksilver$memoClass() {
+        return quicksilver$class;
     }
 
     @Override
-    public void quicksilver$kind(EntityCollisions.Kind kind) {
-        quicksilver$kind = kind;
+    public byte quicksilver$memoKind() {
+        return quicksilver$kindBits;
+    }
+
+    @Override
+    public void quicksilver$memo(Class<?> cls, byte kind) {
+        // the bits first: another thread (the client's) that sees the new class reads its bits
+        quicksilver$kindBits = kind;
+        quicksilver$class = cls;
     }
 }

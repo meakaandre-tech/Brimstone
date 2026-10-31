@@ -649,7 +649,7 @@ jobs:
           tail -1 /tmp/sci/compare/worlddiff-selftest.txt >> "$GITHUB_STEP_SUMMARY"
           # P2-2: the perf job, the Logic module, and compare-server.py's verdict with SIFTEC's failures owed while
           # SIFTEC is report-only (compare-p2.py fails on every other compare-server.py failure)
-          python3 -I ci/server/compare-p2.py server /tmp/sres /tmp/sci/compare
+          CI_MODE="${{ needs.mode.outputs.mode }}" CI_EXTRA_SUITES="$extra" python3 -I ci/server/compare-p2.py server /tmp/sres /tmp/sci/compare
           p2=$?
           cat /tmp/sci/compare/p2.md >> "$GITHUB_STEP_SUMMARY"
           if [ "$SIFTEC_REPORT_ONLY" = 1 ]; then cmp=0; fi

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * P2-2, logic.block-collisions: every write to a container counts up its write number, so masks built from it before
  * are built again ({@link SectionMasks}). Every method that changes a container's contents: its three setters and
- * reading it from the network.
+ * reading it from the network, each with a handler of its own, so the hook check sees each one land.
  */
 @Mixin(PalettedContainer.class)
 public abstract class PalettedContainerMixin implements SectionMasks.Writes {
@@ -24,13 +24,23 @@ public abstract class PalettedContainerMixin implements SectionMasks.Writes {
         return quicksilver$writeCount;
     }
 
-    @Inject(method = {"getAndSet", "getAndSetUnchecked"}, at = @At("HEAD"))
-    private void quicksilver$swapped(CallbackInfoReturnable<Object> cir) {
+    @Inject(method = "getAndSet", at = @At("HEAD"))
+    private void quicksilver$getAndSet(CallbackInfoReturnable<Object> cir) {
         quicksilver$writeCount++;
     }
 
-    @Inject(method = {"set", "read"}, at = @At("HEAD"))
-    private void quicksilver$written(CallbackInfo ci) {
+    @Inject(method = "getAndSetUnchecked", at = @At("HEAD"))
+    private void quicksilver$getAndSetUnchecked(CallbackInfoReturnable<Object> cir) {
+        quicksilver$writeCount++;
+    }
+
+    @Inject(method = "set", at = @At("HEAD"))
+    private void quicksilver$set(CallbackInfo ci) {
+        quicksilver$writeCount++;
+    }
+
+    @Inject(method = "read", at = @At("HEAD"))
+    private void quicksilver$read(CallbackInfo ci) {
         quicksilver$writeCount++;
     }
 }

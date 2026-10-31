@@ -30,12 +30,22 @@ public abstract class LevelChunkSectionMixin implements SectionMasks.Holder {
     @Inject(method = "setBlockState(IIILnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;", at = @At("HEAD"))
     private void quicksilver$beforeSet(int x, int y, int z, BlockState state, boolean lock, CallbackInfoReturnable<BlockState> cir,
                                        @Share("current") LocalBooleanRef current) {
-        current.set(quicksilver$masks != null && SectionMasks.beforeSet((LevelChunkSection) (Object) this));
+        if (quicksilver$masks == null || !SectionMasks.SWITCH.on) return;
+        try {
+            current.set(SectionMasks.beforeSet((LevelChunkSection) (Object) this));
+        } catch (Throwable t) {
+            SectionMasks.SWITCH.fail(t);
+        }
     }
 
     @Inject(method = "setBlockState(IIILnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;", at = @At("RETURN"))
     private void quicksilver$afterSet(int x, int y, int z, BlockState state, boolean lock, CallbackInfoReturnable<BlockState> cir,
                                       @Share("current") LocalBooleanRef current) {
-        if (current.get()) SectionMasks.afterSet((LevelChunkSection) (Object) this, true, x, y, z, state);
+        if (!current.get() || !SectionMasks.SWITCH.on) return;
+        try {
+            SectionMasks.afterSet((LevelChunkSection) (Object) this, true, x, y, z, state);
+        } catch (Throwable t) {
+            SectionMasks.SWITCH.fail(t);
+        }
     }
 }

@@ -108,10 +108,21 @@ public final class Logic {
     /** Main entrypoint: the status line once a server has started (CI reads it). */
     public static void init() {
         load();
-        // the reflection thread of logic.entity-collisions, made here (the main thread), never by the server thread
+        // logic.entity-collisions reads the game's entity classes here, on the main thread, before any server thread
         EntityCollisions.init();
+        // the status line at start-up (a client that only joins servers logs only this one), then once a server has started
+        LOG.info("Quicksilver logic: {}", moduleOff != null ? "off, " + moduleOff : status());
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> report());
+        // hooks in classes the game loads later are checked as they appear (cheap; stops once all are seen)
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (!hooksDone && server.getTickCount() % 100 == 0) {
+                Optimisations.checkHooks();
+                hooksDone = Optimisations.allChecked();
+            }
+        });
     }
+
+    private static volatile boolean hooksDone = false;
 
     /** The status line (CI reads it). An optimisation that is on but whose hooks didn't land falls back here. */
     public static void report() {

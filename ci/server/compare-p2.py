@@ -8,7 +8,8 @@ usage:
 
 server:
   - perf (ci/server/perf-run.sh, RESULTS_DIR/<suite>-perf): per scene, the median MSPT of vanilla's and Quicksilver's
-    plain rounds (1-3, one runner, alternating order) and where the time went (round 6's JFR, ci/server/perf-jfr.py).
+    plain rounds (1-5, one runner, alternating order) and where the time went (round 6's JFR, ci/server/perf-jfr.py).
+    Every suite of the run (CI_MODE, CI_EXTRA_SUITES, as compare-server.py) with perf scenes must have results.
     Gate: every run finished with no failed command; in GATED_SCENES Quicksilver's median MSPT over rounds 1-5 is below
     vanilla's.
     Scenes marked `world` in perf-<suite>.txt: every Quicksilver round's saved world equals vanilla round 1's on every
@@ -19,7 +20,8 @@ server:
   - SIFTEC report-only (SIFTEC_REPORT_ONLY=1, Andre 2026-10-31: until SIFTEC starts with MapMod's latest again):
     compare-server.py's failures for suite siftec are listed as owed, not failed; every other failure still fails.
 client:
-  - Logic module in every Quicksilver client run (its integrated server): on, no fallback; measure runs: off.
+  - Logic module in every client run's own log (client-*.log; the client joins a dedicated server, whose log is checked
+    for fallbacks only): Quicksilver runs log it on, measure runs off; no fallback line in any log of the run.
   - SIFTEC report-only for ci/compare.py's failures, as above.
 Writes REPORT_DIR/p2.md (server) or REPORT_DIR/p2-client.md (client) and exits 1 on any gated failure.
 """
@@ -74,7 +76,10 @@ def scenes(suite):
 def suite_of(failure):
     """The suite a compare-server.py or compare.py failure is about: its first word, up to a space, slash or colon
     ("siftec worldgen ...", "siftec/quicksilver-vk: ...", "siftec: ...")."""
-    return re.split(r"[/ :]", failure.strip(), maxsplit=1)[0]
+    f = failure.strip()
+    if f.startswith("suite "):  # compare-server.py's "suite <name>: no results"
+        f = f[len("suite "):]
+    return re.split(r"[/ :]", f, maxsplit=1)[0]
 
 
 def worlddiff(a, b, out):
@@ -107,7 +112,18 @@ def fmt(v):
     return "-" if v is None else ("%.3f" % v)
 
 
+def expected_suites():
+    """The server suites this run had (as compare-server.py reads them: quick mode core plus CI_EXTRA_SUITES, full mode all)."""
+    exp = ["core"] if os.environ.get("CI_MODE") == "quick" else ["core", "siftec", "terralith"]
+    exp += [x for x in os.environ.get("CI_EXTRA_SUITES", "").split(",") if x and x not in exp]
+    return exp
+
+
 def perf(res, rep, lines, fails, owed, summary):
+    # every suite of this run with perf scenes must have perf results (a skipped or failed perf job is not a pass)
+    for suite in expected_suites():
+        if scenes(suite) and not os.path.isdir(os.path.join(res, "%s-perf" % suite)):
+            (owed if suite in REPORT_ONLY_SUITES else fails).append("%s perf: no results (the server-perf job didn't run or upload)" % suite)
     for d in sorted(glob.glob(os.path.join(res, "*-perf"))):
         suite = os.path.basename(d)[:-len("-perf")]
         sc = scenes(suite)
@@ -263,7 +279,7 @@ def server(res, rep):
 
 
 def client(res, rep):
-    fails, owed, lines = [], [], ["# Phase 2 checks, client runs (compare-p2.py)\n", "| run | Logic status |\n|---|---|"]
+    fails, owed, lines = [], [], ["# Phase 2 checks, client runs (compare-p2.py)\n", "| run | Logic status (client log) |\n|---|---|"]
     for d in sorted(glob.glob(os.path.join(res, "*-*"))):
         name = os.path.basename(d)
         m = re.match(r"(\w+)-(quicksilver-\w+|measure-\w+)$", name)
@@ -271,17 +287,23 @@ def client(res, rep):
             continue
         suite, run = m.groups()
         sink = owed if suite in REPORT_ONLY_SUITES else fails
-        log = "\n".join(text(p) for p in sorted(glob.glob(os.path.join(d, "**", "*.log"), recursive=True)))
+        logs = sorted(glob.glob(os.path.join(d, "**", "*.log"), recursive=True))
+        client_log = "\n".join(text(p) for p in logs if re.match(r"client-\d+\.log$", os.path.basename(p)))
+        every = "\n".join(text(p) for p in logs)
+        if not client_log:
+            sink.append("%s: no client log" % name)
+        st = re.findall(re.escape(LOGIC_ON) + r" (.*)", client_log)
         if run.startswith("measure"):
-            if "Quicksilver logic: off, quicksilver.ci.measureOnly is set" not in log:
-                sink.append("%s: the Logic module did not stay off for measuring" % name)
-            st = None
-        else:
-            st = logic_status(log, True, name, sink)
-        fb = [l for l in log.splitlines() if LOGIC_FALLBACK in l]
-        if fb and run.startswith("measure"):
-            sink.append("%s: %d Logic fallbacks" % (name, len(fb)))
-        lines.append("| %s | %s |" % (name, (st or "-")[:200]))
+            if not st or any(x != "off, quicksilver.ci.measureOnly is set" for x in st):
+                sink.append("%s: the client's Logic module did not stay off for measuring (%s)" % (name, (st or ["no status line"])[0][:200]))
+        elif not st:
+            sink.append("%s: no '%s' line in the client log" % (name, LOGIC_ON))
+        elif any(re.search(r"=(off|fallback)|^off", x) for x in st):
+            sink.append("%s: the client's Logic module not fully on: %s" % (name, [x for x in st if re.search(r"=(off|fallback)|^off", x)][0][:200]))
+        fb = [l for l in every.splitlines() if LOGIC_FALLBACK in l]
+        if fb:
+            sink.append("%s: %d Logic fallbacks (first: %s)" % (name, len(fb), fb[0][:300]))
+        lines.append("| %s | %s |" % (name, (st[-1] if st else "-")[:200]))
     lines.append("")
     rj = load(os.path.join(rep, "report.json"))
     if rj is None:

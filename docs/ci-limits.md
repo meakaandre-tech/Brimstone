@@ -948,7 +948,7 @@ by 10-20%, which the median of five per side absorbs (first run of five: every g
 | perf MSPT (core `mobs`, `random`) | the median MSPT average over rounds 1-5 per side | Quicksilver's median below vanilla's; every round finished on both sides, no failed command |
 | perf MSPT (core `run`; SIFTEC `train`) | the same | reported |
 | perf world (core `mobs`) | each Quicksilver round's saved world against vanilla round 1 (the world diff's keys) | equal where vanilla's six rounds agree (they agree on every key) |
-| Logic module (P2-2) | every server start of a Quicksilver run (server suite, network check, perf) and every Quicksilver client run logs `Quicksilver logic:` with every optimisation on; measure runs log it off; no `Quicksilver logic fallback:` line anywhere; no identity hash in its sources | always |
+| Logic module (P2-2) | every server start of a Quicksilver run (server suite, network check, perf) and every Quicksilver client's own log (`client-*.log`) logs `Quicksilver logic:` with every optimisation on; measure runs' clients log it off; no `Quicksilver logic fallback:` line in any log; no identity hash in its sources; every suite of the run with perf scenes has perf results | always |
 
 MSPT by phase: the share of the server thread's JFR samples (1 ms) under each phase's frame, times that run's MSPT;
 `compare/p2.md` lists them with the top methods. Method names only are published.

@@ -2516,14 +2516,17 @@ sweep caches its chunk (`docs/phase2-research.md` lists what Lithium dropped as 
 
 Each has its switch (`logic=on|off`, `logic.<name>=on|off` in `config/quicksilver.properties`, read at start-up; off
 means its mixins aren't applied), falls back to vanilla's code with one `Quicksilver logic fallback:` line on any
-exception or a hook that didn't land (an injection counts only where the game's own code calls it), and is off with
-Lithium installed or in CI's measure-only runs. Nothing asks the server thread for an identity hash (P2-1's rule).
+exception or a hook that didn't land (an injection counts only where the game's own code calls it, one handler per
+target method; checked as each target class loads, without loading anything), and is off with Lithium installed or in
+CI's measure-only runs. Nothing asks the server thread for an identity hash, and nothing starts a thread (P2-1's rule;
+measured here: in a plain JVM, a thread started before the server thread, or by it, changes every identity hash the
+server thread hands out, and so does reflection on a class).
 
 | optimisation | what | from |
 |---|---|---|
 | `block-collisions` | each chunk section keeps two masks of its 4096 positions (non-air; large collision shape or moving piston), built when a sweep first needs them and kept current across `setBlockState`; every write to a block container counts up a number on it, so masks of another count are built again. The sweep drops, unread, positions holding air and shell positions holding neither kind of state: exactly what vanilla reads and drops, so the same shapes come out in the same order. Server levels only, not debug worlds | own |
 | `entity-sections` | the entity sections near a small box (under four sections wide) looked up directly instead of walking the column's sorted ids, in the sorted set's own order | Lithium `entity.fast_retrieval` (LGPL-3.0-only; header kept, NOTICE) |
-| `entity-collisions` | entity sections count entities whose class overrides `canBeCollidedWith` (boats, shulkers, minecarts); a lookup for entities to collide with like blocks returns vanilla's empty answer when every section it would visit counts none. Not for movers that override `canCollideWith`, nor with ender dragon parts. Which methods a class overrides is found by reflection on a thread made at start-up (reflection can hash the class) | own; idea from Lithium's collision class groups |
+| `entity-collisions` | entity sections count entities that may be collided with like blocks (their class overrides `canBeCollidedWith`: boats, shulkers, minecarts); a lookup for such entities returns vanilla's empty answer when every section it would visit counts none. Not for movers whose class overrides `canCollideWith`, nor with ender dragon parts. Which classes override what is read once at start-up on the main thread from the game jar's entity class files (ASM, by name: no Class objects, reflection or threads); any other class (another mod's) counts as hard and as colliding with anything, so lookups near or by it take vanilla's path | own; idea from Lithium's collision class groups |
 
 Not built (measured or checked): Lithium's movement rewrite (`collisions.movement`: reorders shapes and shrinks the box for
 single-axis moves; its own notes say that can skip a 1e-7 clip), `shapes.*` (specialised shape classes; the remaining
@@ -2533,6 +2536,19 @@ sweep cost is real collisions), `chunk_access` (vanilla's 4-entry chunk cache al
 ### Results
 
 (filled in from the final full run)
+
+### Review
+
+Independent review by a fresh agent (of `bf78c5a` to `43779f7`; scratchpad `review-p2-2.md`): 2 must-fix, 6 should-fix, 7
+nits. Fixed: one write hook per container method, each checked (one handler covered two methods, so a missing one
+went unseen); the perf gate failed nothing when a suite's perf results were missing (now it fails); the mask lookups
+called the chunk cache outside vanilla's sequence (now the sweep's own `getChunk`); the class-scan thread (a thread
+started before the server thread changes every server-thread identity hash, confirmed in a plain JVM; now ASM on the
+main thread, no thread); no fallback guard in the section write hooks; hooks checked by loading classes on the server
+thread (now checked as classes load); the client check read the dedicated server's log (client runs join one; now the
+client's own log, and measure runs' clients must log Logic off); `suite siftec: no results` was gated; the masks are
+rechecked against the write count at every position; records with identity hashCodes replaced. Left: the config file
+rewritten without comments (as P2-1).
 
 ### Choices for Andre
 
@@ -2550,6 +2566,11 @@ sweep cost is real collisions), `chunk_access` (vanilla's 4-entry chunk cache al
 - The masks cost 1 KiB per section a sweep has used; the heap gate (Quicksilver below vanilla) still passes.
 - A mod writing a section's container through a method other than the container's own setters (`getAndSet`,
   `getAndSetUnchecked`, `set`, `read`) would leave masks stale; all of vanilla's writes go through them.
+- `entity-collisions` reads the game's own class files: a mod that adds a `canBeCollidedWith` override to a vanilla
+  entity class by mixin isn't seen (another mod's own entity classes are, conservatively, always hard).
+- The sweep's mask lookups call the sweep's own `getChunk` for every position vanilla would call it for, so the level
+  sees vanilla's chunk lookups exactly (the first version called the chunk cache itself, which could reorder its 4-entry
+  cache; found in review).
 - Pushing (`LivingEntity.pushEntities`, 7%) and inside-block effects (7%) are untouched: their lookups' results are
   used in vanilla's order.
 
@@ -2582,6 +2603,13 @@ toggles, fallbacks and the same heap gate.
   `directBuffersMaxAtTick`, `directBuffersMB` in each bench JSON; the "Direct buffers per scene" table in
   `ci/compare.py`'s report marks a rise of 4 MB or more as "between scenes" or "inside the scene"). If it shows up
   again on main: stop and report.
+
+- **villager_trade GameTest, vanilla against itself (found 2026-10-31, P2-2).** Run
+  [41196261046](https://github.com/meakaandre-tech/Quicksilver/actions/runs/41196261046): vanilla-b finished
+  `villager_trade` at tick 25, vanilla-a, vanilla-c and Quicksilver at 46 (same offers). vanilla-b has no Quicksilver
+  at all, so something in the GameTest server isn't pinned (the villager's job-site claim is the likely place). Seen
+  once; the harness belongs to the `fix-worldgen-diff` work, so P2-2 left it alone. Before P2-3 (which changes AI):
+  find what varies and pin it.
 
 ## Hand-off
 

@@ -22,8 +22,10 @@ final class Optimisations {
                 new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "quicksilver$mask"},
                 new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "call:quicksilver$beforeSet"},
                 new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "call:quicksilver$afterSet"},
-                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$swapped"},
-                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$written"})),
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$getAndSet"},
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$getAndSetUnchecked"},
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$set"},
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$read"})),
         new Opt(EntitySections.ID, "entity sections near a small box looked up directly, in vanilla's order (Lithium's fast_retrieval)",
             List.of("EntitySectionStorageMixin"),
             List.<String[]>of(new String[] {"net.minecraft.world.level.entity.EntitySectionStorage", "call:quicksilver$sections"})),
@@ -32,7 +34,7 @@ final class Optimisations {
             List.<String[]>of(new String[] {"net.minecraft.world.level.EntityGetter", "call:quicksilver$noHardEntities"},
                 new String[] {"net.minecraft.world.level.entity.EntitySection", "call:quicksilver$added"},
                 new String[] {"net.minecraft.world.level.entity.EntitySection", "call:quicksilver$removed"},
-                new String[] {"net.minecraft.world.entity.EntityType", "quicksilver$kind"},
+                new String[] {"net.minecraft.world.entity.EntityType", "quicksilver$memo"},
                 new String[] {"net.minecraft.server.level.ServerLevel", "quicksilver$entityManager"},
                 new String[] {"net.minecraft.world.level.entity.PersistentEntitySectionManager", "quicksilver$sectionStorage"})));
 
@@ -47,24 +49,37 @@ final class Optimisations {
         return null;
     }
 
-    /** At server start: an optimisation that is on but whose hooks didn't land falls back (CI fails on it). */
+    /** Hooks already found in place (target and name), so each is checked once. */
+    private static final java.util.Set<String> CHECKED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * An optimisation that is on but whose hooks didn't land falls back (CI fails on it). Only classes the game has
+     * already loaded (their mixins applied) are checked: nothing is loaded or looked up by reflection here, so this
+     * can run on the server thread (at start and every few seconds, until every hook has been seen).
+     */
     static void checkHooks() {
         for (Opt o : ALL) {
             Logic.Switch s = switchOf(o.id());
             if (s == null || !s.on) continue;
             for (String[] h : o.hooks()) {
-                try {
-                    // loading the class applies its mixins (and records the handlers that landed)
-                    Class.forName(h[0], false, Optimisations.class.getClassLoader());
-                } catch (Throwable t) {
-                    Logic.fallback(s, "class " + h[0] + " not found", t);
-                    continue;
-                }
+                String key = h[0] + "#" + h[1];
+                if (CHECKED.contains(key) || !LogicMixins.transformed(h[0])) continue;
                 // "call:" an injection that must be called from the target's own code; otherwise a member it must have
                 boolean ok = h[1].startsWith("call:") ? LogicMixins.called(h[0], h[1].substring(5)) : LogicMixins.member(h[0], h[1]);
+                CHECKED.add(key);
                 if (!ok) Logic.fallback(s, "hook " + h[1] + " did not land in " + h[0], null);
             }
         }
+    }
+
+    /** Whether every hook of every optimisation that is still on has been checked. */
+    static boolean allChecked() {
+        for (Opt o : ALL) {
+            Logic.Switch s = switchOf(o.id());
+            if (s == null || !s.on) continue;
+            for (String[] h : o.hooks()) if (!CHECKED.contains(h[0] + "#" + h[1])) return false;
+        }
+        return true;
     }
 
     private static Logic.Switch switchOf(String id) {

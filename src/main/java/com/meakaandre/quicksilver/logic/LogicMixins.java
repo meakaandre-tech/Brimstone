@@ -28,6 +28,11 @@ public final class LogicMixins implements IMixinConfigPlugin {
         return CALLED.getOrDefault(target, Set.of()).contains(handler);
     }
 
+    /** Whether the target class has been transformed (loaded, with this config's mixins applied). */
+    public static boolean transformed(String target) {
+        return MEMBERS.containsKey(target);
+    }
+
     /** Whether the target class has a member named (or ending with) {@code quicksilver$<name>}. */
     public static boolean member(String target, String name) {
         return MEMBERS.getOrDefault(target, Set.of()).contains(name);
