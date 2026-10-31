@@ -8,12 +8,13 @@ usage:
 
 server:
   - perf (ci/server/perf-run.sh, RESULTS_DIR/<suite>-perf): per scene, the median MSPT of vanilla's and Quicksilver's
-    plain rounds (1-5, one runner, alternating order) and where the time went (round 6's JFR, ci/server/perf-jfr.py).
+    plain rounds (1-7, one runner, alternating order), the ratio of each round's Quicksilver run to the vanilla run next
+    to it (the runner drifts between rounds by more than a scene's saving; a pair shares the drift), and where the time
+    went (round 8's JFR, ci/server/perf-jfr.py).
     Every suite of the run (CI_MODE, CI_EXTRA_SUITES, as compare-server.py) with perf scenes must have results.
-    Gate: every run finished with no failed command; in GATED_SCENES Quicksilver's median MSPT over rounds 1-5 is below
-    vanilla's.
+    Gate: every run finished with no failed command; in GATED_SCENES the median of the seven per-round ratios is below 1.
     Scenes marked `world` in perf-<suite>.txt: every Quicksilver round's saved world equals vanilla round 1's on every
-    key where vanilla's rounds (1-6) agree (ci/server/worlddiff.py, the server suite's rule).
+    key where vanilla's rounds (1-8) agree (ci/server/worlddiff.py, the server suite's rule).
   - Logic module (P2-2): every Quicksilver server start (server suite and perf) logs `Quicksilver logic:` with every
     optimisation on; no `Quicksilver logic fallback:` line in any run; no identity hash in the module's sources (P2-1's
     rule: an identity hash moves every later one, and with them the order of vanilla's hash sets).
@@ -40,9 +41,9 @@ GATED_SCENES = {("core", "mobs"), ("core", "random")}
 LOGIC_ON = "Quicksilver logic:"
 LOGIC_FALLBACK = "Quicksilver logic fallback:"
 REPORT_ONLY_SUITES = ("siftec",) if os.environ.get("SIFTEC_REPORT_ONLY") == "1" else ()
-PLAIN_ROUNDS = (1, 2, 3, 4, 5)
-ALL_ROUNDS = (1, 2, 3, 4, 5, 6)
-JFR_ROUND = 6
+PLAIN_ROUNDS = (1, 2, 3, 4, 5, 6, 7)
+ALL_ROUNDS = (1, 2, 3, 4, 5, 6, 7, 8)
+JFR_ROUND = 8
 
 
 def load(path, default=None):
@@ -131,7 +132,7 @@ def perf(res, rep, lines, fails, owed, summary):
             continue
         sink = owed if suite in REPORT_ONLY_SUITES else fails
         lines.append("## Perf: %s (one runner; MSPT while sprinting)\n" % suite)
-        lines.append("| scene | gated | vanilla MSPT median (rounds) | Quicksilver MSPT median (rounds) | change | p99 vanilla / Quicksilver |\n|---|---|---|---|---|---|")
+        lines.append("| scene | gated | vanilla MSPT median (rounds) | Quicksilver MSPT median (rounds) | Quicksilver / vanilla per round | median ratio | p99 vanilla / Quicksilver |\n|---|---|---|---|---|---|---|")
         tables = []
         for scene, script, ticks, keep_world in sc:
             got = {}
@@ -159,25 +160,29 @@ def perf(res, rep, lines, fails, owed, summary):
                 p99 = [got[(side, r)]["msptP99"] for r in PLAIN_ROUNDS if (side, r) in got]
                 med[side] = (statistics.median(vals) if vals else None, vals, statistics.median(p99) if p99 else None)
             v, q = med["vanilla"][0], med["quicksilver"][0]
-            change = "-" if not (v and q) else "%+.1f%%" % ((q - v) / v * 100)
+            ratios = [got[("quicksilver", r)]["msptAvg"] / got[("vanilla", r)]["msptAvg"] for r in PLAIN_ROUNDS
+                      if ("quicksilver", r) in got and ("vanilla", r) in got and got[("vanilla", r)]["msptAvg"]]
+            ratio = statistics.median(ratios) if ratios else None
+            change = "-" if ratio is None else "%+.1f%%" % ((ratio - 1) * 100)
             gated = (suite, scene) in GATED_SCENES
-            lines.append("| %s | %s | %s (%s) | %s (%s) | %s | %s / %s |" % (
+            lines.append("| %s | %s | %s (%s) | %s (%s) | %s | %s | %s / %s |" % (
                 scene, "yes" if gated else "reported", fmt(v), ", ".join("%.3f" % x for x in med["vanilla"][1]),
-                fmt(q), ", ".join("%.3f" % x for x in med["quicksilver"][1]), change, fmt(med["vanilla"][2]), fmt(med["quicksilver"][2])))
+                fmt(q), ", ".join("%.3f" % x for x in med["quicksilver"][1]), ", ".join("%.3f" % x for x in ratios), change,
+                fmt(med["vanilla"][2]), fmt(med["quicksilver"][2])))
             summary.setdefault(suite, {})[scene] = {"vanilla": med["vanilla"][1], "quicksilver": med["quicksilver"][1],
-                                                    "vanillaMedian": v, "quicksilverMedian": q}
-            if gated and v is not None and q is not None and not q < v:
-                sink.append("%s perf %s: Quicksilver's median MSPT %.3f is not below vanilla's %.3f" % (suite, scene, q, v))
-            if gated and (v is None or q is None or len(med["vanilla"][1]) < len(PLAIN_ROUNDS) or len(med["quicksilver"][1]) < len(PLAIN_ROUNDS)):
+                                                    "vanillaMedian": v, "quicksilverMedian": q, "ratios": ratios, "medianRatio": ratio}
+            if gated and ratio is not None and not ratio < 1:
+                sink.append("%s perf %s: the median of Quicksilver's per-round MSPT ratios to vanilla is %.3f, not below 1" % (suite, scene, ratio))
+            if gated and (len(ratios) < len(PLAIN_ROUNDS)):
                 sink.append("%s perf %s: not every round finished on both sides" % (suite, scene))
 
-            # where the time went (round 6, JFR), each phase in ms per tick: its share of samples x that run's MSPT
+            # where the time went (round 8, JFR), each phase in ms per tick: its share of samples x that run's MSPT
             jv = load(os.path.join(d, scene, "vanilla%d" % JFR_ROUND, "jfr.json"), {})
             jq = load(os.path.join(d, scene, "quicksilver%d" % JFR_ROUND, "jfr.json"), {})
             mv = (got.get(("vanilla", JFR_ROUND)) or {}).get("msptAvg")
             mq = (got.get(("quicksilver", JFR_ROUND)) or {}).get("msptAvg")
-            t = ["### %s %s: MSPT by phase (round 6, JFR; ms per tick = share of server-thread samples x that run's MSPT)\n" % (suite, scene),
-                 "Samples: vanilla %s, Quicksilver %s; MSPT in round 6: vanilla %s, Quicksilver %s.\n" % (jv.get("samples"), jq.get("samples"), fmt(mv), fmt(mq)),
+            t = ["### %s %s: MSPT by phase (round 8, JFR; ms per tick = share of server-thread samples x that run's MSPT)\n" % (suite, scene),
+                 "Samples: vanilla %s, Quicksilver %s; MSPT in round 8: vanilla %s, Quicksilver %s.\n" % (jv.get("samples"), jq.get("samples"), fmt(mv), fmt(mq)),
                  "| phase | vanilla ms | Quicksilver ms | saved ms |\n|---|---|---|---|"]
             pv = {x["phase"]: x["share"] for x in jv.get("phases", [])}
             pq = {x["phase"]: x["share"] for x in jq.get("phases", [])}
@@ -229,7 +234,7 @@ def perf(res, rep, lines, fails, owed, summary):
                         sink.append("%s perf %s: no chunks compared" % (suite, scene))
                 if missing:
                     sink.append("%s perf %s: a vanilla round's world is missing or not compared" % (suite, scene))
-                tables.append("### %s %s: saved worlds\n\nVanilla's own differences across its six rounds (noise, not gated): %d keys%s.\n\n"
+                tables.append("### %s %s: saved worlds\n\nVanilla's own differences across its eight rounds (noise, not gated): %d keys%s.\n\n"
                               "| Quicksilver round | chunks | keys differing from vanilla round 1 | where vanilla agrees |\n|---|---|---|---|\n%s\n"
                               % (suite, scene, len(noise), (" (first: %s)" % ", ".join(sorted(noise)[:5])) if noise else "", "\n".join(rows)))
         lines.append("")

@@ -936,18 +936,19 @@ own runs spread up to 1.7 MiB, in core; Quicksilver is 10.6 MiB below in core, 6
 **MSPT, same runner** (`server-perf`, `ci/server/perf-run.sh`, `ci/server/perf-<suite>.txt`): CI's runners differ from each
 other by more than Quicksilver's savings (one runner played the mob scene at 2.9 ms per tick, another at 1.6), so the
 server suite's per-run MSPT can't show a saving. The perf job plays each perf scene on one runner, vanilla and
-Quicksilver alternately (five rounds, the side that goes first alternating; a sixth with JFR for MSPT by phase), sprinting
+Quicksilver alternately (seven rounds, the side that goes first alternating; an eighth with JFR for MSPT by phase), sprinting
 for the scene's ticks, with the scripts' `qs-at` lines left out. Scenes: core `mobs` (172 mobs over mixed shapes, a boat
 and a minecart; 4800 ticks), `random` (the random-tick run, 6000 ticks), `run` (the scripted run, 4800 ticks); SIFTEC
 `train` (its scripted run with the Create train, 1200 ticks). Rounds were 2400 ticks and three per side at first (about 2 s of
-server work for the random-tick scene, JIT warm-up and GC moving single rounds by 10-20%); single rounds still spread
-by 10-20%, which the median of five per side absorbs (first run of five: every gated median 5-11% below vanilla's).
+server work for the random-tick scene). The runner drifts between rounds by 10-20%, more than the random-tick scene's
+saving (entity movement is about 15% of that scene), so the gate compares each round's Quicksilver run with the vanilla
+run next to it, and takes the median of the seven ratios.
 
 | check | key | gate |
 |---|---|---|
-| perf MSPT (core `mobs`, `random`) | the median MSPT average over rounds 1-5 per side | Quicksilver's median below vanilla's; every round finished on both sides, no failed command |
+| perf MSPT (core `mobs`, `random`) | each of rounds 1-7: Quicksilver's MSPT average / the same round's vanilla MSPT average | the median ratio below 1; every round finished on both sides, no failed command |
 | perf MSPT (core `run`; SIFTEC `train`) | the same | reported |
-| perf world (core `mobs`) | each Quicksilver round's saved world against vanilla round 1 (the world diff's keys) | equal where vanilla's six rounds agree (they agree on every key) |
+| perf world (core `mobs`) | each Quicksilver round's saved world against vanilla round 1 (the world diff's keys) | equal where vanilla's eight rounds agree (they agree on every key) |
 | Logic module (P2-2) | every server start of a Quicksilver run (server suite, network check, perf) and every Quicksilver client's own log (`client-*.log`) logs `Quicksilver logic:` with every optimisation on; measure runs' clients log it off; no `Quicksilver logic fallback:` line in any log; no identity hash in its sources; every suite of the run with perf scenes has perf results | always |
 
 MSPT by phase: the share of the server thread's JFR samples (1 ms) under each phase's frame, times that run's MSPT;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarises a Java Flight Recorder recording of a perf run (phase 2, P2-2; ci/server/perf-run.sh, round 6).
+"""Summarises a Java Flight Recorder recording of a perf run (phase 2, P2-2; ci/server/perf-run.sh, round 8).
 
 usage: perf-jfr.py RECORDING.jfr OUT.json
 

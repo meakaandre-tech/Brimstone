@@ -2558,7 +2558,7 @@ rewritten without comments (as P2-1).
    default?
 2. SIFTEC report-only is a switch in `build.yml` (`SIFTEC_REPORT_ONLY`), on now; it also makes the client suite's SIFTEC
    failures owed. Turn it off when SIFTEC runs MapMod's latest again.
-3. The MSPT gate is "median of five below vanilla's median" for core `mobs` and `random`; core `run` and SIFTEC `train`
+3. The MSPT gate is "median of the seven per-round Quicksilver/vanilla ratios below 1" for core `mobs` and `random`; core `run` and SIFTEC `train`
    are reported.
 
 ### Known limits
