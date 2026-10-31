@@ -18,11 +18,19 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
  * checks its hooks at server start ({@link Optimisations#checkHooks}).
  */
 public final class LogicMixins implements IMixinConfigPlugin {
-    private static final Map<String, Set<String>> APPLIED = new ConcurrentHashMap<>();
+    /** Per target class: the handlers some other method of the merged class calls (an injection that landed). */
+    private static final Map<String, Set<String>> CALLED = new ConcurrentHashMap<>();
+    /** Per target class: the quicksilver$ members it has (accessors, added interface methods). */
+    private static final Map<String, Set<String>> MEMBERS = new ConcurrentHashMap<>();
 
-    /** Whether a handler (its name ends with {@code quicksilver$<name>}) landed in the target class. */
-    public static boolean applied(String target, String handler) {
-        return APPLIED.getOrDefault(target, Set.of()).contains(handler);
+    /** Whether an injection handler (its name ends with {@code quicksilver$<name>}) is called in the target class. */
+    public static boolean called(String target, String handler) {
+        return CALLED.getOrDefault(target, Set.of()).contains(handler);
+    }
+
+    /** Whether the target class has a member named (or ending with) {@code quicksilver$<name>}. */
+    public static boolean member(String target, String name) {
+        return MEMBERS.getOrDefault(target, Set.of()).contains(name);
     }
 
     @Override
@@ -38,15 +46,17 @@ public final class LogicMixins implements IMixinConfigPlugin {
 
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        // every quicksilver$ handler the merged class now calls, or holds as a method of its own
-        Set<String> found = APPLIED.computeIfAbsent(targetClassName, k -> ConcurrentHashMap.newKeySet());
+        // the quicksilver$ members of the merged class, and the ones another of its methods calls (a landed injection)
+        Set<String> members = MEMBERS.computeIfAbsent(targetClassName, k -> ConcurrentHashMap.newKeySet());
+        Set<String> called = CALLED.computeIfAbsent(targetClassName, k -> ConcurrentHashMap.newKeySet());
         for (MethodNode m : targetClass.methods) {
             int i = m.name.indexOf("quicksilver$");
-            if (i >= 0) found.add(m.name.substring(i));
+            if (i >= 0) members.add(m.name.substring(i));
+            if (i >= 0) continue;
             for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
                 if (insn instanceof MethodInsnNode call && call.owner.equals(targetClass.name)) {
                     int j = call.name.indexOf("quicksilver$");
-                    if (j >= 0) found.add(call.name.substring(j));
+                    if (j >= 0) called.add(call.name.substring(j));
                 }
             }
         }
@@ -68,5 +78,18 @@ public final class LogicMixins implements IMixinConfigPlugin {
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        if (Boolean.getBoolean("quicksilver.debug.logicShape") && targetClassName.endsWith(".BlockCollisions")) {
+            // names only (method and field names and the methods each calls), to find where a hook belongs
+            StringBuilder b = new StringBuilder();
+            for (org.objectweb.asm.tree.FieldNode f : targetClass.fields) b.append(" field ").append(f.name).append(' ').append(f.desc).append(';');
+            for (MethodNode m : targetClass.methods) {
+                java.util.TreeSet<String> calls = new java.util.TreeSet<>();
+                for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+                    if (insn instanceof MethodInsnNode c) calls.add(c.owner.substring(c.owner.lastIndexOf('/') + 1) + "." + c.name);
+                }
+                b.append(" method ").append(m.name).append(m.desc).append(" calls ").append(calls).append(';');
+            }
+            Logic.LOG.info("Quicksilver logic shape {}:{}", targetClassName, b);
+        }
     }
 }

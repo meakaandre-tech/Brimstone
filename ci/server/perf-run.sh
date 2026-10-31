@@ -57,8 +57,10 @@ one() {
   grep -v '^qs-at ' "ci/server/$script" > "$dir/script.txt"
   printf '\nat 0 tick sprint %s\n' "$ticks" >> "$dir/script.txt"
   local extra=()
+  # P2-2 (temporary): the Logic module logs the names of BlockCollisions' methods and calls (where a hook belongs)
+  [ "$side" = quicksilver ] && extra+=("-Dquicksilver.debug.logicShape=true")
   if [ "$jfr" = 1 ]; then
-    extra=("-XX:StartFlightRecording=filename=$dir/rec.jfr,dumponexit=true,settings=profile,jdk.ExecutionSample#period=1ms")
+    extra+=("-XX:StartFlightRecording=filename=$dir/rec.jfr,dumponexit=true,settings=profile,jdk.ExecutionSample#period=1ms")
   fi
   local t0=$(date +%s)
   (cd "$srv" && timeout 1800 java -Xmx3G -Dmax.bg.threads=1 -Dci.harness.out="$dir" -Dci.harness.run="$dir/script.txt" \

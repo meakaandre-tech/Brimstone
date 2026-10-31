@@ -18,18 +18,18 @@ final class Optimisations {
     private static final List<Opt> ALL = List.of(
         new Opt(SectionMasks.ID, "block collision sweeps skip, unread, positions that hold air and shell positions without an oversized shape (per-section masks)",
             List.of("BlockCollisionsMixin", "LevelChunkSectionMixin", "PalettedContainerMixin"),
-            List.<String[]>of(new String[] {"net.minecraft.world.level.BlockCollisions", "quicksilver$skipEdges"},
+            List.<String[]>of(new String[] {"net.minecraft.world.level.BlockCollisions", "call:quicksilver$skipEdges"},
                 new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "quicksilver$mask"},
-                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "quicksilver$swapped"},
-                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "quicksilver$written"})),
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$swapped"},
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$written"})),
         new Opt(EntitySections.ID, "entity sections near a small box looked up directly, in vanilla's order (Lithium's fast_retrieval)",
             List.of("EntitySectionStorageMixin"),
-            List.<String[]>of(new String[] {"net.minecraft.world.level.entity.EntitySectionStorage", "quicksilver$sections"})),
+            List.<String[]>of(new String[] {"net.minecraft.world.level.entity.EntitySectionStorage", "call:quicksilver$sections"})),
         new Opt(EntityCollisions.ID, "lookups for entities to collide with like blocks answered from per-section counts when there are none",
             List.of("EntityGetterMixin", "EntitySectionMixin", "EntityTypeMixin", "ServerLevelEntitiesAccessor", "PersistentEntitySectionManagerAccessor"),
-            List.<String[]>of(new String[] {"net.minecraft.world.level.EntityGetter", "quicksilver$noHardEntities"},
-                new String[] {"net.minecraft.world.level.entity.EntitySection", "quicksilver$added"},
-                new String[] {"net.minecraft.world.level.entity.EntitySection", "quicksilver$removed"},
+            List.<String[]>of(new String[] {"net.minecraft.world.level.EntityGetter", "call:quicksilver$noHardEntities"},
+                new String[] {"net.minecraft.world.level.entity.EntitySection", "call:quicksilver$added"},
+                new String[] {"net.minecraft.world.level.entity.EntitySection", "call:quicksilver$removed"},
                 new String[] {"net.minecraft.world.entity.EntityType", "quicksilver$kind"},
                 new String[] {"net.minecraft.server.level.ServerLevel", "quicksilver$entityManager"},
                 new String[] {"net.minecraft.world.level.entity.PersistentEntitySectionManager", "quicksilver$sectionStorage"})));
@@ -58,7 +58,9 @@ final class Optimisations {
                     Logic.fallback(s, "class " + h[0] + " not found", t);
                     continue;
                 }
-                if (!LogicMixins.applied(h[0], h[1])) Logic.fallback(s, "hook " + h[1] + " did not land in " + h[0], null);
+                // "call:" an injection that must be called from the target's own code; otherwise a member it must have
+                boolean ok = h[1].startsWith("call:") ? LogicMixins.called(h[0], h[1].substring(5)) : LogicMixins.member(h[0], h[1]);
+                if (!ok) Logic.fallback(s, "hook " + h[1] + " did not land in " + h[0], null);
             }
         }
     }
