@@ -16,6 +16,7 @@ the `brim*` outputs are `QsCell`, `QsTint`, `QsTexel`, `QsRegion` and `qs*`; the
 
 | track | branch | status |
 |---|---|---|
+| phase 2, P2-2 (logic I) | `p2-2`, not merged | Logic module: block-collisions (section masks), entity-sections, entity-collisions; perf job (same-runner MSPT, JFR by phase), mob scene; SIFTEC report-only switch; see "Phase 2, P2-2" below |
 | phase 2, P2-1 (memory) | merged | `5c98187` (squash of `p2-1`; branch green full run 40989347563), **main full run 41137485459 green, `latest` rebuilt with `quicksilver-26.3.jar` and `quicksilver-bench-26.3.jar`**; harness fixes (scheduled ticks, furnace and bearing gated again; random-tick and spawning run), Memory module; heap 7% (core), 22% (SIFTEC), 32% (Terralith) below vanilla; see "Phase 2, P2-1" below |
 | phase 2, P2-0 (server harness) | merged | server suite, server bench numbers, research; see "Phase 2, P2-0" below |
 | package 3 (translucency) | merged | `143defe`, main green (run 40197881761), `latest` rebuilt |
@@ -2490,6 +2491,68 @@ face shapes and vanilla's identity-keyed caches, the spawner's re-seed (above), 
 (works on Java 25; a later JDK may refuse), the config file rewritten without the user's comments when keys are
 added.
 
+## Phase 2, P2-2: Logic I, movement and access (branch `p2-2`, not merged: Andre checks it first)
+
+Design doc: [Quicksilver Phase 2: Design](https://claude.ai/artifact/6QVKeDHfvCQDDDppdrxu45), P2-2. Files: the Logic module
+(`src/main/java/com/meakaandre/quicksilver/logic/`, `mixin/logic/`, `quicksilver.logic.mixins.json`), the perf job
+(`ci/server/perf-run.sh`, `perf-jfr.py`, `perf-core.txt`, `perf-siftec.txt`, `scripted-run-core-mobs.txt`) and its checks
+(`ci/server/compare-p2.py`, kept apart from compare-server.py, which `fix-worldgen-diff` is changing). Shared files touched:
+`build.yml` (the `server-perf` job, one step each in `server-compare` and `compare`, `SIFTEC_REPORT_ONLY`),
+`fabric.mod.json` (one mixin config), `Quicksilver.java` (one line), `NOTICE` (Lithium), `docs/ci-limits.md` (new section
+at the end).
+
+### Measured first
+
+Same-runner MSPT (the perf job, `docs/ci-limits.md`, "Perf job and Logic module"), vanilla's mob scene by phase
+(JFR): entities 89% of the tick; entity movement 46%, of it the block collision sweep (`BlockCollisions`: each move, the
+supporting-block check every tick) 24-29% and reading block states 17-19% (`PalettedContainer.get` the top method);
+entity lookups 14% (collision lookups 8%, pushing 7%); inside-block effects 7%; AI under 10%. Most of the sweep's reads
+were positions it drops: air, and the shell one block outside the box. The random-tick scene: entities about half (the
+harness's monsters, items, a cave minecart), random ticks and precipitation about 15%. 26.3 already: entity lookups go
+through `EntitySectionStorage` with a sorted set of section ids, collisions are collected into one list per move, the
+sweep caches its chunk (`docs/phase2-research.md` lists what Lithium dropped as done by vanilla).
+
+### What was built
+
+Each has its switch (`logic=on|off`, `logic.<name>=on|off` in `config/quicksilver.properties`, read at start-up; off
+means its mixins aren't applied), falls back to vanilla's code with one `Quicksilver logic fallback:` line on any
+exception or a hook that didn't land (an injection counts only where the game's own code calls it), and is off with
+Lithium installed or in CI's measure-only runs. Nothing asks the server thread for an identity hash (P2-1's rule).
+
+| optimisation | what | from |
+|---|---|---|
+| `block-collisions` | each chunk section keeps two masks of its 4096 positions (non-air; large collision shape or moving piston), built when a sweep first needs them and kept current across `setBlockState`; every write to a block container counts up a number on it, so masks of another count are built again. The sweep drops, unread, positions holding air and shell positions holding neither kind of state: exactly what vanilla reads and drops, so the same shapes come out in the same order. Server levels only, not debug worlds | own |
+| `entity-sections` | the entity sections near a small box (under four sections wide) looked up directly instead of walking the column's sorted ids, in the sorted set's own order | Lithium `entity.fast_retrieval` (LGPL-3.0-only; header kept, NOTICE) |
+| `entity-collisions` | entity sections count entities whose class overrides `canBeCollidedWith` (boats, shulkers, minecarts); a lookup for entities to collide with like blocks returns vanilla's empty answer when every section it would visit counts none. Not for movers that override `canCollideWith`, nor with ender dragon parts. Which methods a class overrides is found by reflection on a thread made at start-up (reflection can hash the class) | own; idea from Lithium's collision class groups |
+
+Not built (measured or checked): Lithium's movement rewrite (`collisions.movement`: reorders shapes and shrinks the box for
+single-axis moves; its own notes say that can skip a 1e-7 clip), `shapes.*` (specialised shape classes; the remaining
+sweep cost is real collisions), `chunk_access` (vanilla's 4-entry chunk cache already answers; ticket timing changes),
+`block_effects` (allocations, about 0.03 ms), random ticks (Lithium's needs `block_tracking`, not ported).
+
+### Results
+
+(filled in from the final full run)
+
+### Choices for Andre
+
+1. `block-collisions` keeps its own per-section masks, updated on writes: it is not Lithium's `block_tracking` (counts per
+   flag, off on 26.3 for chunk corruption) but it is block tracking of a kind. Its safety net is the write counter on
+   every block container write, which rebuilds masks after any write the section didn't make itself. Keep it on by
+   default?
+2. SIFTEC report-only is a switch in `build.yml` (`SIFTEC_REPORT_ONLY`), on now; it also makes the client suite's SIFTEC
+   failures owed. Turn it off when SIFTEC runs MapMod's latest again.
+3. The MSPT gate is "median of five below vanilla's median" for core `mobs` and `random`; core `run` and SIFTEC `train`
+   are reported.
+
+### Known limits
+
+- The masks cost 1 KiB per section a sweep has used; the heap gate (Quicksilver below vanilla) still passes.
+- A mod writing a section's container through a method other than the container's own setters (`getAndSet`,
+  `getAndSetUnchecked`, `set`, `read`) would leave masks stale; all of vanilla's writes go through them.
+- Pushing (`LivingEntity.pushEntities`, 7%) and inside-block effects (7%) are untouched: their lookups' results are
+  used in vanilla's order.
+
 ## Phase 2 plan: later memory package (Andre, 2026-10-31)
 
 Measured in P2-1, not built there: a memory package of its own after P2-1 and before P2-7's sign-off, with its own
@@ -2533,7 +2596,10 @@ needed. Scratch tools (not in the repo): a compile check against stubs generated
 (`scratchpad/p3/stubgen/check.sh`; it does not cover `ci/pin-mod`), the shader harness (`scratchpad/p3/harness4.py`),
 strict-sample scripts (`scratchpad/tools/strict2.py`, `samples.py`).
 
-**Now (P2-1):** merged (see "Phase 2, P2-1"); next in phase 2 is P2-2 (Logic I), with the later memory package
+**Now (P2-2):** branch `p2-2`, waiting for Andre's check (see "Phase 2, P2-2"); perf numbers: `compare/p2.md` on
+`ci-logs-server-<branch>`.
+
+**Before (P2-1):** merged (see "Phase 2, P2-1"); next in phase 2 is P2-2 (Logic I), with the later memory package
 above in the plan. Phase 2 reads: the server suite's
 reports are on `ci-logs-server-<branch>` (`compare/report.md`, `compare/<suite>-heap.md`, every run's logs and
 histograms under `runs/`); quick runs take `[siftec]` and `[terralith]`.
