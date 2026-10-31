@@ -1,0 +1,498 @@
+{
+ "fails": [],
+ "suites": {
+  "core": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_end/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_end/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    },
+    "dimensions/minecraft/the_nether/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "run": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "random": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 1764,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gametests": {
+    "vanilla-a": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "vanilla-b": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "vanilla-c": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    },
+    "quicksilver": {
+     "villager_trade": [
+      46,
+      "offers=2 first=minecraft:bookshelf xp=1"
+     ],
+     "piston_door": [
+      63,
+      "closedAt=13"
+     ],
+     "redstone_clock": [
+      100,
+      "lampOn=1 observerPulses=17"
+     ],
+     "mob_farm": [
+      141,
+      "drops=14 beef=9 leather=5"
+     ],
+     "piston_machine": [
+      200,
+      "extensions=10 line=stone,_,cobblestone,oak_planks,"
+     ],
+     "crop_farm": [
+      200,
+      "grown=6 dispensersEmpty=false"
+     ],
+     "item_sorter": [
+      436,
+      "sorted=19 passed=20 strays=0 filter=18 lock=1 line=0 input=0 torch=true"
+     ],
+     "hopper_chain": [
+      542,
+      "moved=64"
+     ]
+    }
+   },
+   "run-numbers-vanilla-a": {
+    "startupMs": 12340,
+    "worldLoadMs": 549,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 149.606,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.567,
+    "msptP50": 0.879,
+    "msptP99": 12.084,
+    "msptMax": 98.616,
+    "ticksOver50ms": 2,
+    "heapEndMB": 150.232,
+    "chunksResaved": 144
+   },
+   "run-numbers-vanilla-b": {
+    "startupMs": 12109,
+    "worldLoadMs": 561,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 151.117,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.466,
+    "msptP50": 0.886,
+    "msptP99": 12.127,
+    "msptMax": 89.76,
+    "ticksOver50ms": 2,
+    "heapEndMB": 151.607,
+    "chunksResaved": 144
+   },
+   "run-numbers-vanilla-c": {
+    "startupMs": 12276,
+    "worldLoadMs": 575,
+    "quicksilverLoaded": false,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 3,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 150.991,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.542,
+    "msptP50": 0.935,
+    "msptP99": 11.191,
+    "msptMax": 109.832,
+    "ticksOver50ms": 2,
+    "heapEndMB": 151.474,
+    "chunksResaved": 144
+   },
+   "run-numbers-quicksilver": {
+    "startupMs": 8147,
+    "worldLoadMs": 401,
+    "quicksilverLoaded": true,
+    "mode": "run",
+    "ticks": 1200,
+    "loadWaitTicks": 2,
+    "commandErrors": 0,
+    "lightSettleTicks": 200,
+    "heapAfterLoadMB": 139.652,
+    "ticksRenumbered": 3694,
+    "msptAvg": 1.473,
+    "msptP50": 1.149,
+    "msptP99": 6.713,
+    "msptMax": 58.606,
+    "ticksOver50ms": 1,
+    "heapEndMB": 141.694,
+    "chunksResaved": 144
+   },
+   "memory": {
+    "gametest-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "gen-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "heap-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "random-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries",
+    "run-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries"
+   },
+   "heap": {
+    "vanilla-a": {
+     "heapLiveLoadMB": 149.374,
+     "heapLiveEndMB": 150.176,
+     "heapAfterLoadMB": 150.912,
+     "heapEndMB": 152.175
+    },
+    "vanilla-b": {
+     "heapLiveLoadMB": 149.632,
+     "heapLiveEndMB": 150.477,
+     "heapAfterLoadMB": 151.161,
+     "heapEndMB": 152.476
+    },
+    "vanilla-c": {
+     "heapLiveLoadMB": 149.53,
+     "heapLiveEndMB": 150.475,
+     "heapAfterLoadMB": 151.061,
+     "heapEndMB": 152.475
+    },
+    "quicksilver": {
+     "heapLiveLoadMB": 137.566,
+     "heapLiveEndMB": 138.408,
+     "heapAfterLoadMB": 139.095,
+     "heapEndMB": 140.408
+    }
+   },
+   "bench": {
+    "kind": "server",
+    "seconds": 50,
+    "time": "2026-10-31T11:30:28.172050385",
+    "quicksilver": "0.0.1+26.3",
+    "minecraft": "26.3",
+    "server": {
+     "side": "dedicated",
+     "ticks": 1003,
+     "tps": 20.06,
+     "msptAvg": 1.574,
+     "msptP50": 1.204,
+     "msptP99": 7.45,
+     "msptMax": 57.7,
+     "ticksOver50ms": 1,
+     "heapUsedMB": 205.751,
+     "heapUsedAfterGcMB": 142.789,
+     "startupMs": 9549,
+     "worldLoadMs": 1802,
+     "network": {
+      "counting": true,
+      "serverBytesInWindow": 0,
+      "serverBytesIn": 0,
+      "serverBytesOut": 0,
+      "clientBytesIn": 0,
+      "clientBytesOut": 0
+     },
+     "players": 0
+    }
+   }
+  },
+  "siftec": {
+   "run-numbers-vanilla-a": {},
+   "run-numbers-vanilla-b": {},
+   "run-numbers-vanilla-c": {},
+   "run-numbers-quicksilver": {},
+   "heap": {
+    "vanilla-a": {
+     "heapLiveLoadMB": null,
+     "heapLiveEndMB": null,
+     "heapAfterLoadMB": null,
+     "heapEndMB": null
+    },
+    "vanilla-b": {
+     "heapLiveLoadMB": null,
+     "heapLiveEndMB": null,
+     "heapAfterLoadMB": null,
+     "heapEndMB": null
+    },
+    "vanilla-c": {
+     "heapLiveLoadMB": null,
+     "heapLiveEndMB": null,
+     "heapAfterLoadMB": null,
+     "heapEndMB": null
+    },
+    "quicksilver": {
+     "heapLiveLoadMB": null,
+     "heapLiveEndMB": null,
+     "heapAfterLoadMB": null,
+     "heapEndMB": null
+    }
+   },
+   "train": {
+    "vanilla-a": null,
+    "vanilla-b": null,
+    "vanilla-c": null,
+    "quicksilver": null
+   },
+   "selftests": {
+    "vanilla-a": {},
+    "vanilla-b": {},
+    "vanilla-c": {},
+    "quicksilver": {}
+   }
+  },
+  "terralith": {
+   "genbytes": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "gen": {
+    "dimensions/minecraft/overworld/region": {
+     "chunks": 144,
+     "noise": 0,
+     "quicksilver": 0,
+     "gated": 0,
+     "noiseKeys": []
+    }
+   },
+   "memory": {
+    "gen-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 1 times, 197618 entries",
+    "heap-server.log": "state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 1 times, 154119 entries"
+   },
+   "heap": {
+    "vanilla-a": {
+     "heapLiveLoadMB": 262.039,
+     "heapLiveEndMB": 262.615,
+     "heapAfterLoadMB": 263.568,
+     "heapEndMB": 264.614
+    },
+    "vanilla-b": {
+     "heapLiveLoadMB": 262.754,
+     "heapLiveEndMB": 263.355,
+     "heapAfterLoadMB": 264.284,
+     "heapEndMB": 265.354
+    },
+    "vanilla-c": {
+     "heapLiveLoadMB": 261.751,
+     "heapLiveEndMB": 262.644,
+     "heapAfterLoadMB": 263.28,
+     "heapEndMB": 264.643
+    },
+    "quicksilver": {
+     "heapLiveLoadMB": 179.41,
+     "heapLiveEndMB": 179.952,
+     "heapAfterLoadMB": 180.939,
+     "heapEndMB": 181.951
+    }
+   }
+  },
+  "network": {
+   "net-vanilla-client": {
+    "joined": true,
+    "finished": true,
+    "leftEarly": false,
+    "problems": [],
+    "network": {
+     "counting": true,
+     "serverBytesInWindow": 958253,
+     "serverBytesIn": 6379,
+     "serverBytesOut": 2551199,
+     "clientBytesIn": 0,
+     "clientBytesOut": 0
+    }
+   },
+   "net-qs-client": {
+    "joined": true,
+    "finished": true,
+    "leftEarly": false,
+    "problems": [],
+    "network": {}
+   }
+  },
+  "siftecReportOnly": [
+   "siftec worldgen vanilla-a: the harness did not finish (no result)",
+   "siftec worldgen vanilla-a: no CI HARNESS GEN DONE in its log",
+   "siftec worldgen vanilla-b: the harness did not finish (no result)",
+   "siftec worldgen vanilla-b: no CI HARNESS GEN DONE in its log",
+   "siftec worldgen vanilla-c: the harness did not finish (no result)",
+   "siftec worldgen vanilla-c: no CI HARNESS GEN DONE in its log",
+   "siftec worldgen quicksilver: the harness did not finish (no result)",
+   "siftec worldgen quicksilver: no CI HARNESS GEN DONE in its log",
+   "siftec worldgen (byte for byte): a world is missing or the comparison failed",
+   "siftec worldgen (block by block): a world is missing or the comparison failed",
+   "siftec world diff after the scripted run: a world is missing or the comparison failed",
+   "siftec scripted run vanilla-a: did not finish (no result)",
+   "siftec scripted run vanilla-b: did not finish (no result)",
+   "siftec scripted run vanilla-c: did not finish (no result)",
+   "siftec scripted run quicksilver: did not finish (no result)",
+   "siftec: Quicksilver not in the quicksilver run's mod list",
+   "siftec heap run vanilla-a: no finished heap run (no result)",
+   "siftec heap run vanilla-b: no finished heap run (no result)",
+   "siftec heap run vanilla-c: no finished heap run (no result)",
+   "siftec heap run quicksilver: no finished heap run (no result)",
+   "siftec heap run: no live heap after load in every run",
+   "siftec heap run: no live heap after ten minutes in every run",
+   "siftec: no server bench report in the quicksilver run",
+   "siftec train: no result in vanilla-a",
+   "siftec train: no result in vanilla-b",
+   "siftec train: no result in vanilla-c",
+   "siftec train: no result in quicksilver",
+   "siftec self-tests: no results in vanilla-a",
+   "siftec self-tests: no results in vanilla-b",
+   "siftec self-tests: no results in vanilla-c",
+   "siftec self-tests: no results in quicksilver"
+  ]
+ }
+}

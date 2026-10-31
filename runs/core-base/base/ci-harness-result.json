@@ -1,0 +1,21 @@
+{
+  "startupMs": 21582,
+  "worldLoadMs": 4793,
+  "quicksilverLoaded": false,
+  "generated": [
+    {
+      "area": "minecraft:overworld -6 -6 5 5",
+      "chunks": 144,
+      "ms": 14841
+    }
+  ],
+  "mode": "gen",
+  "postGenPiecesPlaced": 0,
+  "atOldStopTick": 20,
+  "atOldStopPostGenPending": 0,
+  "atOldStopGenChunksUnloaded": 0,
+  "lightSettleTicks": 40,
+  "postGenPendingAtSave": 0,
+  "genChunksUnloadedAtSave": 0,
+  "heapAfterGenMB": 204.618
+}
