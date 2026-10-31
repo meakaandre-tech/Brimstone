@@ -78,18 +78,5 @@ public final class LogicMixins implements IMixinConfigPlugin {
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        if (Boolean.getBoolean("quicksilver.debug.logicShape") && targetClassName.endsWith(".BlockCollisions")) {
-            // names only (method and field names and the methods each calls), to find where a hook belongs
-            StringBuilder b = new StringBuilder();
-            for (org.objectweb.asm.tree.FieldNode f : targetClass.fields) b.append(" field ").append(f.name).append(' ').append(f.desc).append(';');
-            for (MethodNode m : targetClass.methods) {
-                java.util.TreeSet<String> calls = new java.util.TreeSet<>();
-                for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
-                    if (insn instanceof MethodInsnNode c) calls.add(c.owner.substring(c.owner.lastIndexOf('/') + 1) + "." + c.name);
-                }
-                b.append(" method ").append(m.name).append(m.desc).append(" calls ").append(calls).append(';');
-            }
-            Logic.LOG.info("Quicksilver logic shape {}:{}", targetClassName, b);
-        }
     }
 }

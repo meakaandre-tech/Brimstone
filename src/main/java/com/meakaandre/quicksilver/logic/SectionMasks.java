@@ -1,6 +1,5 @@
 package com.meakaandre.quicksilver.logic;
 
-import java.util.function.Consumer;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.CollisionGetter;
@@ -108,26 +107,48 @@ public final class SectionMasks {
         Holder h = (Holder) section;
         Mask m = h.quicksilver$mask();
         if (m != null && m.container() == states && m.writes() == writes) return m;
-        Build b = new Build();
-        states.getAll(b);
-        if (b.index != 4096) throw new IllegalStateException("a section's container listed " + b.index + " states, not 4096");
-        m = new Mask(b.solid, b.big, states, writes);
+        long[] solid = new long[64], big = new long[64];
+        for (int y = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++) {
+                for (int x = 0; x < 16; x++) {
+                    BlockState st = states.get(x, y, z);
+                    int i = y << 8 | z << 4 | x;
+                    if (!st.isAir()) solid[i >>> 6] |= 1L << i;
+                    if (oversized(st)) big[i >>> 6] |= 1L << i;
+                }
+            }
+        }
+        m = new Mask(solid, big, states, writes);
         h.quicksilver$mask(m);
         return m;
     }
 
-    /** Fills the masks in the container's own order (index = y << 8 | z << 4 | x). */
-    private static final class Build implements Consumer<BlockState> {
-        final long[] solid = new long[64];
-        final long[] big = new long[64];
-        int index;
+    private static boolean oversized(BlockState s) {
+        return s.hasLargeCollisionShape() || s.is(Blocks.MOVING_PISTON);
+    }
 
-        @Override
-        public void accept(BlockState s) {
-            int i = index++;
-            if (i >= 4096) return;
-            if (!s.isAir()) solid[i >>> 6] |= 1L << i;
-            if (s.hasLargeCollisionShape() || s.is(Blocks.MOVING_PISTON)) big[i >>> 6] |= 1L << i;
-        }
+    /**
+     * Before a section's setBlockState: whether its masks are up to date (they are kept up to date across the write).
+     */
+    public static boolean beforeSet(LevelChunkSection section) {
+        Mask m = ((Holder) section).quicksilver$mask();
+        PalettedContainer<BlockState> states = section.getStates();
+        return m != null && m.container() == states && m.writes() == ((Writes) states).quicksilver$writes();
+    }
+
+    /** After a section's setBlockState: the written position's bits, and the masks marked current again. */
+    public static void afterSet(LevelChunkSection section, boolean wasCurrent, int x, int y, int z, BlockState state) {
+        if (!wasCurrent) return;
+        Holder h = (Holder) section;
+        Mask m = h.quicksilver$mask();
+        PalettedContainer<BlockState> states = section.getStates();
+        if (m == null || m.container() != states) return;
+        int i = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+        long bit = 1L << i;
+        if (state.isAir()) m.solid()[i >>> 6] &= ~bit;
+        else m.solid()[i >>> 6] |= bit;
+        if (oversized(state)) m.big()[i >>> 6] |= bit;
+        else m.big()[i >>> 6] &= ~bit;
+        h.quicksilver$mask(new Mask(m.solid(), m.big(), states, ((Writes) states).quicksilver$writes()));
     }
 }

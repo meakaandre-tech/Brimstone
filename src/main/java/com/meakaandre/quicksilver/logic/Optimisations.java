@@ -20,6 +20,8 @@ final class Optimisations {
             List.of("BlockCollisionsMixin", "LevelChunkSectionMixin", "PalettedContainerMixin"),
             List.<String[]>of(new String[] {"net.minecraft.world.level.BlockCollisions", "call:quicksilver$skipEdges"},
                 new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "quicksilver$mask"},
+                new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "call:quicksilver$beforeSet"},
+                new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "call:quicksilver$afterSet"},
                 new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$swapped"},
                 new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "call:quicksilver$written"})),
         new Opt(EntitySections.ID, "entity sections near a small box looked up directly, in vanilla's order (Lithium's fast_retrieval)",
