@@ -6,13 +6,13 @@
 # script's qs-at lines left out (Quicksilver's bench would cost its side time vanilla's doesn't pay).
 #
 # Rounds, alternating which side goes first so a runner that speeds up or slows down during the job doesn't favour
-# either side: 1 vanilla then quicksilver, 2 quicksilver then vanilla, 3 vanilla then quicksilver (MSPT: the median of
-# the three), 4 quicksilver then vanilla with Java Flight Recorder sampling the server thread every millisecond (where
+# either side: rounds 1-5 (vanilla first in odd rounds, Quicksilver first in even ones; MSPT: the median of the five),
+# then round 6, Quicksilver then vanilla with Java Flight Recorder sampling the server thread every millisecond (where
 # the time goes, by phase and method: ci/server/perf-jfr.py; not used for the MSPT medians).
 # Every run loads the CI harness (fixed seeds, fixed generation order) and Java runs with -Dmax.bg.threads=1, as in the
 # server suite. Scenes marked `world` keep their saved world: ci/server/compare-p2.py compares every Quicksilver round
 # with vanilla's rounds (gated where vanilla's rounds agree, the server suite's rule).
-# Output: $OUT/<scene>/<side><round>/ (ci-harness-result.json, the server log, jfr.json in round 4, world/).
+# Output: $OUT/<scene>/<side><round>/ (ci-harness-result.json, the server log, jfr.json in round 6, world/).
 set +e
 root=$PWD
 SUITE=${SUITE:-core}
@@ -83,13 +83,12 @@ one() {
 while read -r scene script ticks keep; do
   case "$scene" in ''|'#'*) continue;; esac
   echo "== scene $scene ($script, $ticks ticks sprinting, keep: $keep)"
-  one vanilla 1 "$scene" "$script" "$ticks" "$keep" 0
-  one quicksilver 1 "$scene" "$script" "$ticks" "$keep" 0
-  one quicksilver 2 "$scene" "$script" "$ticks" "$keep" 0
-  one vanilla 2 "$scene" "$script" "$ticks" "$keep" 0
-  one vanilla 3 "$scene" "$script" "$ticks" "$keep" 0
-  one quicksilver 3 "$scene" "$script" "$ticks" "$keep" 0
-  one quicksilver 4 "$scene" "$script" "$ticks" "$keep" 1
-  one vanilla 4 "$scene" "$script" "$ticks" "$keep" 1
+  for r in 1 2 3 4 5; do
+    if [ $((r % 2)) = 1 ]; then first=vanilla; second=quicksilver; else first=quicksilver; second=vanilla; fi
+    one $first $r "$scene" "$script" "$ticks" "$keep" 0
+    one $second $r "$scene" "$script" "$ticks" "$keep" 0
+  done
+  one quicksilver 6 "$scene" "$script" "$ticks" "$keep" 1
+  one vanilla 6 "$scene" "$script" "$ticks" "$keep" 1
 done < "$spec"
 echo "perf done"

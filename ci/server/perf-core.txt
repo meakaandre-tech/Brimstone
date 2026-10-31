@@ -3,6 +3,6 @@
 # mobs: 172 mobs moving and colliding over mixed shapes (entity movement, collisions, block access); random: the
 # random-tick run (random ticks, precipitation, natural spawning); run: the scripted run (machines, crops, animals,
 # villagers, items).
-mobs    scripted-run-core-mobs.txt    2400  world
-random  scripted-run-core-random.txt  2400  -
-run     scripted-run-core.txt         2400  -
+mobs    scripted-run-core-mobs.txt    4800  world
+random  scripted-run-core-random.txt  6000  -
+run     scripted-run-core.txt         4800  -
