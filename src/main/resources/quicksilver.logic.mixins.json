@@ -5,6 +5,8 @@
   "plugin": "com.meakaandre.quicksilver.logic.LogicMixins",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "BlockCollisionsMixin",
+    "EntitySectionStorageMixin"
   ],
   "injectors": {
     "defaultRequire": 0
