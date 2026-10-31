@@ -71,6 +71,12 @@ def scenes(suite):
     return out
 
 
+def suite_of(failure):
+    """The suite a compare-server.py or compare.py failure is about: its first word, up to a space, slash or colon
+    ("siftec worldgen ...", "siftec/quicksilver-vk: ...", "siftec: ...")."""
+    return re.split(r"[/ :]", failure.strip(), maxsplit=1)[0]
+
+
 def worlddiff(a, b, out):
     if not (os.path.isdir(a) and os.path.isdir(b)):
         return None
@@ -248,7 +254,7 @@ def server(res, rep):
         fails.append("no compare-server.py summary")
     else:
         for f in srv.get("fails", []):
-            if f.split(" ")[0].split("/")[0] in REPORT_ONLY_SUITES:
+            if suite_of(f) in REPORT_ONLY_SUITES:
                 owed.append("compare-server: " + f)
             else:
                 fails.append("compare-server: " + f)
@@ -282,7 +288,7 @@ def client(res, rep):
         fails.append("no ci/compare.py report.json")
     else:
         for f in rj.get("failures", []):
-            if re.split(r"[/ :]", f)[0] in REPORT_ONLY_SUITES:
+            if suite_of(f) in REPORT_ONLY_SUITES:
                 owed.append("compare: " + f)
             else:
                 fails.append("compare: " + f)
