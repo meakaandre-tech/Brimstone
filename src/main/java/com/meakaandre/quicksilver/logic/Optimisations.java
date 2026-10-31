@@ -16,12 +16,23 @@ final class Optimisations {
     }
 
     private static final List<Opt> ALL = List.of(
-        new Opt(EdgeSkip.ID, "block collision sweeps skip their outer shell where a section holds no oversized shape",
-            List.of("BlockCollisionsMixin"),
-            List.<String[]>of(new String[] {"net.minecraft.world.level.BlockCollisions", "quicksilver$skipEdges"})),
+        new Opt(SectionMasks.ID, "block collision sweeps skip, unread, positions that hold air and shell positions without an oversized shape (per-section masks)",
+            List.of("BlockCollisionsMixin", "LevelChunkSectionMixin", "PalettedContainerMixin"),
+            List.<String[]>of(new String[] {"net.minecraft.world.level.BlockCollisions", "quicksilver$skipEdges"},
+                new String[] {"net.minecraft.world.level.chunk.LevelChunkSection", "quicksilver$mask"},
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "quicksilver$swapped"},
+                new String[] {"net.minecraft.world.level.chunk.PalettedContainer", "quicksilver$written"})),
         new Opt(EntitySections.ID, "entity sections near a small box looked up directly, in vanilla's order (Lithium's fast_retrieval)",
             List.of("EntitySectionStorageMixin"),
-            List.<String[]>of(new String[] {"net.minecraft.world.level.entity.EntitySectionStorage", "quicksilver$sections"})));
+            List.<String[]>of(new String[] {"net.minecraft.world.level.entity.EntitySectionStorage", "quicksilver$sections"})),
+        new Opt(EntityCollisions.ID, "lookups for entities to collide with like blocks answered from per-section counts when there are none",
+            List.of("EntityGetterMixin", "EntitySectionMixin", "EntityTypeMixin", "ServerLevelEntitiesAccessor", "PersistentEntitySectionManagerAccessor"),
+            List.<String[]>of(new String[] {"net.minecraft.world.level.EntityGetter", "quicksilver$noHardEntities"},
+                new String[] {"net.minecraft.world.level.entity.EntitySection", "quicksilver$added"},
+                new String[] {"net.minecraft.world.level.entity.EntitySection", "quicksilver$removed"},
+                new String[] {"net.minecraft.world.entity.EntityType", "quicksilver$kind"},
+                new String[] {"net.minecraft.server.level.ServerLevel", "quicksilver$entityManager"},
+                new String[] {"net.minecraft.world.level.entity.PersistentEntitySectionManager", "quicksilver$sectionStorage"})));
 
     /** Each optimisation, in the order the status line lists them. */
     static void register(Map<String, String> m) {
@@ -53,8 +64,9 @@ final class Optimisations {
     }
 
     private static Logic.Switch switchOf(String id) {
-        if (id.equals(EdgeSkip.ID)) return EdgeSkip.SWITCH;
+        if (id.equals(SectionMasks.ID)) return SectionMasks.SWITCH;
         if (id.equals(EntitySections.ID)) return EntitySections.SWITCH;
+        if (id.equals(EntityCollisions.ID)) return EntityCollisions.SWITCH;
         return null;
     }
 }

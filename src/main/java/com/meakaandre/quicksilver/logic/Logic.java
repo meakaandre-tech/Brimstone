@@ -108,6 +108,8 @@ public final class Logic {
     /** Main entrypoint: the status line once a server has started (CI reads it). */
     public static void init() {
         load();
+        // the reflection thread of logic.entity-collisions, made here (the main thread), never by the server thread
+        EntityCollisions.init();
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> report());
     }
 
