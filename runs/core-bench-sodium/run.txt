@@ -1,0 +1,52 @@
+suite=core run=bench-sodium
+core server and world: from the core-world job
+pack lock: set core matches ci/pack-lock.txt
+total 2560
+-rw-r--r-- 1 runner runner 2620967 Oct 31 11:50 fabric-api.jar
+mc26.3-0.9.2-fabric
+Sodium: https://cdn.modrinth.com/data/AANobbMI/versions/bAZQdGpg/sodium-fabric-0.9.2%2Bmc26.3.jar
+pack lock: set sodium matches ci/pack-lock.txt
+total 2004
+-rw-r--r-- 1 runner runner   16896 Oct 31 11:51 ci-pin.jar
+-rw-r--r-- 1 runner runner  122108 Oct 31 11:51 quicksilver-bench.jar
+-rw-r--r-- 1 runner runner 1908068 Oct 31 11:51 sodium.jar
+sessions: 8|-|spawn,water_glass,nether,mobs,outline,occlusion,occlusion_move,translucent_move,particles,animation,animated_items 8|ao=false|flat_plants 8|ao=false,quicksilver.block-renderer=off|renderer_off 8|improvedTransparency=true|water_glass_oit,translucent_move_oit 12|-|flythrough
+scene spawn: setting up
+scene spawn: bench done
+scene water_glass: setting up
+scene water_glass: bench done
+scene nether: setting up
+scene nether: bench done
+session 2: no scene of BENCH_SCENES, not started
+session 3: no scene of BENCH_SCENES, not started
+session 4: no scene of BENCH_SCENES, not started
+scene flythrough: setting up
+scene flythrough: bench done
+/tmp/out/core-bench-sodium:
+bench
+client-1.log
+client-5.log
+client-gradle-1.log
+client-gradle-5.log
+drive-flythrough.json
+drive-spawn-water_glass-nether.json
+gfx.txt
+joined-1.txt
+joined-5.txt
+mod-ids.txt
+pack-sha256.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-bench-sodium/bench:
+20261031-115422-spawn.json
+20261031-115556-water_glass.json
+20261031-115715-nether.json
+20261031-115952-flythrough.json
+
+/tmp/out/core-bench-sodium/shots:
+flythrough.png
+nether.png
+spawn.png
+water_glass.png

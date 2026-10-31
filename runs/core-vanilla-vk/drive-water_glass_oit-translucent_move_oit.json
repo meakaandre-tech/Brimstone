@@ -1,0 +1,32 @@
+[
+  {
+    "scene": "water_glass_oit",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ]
+  },
+  {
+    "scene": "translucent_move_oit",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "x2404": 1,
+      "x2414": 1,
+      "x2424": 1,
+      "low": 1,
+      "back": 1,
+      "bare_back": 1
+    },
+    "uploadWaits": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+]

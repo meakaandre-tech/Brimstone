@@ -1,0 +1,2 @@
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+87a5bb39f7e6e41106e77f122f82fc93f9d3bc0b6ebcb746b314172a446a287a  sodium/sodium.jar

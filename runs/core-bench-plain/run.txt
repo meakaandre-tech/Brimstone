@@ -1,0 +1,48 @@
+suite=core run=bench-plain
+core server and world: from the core-world job
+pack lock: set core matches ci/pack-lock.txt
+total 2560
+-rw-r--r-- 1 runner runner 2620967 Oct 31 11:48 fabric-api.jar
+total 140
+-rw-r--r-- 1 runner runner  16896 Oct 31 11:49 ci-pin.jar
+-rw-r--r-- 1 runner runner 122108 Oct 31 11:49 quicksilver-bench.jar
+sessions: 8|-|spawn,water_glass,nether,mobs,outline,occlusion,occlusion_move,translucent_move,particles,animation,animated_items 8|ao=false|flat_plants 8|ao=false,quicksilver.block-renderer=off|renderer_off 8|improvedTransparency=true|water_glass_oit,translucent_move_oit 12|-|flythrough
+scene spawn: setting up
+scene spawn: bench done
+scene water_glass: setting up
+scene water_glass: bench done
+scene nether: setting up
+scene nether: bench done
+session 2: no scene of BENCH_SCENES, not started
+session 3: no scene of BENCH_SCENES, not started
+session 4: no scene of BENCH_SCENES, not started
+scene flythrough: setting up
+scene flythrough: bench done
+/tmp/out/core-bench-plain:
+bench
+client-1.log
+client-5.log
+client-gradle-1.log
+client-gradle-5.log
+drive-flythrough.json
+drive-spawn-water_glass-nether.json
+gfx.txt
+joined-1.txt
+joined-5.txt
+mod-ids.txt
+pack-sha256.txt
+run.txt
+server.log
+shots
+
+/tmp/out/core-bench-plain/bench:
+20261031-115135-spawn.json
+20261031-115308-water_glass.json
+20261031-115427-nether.json
+20261031-115654-flythrough.json
+
+/tmp/out/core-bench-plain/shots:
+flythrough.png
+nether.png
+spawn.png
+water_glass.png
