@@ -94,6 +94,44 @@ covers the minimap again.
 Updating the lock is a deliberate commit: it names the changed jars and re-collects the numbers they affect (baselines
 and limits, by the rules above, from at least 3 clean runs on the new jars, with vanilla's numbers as the reason).
 
+## Package 4c: like-for-like timing (Andre, 2026-10-30 and 31)
+
+In every Quicksilver run with `-Dquicksilver.debug.verifyMesher=true`, each section meshed outside a bench is meshed by
+both meshers on the same thread from the same copy of the world (vanilla's `RenderSectionRegion`), one right after the
+other, alternating which goes first. Both sides are timed from the start of meshing to "ready to upload":
+
+- **Quicksilver**: `MeshWorker.compile`: the snapshot, every block and fluid through Quicksilver's renderer and fluid
+  mesher, quads written into 16-byte vertices grouped by facing (translucent in the order made), the visibility graph,
+  the translucent sort (vanilla's), block entities handed over, and the final layers written once into buffers the
+  terrain module takes over as they are at the upload. Left out: the once-per-fluid check of a new fluid against
+  vanilla's renderer (`FluidProbe`; vanilla has no such step).
+- **Vanilla**: vanilla's `SectionCompiler.compile` (with Fabric API's hook and Quicksilver's renderer drawing the
+  blocks, as in any run with Quicksilver), then its layers turned into the 16-byte vertex the way the terrain module turns
+  them when vanilla's compiler meshes (`CompactVertex.convert`: grouped by facing for solid and cutout, in order for
+  translucent).
+- Neither side includes the copy into the GPU staging buffer or, for translucent layers, widening the index list (the
+  same for both, at the upload).
+
+Gate: in every scene, the median over all pairs since the session started (`mesher.checkedMedianQuicksilverMs` against
+`checkedMedianVanillaCompilerMs`) at or under vanilla's; in flat-lit sessions (smooth lighting off: flat_plants,
+renderer_off, factory_flat) at most vanilla's + 10% (Andre, 2026-10-31).
+
+Why flat-lit sessions get 10%: with smooth lighting the shared block renderer spends most of a section's time on per-quad
+lighting, which Quicksilver reads from its snapshot; with flat lighting that work is small, and what is left is about
+the same on both sides. After five attempts (two of them after both sides were timed to "ready to upload"), the last
+run (41143673630) had, Quicksilver against vanilla, median ms per section:
+
+| scene | full | old-GPU | Vulkan |
+|---|---|---|---|
+| flythrough (smooth) | 3.05 / 4.77 (0.64) | 3.38 / 5.26 (0.64) | 2.37 / 3.51 (0.67) |
+| siftec factory (smooth) | 4.98 / 7.37 (0.68) | 5.95 / 7.80 (0.76) | 4.12 / 5.83 (0.71) |
+| flat_plants (flat) | 2.28 / 2.86 (0.80) | 2.33 / 2.85 (0.82) | 1.68 / 2.33 (0.72) |
+| renderer_off (flat, vanilla's block renderer) | 2.37 / 4.31 (0.55) | 2.83 / 3.91 (0.72) | 1.86 / 2.75 (0.68) |
+| siftec factory_flat (flat) | 1.17 / 1.16 (1.01) | 1.38 / 1.00 (1.38) | 1.77 / 1.51 (1.17) |
+
+factory_flat is its own session of about 75 sections (150 pairs), mostly air with a few Create machines; its ratio
+moves between 1.0 and 1.4 from run to run and profile to profile on the same code.
+
 ## Pixel limits (`ci/pixel-limits.json`)
 
 A screenshot's difference is the share of pixels whose largest RGB channel differs by more than 8 (of 255): small

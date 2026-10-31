@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableMesh;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadView;
 import net.fabricmc.fabric.api.client.renderer.v1.render.AltModelBlockRenderer;
 import net.fabricmc.fabric.api.client.renderer.v1.render.submit.ExtendedBlockModelSubmit;
 import net.fabricmc.fabric.api.client.renderer.v1.render.submit.ExtendedItemSubmit;
@@ -149,6 +150,27 @@ public final class QuicksilverRenderer implements Renderer {
                 consumer.accept(this);
             }
         };
+    }
+
+    /**
+     * Package 4c: an emitter for Quicksilver's own mesher. As {@link #quadEmitter}, except that Quicksilver's block renderer
+     * hands it each finished quad as it is (no copy into the emitter, no second emit) while no transform is pushed on it.
+     */
+    public static QuadEmitter directEmitter(Consumer<? super QuadView> consumer) {
+        return new DirectEmitter(consumer);
+    }
+
+    static final class DirectEmitter extends MutableQuadViewImpl {
+        final Consumer<? super QuadView> consumer;
+
+        DirectEmitter(Consumer<? super QuadView> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        protected void emitDirectly() {
+            consumer.accept(this);
+        }
     }
 
     @Override

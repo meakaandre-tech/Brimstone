@@ -44,8 +44,8 @@ public final class CompactVertex {
      * One layer, converted, in a memAlloc'd buffer; how many of its vertices had a position or UV rounded. For a solid
      * or cutout layer, {@code faces} says how its quads are grouped by facing (null: one group in vanilla's order).
      */
-    record Converted(ByteBuffer data, int vertices, int positionsRounded, int uvsRounded, Faces faces) {
-        void free() {
+    public record Converted(ByteBuffer data, int vertices, int positionsRounded, int uvsRounded, Faces faces) {
+        public void free() {
             MemoryUtil.memFree(data);
         }
     }
@@ -65,17 +65,17 @@ public final class CompactVertex {
      * their outward faces that way). For each axis group, {@code planeMin}/{@code planeMax} are the lowest and highest
      * plane positions of its quads, in blocks from the section origin, as the shader decodes them.
      */
-    record Faces(int[] start, float[] planeMin, float[] planeMax) {
+    public record Faces(int[] start, float[] planeMin, float[] planeMax) {
         /** Quads in group {@code g}; group {@code g} starts at quad {@code start[g]}, {@code start[GROUPS]} is the layer's quad count. */
-        int quads(int g) {
+        public int quads(int g) {
             return start[g + 1] - start[g];
         }
     }
 
-    static final int GROUPS = 7, UNALIGNED = 0;
+    public static final int GROUPS = 7, UNALIGNED = 0;
 
     /** Axis (0 x, 1 y, 2 z) of an axis group 1-6 (+X, +Y, +Z, -X, -Z, -Y). */
-    static int axis(int g) {
+    public static int axis(int g) {
         return switch (g) {
             case 1, 4 -> 0;
             case 2, 6 -> 1;
@@ -84,7 +84,7 @@ public final class CompactVertex {
     }
 
     /** The group of a quad facing along {@code axis}, positive or negative. */
-    static int group(int axis, boolean positive) {
+    public static int group(int axis, boolean positive) {
         return positive ? 1 + axis : axis == 0 ? 4 : axis == 1 ? 6 : 5;
     }
 
@@ -120,7 +120,7 @@ public final class CompactVertex {
     }
 
     /** Which section of its region (8x4x8 sections, 128x64x128 blocks) a section origin is. */
-    static int sectionIndex(int originX, int originY, int originZ) {
+    public static int sectionIndex(int originX, int originY, int originZ) {
         return ((originX >> 4) & 7) | (((originY >> 4) & 3) << 3) | (((originZ >> 4) & 7) << 5);
     }
 
@@ -139,9 +139,9 @@ public final class CompactVertex {
      * lists name vanilla's vertex order) the quads are stored grouped by facing ({@link Faces}).
      */
     /** Solid and cutout layers kept in vanilla's order because an unaligned quad lies in an aligned quad's plane. */
-    static final java.util.concurrent.atomic.AtomicLong UNGROUPED_LAYERS = new java.util.concurrent.atomic.AtomicLong();
+    public static final java.util.concurrent.atomic.AtomicLong UNGROUPED_LAYERS = new java.util.concurrent.atomic.AtomicLong();
 
-    static Converted convert(ByteBuffer src, int slot, boolean group) {
+    public static Converted convert(ByteBuffer src, int slot, boolean group) {
         int bytes = src.remaining();
         if (bytes == 0 || bytes % (4 * VANILLA_BYTES) != 0) return null;
         int vertices = bytes / VANILLA_BYTES;
@@ -214,31 +214,53 @@ public final class CompactVertex {
         for (int c = 0; c < 4; c++) {
             for (int k = 0; k < 3; k++) s[c * 3 + k] = positionStep(MemoryUtil.memGetFloat(base + (long) c * VANILLA_BYTES + 4L * k));
         }
-        int g = facing(s, plane, q);
-        if (g == UNALIGNED) {
-            for (int k = 0; k < 3; k++) {
-                int lo = Math.min(Math.min(s[k], s[3 + k]), Math.min(s[6 + k], s[9 + k]));
-                int hi = Math.max(Math.max(s[k], s[3 + k]), Math.max(s[6 + k], s[9 + k]));
-                if (hi - lo <= 1) {
-                    flatAxis[q] = (byte) (k + 1);
-                    flatLo[q] = lo;
-                    flatHi[q] = hi;
-                    break;
-                }
+        int[] out = new int[2];
+        int g = facingOfSteps(s, out);
+        if (g != UNALIGNED) {
+            plane[q] = out[0];
+        } else {
+            int a = flatOfSteps(s, out);
+            if (a > 0) {
+                flatAxis[q] = (byte) a;
+                flatLo[q] = out[0];
+                flatHi[q] = out[1];
             }
         }
         return g;
     }
 
     /**
+     * For an unaligned quad (stored corner steps {@code s}): the first axis on which its corners lie within one grid
+     * step, as axis + 1 with that extent in {@code loHi[0..1]}; 0 if none (package 4c: the mesher classifies quads as it
+     * writes them, with the same rule as {@link #convert}).
+     */
+    public static int flatOfSteps(int[] s, int[] loHi) {
+        for (int k = 0; k < 3; k++) {
+            int lo = Math.min(Math.min(s[k], s[3 + k]), Math.min(s[6 + k], s[9 + k]));
+            int hi = Math.max(Math.max(s[k], s[3 + k]), Math.max(s[6 + k], s[9 + k]));
+            if (hi - lo <= 1) {
+                loHi[0] = lo;
+                loHi[1] = hi;
+                return k + 1;
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Whether an unaligned quad that is flat on an axis lies within one grid step of a plane that an aligned quad of
      * the same axis uses (then reordering by group could change which of the two wins at equal depth).
      */
-    private static boolean coplanar(byte[] g, int[] plane, byte[] flatAxis, int[] flatLo, int[] flatHi) {
+    public static boolean coplanar(byte[] g, int[] plane, byte[] flatAxis, int[] flatLo, int[] flatHi) {
+        return coplanar(g, plane, flatAxis, flatLo, flatHi, g.length);
+    }
+
+    /** As above, over the first {@code quads} entries of the arrays (package 4c: the mesher's arrays are reused and longer). */
+    public static boolean coplanar(byte[] g, int[] plane, byte[] flatAxis, int[] flatLo, int[] flatHi, int quads) {
         it.unimi.dsi.fastutil.ints.IntOpenHashSet[] planes = new it.unimi.dsi.fastutil.ints.IntOpenHashSet[3];
         for (int k = 0; k < 3; k++) planes[k] = new it.unimi.dsi.fastutil.ints.IntOpenHashSet();
-        for (int q = 0; q < g.length; q++) if (g[q] != UNALIGNED) planes[axis(g[q])].add(plane[q]);
-        for (int q = 0; q < g.length; q++) {
+        for (int q = 0; q < quads; q++) if (g[q] != UNALIGNED) planes[axis(g[q])].add(plane[q]);
+        for (int q = 0; q < quads; q++) {
             int a = flatAxis[q] - 1;
             if (a < 0) continue;
             for (int p = flatLo[q] - 1; p <= flatHi[q] + 1; p++) if (planes[a].contains(p)) return true;
@@ -246,8 +268,11 @@ public final class CompactVertex {
         return false;
     }
 
-    /** The facing group of a quad's four stored corner positions ({@code s}: x, y, z per corner). */
-    private static int facing(int[] s, int[] plane, int q) {
+    /**
+     * The facing group of a quad's four stored corner positions ({@code s}: x, y, z per corner); for an axis group
+     * the plane's stored step goes to {@code planeOut[0]}.
+     */
+    public static int facingOfSteps(int[] s, int[] planeOut) {
         int axis = -1;
         for (int k = 0; k < 3; k++) {
             if (s[k] == s[3 + k] && s[k] == s[6 + k] && s[k] == s[9 + k]) {
@@ -268,7 +293,7 @@ public final class CompactVertex {
             sign = sg;
         }
         if (sign == 0) return UNALIGNED; // no area
-        plane[q] = s[axis];
+        planeOut[0] = s[axis];
         return group(axis, sign > 0);
     }
 
@@ -311,13 +336,13 @@ public final class CompactVertex {
     }
 
     /** Nearest 1/2048 step from -8, or -1 outside -8..24. */
-    static int positionStep(float p) {
+    public static int positionStep(float p) {
         if (!(p >= -8f && p < 24f)) return -1;
         return Math.min(65535, Math.round((p + 8f) * 2048f));
     }
 
     /** What the shader computes from a stored step: step * 2^-11 - 8 (both operations exact in float). */
-    static float decodePosition(int step) {
+    public static float decodePosition(int step) {
         return step * (1f / 2048f) - 8f;
     }
 
@@ -325,7 +350,7 @@ public final class CompactVertex {
      * Nearest UV step, or -1 outside 0..1. Steps 0..65534 decode to step / 65536 and 65535 to exactly 1.0, so a UV
      * between 65534/65536 and 1.0 goes to whichever of the two is nearer.
      */
-    static int uvStep(float t) {
+    public static int uvStep(float t) {
         if (t == 1.0f) return 65535;
         if (!(t >= 0f && t < 1f)) return -1;
         int s = Math.round(t * 65536f);
@@ -334,11 +359,11 @@ public final class CompactVertex {
     }
 
     /** What the shader computes from a stored UV step. */
-    static float decodeUv(int step) {
+    public static float decodeUv(int step) {
         return step == 65535 ? 1.0f : step * (1f / 65536f);
     }
 
-    private static int light(short s) {
+    public static int light(short s) {
         return Math.max(0, Math.min(240, s));
     }
 }

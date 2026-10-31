@@ -18,7 +18,8 @@
 // aocalc/AoCalculator, under the Apache License 2.0 above (see NOTICE). Changes: package and visibility, no nullness
 // annotations, Quicksilver's quad classes, and Indigo's configuration fixed to its defaults: ambient occlusion mode
 // hybrid, the smooth-lighting offset, mean-light and exterior-vertex fixes on (so the vanilla calculator, its debug
-// comparison and the vanilla mean are not needed and left out).
+// comparison and the vanilla mean are not needed and left out). Package 4c: light and shade are read through
+// LightLookup (vanilla's cache, or Quicksilver's section snapshot when it is the level being meshed).
 package com.meakaandre.quicksilver.frapi;
 
 import static com.meakaandre.quicksilver.frapi.GeometryHelper.AXIS_ALIGNED_FLAG;
@@ -44,7 +45,9 @@ final class AoCalculator {
 	/** The number of possible combinations returned by {@link #computeFace(Direction, boolean, Direction)}. */
 	private static final int FACE_DATA_COUNT = 6 * 2 * 6;
 
-	private final BlockModelLighter.Cache lightCache;
+	private final LightLookup vanillaLight;
+	/** Where this block's light is read: the level itself when it is a {@link LightLookup}, else vanilla's cache. */
+	private LightLookup lightCache;
 
 	private final BlockPos.MutableBlockPos lightPos = new BlockPos.MutableBlockPos();
 	private final BlockPos.MutableBlockPos searchPos = new BlockPos.MutableBlockPos();
@@ -67,7 +70,8 @@ final class AoCalculator {
 	final int[] light = new int[4];
 
 	AoCalculator(BlockModelLighter.Cache lightCache) {
-		this.lightCache = lightCache;
+		this.vanillaLight = LightLookup.of(lightCache);
+		this.lightCache = vanillaLight;
 
 		for (int i = 0; i < FACE_DATA_COUNT; i++) {
 			faceData[i] = new AoFaceData();
@@ -79,6 +83,7 @@ final class AoCalculator {
 		this.level = level;
 		this.state = state;
 		this.pos = pos;
+		this.lightCache = level instanceof LightLookup l ? l : vanillaLight;
 		completionFlags.clear();
 	}
 
@@ -316,29 +321,29 @@ final class AoCalculator {
 
 		searchPos.setWithOffset(lightPos, aoFace.neighbors[0]);
 		searchState = level.getBlockState(searchPos);
-		final int light0 = lightCache.getLightCoords(searchState, level, searchPos);
-		final float ao0 = lightCache.getShadeBrightness(searchState, level, searchPos);
+		final int light0 = lightCache.lightCoords(searchState, level, searchPos);
+		final float ao0 = lightCache.shade(searchState, level, searchPos);
 
 				final boolean isClear0 = searchState.isLightPermeable();
 
 		searchPos.setWithOffset(lightPos, aoFace.neighbors[1]);
 		searchState = level.getBlockState(searchPos);
-		final int light1 = lightCache.getLightCoords(searchState, level, searchPos);
-		final float ao1 = lightCache.getShadeBrightness(searchState, level, searchPos);
+		final int light1 = lightCache.lightCoords(searchState, level, searchPos);
+		final float ao1 = lightCache.shade(searchState, level, searchPos);
 
 				final boolean isClear1 = searchState.isLightPermeable();
 
 		searchPos.setWithOffset(lightPos, aoFace.neighbors[2]);
 		searchState = level.getBlockState(searchPos);
-		final int light2 = lightCache.getLightCoords(searchState, level, searchPos);
-		final float ao2 = lightCache.getShadeBrightness(searchState, level, searchPos);
+		final int light2 = lightCache.lightCoords(searchState, level, searchPos);
+		final float ao2 = lightCache.shade(searchState, level, searchPos);
 
 				final boolean isClear2 = searchState.isLightPermeable();
 
 		searchPos.setWithOffset(lightPos, aoFace.neighbors[3]);
 		searchState = level.getBlockState(searchPos);
-		final int light3 = lightCache.getLightCoords(searchState, level, searchPos);
-		final float ao3 = lightCache.getShadeBrightness(searchState, level, searchPos);
+		final int light3 = lightCache.lightCoords(searchState, level, searchPos);
+		final float ao3 = lightCache.shade(searchState, level, searchPos);
 
 				final boolean isClear3 = searchState.isLightPermeable();
 
@@ -357,8 +362,8 @@ final class AoCalculator {
 		} else {
 			searchPos.setWithOffset(lightPos, aoFace.neighbors[0]).move(aoFace.neighbors[2]);
 			searchState = level.getBlockState(searchPos);
-			cAo0 = lightCache.getShadeBrightness(searchState, level, searchPos);
-			cLight0 = lightCache.getLightCoords(searchState, level, searchPos);
+			cAo0 = lightCache.shade(searchState, level, searchPos);
+			cLight0 = lightCache.lightCoords(searchState, level, searchPos);
 			cIsClear0 = searchState.isLightPermeable();
 		}
 
@@ -369,8 +374,8 @@ final class AoCalculator {
 		} else {
 			searchPos.setWithOffset(lightPos, aoFace.neighbors[0]).move(aoFace.neighbors[3]);
 			searchState = level.getBlockState(searchPos);
-			cAo1 = lightCache.getShadeBrightness(searchState, level, searchPos);
-			cLight1 = lightCache.getLightCoords(searchState, level, searchPos);
+			cAo1 = lightCache.shade(searchState, level, searchPos);
+			cLight1 = lightCache.lightCoords(searchState, level, searchPos);
 			cIsClear1 = searchState.isLightPermeable();
 		}
 
@@ -382,8 +387,8 @@ final class AoCalculator {
 		} else {
 			searchPos.setWithOffset(lightPos, aoFace.neighbors[1]).move(aoFace.neighbors[2]);
 			searchState = level.getBlockState(searchPos);
-			cAo2 = lightCache.getShadeBrightness(searchState, level, searchPos);
-			cLight2 = lightCache.getLightCoords(searchState, level, searchPos);
+			cAo2 = lightCache.shade(searchState, level, searchPos);
+			cLight2 = lightCache.lightCoords(searchState, level, searchPos);
 			cIsClear2 = searchState.isLightPermeable();
 		}
 
@@ -395,8 +400,8 @@ final class AoCalculator {
 		} else {
 			searchPos.setWithOffset(lightPos, aoFace.neighbors[1]).move(aoFace.neighbors[3]);
 			searchState = level.getBlockState(searchPos);
-			cAo3 = lightCache.getShadeBrightness(searchState, level, searchPos);
-			cLight3 = lightCache.getLightCoords(searchState, level, searchPos);
+			cAo3 = lightCache.shade(searchState, level, searchPos);
+			cLight3 = lightCache.lightCoords(searchState, level, searchPos);
 			cIsClear3 = searchState.isLightPermeable();
 		}
 
@@ -413,14 +418,14 @@ final class AoCalculator {
 		// both are false, the vanilla logic caused inset faces against non-solid blocks to be lit discontinuously (i.e.
 		// dark room with active sculk sensor above slabs).
 		if (isOnBlockFace && !searchState.isSolidRender()) {
-			lightCenter = lightCache.getLightCoords(searchState, level, searchPos);
+			lightCenter = lightCache.lightCoords(searchState, level, searchPos);
 			isClearCenter = searchState.isLightPermeable();
 		} else {
-			lightCenter = lightCache.getLightCoords(blockState, level, pos);
+			lightCenter = lightCache.lightCoords(blockState, level, pos);
 			isClearCenter = blockState.isLightPermeable();
 		}
 
-		float aoCenter = lightCache.getShadeBrightness(level.getBlockState(lightPos), level, lightPos);
+		float aoCenter = lightCache.shade(level.getBlockState(lightPos), level, lightPos);
 		float shadeBrightness = level.cardinalLighting().byFace(shadeDirection);
 
 		result.a0 = ((ao3 + ao0 + cAo1 + aoCenter) * 0.25F) * shadeBrightness;

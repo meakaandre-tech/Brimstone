@@ -25,6 +25,8 @@
     "quicksilver.mixins.json",
     "quicksilver.counters.mixins.json",
     "quicksilver.terrain.mixins.json",
+    "quicksilver.mesher.mixins.json",
+    "quicksilver.mesherorder.mixins.json",
     "quicksilver.visibility.mixins.json",
     "quicksilver.frapi.mixins.json",
     "quicksilver.animation.mixins.json",

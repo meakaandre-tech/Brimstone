@@ -109,6 +109,14 @@ public final class Terrain {
         return takingMeshes() && !TRANSLUCENT_DRY_RUN && !translucentToVanilla;
     }
 
+    /**
+     * Whether Quicksilver takes every layer of a new mesh, translucent included (package 4c: only then may Quicksilver's
+     * own mesher mesh a section, since only this module can draw its vertex).
+     */
+    public static boolean takingAllLayers() {
+        return takingTranslucent();
+    }
+
     /** Whether translucent terrain went back to vanilla for the session because of a vertex alpha (bench and CI). */
     public static boolean translucentHandedBackForAlpha() {
         return translucentToVanilla;
@@ -411,6 +419,69 @@ public final class Terrain {
     }
 
     /**
+     * Package 4c: a layer Quicksilver's own mesher wrote, in the 16-byte vertex already grouped by facing (solid and
+     * cutout) or in the order made (translucent, whose index list {@code indices} vanilla sorted), handed over where
+     * vanilla's would go to the GPU. Nothing is converted: the vertices are copied as they are into a staged buffer.
+     * Always taken (vanilla could not draw these vertices): if the store refuses it (terrain going back to vanilla, the
+     * store emptied), the mesh is completed without that layer at the end of the frame and the section meshed again.
+     */
+    public static void takeMeshed(SectionRenderDispatcher.RenderSection section, ChunkSectionLayer layer, CompiledSectionMesh mesh,
+                                  ByteBuffer owned, int vertices, int positionsRounded, int uvsRounded, CompactVertex.Faces faces,
+                                  ByteBuffer indices, float[] centroids) {
+        long node = section.getSectionNode();
+        int x = SectionPos.sectionToBlockCoord(SectionPos.x(node));
+        int y = SectionPos.sectionToBlockCoord(SectionPos.y(node));
+        int z = SectionPos.sectionToBlockCoord(SectionPos.z(node));
+        int gen = TerrainStore.generation();
+        boolean translucent = layer == ChunkSectionLayer.TRANSLUCENT;
+        // the buffers this method owns until TerrainStore.stage takes them over (staged or refused): freed on any failure
+        ByteBuffer ownedVertices = owned, ownedIndices = null;
+        try {
+            long t0 = System.nanoTime();
+            // the mesher's own buffer, taken over as it is (package 4c: no copy here)
+            CompactVertex.Converted split = new CompactVertex.Converted(owned, vertices, positionsRounded, uvsRounded, faces);
+            ByteBuffer idx = null;
+            IndexType type = null;
+            int indexCount = 0;
+            TranslucencyCheck.Sorted sorted = null;
+            if (translucent) {
+                SectionMesh.SectionDraw draw = mesh.getSectionDraw(layer);
+                if (draw == null || indices == null || !draw.hasCustomIndexBuffer()) {
+                    throw new IllegalStateException("a translucent layer without its own sorted index list");
+                }
+                type = draw.indexType();
+                indexCount = draw.indexCount();
+                if ((long) indexCount * type.bytes != indices.remaining() || indexCount != vertices / 4 * 6) {
+                    throw new IllegalStateException("a translucent index list has " + indices.remaining() + " bytes for " + indexCount + " " + type
+                        + " indices and " + vertices + " vertices");
+                }
+                sorted = TranslucencyCheck.sortedFor(section, centroids, indices, type);
+                idx = intIndices(indices, type, indexCount);
+                ownedIndices = idx;
+                type = IndexType.INT;
+            }
+            TerrainStats.converted(split);
+            mesh.setIndexBufferUploaded(layer);
+            ownedVertices = null;
+            ownedIndices = null;
+            boolean staged = TerrainStore.stage(gen, section, mesh, layer, x, y, z, split, idx, type, indexCount, sorted);
+            if (staged) {
+                TerrainStats.LAYERS_TAKEN.incrementAndGet();
+                if (translucent) TranslucencyStats.layerTaken();
+            } else {
+                TerrainStore.refuse(section, mesh, layer, x, y, z);
+            }
+            TerrainStats.transcoded(System.nanoTime() - t0);
+        } catch (Throwable t) {
+            if (ownedVertices != null) MemoryUtil.memFree(ownedVertices);
+            if (ownedIndices != null) MemoryUtil.memFree(ownedIndices);
+            mesh.setIndexBufferUploaded(layer);
+            TerrainStore.refuse(section, mesh, layer, x, y, z);
+            fail(translucent ? "translucent meshing" : "meshing", t, true);
+        }
+    }
+
+    /**
      * A copy of vanilla's sorted index list as 32-bit indices (memAlloc'd; the caller owns it): the same indices in the
      * same order, only a 16-bit list widened, so that consecutive translucent sections share one index type and draw as
      * one run (vanilla picks 16 or 32 bits per section by its vertex count).
@@ -438,6 +509,18 @@ public final class Terrain {
 
     /** Render thread, end of frame, in vanilla's terrain upload. */
     public static void upload() {
+        try {
+            LongOpenHashSet refused = TerrainStore.finishRefused();
+            if (!refused.isEmpty()) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.levelExtractor != null) {
+                    for (long s : refused) mc.levelExtractor.setSectionDirty(SectionPos.x(s), SectionPos.y(s), SectionPos.z(s));
+                }
+                TerrainStats.REFUSED_LAYERS.addAndGet(refused.size());
+            }
+        } catch (Throwable t) {
+            fail("completing refused meshes", t, false);
+        }
         if (takingMeshes()) {
             try {
                 TerrainGpuErrors.Mark mark = TerrainGpuErrors.mark();

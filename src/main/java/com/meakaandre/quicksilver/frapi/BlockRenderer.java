@@ -18,7 +18,8 @@
 // shading and tinting of Fabric API's Indigo renderer (fabric-renderer-indigo, Fabric API 0.161.0+26.3,
 // render/AltModelBlockRendererImpl: shadeQuad, tintQuad and its tint cache) adapted under the Apache License 2.0
 // above (see NOTICE). Changes: Quicksilver's quad classes; quads are shaded in a held copy rather than as a transform on
-// the output emitter; Indigo's ambient occlusion mode fixed to its default (hybrid).
+// the output emitter; Indigo's ambient occlusion mode fixed to its default (hybrid). Package 4c: the face test asks the
+// level when it is Quicksilver's section snapshot (LightLookup), which caches vanilla's answer per pair of states.
 
 package com.meakaandre.quicksilver.frapi;
 
@@ -168,10 +169,16 @@ final class BlockRenderer implements AltModelBlockRenderer {
             if (done) {
                 if (!quiet) RendererStats.BLOCKS_QUICKSILVER.increment();
                 Meshes.SlotQuad q = slot;
+                // package 4c: Quicksilver's mesher takes each finished quad as it is (the same values a copy would carry)
+                QuicksilverRenderer.DirectEmitter direct = output instanceof QuicksilverRenderer.DirectEmitter d && d.noTransforms() ? d : null;
                 for (int i = 0; i < pendingCount; i++) {
                     q.at(pending, i * QuadData.STRIDE, null, null, false);
-                    output.copyFrom(q);
-                    output.emit();
+                    if (direct != null) {
+                        direct.consumer.accept(q);
+                    } else {
+                        output.copyFrom(q);
+                        output.emit();
+                    }
                 }
             } else {
                 if (!quiet) RendererStats.BLOCKS_VANILLA.increment();
@@ -188,7 +195,9 @@ final class BlockRenderer implements AltModelBlockRenderer {
         int bit = 1 << face.ordinal();
         if ((cullChecked & bit) == 0) {
             cullChecked |= bit;
-            if (!Block.shouldRenderFace(state, level.getBlockState(scratch.setWithOffset(pos, face)), face)) cullHidden |= bit;
+            boolean hide = level instanceof LightLookup l ? l.hiddenFace(state, pos, face)
+                : !Block.shouldRenderFace(state, level.getBlockState(scratch.setWithOffset(pos, face)), face);
+            if (hide) cullHidden |= bit;
         }
         return (cullHidden & bit) != 0;
     }

@@ -143,6 +143,9 @@ def bench_results(run_dir):
             "directBuffersMaxAtTick": m.get("directBuffersMaxAtTick"),
             "benchFile": os.path.basename(f),
             "meshingMsPerSection": (j.get("meshing") or {}).get("msPerSection"),
+            # package 4c
+            "meshing": j.get("meshing"),
+            "mesher": j.get("mesher"),
             "terrain": j.get("terrain"),
             "visibility": j.get("visibility"),
             "translucency": j.get("translucency"),
@@ -288,6 +291,57 @@ def bench_only(res, failures, lines):
     lines.append("")
 
 
+SP_IDLE_SHARE = 0.25  # at most this share of the time behind with work waiting and no run meshing
+
+
+def single_player(res, failures, lines):
+    """Package 4c (Andre, 2026-10-30): the single-player run (full mode, core suite): the client on its own integrated
+    server, CI's pin mod working the server for a fixed time per tick, the fly-through benched. Server-aware meshing must
+    back off while the server is behind (at most one section at a time) and keep a thread meshing (sections meshed while
+    behind, little time with work waiting and nothing meshing)."""
+    if QUICK:
+        return
+    lines.append("## Single-player run (server-aware meshing)\n")
+    d = os.path.join(res, "core-sp-quicksilver")
+    if not os.path.isdir(d):
+        failures.append("core/sp-quicksilver: run produced no results")
+        return
+    t = logs(d)
+    if "Quicksilver CI pin: server load" not in t:
+        failures.append("core/sp-quicksilver: the server load pin never ran (no 'Quicksilver CI pin: server load' line)")
+    b = None
+    for f in sorted(glob.glob(os.path.join(d, "bench", "*.json"))):
+        j = json.load(open(f))
+        if j.get("scene") == "flythrough":
+            b = j
+    if b is None:
+        failures.append("core/sp-quicksilver: no bench result for flythrough")
+        return
+    sa = (b.get("mesher") or {}).get("serverAware") or {}
+    behind_ms = sa.get("benchMsBehind") or 0
+    idle_ms = sa.get("benchMsBehindWithNoRunMeshingButWorkWaiting") or 0
+    share = round(idle_ms / behind_ms, 3) if behind_ms else None
+    lines.append("| state | single player | server tick ms avg (budget) | ticks backed off / ticks | sections meshed while behind | most runs at once while behind | ms behind | of it no run meshing with work waiting | restarts |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    lines.append(f"| {sa.get('state')} | {sa.get('singlePlayer')} | {sa.get('benchServerTickMsAvg')} ({sa.get('serverTickBudgetMs')}) | "
+                 f"{sa.get('benchTicksWithMeshingBackedOff')} / {sa.get('benchServerTicks')} | {sa.get('benchSectionsMeshedWhileBehind')} | "
+                 f"{sa.get('benchMostRunsAtOnceWhileBehind')} | {behind_ms} | {idle_ms} ({share}) | {sa.get('loopRestarts')} |")
+    lines.append("")
+    if sa.get("state") != "on" or not sa.get("singlePlayer"):
+        failures.append(f"core/sp-quicksilver: server-aware meshing not on in single player ({sa.get('state')}, single player {sa.get('singlePlayer')})")
+    ticks, backed = sa.get("benchServerTicks") or 0, sa.get("benchTicksWithMeshingBackedOff") or 0
+    if not backed or backed < ticks / 2:
+        failures.append(f"core/sp-quicksilver: the load did not keep the server behind ({backed} of {ticks} ticks with meshing backed off)")
+    if not sa.get("benchSectionsMeshedWhileBehind"):
+        failures.append("core/sp-quicksilver: no section meshed while the server was behind (meshing stopped instead of backing off)")
+    if (sa.get("benchMostRunsAtOnceWhileBehind") or 0) > 1:
+        failures.append(f"core/sp-quicksilver: {sa.get('benchMostRunsAtOnceWhileBehind')} sections meshed at once while the server was behind (limit 1)")
+    if not behind_ms:
+        failures.append("core/sp-quicksilver: no time behind measured in the bench (benchMsBehind 0)")
+    if share is not None and share > SP_IDLE_SHARE:
+        failures.append(f"core/sp-quicksilver: no thread meshing with work waiting for {share * 100:.0f}% of the time behind (over {SP_IDLE_SHARE * 100:.0f}%)")
+
+
 def main():
     res, rep = sys.argv[1], sys.argv[2]
     os.makedirs(os.path.join(rep, "diff"), exist_ok=True)
@@ -302,6 +356,7 @@ def main():
         if SUITES is not None and name not in SUITES:
             continue
         scenes = [s for s in suite["scenes"]]
+        scene_by_id = {s["id"]: s for s in scenes}
         sd = data.setdefault(name, {"noise": {}, "picture": {}, "strict": {}, "counts": {}, "skipped": {}})
         strict_lines, measure_lines = [], []
         lines.append(f"## Suite {name}\n")
@@ -417,6 +472,10 @@ def main():
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: modules not off for measuring (terrain {ter.get('state')} ({ter.get('reason')}), visibility {vis.get('state')})")
                             if tg.get("quicksilverArenasReservedMB") != 0 or ter.get("layersTaken", 0) != 0:
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver held terrain in a measure run ({tg.get('quicksilverArenasReservedMB')} MB, {ter.get('layersTaken')} layers)")
+                            # package 4c: vanilla's section compiler meshes every section in a measure run
+                            me = bj.get("mesher") or {}
+                            if me.get("state") != "off" or me.get("reason") != "measure only (CI)" or me.get("sectionsMeshed", 0) != 0:
+                                failures.append(f"{name}/{r}: bench {bj['scene']}: Quicksilver's mesher not off for measuring ({me.get('state')} ({me.get('reason')}), {me.get('sectionsMeshed')} sections meshed)")
                             an = bj.get("animation") or {}
                             if an.get("state") != "off" or an.get("reason") != "measure only (CI)" or an.get("skippedSinceStart", 0) != 0:
                                 failures.append(f"{name}/{r}: bench {bj['scene']}: animation module not off for measuring ({an.get('state')} ({an.get('reason')}), left out {an.get('skippedSinceStart')})")
@@ -444,6 +503,40 @@ def main():
                             failures.append(f"{name}/{r}: the animation module fell back to vanilla (see client log)")
                         if "Quicksilver animation: on " not in t:
                             failures.append(f"{name}/{r}: the animation module never turned on")
+                        # package 4c: Quicksilver's own mesher on, never fallen back, and its check of every section meshed
+                        # outside a bench against vanilla's compiler without a single difference
+                        if re.search(r"Quicksilver mesher: (turned off|off,|off for the session)", t):
+                            failures.append(f"{name}/{r}: Quicksilver's mesher fell back to vanilla's section compiler or stayed off (see client log)")
+                        if "Quicksilver mesher: on " not in t:
+                            failures.append(f"{name}/{r}: Quicksilver's mesher never turned on")
+                        if "Quicksilver mesher: fluid self-test:" not in t:
+                            failures.append(f"{name}/{r}: the mesher's fluid self-test did not run (see client log)")
+                        nwarn = len(re.findall(r"Quicksilver mesher check:", t))
+                        if nwarn:
+                            failures.append(f"{name}/{r}: mesher check: {nwarn} sections where Quicksilver's mesh differed from vanilla's compiler's (see client log)")
+                        checked = kept = 0
+                        for f in glob.glob(os.path.join(d, "bench", "*.json")):
+                            me = json.load(open(f)).get("mesher") or {}
+                            checked = max(checked, me.get("checked", 0))
+                            kept = max(kept, me.get("biomeLookupsKeptSinceStart", 0))
+                            # Andre, 2026-10-30: like-for-like (same sections, same thread, both orders), Quicksilver's median
+                            # ms per section at or under vanilla's compiler's, in every scene; 2026-10-31: in flat-lit sessions
+                            # (smooth lighting off) at most vanilla's + 10% (docs/ci-limits.md, "Package 4c: like-for-like
+                            # timing", for the reason and the numbers)
+                            mq, mv = me.get("checkedMedianQuicksilverMs"), me.get("checkedMedianVanillaCompilerMs")
+                            sid = json.load(open(f))["scene"]
+                            flat = str(((scene_by_id.get(sid) or {}).get("clientOptions") or {}).get("ao", "")).lower() == "false"
+                            allowed = round(mv * (1.10 if flat else 1.0), 3) if mv is not None else None
+                            if me.get("checkedPairs") and mq is not None and mv is not None and mq > allowed:
+                                failures.append(f"{name}/{r}: bench {sid}: Quicksilver's median meshing time {mq} ms per section is over"
+                                                f" {'vanilla + 10% (flat-lit) ' if flat else ''}{allowed} ms (vanilla's compiler {mv} ms; same sections,"
+                                                f" same thread; {me.get('checkedPairs')} pairs)")
+                            if me.get("state") != "on" or me.get("fallbacks", 0) != 0 or me.get("mismatched", 0) != 0 or me.get("check") != "on":
+                                failures.append(f"{name}/{r}: bench {json.load(open(f))['scene']}: mesher {me.get('state')} ({me.get('reason')}), fallbacks {me.get('fallbacks')}, mismatched {me.get('mismatched')}, check {me.get('check')}")
+                        if os.path.isdir(os.path.join(d, "bench")) and checked == 0:
+                            failures.append(f"{name}/{r}: the mesher check compared no section with vanilla's compiler")
+                        if os.path.isdir(os.path.join(d, "bench")) and kept == 0:
+                            failures.append(f"{name}/{r}: the mesher's biome lookups for tints were never kept (the hook into vanilla's blend did not apply)")
                         for f in glob.glob(os.path.join(d, "bench", "*.json")):
                             bj = json.load(open(f))
                             vis = bj.get("visibility")
@@ -773,6 +866,24 @@ def main():
                              f"{c.get('maxUploadBytes')}{'' if QUICK else ' / ' + str(vc.get('maxUploadBytes'))} | {ub.get('maxBytesInOneFrame')} ({ub.get('budgetBytesPerFrame')}) | "
                              f"{c.get('over50ms')}{'' if QUICK else ' / ' + str(vc.get('over50ms'))} | {ub.get('sectionsWaitingAvg')} / {ub.get('sectionsWaitingMax')} |")
             lines.append("")
+            # package 4c: meshing time per section over each whole bench (setup, settling, measuring), Quicksilver's mesher
+            # against vanilla's compiler in the measure run of the same profile; the check and the sections left to vanilla
+            lines.append(f"Package 4c, {name} {prof}: meshing ms per section over each bench (sections in brackets)"
+                         + ("" if QUICK else f", Quicksilver's mesher against vanilla's compiler in {MEASURE[prof]}") + ":\n")
+            lines.append("| scene | Quicksilver ms/section (sections) | " + ("" if QUICK else "vanilla ms/section (sections) | Quicksilver / vanilla | ")
+                         + "while measuring: Quicksilver ms/section (sections) | to vanilla's compiler this bench | checked / mismatched since start-up | same sections, same thread: Quicksilver / vanilla's compiler ms (mean) | median (gated) |")
+            lines.append("|---|---|" + ("" if QUICK else "---|---|") + "---|---|---|---|---|")
+            for sc in scenes:
+                c = cur.get(sc["id"])
+                if sc.get("skip") or c is None:
+                    continue
+                mq, me = c.get("meshing") or {}, c.get("mesher") or {}
+                vm = (van4b.get(sc["id"]) or {}).get("meshing") or {}
+                ratio = round(mq["benchMsPerSection"] / vm["benchMsPerSection"], 3) if mq.get("benchMsPerSection") and vm.get("benchMsPerSection") else None
+                lines.append(f"| {sc['id']} | {mq.get('benchMsPerSection')} ({mq.get('benchSections')}) | "
+                             + ("" if QUICK else f"{vm.get('benchMsPerSection')} ({vm.get('benchSections')}) | {ratio} | ")
+                             + f"{mq.get('msPerSection')} ({mq.get('sections')}) | {me.get('benchSectionsToVanilla')} | {me.get('checked')} / {me.get('mismatched')} | {me.get('checkedQuicksilverMsPerSection')} / {me.get('checkedVanillaCompilerMsPerSection')} | {me.get('checkedMedianQuicksilverMs')} / {me.get('checkedMedianVanillaCompilerMs')} |")
+            lines.append("")
             lines.append(f"Terrain module, {name} {prof} (reported, not gated):\n")
             lines.append("| scene | path | Quicksilver draws/frame | section layers/frame | bytes per vertex | live vertices | % vertices with a position / UV rounded | arena MB used / allocated | vanilla format would need MB | layers taken / kept by vanilla | meshing ms/section (vanilla mesher p95) |")
             lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
@@ -837,6 +948,7 @@ def main():
                 lines.append(f"| {sc['id']} | {cell('drawCallsPerFrame')} | {cell('prepareDrawCallsPerFrame')} | {cell('elementsPerFrame')} | {cell('statesPerFrame')} (pipelines {g.get('pipelinesPerFrame')}, textures {g.get('textureSetupsPerFrame')}, scissors {g.get('scissorAreasPerFrame')}) | {cell('reorderedDrawsPerFrame')} ({cell('reorderedIgnoringTextPerFrame')}) |")
             lines.append("")
     bench_only(res, failures, lines)
+    single_player(res, failures, lines)
     direct_buffers(res, lines)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import siftec_status

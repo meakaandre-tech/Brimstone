@@ -21,6 +21,10 @@ public final class BenchModules {
         default void startWindow() {
         }
 
+        /** A bench starts, before its setup (package 4c: counts over the whole bench). */
+        default void startBench() {
+        }
+
         JsonElement json(int frames);
 
         /** The log line for this section's JSON, or null for none. */
@@ -67,6 +71,17 @@ public final class BenchModules {
                 return line == null ? null : line.apply(o);
             }
         };
+    }
+
+    /** A bench starts (before its setup). */
+    static void startBench() {
+        for (Section s : SECTIONS) {
+            try {
+                s.startBench();
+            } catch (Throwable t) {
+                com.meakaandre.quicksilver.QuicksilverClient.LOG.warn("Quicksilver bench: {} could not start", s.key(), t);
+            }
+        }
     }
 
     static List<Section> all() {

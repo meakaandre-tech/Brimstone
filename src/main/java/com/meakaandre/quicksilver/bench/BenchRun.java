@@ -52,6 +52,7 @@ public final class BenchRun {
     public static void start(Scenes.Scene scene, int seconds) {
         com.meakaandre.quicksilver.phase2.ServerNumbers.record(); // P2-1: the server's tick history from here on
         BenchRun run = new BenchRun(scene, seconds);
+        BenchModules.startBench();
         current = run;
         Minecraft mc = Minecraft.getInstance();
         if (scene != null) {

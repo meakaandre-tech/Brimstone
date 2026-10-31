@@ -20,3 +20,17 @@
 ^net\.minecraft\.client\.renderer\.culling\.Frustum$
 ^net\.minecraft\.client\.Camera$
 ^net\.minecraft\.client\.multiplayer\.ClientChunkCache.*$
+^net\.minecraft\.client\.renderer\.block\.
+^net\.minecraft\.client\.renderer\.chunk\.
+^net\.minecraft\.client\.renderer\.(ItemBlockRenderTypes|BiomeColors|SectionBufferBuilderPack|SectionBufferBuilderPool)$
+^net\.minecraft\.client\.color\.block\.
+^net\.minecraft\.client\.multiplayer\.ClientLevel$
+^net\.minecraft\.client\.renderer\.texture\.SpriteContents.*$
+^net\.minecraft\.util\.(LightCoordsUtil|ARGB|Mth)$
+^net\.minecraft\.(TracingExecutor|Util)$
+^net\.minecraft\.world\.level\.(BlockAndTintGetter|BlockGetter|ColorResolver|LevelHeightAccessor|BlockAndLightGetter)$
+^net\.minecraft\.world\.level\.material\.(Fluid|FluidState|FlowingFluid|WaterFluid|LavaFluid)$
+^net\.minecraft\.world\.level\.block\.(Block|LiquidBlock|HalfTransparentBlock|LeavesBlock)$
+^net\.minecraft\.world\.level\.block\.state\.BlockBehaviour.*$
+^net\.minecraft\.server\.(MinecraftServer|ServerTickRateManager)$
+^net\.minecraft\.world\.TickRateManager$

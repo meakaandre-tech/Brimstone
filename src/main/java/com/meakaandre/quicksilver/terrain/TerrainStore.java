@@ -46,7 +46,7 @@ public final class TerrainStore {
     /** An arena's buffer when it is made; it doubles when full, up to {@link #ARENA_BYTES} (package 3). */
     static final long INITIAL_ARENA_BYTES = 4L << 20;
     /** A layer bigger than this stays with vanilla (it would hog an arena). */
-    static final int MAX_LAYER_BYTES = (int) (ARENA_BYTES / 8);
+    public static final int MAX_LAYER_BYTES = (int) (ARENA_BYTES / 8);
 
     static final Object LOCK = new Object();
 
@@ -238,6 +238,7 @@ public final class TerrainStore {
     static void dispatcherDisposed() {
         synchronized (LOCK) {
             accepting = false;
+            REFUSED.clear();
         }
         clear();
     }
@@ -675,6 +676,41 @@ public final class TerrainStore {
      * already in, released. Never left half-uploaded.
      */
     private static final List<Staged> DROPPED = new ArrayList<>();
+    /**
+     * Package 4c: layers Quicksilver's mesher wrote that the store refused (terrain going back to vanilla, or the store
+     * emptied since the section was meshed). Vanilla can't draw their vertices, so at the end of the frame each mesh is
+     * completed without that layer (or let go of, if a newer mesh of its section is in) and its section meshed again.
+     */
+    private static final List<Staged> REFUSED = new ArrayList<>();
+
+    /** A layer of Quicksilver's mesher the store did not take (any thread; see {@link #REFUSED}). */
+    static void refuse(SectionRenderDispatcher.RenderSection section, CompiledSectionMesh mesh, ChunkSectionLayer layer, int x, int y, int z) {
+        synchronized (LOCK) {
+            if (!accepting) return;
+            REFUSED.add(new Staged(section, mesh, layer, x, y, z, null, null, null, 0, null));
+        }
+    }
+
+    /** Render thread, end of frame: completes the refused layers' meshes; returns their sections (to be meshed again). */
+    static LongOpenHashSet finishRefused() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        List<Staged> refused;
+        synchronized (LOCK) {
+            if (REFUSED.isEmpty()) return sections;
+            refused = new ArrayList<>(REFUSED);
+            REFUSED.clear();
+        }
+        for (Staged s : refused) {
+            sections.add(SectionPos.asLong(s.x >> 4, s.y >> 4, s.z >> 4));
+            RenderSectionInvoker section = (RenderSectionInvoker) s.section;
+            if (s.section.getSectionMesh().getCompileTaskStartTime() > s.mesh.getCompileTaskStartTime()) {
+                section.quicksilver$releaseSectionMesh(s.mesh);
+            } else {
+                section.quicksilver$vertexBufferUploaded(s.mesh, s.layer);
+            }
+        }
+        return sections;
+    }
     private static int droppedGeneration;
 
     /** Drops every staged mesh (they will not be copied in); {@link #finishDropped} hands them back to vanilla. */

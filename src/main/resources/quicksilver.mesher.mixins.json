@@ -1,0 +1,17 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.meakaandre.quicksilver.mixin.mesher",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ClientLevelTintMixin",
+    "SectionCompilerMesherMixin",
+    "SectionRenderDispatcherMesherMixin",
+    "SingleVariantAccess",
+    "WeightedVariantsAccess",
+    "SimpleModelWrapperAccess"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

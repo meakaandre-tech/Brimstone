@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.meakaandre.quicksilver.bench.GpuCounters;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.util.Arrays;
+import com.meakaandre.quicksilver.bench.BenchRun;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -13,6 +14,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class TerrainStats {
     static final AtomicLong LAYERS_TAKEN = new AtomicLong();
     static final AtomicLong LAYERS_KEPT_BY_VANILLA = new AtomicLong();
+    /** Package 4c: sections whose layers from Quicksilver's mesher the store refused (completed without them, meshed again). */
+    static final AtomicLong REFUSED_LAYERS = new AtomicLong();
     /** Vertices converted, and how many of them had a position or a UV rounded to the 16-byte format's grid. */
     static final AtomicLong VERTICES = new AtomicLong();
     static final AtomicLong POSITIONS_ROUNDED = new AtomicLong();
@@ -28,6 +31,11 @@ public final class TerrainStats {
     // package 4b: triangles Quicksilver's terrain draws, against what drawing every layer whole (before 4b) would be
     private static long windowTriangles, windowTrianglesWhole, windowRanges, windowLayers, windowJumpFrames;
     private static final ThreadLocal<long[]> COMPILE_START = ThreadLocal.withInitial(() -> new long[1]);
+    // package 4c: the whole bench (its setup, settling and measuring), so every scene reports the meshing of its own
+    // terrain, not only what meshes inside the measuring window
+    private static final AtomicLong BENCH_SECTIONS = new AtomicLong(), BENCH_NANOS = new AtomicLong(), BENCH_TRANSCODE_NANOS = new AtomicLong();
+    /** Set on a thread while vanilla's compiler runs for CI's mesher check only: that run is not timed. */
+    private static final ThreadLocal<boolean[]> UNTIMED = ThreadLocal.withInitial(() -> new boolean[1]);
 
     private TerrainStats() {
     }
@@ -88,18 +96,43 @@ public final class TerrainStats {
 
     /** Start of vanilla's SectionCompiler.compile (worker threads, or the render thread for nearby sections). */
     public static void compileStart() {
-        COMPILE_START.get()[0] = GpuCounters.enabled ? System.nanoTime() : 0;
+        boolean timed = (GpuCounters.enabled || BenchRun.running()) && !UNTIMED.get()[0];
+        COMPILE_START.get()[0] = timed ? System.nanoTime() : 0;
     }
 
     public static void compileEnd() {
         long[] s = COMPILE_START.get();
-        if (s[0] != 0 && GpuCounters.enabled) {
-            long d = System.nanoTime() - s[0];
+        if (s[0] != 0) record(System.nanoTime() - s[0]);
+        s[0] = 0;
+    }
+
+    /** Package 4c: one section meshed by Quicksilver's own mesher, in {@code nanos} (any thread). */
+    public static void meshed(long nanos) {
+        record(nanos);
+    }
+
+    private static void record(long nanos) {
+        if (GpuCounters.enabled) {
             synchronized (COMPILE_NANOS) {
-                COMPILE_NANOS.add(d);
+                COMPILE_NANOS.add(nanos);
             }
         }
-        s[0] = 0;
+        if (BenchRun.running()) {
+            BENCH_SECTIONS.incrementAndGet();
+            BENCH_NANOS.addAndGet(nanos);
+        }
+    }
+
+    /** Package 4c: vanilla's compiler runs on this thread for CI's mesher check only (not timed) while {@code on}. */
+    public static void untimed(boolean on) {
+        UNTIMED.get()[0] = on;
+    }
+
+    /** A bench starts (before its setup): the bench-wide meshing counts start again. */
+    public static void startBench() {
+        BENCH_SECTIONS.set(0);
+        BENCH_NANOS.set(0);
+        BENCH_TRANSCODE_NANOS.set(0);
     }
 
     static void converted(CompactVertex.Converted c) {
@@ -109,6 +142,7 @@ public final class TerrainStats {
     }
 
     static void transcoded(long nanos) {
+        if (BenchRun.running()) BENCH_TRANSCODE_NANOS.addAndGet(nanos);
         if (!GpuCounters.enabled) return;
         TRANSCODE_NANOS.addAndGet(nanos);
         TRANSCODED_LAYERS.incrementAndGet();
@@ -147,8 +181,15 @@ public final class TerrainStats {
             o.add("transcodeMsPerLayer", layers == 0 ? null : new com.google.gson.JsonPrimitive(round(transcode / 1e6 / layers)));
             o.addProperty("msPerSection", round((sum + transcode) / 1e6 / c.length));
         }
-        o.addProperty("note", "vanilla's SectionCompiler on its worker threads (blocks through Quicksilver's Fabric Renderer API"
-            + " implementation), plus Quicksilver's transcode into its 16-byte vertex on the same thread; sections meshed while measuring");
+        // package 4c: over the whole bench (setup, settling and measuring), for every scene
+        long bs = BENCH_SECTIONS.get();
+        o.addProperty("benchSections", bs);
+        o.add("benchMsPerSection", bs == 0 ? null : new com.google.gson.JsonPrimitive(round((BENCH_NANOS.get() + BENCH_TRANSCODE_NANOS.get()) / 1e6 / bs)));
+        o.add("benchCompileMsPerSection", bs == 0 ? null : new com.google.gson.JsonPrimitive(round(BENCH_NANOS.get() / 1e6 / bs)));
+        o.addProperty("mesher", com.meakaandre.quicksilver.mesher.Mesher.state());
+        o.addProperty("note", "sections meshed while measuring (sections, compileMs*, msPerSection) and over the whole bench (bench*), with the"
+            + " mesher named: quicksilver's own (package 4c; its time plus the copy into the staged buffer) or vanilla's SectionCompiler with"
+            + " Quicksilver's Fabric Renderer API implementation plus the transcode into the 16-byte vertex (mesher off)");
         return o;
     }
 

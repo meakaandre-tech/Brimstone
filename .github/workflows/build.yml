@@ -39,7 +39,7 @@ jobs:
           case "$MESSAGE" in *"[full]"*) mode=full;; esac
           if [ $mode = full ]; then
             # package 4b: two more core runs with only the bench-only jar, on plain Fabric and next to Sodium
-            matrix='{"suite":["core","siftec"],"run":["vanilla-a","vanilla-b","vanilla-old","vanilla-vk","quicksilver-full","quicksilver-old","quicksilver-vk","measure-full","measure-old","measure-vk"],"include":[{"suite":"core","run":"bench-plain"},{"suite":"core","run":"bench-sodium"}]}'
+            matrix='{"suite":["core","siftec"],"run":["vanilla-a","vanilla-b","vanilla-old","vanilla-vk","quicksilver-full","quicksilver-old","quicksilver-vk","measure-full","measure-old","measure-vk"],"include":[{"suite":"core","run":"bench-plain"},{"suite":"core","run":"bench-sodium"},{"suite":"core","run":"sp-quicksilver"}]}'
             server_suites='["core","siftec","terralith"]'
           else
             matrix='{"suite":["core"],"run":["vanilla-a","vanilla-b","quicksilver-old"]}'

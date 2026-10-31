@@ -12,6 +12,8 @@
 # run also sets quicksilver.debug.forceIntelMdiIssue (vanilla's Intel multi-draw-indirect flag, the school laptop's path).
 # vk runs use Mesa's Vulkan driver (lavapipe) through the --graphicsBackend launch argument.
 set +e
+# package 4c: the single-player run has its own script (no dedicated server, the client's integrated one)
+case "$RUN" in sp-*) exec bash ci/sp-run.sh;; esac
 root=$PWD
 OUT=${OUT:-/tmp/out}
 BENCH_SECONDS=${BENCH_SECONDS:-20}
@@ -51,7 +53,8 @@ elif [ $qs = 1 ]; then
   # package 8: the animation module logs each animated sprite's first use outside terrain, with where it came from
   # package 4b: the terrain upload budget logs when meshes wait for a later frame and when it has caught up, so
   # drive.py takes no screenshot while a section is still waiting (vanilla uploads at once and logs nothing)
-  client_jvm="$client_jvm -Dquicksilver.debug.logUploadQueue=true -Dquicksilver.debug.verifyVisibility=true -Dquicksilver.debug.verifyTranslucency=true -Dquicksilver.debug.verifyRenderer=true -Dquicksilver.debug.animationUses=true"
+  # package 4c: every section meshed outside a bench is also meshed by vanilla's compiler and compared, vertex by vertex
+  client_jvm="$client_jvm -Dquicksilver.debug.logUploadQueue=true -Dquicksilver.debug.verifyVisibility=true -Dquicksilver.debug.verifyTranslucency=true -Dquicksilver.debug.verifyRenderer=true -Dquicksilver.debug.animationUses=true -Dquicksilver.debug.verifyMesher=true"
   if [ "${VISIBILITY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dquicksilver.debug.visibilityDryRun=true"; fi
   if [ "${TRANSLUCENCY_DRY_RUN:-0}" = 1 ]; then client_jvm="$client_jvm -Dquicksilver.debug.translucencyDryRun=true"; fi
   echo "Quicksilver run JVM properties:$client_jvm"

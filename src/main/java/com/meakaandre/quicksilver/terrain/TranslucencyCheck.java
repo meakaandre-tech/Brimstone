@@ -57,11 +57,16 @@ public final class TranslucencyCheck {
     /** Worker thread, as a translucent layer or its new index list is taken: what the check needs later. Null when off. */
     static Sorted sortedFor(SectionRenderDispatcher.RenderSection section, ByteBuffer vertices, ByteBuffer indices, IndexType type) {
         if (!ENABLED) return null;
+        return sortedFor(section, vertices == null ? null : centroids(vertices), indices, type);
+    }
+
+    /** As above, for a layer Quicksilver's mesher wrote (package 4c): its quads' centres as it had them. */
+    static Sorted sortedFor(SectionRenderDispatcher.RenderSection section, float[] centroids, ByteBuffer indices, IndexType type) {
+        if (!ENABLED) return null;
         long node = section.getSectionNode();
         Object[] c = CAMERA.get();
         byte[] idx = new byte[indices.remaining()];
         MemoryUtil.memByteBuffer(MemoryUtil.memAddress(indices), idx.length).get(idx);
-        float[] centroids = vertices == null ? null : centroids(vertices);
         if (!(c[0] instanceof Long n) || n != node || !(c[1] instanceof Vec3 cam)) {
             return new Sorted(centroids, idx, type, Float.NaN, Float.NaN, Float.NaN, null);
         }

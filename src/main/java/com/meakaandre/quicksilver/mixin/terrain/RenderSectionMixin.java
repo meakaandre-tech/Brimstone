@@ -1,6 +1,7 @@
 package com.meakaandre.quicksilver.mixin.terrain;
 
 import com.meakaandre.quicksilver.animation.Animation;
+import com.meakaandre.quicksilver.mesher.Mesher;
 import com.meakaandre.quicksilver.terrain.Terrain;
 import com.meakaandre.quicksilver.terrain.TranslucencyCheck;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -27,6 +28,12 @@ public abstract class RenderSectionMixin {
     @Inject(method = "addSectionBuffersToUberBuffer", at = @At("HEAD"), cancellable = true)
     private void quicksilver$take(ChunkSectionLayer layer, CompiledSectionMesh mesh, ByteBuffer vertices, ByteBuffer indices,
                                 CallbackInfoReturnable<Boolean> cir) {
+        // package 4c: a layer Quicksilver's own mesher wrote (already in the 16-byte vertex, its animated sprites read as
+        // it was written) goes to the terrain module as it is
+        if (Mesher.take((SectionRenderDispatcher.RenderSection) (Object) this, layer, mesh, vertices, indices)) {
+            cir.setReturnValue(true);
+            return;
+        }
         // package 8: which animated sprites the layer shows, read before anything takes the vertices
         Animation.meshLayer(mesh, vertices);
         if (Terrain.take((SectionRenderDispatcher.RenderSection) (Object) this, layer, mesh, vertices, indices)) cir.setReturnValue(true);

@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "com.meakaandre.quicksilver.cipin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["LightmapFlickerMixin", "TextureAnimationMixin", "FeatureBatchOrderMixin", "BlockOutlineMixin", "SiftParticlesMixin", "ClientTickMixin", "ParticleAreaMixin", "ParticleSeedMixin", "ParticleTickMixin", "BannerSwayMixin", "EditBoxCursorMixin", "ChickenFlapMixin", "TextureTickMixin"],
+  "client": ["LightmapFlickerMixin", "TextureAnimationMixin", "FeatureBatchOrderMixin", "BlockOutlineMixin", "SiftParticlesMixin", "ClientTickMixin", "ParticleAreaMixin", "ParticleSeedMixin", "ParticleTickMixin", "BannerSwayMixin", "EditBoxCursorMixin", "ChickenFlapMixin", "TextureTickMixin", "ServerLoadMixin"],
   "injectors": {"defaultRequire": 1}
 }

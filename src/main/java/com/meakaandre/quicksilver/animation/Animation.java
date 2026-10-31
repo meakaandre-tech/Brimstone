@@ -301,6 +301,62 @@ public final class Animation {
         }
     }
 
+    // ---- package 4c: Quicksilver's own mesher reads the UV centres as it writes each quad, the same values the scan
+    // below reads back from a finished vanilla-format layer (the sum of the four UVs times a quarter)
+
+    /** The block atlas's animation table to look quads up in while a section is meshed (null: none yet, or off). */
+    public static Object meshTable() {
+        return table;
+    }
+
+    /** Number of bit words a mesher needs for {@link #meshFind}'s result with this table. */
+    public static int meshWords(Object table) {
+        return (((Table) table).states.length + 63) >> 6;
+    }
+
+    /** One quad: its UV centre ({@code uSum}, {@code vSum}: the four corners' UVs added up in order) looked up. */
+    public static void meshFind(Object table, float uSum, float vSum, long[] found) {
+        Table t = (Table) table;
+        if (t.states.length == 0) return;
+        t.find(uSum * 0.25f, vSum * 0.25f, found);
+    }
+
+    /**
+     * As {@link #meshLayer}, for one layer of a mesh Quicksilver's mesher wrote: {@code found} holds the animated sprites
+     * its section's quads show (looked up in {@code table} while meshing; null table: the section was meshed without one).
+     */
+    public static void meshLayerFound(CompiledSectionMesh mesh, Object table, long[] found) {
+        if (mesh == null) return;
+        MeshSprites m = (MeshSprites) mesh;
+        try {
+            long t0 = System.nanoTime();
+            Table t = (Table) table;
+            int[] ids = null;
+            if (t != null && t == Animation.table) {
+                IntArrayList out = new IntArrayList();
+                for (int i = 0; i < t.states.length; i++) if ((found[i >> 6] & (1L << i)) != 0) out.add(i);
+                ids = out.toIntArray();
+            }
+            synchronized (mesh) {
+                int g = m.quicksilver$animGen();
+                if (t == null || ids == null) {
+                    m.quicksilver$setAnim(POISON, null);
+                } else if (g == 0) {
+                    m.quicksilver$setAnim(t.gen, ids.length == 0 ? null : ids);
+                } else if (g == t.gen) {
+                    m.quicksilver$setAnim(g, merge(m.quicksilver$animIds(), ids));
+                } else {
+                    m.quicksilver$setAnim(POISON, null);
+                }
+            }
+            MESH_LAYERS.incrementAndGet();
+            MESH_NANOS.addAndGet(System.nanoTime() - t0);
+        } catch (Throwable e) {
+            m.quicksilver$setAnim(POISON, null);
+            fail("reading a section mesh", e);
+        }
+    }
+
     /** The animated sprites a layer's quads show (vanilla's BLOCK vertices: UV at byte 16 of 28), sorted; null if unreadable. */
     private static int[] scan(Table t, ByteBuffer vertices) {
         int n = t.states.length;

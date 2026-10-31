@@ -54,6 +54,11 @@ import org.joml.Vector3fc;
  */
 abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEmitter {
     private final List<QuadTransform> transforms = new ArrayList<>();
+
+    /** Whether no transform is pushed (package 4c: then a direct output may take a finished quad as it is). */
+    boolean noTransforms() {
+        return transforms.isEmpty();
+    }
     /** The vanilla quad this one is unchanged from, in everything a vanilla quad stores. */
     BakedQuad exactQuad;
     /** The sprite this quad's UVs come from (its vanilla quad's or a material bake's, UVs unchanged since), or null. */

@@ -24,8 +24,32 @@ final class BenchSections {
             return new long[] {s.arenaBytes(), s.usedBytes()};
         };
         BenchModules.register(BenchModules.section("meshing", TerrainStats::startWindow, f -> TerrainStats.meshingJson(), mesh ->
-            mesh.get("sections") + " sections, ms per section avg " + mesh.get("msPerSection") + " (vanilla mesher avg "
-                + mesh.get("compileMsAvg") + ", p95 " + mesh.get("compileMsP95") + "; transcode per layer " + mesh.get("transcodeMsPerLayer") + ")"));
+            mesh.get("mesher").getAsString() + " mesher; " + mesh.get("sections") + " sections, ms per section avg " + mesh.get("msPerSection") + " (mesher avg "
+                + mesh.get("compileMsAvg") + ", p95 " + mesh.get("compileMsP95") + "; transcode or copy per layer " + mesh.get("transcodeMsPerLayer") + "); whole bench "
+                + mesh.get("benchSections") + " sections, ms per section " + mesh.get("benchMsPerSection")));
+        // package 4c: Quicksilver's own mesher (and the bench-wide meshing counts in "meshing")
+        BenchModules.register(new BenchModules.Section() {
+            @Override
+            public String key() {
+                return "mesher";
+            }
+
+            @Override
+            public void startBench() {
+                TerrainStats.startBench();
+                com.meakaandre.quicksilver.mesher.MesherStats.startBench();
+            }
+
+            @Override
+            public com.google.gson.JsonElement json(int frames) {
+                return com.meakaandre.quicksilver.mesher.MesherStats.json();
+            }
+
+            @Override
+            public String line(JsonObject o) {
+                return com.meakaandre.quicksilver.mesher.MesherStats.line(o);
+            }
+        });
         BenchModules.register(BenchModules.section("terrain", null, TerrainStats::terrainJson, ter ->
             ter.get("state").getAsString() + " (" + ter.get("reason").getAsString() + "), fallbacks " + ter.get("fallbacks")
                 + ", " + ter.get("vertexBytes") + "-byte vertices (vanilla " + ter.get("vanillaVertexBytes")

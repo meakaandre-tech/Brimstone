@@ -17,6 +17,7 @@
 // Quicksilver (package 4): adapted from Fabric API's Indigo renderer (fabric-renderer-indigo, Fabric API 0.161.0+26.3),
 // aocalc/FlatLighter, under the Apache License 2.0 above (see NOTICE). Changes: package and visibility, Quicksilver's quad
 // classes, and the ambient occlusion mode fixed to Indigo's default (hybrid).
+// Package 4c: light is read through LightLookup (Quicksilver's section snapshot when it is the level being meshed).
 package com.meakaandre.quicksilver.frapi;
 
 import static com.meakaandre.quicksilver.frapi.GeometryHelper.AXIS_ALIGNED_FLAG;
@@ -34,10 +35,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 final class FlatLighter {
 	private final BlockPos.MutableBlockPos scratchPos = new BlockPos.MutableBlockPos();
-	private final BlockModelLighter.Cache lightCache;
+	private final LightLookup vanillaLight;
 
 	FlatLighter(BlockModelLighter.Cache lightCache) {
-		this.lightCache = lightCache;
+		this.vanillaLight = LightLookup.of(lightCache);
 	}
 
 	/**
@@ -159,6 +160,7 @@ final class FlatLighter {
 			}
 		}
 
-		return lightCache.getLightCoords(state, level, scratchPos);
+		// package 4c: Quicksilver's section snapshot answers from its own copy when it is the level being meshed
+		return (level instanceof LightLookup l ? l : vanillaLight).lightCoords(state, level, scratchPos);
 	}
 }
