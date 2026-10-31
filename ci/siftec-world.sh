@@ -43,10 +43,13 @@ ls -l mods
 echo "eula=true" > eula.txt
 printf 'level-seed=12345\nwhite-list=false\nenforce-whitelist=false\nonline-mode=false\nmax-tick-time=-1\nview-distance=6\ngamemode=creative\ndifficulty=peaceful\nspawn-protection=0\npause-when-empty-seconds=-1\n' > server.properties
 mkfifo in.fifo
-(java -Xmx3G -jar server.jar --nogui < in.fifo > server.log 2>&1; echo "EXIT $?" >> server.log) &
+# a time limit: a mod that fails at start-up can leave the server's JVM up without ever finishing (run 41188443125)
+(timeout -k 10 1500 java -Xmx3G -jar server.jar --nogui < in.fifo > server.log 2>&1; echo "EXIT $?" >> server.log) &
 exec 3> in.fifo
 for i in $(seq 1 120); do
   if grep -q 'Done (' server.log || grep -q '^EXIT' server.log; then break; fi
+  # a mod failing at start-up (SIFTEC with a newer MapMod, 2026-10-31): stop now instead of waiting out the limit
+  if grep -q 'Could not execute entrypoint stage' server.log; then echo "a mod failed at start-up:"; grep -m3 -E 'Could not execute|Caused by' server.log; pkill -f 'server.jar --nogui'; break; fi
   sleep 5
 done
 if grep -q 'Done (' server.log; then
