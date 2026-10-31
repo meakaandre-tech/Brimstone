@@ -1,0 +1,88 @@
+server suite=core run=quicksilver
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+pack lock: set core matches ci/pack-lock.txt
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+total 3160
+-rw-r--r-- 1 runner runner   63445 Oct 31 12:53 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 31 12:53 fabric-api.jar
+-rw-r--r-- 1 runner runner  546620 Oct 31 12:53 quicksilver.jar
+openjdk version "25.0.5" 2026-10-20 LTS
+[12:53:35] [Server thread/INFO]: Saving chunks for level 'ServerLevel[gen]'/minecraft:the_nether
+[12:53:35] [Server thread/INFO]: Saving chunks for level 'ServerLevel[gen]'/minecraft:the_end
+EXIT 0
+25M	/tmp/sout/core-quicksilver/gen/world
+[12:53:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_nether
+[12:53:47] [Server thread/INFO]: Game test server shutting down
+EXIT 0
+12
+[12:55:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+[12:55:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+EXIT 0
+9.9M	/tmp/sout/core-quicksilver/run/world
+[12:56:24] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+[12:56:24] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+EXIT 0
+9.9M	/tmp/sout/core-quicksilver/random/world
+[12:56:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+[12:56:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+EXIT 0
+/tmp/sout/core-quicksilver:
+bench
+gametest
+gametest-server.log
+gen
+gen-server.log
+heap
+heap-server.log
+random
+random-server.log
+run
+run-server.log
+run.txt
+
+/tmp/sout/core-quicksilver/bench:
+20261031-125455-server.json
+
+/tmp/sout/core-quicksilver/gametest:
+ci-harness-result.json
+gametest.xml
+
+/tmp/sout/core-quicksilver/gen:
+ci-harness-result.json
+world
+
+/tmp/sout/core-quicksilver/gen/world:
+dimensions
+level.dat
+
+/tmp/sout/core-quicksilver/gen/world/dimensions:
+minecraft
+
+/tmp/sout/core-quicksilver/gen/world/dimensions/minecraft:
+overworld
+the_end
+the_nether
+
+/tmp/sout/core-quicksilver/gen/world/dimensions/minecraft/overworld:
+entities
+poi
+region
+
+/tmp/sout/core-quicksilver/gen/world/dimensions/minecraft/overworld/entities:
+r.6.6.mca
+
+/tmp/sout/core-quicksilver/gen/world/dimensions/minecraft/overworld/poi:
+r.6.6.mca
+
+/tmp/sout/core-quicksilver/gen/world/dimensions/minecraft/overworld/region:
+r.-1.-1.mca
+r.-1.0.mca
+r.0.-1.mca
+r.0.0.mca
+r.5.5.mca
+r.5.6.mca
+r.5.7.mca
+r.6.5.mca
+r.6.6.mca
+r.6.7.mca
+r.7.5.mca

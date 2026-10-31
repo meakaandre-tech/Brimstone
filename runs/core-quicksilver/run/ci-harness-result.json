@@ -1,0 +1,19 @@
+{
+  "startupMs": 7847,
+  "worldLoadMs": 434,
+  "quicksilverLoaded": true,
+  "mode": "run",
+  "ticks": 1200,
+  "loadWaitTicks": 3,
+  "commandErrors": 0,
+  "lightSettleTicks": 200,
+  "heapAfterLoadMB": 139.348,
+  "ticksRenumbered": 3694,
+  "msptAvg": 1.449,
+  "msptP50": 1.094,
+  "msptP99": 7.363,
+  "msptMax": 65.722,
+  "ticksOver50ms": 1,
+  "heapEndMB": 141.248,
+  "chunksResaved": 144
+}

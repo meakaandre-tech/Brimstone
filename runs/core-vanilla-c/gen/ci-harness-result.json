@@ -1,0 +1,31 @@
+{
+  "startupMs": 16509,
+  "worldLoadMs": 3267,
+  "quicksilverLoaded": false,
+  "generated": [
+    {
+      "area": "minecraft:overworld 200 200 211 211",
+      "chunks": 144,
+      "ms": 9075
+    },
+    {
+      "area": "minecraft:the_nether -6 -6 5 5",
+      "chunks": 144,
+      "ms": 4915
+    },
+    {
+      "area": "minecraft:the_end -6 -6 5 5",
+      "chunks": 144,
+      "ms": 1379
+    }
+  ],
+  "mode": "gen",
+  "postGenPiecesPlaced": 0,
+  "atOldStopTick": 20,
+  "atOldStopPostGenPending": 0,
+  "atOldStopGenChunksUnloaded": 0,
+  "lightSettleTicks": 40,
+  "postGenPendingAtSave": 0,
+  "genChunksUnloadedAtSave": 0,
+  "heapAfterGenMB": 281.625
+}

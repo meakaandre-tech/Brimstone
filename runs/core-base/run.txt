@@ -1,0 +1,12 @@
+server suite=core run=base
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+pack lock: set core matches ci/pack-lock.txt
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+total 2624
+-rw-r--r-- 1 runner runner   63445 Oct 31 12:52 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 31 12:52 fabric-api.jar
+openjdk version "25.0.5" 2026-10-20 LTS
+[12:52:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+[12:52:48] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+EXIT 0
+-rw-r--r-- 1 runner runner 10035200 Oct 31 12:52 /home/runner/work/Quicksilver/Quicksilver/server-base.tar

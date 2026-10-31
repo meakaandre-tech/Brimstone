@@ -1,0 +1,20 @@
+{
+  "startupMs": 8187,
+  "worldLoadMs": 457,
+  "quicksilverLoaded": true,
+  "mode": "run",
+  "ticks": 1200,
+  "loadWaitTicks": 2,
+  "commandErrors": 0,
+  "lightSettleTicks": 200,
+  "heapAfterLoadMB": 138.73,
+  "ticksRenumbered": 3846,
+  "msptAvg": 0.878,
+  "msptP50": 0.739,
+  "msptP99": 3.991,
+  "msptMax": 33.718,
+  "ticksOver50ms": 0,
+  "heapEndMB": 142.537,
+  "chunksResaved": 144,
+  "random": "positions\u003d122035 ticks\u003d892 sectionsOn\u003d4501 sectionsOff\u003d259054 precipOn\u003d2021 precipOff\u003d29994 monsters\u003d4 creatures\u003d0"
+}

@@ -1,0 +1,25 @@
+network check run=net-vanilla-client
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+pack lock: set core matches ci/pack-lock.txt
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+total 3160
+-rw-r--r-- 1 runner runner   63445 Oct 31 12:53 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 2620967 Oct 31 12:53 fabric-api.jar
+-rw-r--r-- 1 runner runner  546620 Oct 31 12:53 quicksilver.jar
+total 0
+[12:54:22] [Server thread/INFO]: System chat: QuicksilverCI joined the game
+[12:54:32] [Server thread/INFO]: CI HARNESS RUN START after 871 loading and 200 light ticks: 1200 ticks
+[12:55:32] [Server thread/INFO]: CI HARNESS RUN DONE: 1200 ticks, mspt avg 6.254
+/tmp/sout/core-net-vanilla-client:
+bench
+client-gradle.log
+client.log
+run
+run-server.log
+run.txt
+
+/tmp/sout/core-net-vanilla-client/bench:
+20261031-125522-server.json
+
+/tmp/sout/core-net-vanilla-client/run:
+ci-harness-result.json
