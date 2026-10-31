@@ -211,12 +211,25 @@ def main(res, rep):
             if p and not p[0].startswith("#"):
                 x1, z1, x2, z2 = map(int, p[1:5])
                 expected[p[0]] = expected.get(p[0], 0) + (x2 - x1 + 1) * (z2 - z1 + 1)
+        gen_settle = []
         for r in RUNS:
             j = load(os.path.join(d[r], "gen", "ci-harness-result.json"), {})
             if "error" in j or j.get("mode") != "gen":
                 fails.append("%s worldgen %s: the harness did not finish (%s)" % (suite, r, j.get("error", "no result")))
             if "CI HARNESS GEN DONE" not in text(os.path.join(d[r], "gen-server.log")):
                 fails.append("%s worldgen %s: no CI HARNESS GEN DONE in its log" % (suite, r))
+            # post-generation placement (SIFTEC's ore nodes, placed from ticks after a chunk loads) must be done at the save
+            if j.get("postGenPendingAtSave", 0) or j.get("genChunksUnloadedAtSave", 0):
+                fails.append("%s worldgen %s: saved with post-generation work pending (%s) or generated chunks unloaded (%s)"
+                             % (suite, r, j.get("postGenPendingAtSave"), j.get("genChunksUnloadedAtSave")))
+            gen_settle.append("| %s | %s | %s / %s | %s | %s / %s |" % (r, j.get("atOldStopTick"), j.get("atOldStopPostGenPending"),
+                              j.get("atOldStopGenChunksUnloaded"), j.get("lightSettleTicks"), j.get("postGenPendingAtSave"),
+                              j.get("genChunksUnloadedAtSave")))
+        lines.append("### Worldgen: settling before the save\n\nThe save waits for the light engine and for post-generation placement"
+                     " (SIFTEC's ore nodes); the first columns are where it used to stop (light quiet for 20 ticks).\n\n"
+                     "| run | light quiet at tick | then: placement pending / generated chunks unloaded | saved at tick | at the save: pending / unloaded |\n|---|---|---|---|---|")
+        lines.extend(gen_settle)
+        lines.append("")
         if has_run:
             checks.append(("World diff after the scripted run", "run", "world", "blocks, block entities, entity types"))
         if has_random:
