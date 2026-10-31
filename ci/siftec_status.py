@@ -47,10 +47,25 @@ def start_status(res):
     return bad
 
 
-def split(failures, res):
-    """(gating failures, SIFTEC's report-only failures, report lines). Without report-only mode, everything gates."""
+def split(failures, res, world_txt=None):
+    """(gating failures, SIFTEC's report-only failures, report lines). Without report-only mode, everything gates.
+    world_txt: the SIFTEC world job's log (the client suite's runs all start from that world)."""
     bad = start_status(res)
     lines = []
+    runs = glob.glob(os.path.join(res, "siftec-*"))
+    world = ""
+    if world_txt:
+        try:
+            world = open(world_txt, errors="replace").read()
+        except OSError:
+            world = ""
+    packs = PACK_FAIL.findall(world)
+    if packs:
+        lines.append("**SIFTEC's world job stopped at the pack check** (SIFTEC's runs need its world):\n")
+        lines += ["- `%s`" % p.strip()[:200] for p in packs[:6]]
+        lines.append("")
+    if not runs and any(is_siftec(f) for f in failures):
+        lines.append("**No SIFTEC run left any results** (its world or pack job failed first).\n")
     if bad:
         lines.append("**SIFTEC did not start** in %d of %d run(s):\n" % (len(bad), len(glob.glob(os.path.join(res, "siftec-*")))))
         lines += ["- %s: `%s`" % (r, e) for r, e in sorted(bad.items())]
@@ -62,7 +77,7 @@ def split(failures, res):
     head = ["## SIFTEC: report only\n",
             "Until SIFTEC starts with MapMod's latest build again, SIFTEC's suites fail nothing (docs/progress.md, open"
             " items). Core and Terralith gate as usual.\n"]
-    if not bad:
+    if runs and not bad:
         head.append("SIFTEC started in every run.\n")
     body = ["SIFTEC failures (not gating):\n"] + ["- " + f for f in soft] if soft else ["No SIFTEC failures.\n"]
     return gate, soft, head + lines + body + [""]

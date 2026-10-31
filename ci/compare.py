@@ -957,7 +957,7 @@ def main():
     direct_buffers(res, lines)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import siftec_status
-    failures, siftec_soft, siftec_lines = siftec_status.split(failures, res)
+    failures, siftec_soft, siftec_lines = siftec_status.split(failures, res, os.path.join(os.path.dirname(os.path.abspath(rep)), "siftec-world", "siftec-world.txt"))
     lines[0:0] = siftec_lines
     lines.insert(0, "# Quicksilver CI comparison\n\n" + ("**FAILED**\n\n" + "\n".join(f"- {f}" for f in failures) if failures else "**passed**") + "\n")
     open(os.path.join(rep, "report.md"), "w").write("\n".join(lines) + "\n")
