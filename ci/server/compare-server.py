@@ -218,16 +218,17 @@ def main(res, rep):
                 fails.append("%s worldgen %s: the harness did not finish (%s)" % (suite, r, j.get("error", "no result")))
             if "CI HARNESS GEN DONE" not in text(os.path.join(d[r], "gen-server.log")):
                 fails.append("%s worldgen %s: no CI HARNESS GEN DONE in its log" % (suite, r))
-            # post-generation placement (SIFTEC's ore nodes, placed from ticks after a chunk loads) must be done at the save
-            if j.get("postGenPendingAtSave", 0) or j.get("genChunksUnloadedAtSave", 0):
-                fails.append("%s worldgen %s: saved with post-generation work pending (%s) or generated chunks unloaded (%s)"
-                             % (suite, r, j.get("postGenPendingAtSave"), j.get("genChunksUnloadedAtSave")))
-            gen_settle.append("| %s | %s | %s / %s | %s | %s / %s |" % (r, j.get("atOldStopTick"), j.get("atOldStopPostGenPending"),
-                              j.get("atOldStopGenChunksUnloaded"), j.get("lightSettleTicks"), j.get("postGenPendingAtSave"),
-                              j.get("genChunksUnloadedAtSave")))
-        lines.append("### Worldgen: settling before the save\n\nThe save waits for the light engine and for post-generation placement"
-                     " (SIFTEC's ore nodes); the first columns are where it used to stop (light quiet for 20 ticks).\n\n"
-                     "| run | light quiet at tick | then: placement pending / generated chunks unloaded | saved at tick | at the save: pending / unloaded |\n|---|---|---|---|---|")
+            # post-generation placement (SIFTEC's ore nodes): done by the harness before the first tick, and SIFTEC's own
+            # queue empty at the save
+            if j.get("postGenPendingAtSave", 0):
+                fails.append("%s worldgen %s: saved with SIFTEC's queue not empty (%s)" % (suite, r, j.get("postGenPendingAtSave")))
+            gen_settle.append("| %s | %s | %s | %s / %s | %s | %s / %s |" % (r, j.get("postGenPiecesPlaced"), j.get("atOldStopTick"),
+                              j.get("atOldStopPostGenPending"), j.get("atOldStopGenChunksUnloaded"), j.get("lightSettleTicks"),
+                              j.get("postGenPendingAtSave"), j.get("genChunksUnloadedAtSave")))
+        lines.append("### Worldgen: settling before the save\n\nSIFTEC's pieces (ore nodes, collectibles) are placed by the harness before"
+                     " the first tick, while every generated chunk is loaded; the save waits for the light engine and SIFTEC's own"
+                     " queue. Where the harness used to stop (light quiet for 20 ticks) is shown for the record.\n\n"
+                     "| run | chunks given SIFTEC pieces | light quiet at tick | then: SIFTEC queue / generated chunks unloaded | saved at tick | at the save: queue / unloaded |\n|---|---|---|---|---|---|")
         lines.extend(gen_settle)
         lines.append("")
         if has_run:
