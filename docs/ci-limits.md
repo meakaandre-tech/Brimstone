@@ -132,6 +132,12 @@ run (41143673630) had, Quicksilver against vanilla, median ms per section:
 factory_flat is its own session of about 75 sections (150 pairs), mostly air with a few Create machines; its ratio
 moves between 1.0 and 1.4 from run to run and profile to profile on the same code.
 
+**factory_flat's pairs (Andre, 2026-10-31):** its setup now ends with four chunk reloads (F3+A, `#chunks`, 8 s apart),
+each meshing every section again, for 500+ pairs; `ciMinMeshPairs: 500` fails a session with fewer. The +10% limit
+stays. While SIFTEC's suites report only (SIFTEC doesn't start with MapMod's latest), its gate reports only too; when
+SIFTEC gates again it counts as passed after two full runs in a row, and if it is consistently over with 500+ pairs it
+is a real gap (stop and report).
+
 ## Pixel limits (`ci/pixel-limits.json`)
 
 A screenshot's difference is the share of pixels whose largest RGB channel differs by more than 8 (of 255): small

@@ -531,6 +531,11 @@ def main():
                                 failures.append(f"{name}/{r}: bench {sid}: Quicksilver's median meshing time {mq} ms per section is over"
                                                 f" {'vanilla + 10% (flat-lit) ' if flat else ''}{allowed} ms (vanilla's compiler {mv} ms; same sections,"
                                                 f" same thread; {me.get('checkedPairs')} pairs)")
+                            # a scene whose session meshes few sections reloads its chunks until the median has enough pairs
+                            # (Andre, 2026-10-31: factory_flat, 500+), and is held to it
+                            want = (scene_by_id.get(sid) or {}).get("ciMinMeshPairs")
+                            if want and (me.get("checkedPairs") or 0) < want:
+                                failures.append(f"{name}/{r}: bench {sid}: {me.get('checkedPairs')} like-for-like pairs, the scene asks for {want}")
                             if me.get("state") != "on" or me.get("fallbacks", 0) != 0 or me.get("mismatched", 0) != 0 or me.get("check") != "on":
                                 failures.append(f"{name}/{r}: bench {json.load(open(f))['scene']}: mesher {me.get('state')} ({me.get('reason')}), fallbacks {me.get('fallbacks')}, mismatched {me.get('mismatched')}, check {me.get('check')}")
                         if os.path.isdir(os.path.join(d, "bench")) and checked == 0:

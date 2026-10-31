@@ -2641,6 +2641,15 @@ right after the other (cumulative since the session started, both orders average
   the same as in the green run (the commit changes `ServerAware` only), so the worldgen difference is intermittent: open,
   not re-run to green.
 
+### Andre's decisions of 2026-10-31 (round 4)
+
+- **SIFTEC worldgen difference**: cause and fix on `fix-worldgen-diff`, merged to main as `119ca70` (green on core and
+  Terralith: 41189831014 full, 41194096663 quick); its 3 SIFTEC proof runs wait until SIFTEC starts with MapMod again.
+- **4c rebased** onto `119ca70` as one commit (the branch history squashed; pre-rebase head `0f16f86`). Main's P2-1
+  (Memory module) is now under 4c too.
+- **factory_flat**: four chunk reloads after its setup, for 500+ like-for-like pairs (`ciMinMeshPairs`); +10% kept;
+  report only while SIFTEC is (docs/ci-limits.md, "Package 4c: like-for-like timing").
+
 ### Review (fresh agent, of `d0bfbb5`; `scratchpad/review-package-4c.md` in the session)
 
 1 must-fix, 9 should-fix, nits. Fixed: native buffers of ended meshing threads freed (vanilla's pool retires idle

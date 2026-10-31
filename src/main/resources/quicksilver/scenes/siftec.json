@@ -45,13 +45,16 @@
         "execute in minecraft:overworld unless block 1190 160 970 minecraft:bedrock run siftec worldtest buildings_a view 0",
         "execute in minecraft:overworld run setblock 1190 160 970 minecraft:bedrock",
         "#wait 4",
-        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15"
+        "execute in minecraft:overworld run tp @a 1238.5 192 1028.5 180 15",
+        "#chunks", "#wait 8", "#chunks", "#wait 8", "#chunks", "#wait 8", "#chunks", "#wait 8"
       ],
       "requiresMod": "siftec_selftest",
       "requiresNote": "Builds SIFTEC's buildings_a row with SIFTEC's test command (siftec worldtest), which lives in SIFTEC's CI-only selftest mod, not in its release.",
       "clientOptions": {
         "ao": "false"
-      }
+      },
+      "ciMinMeshPairs": 500,
+      "ciMeshPairsNote": "Andre, 2026-10-31: its session meshes about 75 sections (150 like-for-like pairs), too few for a stable median; four chunk reloads (F3+A) after the setup mesh every section again, for 500+ pairs. Its median gate (vanilla + 10%, flat-lit) waits until SIFTEC's suite gates again."
     },
     {
       "id": "sift",
