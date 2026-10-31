@@ -1,0 +1,71 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/core-vanilla-a/random/world",
+ "b": "/tmp/sres/core-vanilla-b/random/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 1764,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 40,
+   "entitiesB": 40,
+   "entitiesExact": true,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:creeper": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:item": {
+     "a": 33,
+     "b": 33,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:pig": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:zombie": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 1764,
+  "missingDimensions": 0,
+  "differences": 0
+ }
+}
