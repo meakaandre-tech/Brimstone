@@ -177,17 +177,17 @@ public final class EntityCollisions {
     }
 
     /**
-     * Whether vanilla's lookup for {@code entity} in {@code box} would find no entity: true only when it can be told
+     * Whether vanilla's lookup for {@code entity} in {@code box} (the box vanilla's getEntities call gets) would find no entity: true only when it can be told
      * from the section counts alone; false means vanilla's lookup runs as usual.
      */
     public static boolean none(Object getter, Entity entity, AABB box) {
         if (!(getter instanceof ServerLevel level)) return false;
         if (entity != null && (kind(entity) & CUSTOM) != 0) return false;
         if (!level.dragonParts().isEmpty()) return false;
-        if (box.getSize() < 1.0E-7) return false;  // vanilla answers without a lookup: leave it to vanilla
         Any any = new Any();
+        // the box vanilla's lookup is given (already widened by 1e-7 there), so the same sections are visited
         ((ManagerSections) ((LevelEntities) level).quicksilver$entityManager()).quicksilver$sectionStorage()
-            .forEachAccessibleNonEmptySection(box.inflate(1.0E-7), any);
+            .forEachAccessibleNonEmptySection(box, any);
         return !any.found;
     }
 

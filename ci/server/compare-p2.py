@@ -187,6 +187,9 @@ def perf(res, rep, lines, fails, owed, summary):
                 if (a or 0) < 0.005 and (b or 0) < 0.005:
                     continue
                 t.append("| %s | %s | %s | %s |" % (ph.replace("  ", "&nbsp;&nbsp;"), fmt(a), fmt(b), fmt(a - b) if a is not None and b is not None else "-"))
+            t.append("\nServer-thread allocation sampled over the recording: vanilla %s MB, Quicksilver %s MB; GC pauses: vanilla %s ms, Quicksilver %s ms."
+                     % (jv.get("allocMB"), jq.get("allocMB"), jv.get("gcPauseMs"), jq.get("gcPauseMs")))
+            t.append("\nQuicksilver's allocation by frame (MB): %s" % ", ".join("%s %s" % (x["frame"], x["MB"]) for x in jq.get("allocTop", [])[:15]))
             for side, jj in (("vanilla", jv), ("Quicksilver", jq)):
                 t.append("\nTop methods, %s (self share of samples): %s" % (side, ", ".join(
                     "%s %.1f%%" % (x["method"], x["share"] * 100) for x in jj.get("self", [])[:25])))

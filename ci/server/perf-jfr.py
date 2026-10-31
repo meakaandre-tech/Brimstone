@@ -85,6 +85,40 @@ def samples(path):
     p.wait()
 
 
+def alloc_and_gc(path):
+    """Allocation samples on the server thread by the top Quicksilver or Mixin callback frame, total sampled bytes, and
+    the summed GC pause time over the recording."""
+    p = subprocess.run(["jfr", "print", "--events", "jdk.ObjectAllocationSample,jdk.GCPhasePause", "--stack-depth", "12", path],
+                       stdout=subprocess.PIPE, text=True, errors="replace")
+    total, by, pause_ms = 0, Counter(), 0.0
+    weight, thread, stack, kind = 0, None, [], None
+    for line in p.stdout.splitlines():
+        s = line.strip()
+        if s.startswith("jdk.ObjectAllocationSample") or s.startswith("jdk.GCPhasePause"):
+            kind, weight, thread, stack = s.split()[0], 0, None, []
+        elif s.startswith("weight = "):
+            m = re.match(r"weight = ([\d.]+) (bytes|kB|MB|GB)", s)
+            if m:
+                weight = float(m.group(1)) * {"bytes": 1, "kB": 1024, "MB": 1 << 20, "GB": 1 << 30}[m.group(2)]
+        elif s.startswith("eventThread"):
+            m = re.search(r'"([^"]*)"', s)
+            thread = m.group(1) if m else None
+        elif s.startswith("duration = ") and kind == "jdk.GCPhasePause":
+            m = re.match(r"duration = ([\d.]+) (ns|us|ms|s)", s)
+            if m:
+                pause_ms += float(m.group(1)) * {"ns": 1e-6, "us": 1e-3, "ms": 1, "s": 1000}[m.group(2)]
+        elif kind == "jdk.ObjectAllocationSample" and FRAME.match(line):
+            stack.append(FRAME.match(line).group(1))
+        elif s == "}" and kind == "jdk.ObjectAllocationSample":
+            if thread == "Server thread":
+                total += weight
+                key = next((short(f) for f in stack if "quicksilver" in f.lower() or "callback" in f.lower()), short(stack[0]) if stack else "?")
+                by[key] += weight
+            kind = None
+    return {"allocMB": round(total / (1 << 20), 1), "gcPauseMs": round(pause_ms, 1),
+            "allocTop": [{"frame": k, "MB": round(v / (1 << 20), 1)} for k, v in by.most_common(25)]}
+
+
 def main(rec, out):
     n = 0
     self_c, incl = Counter(), Counter()
@@ -109,6 +143,10 @@ def main(rec, out):
         "self": [{"method": k, "share": round(v / n, 4)} for k, v in self_c.most_common(60)] if n else [],
         "inclusive": [{"method": k, "share": round(v / n, 4)} for k, v in incl.most_common(120)] if n else [],
     }
+    try:
+        res.update(alloc_and_gc(rec))
+    except Exception as e:  # noqa: BLE001 - the summary still counts without these
+        res["allocError"] = str(e)
     with open(out, "w") as f:
         json.dump(res, f, indent=1)
     print("%s: %d server-thread samples while ticking" % (rec, n))

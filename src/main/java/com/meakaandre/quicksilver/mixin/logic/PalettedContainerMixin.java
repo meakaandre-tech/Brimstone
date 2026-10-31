@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 /**
  * P2-2, logic.block-collisions: every write to a container counts up its write number, so masks built from it before
@@ -24,19 +24,23 @@ public abstract class PalettedContainerMixin implements SectionMasks.Writes {
         return quicksilver$writeCount;
     }
 
-    @Inject(method = "getAndSet", at = @At("HEAD"))
-    private void quicksilver$getAndSet(CallbackInfoReturnable<Object> cir) {
+    // (the setters' first int argument passed through unchanged: no callback object per write)
+    @ModifyVariable(method = "getAndSet", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private int quicksilver$getAndSet(int first) {
         quicksilver$writeCount++;
+        return first;
     }
 
-    @Inject(method = "getAndSetUnchecked", at = @At("HEAD"))
-    private void quicksilver$getAndSetUnchecked(CallbackInfoReturnable<Object> cir) {
+    @ModifyVariable(method = "getAndSetUnchecked", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private int quicksilver$getAndSetUnchecked(int first) {
         quicksilver$writeCount++;
+        return first;
     }
 
-    @Inject(method = "set", at = @At("HEAD"))
-    private void quicksilver$set(CallbackInfo ci) {
+    @ModifyVariable(method = "set", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private int quicksilver$set(int first) {
         quicksilver$writeCount++;
+        return first;
     }
 
     @Inject(method = "read", at = @At("HEAD"))
