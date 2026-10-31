@@ -1,0 +1,3 @@
+# SIFTEC's perf scene (phase 2, P2-2; ci/server/perf-run.sh): its scripted run (the Create train, a mechanical bearing
+# and piston on creative motors, SIFTEC's furnace), 1200 ticks sprinting.
+train   scripted-run-siftec.txt       1200  -

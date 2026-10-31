@@ -1,0 +1,8 @@
+# The core suite's perf scenes (phase 2, P2-2; ci/server/perf-run.sh): scene, script (ci/server/), ticks (sprinting),
+# world (the saved worlds are compared, ci/server/compare-p2.py) or -.
+# mobs: 172 mobs moving and colliding over mixed shapes (entity movement, collisions, block access); random: the
+# random-tick run (random ticks, precipitation, natural spawning); run: the scripted run (machines, crops, animals,
+# villagers, items).
+mobs    scripted-run-core-mobs.txt    2400  world
+random  scripted-run-core-random.txt  2400  -
+run     scripted-run-core.txt         2400  -

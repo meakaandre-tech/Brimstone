@@ -29,7 +29,8 @@
     "quicksilver.frapi.mixins.json",
     "quicksilver.animation.mixins.json",
     "quicksilver.phase2.mixins.json",
-    "quicksilver.memory.mixins.json"
+    "quicksilver.memory.mixins.json",
+    "quicksilver.logic.mixins.json"
   ],
   "custom": {
     "fabric-renderer-api-v1:contains_renderer": true

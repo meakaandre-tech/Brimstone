@@ -16,6 +16,8 @@ public final class Quicksilver implements ModInitializer {
         com.meakaandre.quicksilver.phase2.ServerNumbers.init();
         // phase 2 (P2-1): the Memory module's switches and status line (its mixins are chosen by its mixin plugin)
         com.meakaandre.quicksilver.memory.Memory.init();
+        // phase 2 (P2-2): the Logic module's switches and status line (its mixins are chosen by its mixin plugin)
+        com.meakaandre.quicksilver.logic.Logic.init();
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             com.meakaandre.quicksilver.frapi.QuicksilverRenderer.register();
         }

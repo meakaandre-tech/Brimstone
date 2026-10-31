@@ -14,6 +14,12 @@ on:
 permissions:
   contents: write
 
+env:
+  # SIFTEC's suites (client and server) are report-only until SIFTEC starts with MapMod's latest release again (Andre,
+  # 2026-10-31; docs/progress.md, open bugs): their failures are listed as owed in the reports, not failed
+  # (ci/server/compare-p2.py). Set to 0 to gate SIFTEC again.
+  SIFTEC_REPORT_ONLY: "1"
+
 jobs:
   mode:
     # Quick mode on branch pushes: the core suite with vanilla a, vanilla b and Quicksilver on the old-GPU profile
@@ -375,8 +381,15 @@ jobs:
           set +e
           python3 -m pip install --quiet --break-system-packages pillow numpy
           CI_MODE="${{ needs.mode.outputs.mode }}" python3 ci/compare.py /tmp/res /tmp/ci/compare
-          echo "status=$?" >> "$GITHUB_OUTPUT"
+          st=$?
           cat /tmp/ci/compare/report.md >> "$GITHUB_STEP_SUMMARY"
+          # P2-2: the Logic module in the client runs (their integrated servers), and compare.py's verdict with SIFTEC's
+          # failures owed while SIFTEC is report-only (compare-p2.py fails on every other compare.py failure)
+          python3 -I ci/server/compare-p2.py client /tmp/res /tmp/ci/compare
+          p2=$?
+          cat /tmp/ci/compare/p2-client.md >> "$GITHUB_STEP_SUMMARY"
+          if [ "$SIFTEC_REPORT_ONLY" = 1 ]; then st=0; fi
+          echo "status=$(( st || p2 ))" >> "$GITHUB_OUTPUT"
       - name: Publish logs, bench results and screenshots to the branch's ci-logs-<branch> branch
         if: always()
         shell: bash
@@ -497,6 +510,55 @@ jobs:
           path: /tmp/sout
           retention-days: 3
 
+  server-perf:
+    # P2-2: MSPT of vanilla and Quicksilver on ONE runner, alternating, in each suite's perf scenes
+    # (ci/server/perf-run.sh, ci/server/perf-<suite>.txt; a suite without one does nothing), with JFR for where the time
+    # goes; compared and gated in server-compare (ci/server/compare-p2.py)
+    needs: [mode, build, server-base]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: ${{ fromJSON(needs.mode.outputs.server_suites) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        if: matrix.suite == 'siftec'
+        with:
+          repository: meakaandre-tech/SIFTEC
+          path: siftec
+          sparse-checkout: .github
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: actions/download-artifact@v4
+        with:
+          name: quicksilver-jar
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-server-harness-jar
+          path: ci-server-harness
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: server-base-${{ matrix.suite }}
+      - name: Measure MSPT, vanilla and Quicksilver alternately
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
+          OUT: /tmp/sout/${{ matrix.suite }}-perf
+        run: bash ci/server/perf-run.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sres-${{ matrix.suite }}-perf
+          path: /tmp/sout
+          retention-days: 3
+
   server-net:
     # the network check: a vanilla client on a Quicksilver server and a Quicksilver client on a vanilla server,
     # through the scripted run (ci/server/net-run.sh)
@@ -543,7 +605,7 @@ jobs:
           retention-days: 3
 
   server-compare:
-    needs: [mode, build, server, server-net]
+    needs: [mode, build, server, server-net, server-perf]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -573,7 +635,13 @@ jobs:
           cmp=$?
           cat /tmp/sci/compare/report.md >> "$GITHUB_STEP_SUMMARY"
           tail -1 /tmp/sci/compare/worlddiff-selftest.txt >> "$GITHUB_STEP_SUMMARY"
-          echo "status=$(( self || cmp ))" >> "$GITHUB_OUTPUT"
+          # P2-2: the perf job, the Logic module, and compare-server.py's verdict with SIFTEC's failures owed while
+          # SIFTEC is report-only (compare-p2.py fails on every other compare-server.py failure)
+          python3 -I ci/server/compare-p2.py server /tmp/sres /tmp/sci/compare
+          p2=$?
+          cat /tmp/sci/compare/p2.md >> "$GITHUB_STEP_SUMMARY"
+          if [ "$SIFTEC_REPORT_ONLY" = 1 ]; then cmp=0; fi
+          echo "status=$(( self || cmp || p2 ))" >> "$GITHUB_OUTPUT"
       - name: Publish the server suite's logs to ci-logs-server-<branch>
         if: always()
         shell: bash
