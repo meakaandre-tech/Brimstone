@@ -2649,6 +2649,10 @@ right after the other (cumulative since the session started, both orders average
   (Memory module) is now under 4c too.
 - **factory_flat**: four chunk reloads after its setup, for 500+ like-for-like pairs (`ciMinMeshPairs`); +10% kept;
   report only while SIFTEC is (docs/ci-limits.md, "Package 4c: like-for-like timing").
+- **Runs**: 41196986066 (`bc6e3be`, full) green; 41202837388 (`790864d`, quick, report wording) green. Core: every
+  scene's median under vanilla's in every profile (0.69-0.95); single player 710/710 ticks behind, 1641 sections meshed
+  while behind, at most 1 at a time. SIFTEC didn't run: a new SIFTEC and self-test build (it starts with MapMod's
+  latest; the world job's server reached "Done") fails the pack lock, so factory_flat's 500+ pairs are not measured yet.
 
 ### Review (fresh agent, of `d0bfbb5`; `scratchpad/review-package-4c.md` in the session)
 
