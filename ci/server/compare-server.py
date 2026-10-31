@@ -493,6 +493,11 @@ def main(res, rep):
                 fails.append("identity hash in the Memory module: %s:%d: %s" % (os.path.basename(f), i, l.strip()[:120]))
     for e in ERRORS:
         fails.append("comparator crashed: " + e)
+    sys.path.insert(0, os.path.join(HERE, ".."))
+    import siftec_status
+    fails, siftec_soft, siftec_lines = siftec_status.split(fails, res)
+    lines += siftec_lines
+    summary["siftecReportOnly"] = siftec_soft
     lines.append("## Result\n")
     lines.append("**%s**" % ("PASS" if not fails else "FAIL"))
     lines += ["- " + f for f in fails]

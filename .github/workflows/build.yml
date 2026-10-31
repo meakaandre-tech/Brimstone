@@ -25,6 +25,7 @@ jobs:
       matrix: ${{ steps.m.outputs.matrix }}
       server_suites: ${{ steps.m.outputs.server_suites }}
       logs: ${{ steps.m.outputs.logs }}
+      siftec_report_only: ${{ steps.m.outputs.siftec_report_only }}
     steps:
       - id: m
         shell: bash
@@ -54,6 +55,10 @@ jobs:
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           echo "logs=ci-logs-$(echo "$GITHUB_REF_NAME" | tr '/' '-')" >> "$GITHUB_OUTPUT"
+          # SIFTEC's suites (client and server) report only, failing nothing, until SIFTEC starts with MapMod's latest
+          # build again (Andre, 2026-10-31; docs/progress.md, open items). Core and Terralith gate as usual. Set to
+          # false to make SIFTEC gate again.
+          echo "siftec_report_only=true" >> "$GITHUB_OUTPUT"
           echo "CI mode: $mode" >> "$GITHUB_STEP_SUMMARY"
 
   build:
@@ -201,6 +206,7 @@ jobs:
     # (full mode only)
     needs: [mode]
     if: needs.mode.outputs.mode == 'full'
+    continue-on-error: ${{ needs.mode.outputs.siftec_report_only == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -292,7 +298,8 @@ jobs:
 
   client:
     needs: [mode, build, siftec-world, core-world]
-    if: ${{ !cancelled() && needs.build.result == 'success' && needs.core-world.result == 'success' && (needs.siftec-world.result == 'success' || needs.siftec-world.result == 'skipped') }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.core-world.result == 'success' && (needs.siftec-world.result == 'success' || needs.siftec-world.result == 'skipped' || needs.mode.outputs.siftec_report_only == 'true') }}
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -374,7 +381,7 @@ jobs:
         run: |
           set +e
           python3 -m pip install --quiet --break-system-packages pillow numpy
-          CI_MODE="${{ needs.mode.outputs.mode }}" python3 ci/compare.py /tmp/res /tmp/ci/compare
+          CI_MODE="${{ needs.mode.outputs.mode }}" CI_SIFTEC_REPORT_ONLY="${{ needs.mode.outputs.siftec_report_only }}" python3 ci/compare.py /tmp/res /tmp/ci/compare
           echo "status=$?" >> "$GITHUB_OUTPUT"
           cat /tmp/ci/compare/report.md >> "$GITHUB_STEP_SUMMARY"
       - name: Publish logs, bench results and screenshots to the branch's ci-logs-<branch> branch
@@ -402,6 +409,7 @@ jobs:
   server-base:
     # the world every scripted run of a suite starts from (vanilla, generated once per run of this workflow)
     needs: [mode, build]
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
@@ -448,6 +456,7 @@ jobs:
   server:
     needs: [mode, build, server-base]
     if: ${{ !cancelled() && needs.build.result == 'success' }}
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -569,7 +578,7 @@ jobs:
           python3 -I ci/server/test_worlddiff.py > /tmp/sci/compare/worlddiff-selftest.txt 2>&1
           self=$?
           extra=$(echo '${{ needs.mode.outputs.server_suites }}' | python3 -c "import json,sys; print(','.join(json.load(sys.stdin)))")
-          CI_MODE="${{ needs.mode.outputs.mode }}" CI_EXTRA_SUITES="$extra" python3 -I ci/server/compare-server.py /tmp/sres /tmp/sci/compare
+          CI_MODE="${{ needs.mode.outputs.mode }}" CI_EXTRA_SUITES="$extra" CI_SIFTEC_REPORT_ONLY="${{ needs.mode.outputs.siftec_report_only }}" python3 -I ci/server/compare-server.py /tmp/sres /tmp/sci/compare
           cmp=$?
           cat /tmp/sci/compare/report.md >> "$GITHUB_STEP_SUMMARY"
           tail -1 /tmp/sci/compare/worlddiff-selftest.txt >> "$GITHUB_STEP_SUMMARY"
