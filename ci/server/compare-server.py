@@ -211,12 +211,26 @@ def main(res, rep):
             if p and not p[0].startswith("#"):
                 x1, z1, x2, z2 = map(int, p[1:5])
                 expected[p[0]] = expected.get(p[0], 0) + (x2 - x1 + 1) * (z2 - z1 + 1)
+        gen_settle = []
         for r in RUNS:
             j = load(os.path.join(d[r], "gen", "ci-harness-result.json"), {})
             if "error" in j or j.get("mode") != "gen":
                 fails.append("%s worldgen %s: the harness did not finish (%s)" % (suite, r, j.get("error", "no result")))
             if "CI HARNESS GEN DONE" not in text(os.path.join(d[r], "gen-server.log")):
                 fails.append("%s worldgen %s: no CI HARNESS GEN DONE in its log" % (suite, r))
+            # post-generation placement (SIFTEC's ore nodes): done by the harness before the first tick, and SIFTEC's own
+            # queue empty at the save
+            if j.get("postGenPendingAtSave", 0):
+                fails.append("%s worldgen %s: saved with SIFTEC's queue not empty (%s)" % (suite, r, j.get("postGenPendingAtSave")))
+            gen_settle.append("| %s | %s | %s | %s / %s | %s | %s / %s |" % (r, j.get("postGenPiecesPlaced"), j.get("atOldStopTick"),
+                              j.get("atOldStopPostGenPending"), j.get("atOldStopGenChunksUnloaded"), j.get("lightSettleTicks"),
+                              j.get("postGenPendingAtSave"), j.get("genChunksUnloadedAtSave")))
+        lines.append("### Worldgen: settling before the save\n\nSIFTEC's pieces (ore nodes, collectibles) are placed by the harness before"
+                     " the first tick, while every generated chunk is loaded; the save waits for the light engine and SIFTEC's own"
+                     " queue. Where the harness used to stop (light quiet for 20 ticks) is shown for the record.\n\n"
+                     "| run | chunks given SIFTEC pieces | light quiet at tick | then: SIFTEC queue / generated chunks unloaded | saved at tick | at the save: queue / unloaded |\n|---|---|---|---|---|---|")
+        lines.extend(gen_settle)
+        lines.append("")
         if has_run:
             checks.append(("World diff after the scripted run", "run", "world", "blocks, block entities, entity types"))
         if has_random:
@@ -479,6 +493,11 @@ def main(res, rep):
                 fails.append("identity hash in the Memory module: %s:%d: %s" % (os.path.basename(f), i, l.strip()[:120]))
     for e in ERRORS:
         fails.append("comparator crashed: " + e)
+    sys.path.insert(0, os.path.join(HERE, ".."))
+    import siftec_status
+    fails, siftec_soft, siftec_lines = siftec_status.split(fails, res)
+    lines += siftec_lines
+    summary["siftecReportOnly"] = siftec_soft
     lines.append("## Result\n")
     lines.append("**%s**" % ("PASS" if not fails else "FAIL"))
     lines += ["- " + f for f in fails]

@@ -2505,6 +2505,12 @@ toggles, fallbacks and the same heap gate.
 
 ## Open bugs
 
+- **When SIFTEC starts with MapMod again** (Andre, 2026-10-31): make SIFTEC suites gating again, run
+  fix-worldgen-diff's 3 SIFTEC proof runs, and re-run every package merged in the meantime against the SIFTEC suite.
+  (SIFTEC's latest release stopped starting with MapMod's latest build: `NoSuchMethodError: PoiKind$Builder.detail()`,
+  run 41173311946. Until then SIFTEC's client and server suites run but report only: `siftec_report_only` in the
+  workflow's mode job, `ci/siftec_status.py`; set it to false to gate again.)
+
 - **When MapMod is finished** (Andre, 2026-10-30): put it back in the pack lock, restore the map and hud scenes,
   re-collect their numbers, and restore the full strict check where the minimap shows (factory_flat, hologram:
   `ciStrictMask`, `ciGatedCounts` in `scenes/siftec.json`; `docs/ci-limits.md`, "Pack lock").
@@ -2544,3 +2550,19 @@ meakaandre-tech/Quicksilver. The repo is now
 meakaandre-tech/Quicksilver (GitHub redirects the old URL).
 Local agent note: client logs are collected per game start (`ci/client-run.sh`), so a run crossing midnight UTC keeps
 the rolled-over part.
+
+## fix-worldgen-diff (2026-10-31)
+
+- **Cause** (run 41164371110, `package-4c`, SIFTEC nether: one ore-node site missing in the Quicksilver run only): the
+  worldgen harness saved at a fixed point (light quiet for 20 ticks), while SIFTEC places its node sites and
+  collectibles after generation, from server ticks, with the cells worked out on its own thread ("SIFTEC node map")
+  and a 10-tick retry for a chunk whose cell isn't ready. Nothing ordered that work, so a slow cell meant the save came
+  first. `max.bg.threads=1` was in force (one `Worker-Main-1`, the step-at-a-time order held); SIFTEC's thread is outside
+  it. Quicksilver's server-side code in that run (`ServerNumbers`, the count-only `ConnectionBytesMixin`) touches no
+  world data.
+- **Fix** (CI harness only): before the first tick, with every generated chunk loaded, the harness calls SIFTEC's own
+  placement for each generated chunk in a fixed order (passes until one places nothing), then the save also waits for
+  SIFTEC's queue to be empty. First tried: forcing the generated areas loaded; it raised the ring around them to full
+  in no fixed order (new fluid-tick noise in every suite, a Terralith water block, a duplicate pinned UUID); reverted.
+- **Proof blocked**: in run 41173311946 a new MapMod build arrived mid-run; SIFTEC's latest release doesn't start with
+  it (`NoSuchMethodError: PoiKind$Builder.detail()`), so three of SIFTEC's four server runs had no world.
