@@ -9,6 +9,8 @@ REPORT_ONLY = os.environ.get("CI_SIFTEC_REPORT_ONLY") == "true"
 # SIFTEC not starting: an entrypoint error naming it, or a missing method of a mod it calls (MapMod's API)
 START_FAIL = re.compile(r"provided by 'siftec'|Could not execute entrypoint stage '\w+' due to errors.*siftec"
                         r"|NoSuchMethodError: '[^']*mapmod|NoClassDefFoundError: com/meakaandre/mapmod", re.I)
+# SIFTEC's pack not even put together: a jar that isn't the locked one (a new SIFTEC or self-test build), or no download
+PACK_FAIL = re.compile(r"^pack changed: .*$|^could not assemble SIFTEC's pack.*$", re.M)
 
 
 def is_siftec(failure):
@@ -16,10 +18,23 @@ def is_siftec(failure):
 
 
 def start_status(res):
-    """{run directory: first start-up error line} for every SIFTEC run whose logs show SIFTEC failing to start."""
+    """{run directory: why SIFTEC didn't start} for every SIFTEC run: its pack not assembled (run.txt), SIFTEC failing at
+    start-up (a log), or no game log at all."""
     bad = {}
     for d in sorted(glob.glob(os.path.join(res, "siftec-*"))):
-        for f in sorted(glob.glob(os.path.join(d, "**", "*.log"), recursive=True)):
+        try:
+            run = open(os.path.join(d, "run.txt"), errors="replace").read()
+        except OSError:
+            run = ""
+        packs = PACK_FAIL.findall(run)
+        if packs:
+            bad[os.path.basename(d)] = "the pack: " + "; ".join(p.strip()[:160] for p in packs[:3])
+            continue
+        logs = [f for f in glob.glob(os.path.join(d, "**", "*.log"), recursive=True)]
+        if not logs:
+            bad[os.path.basename(d)] = "no game log"
+            continue
+        for f in sorted(logs):
             try:
                 text = open(f, errors="replace").read()
             except OSError:
@@ -37,7 +52,7 @@ def split(failures, res):
     bad = start_status(res)
     lines = []
     if bad:
-        lines.append("**SIFTEC did not start** in %d run(s):\n" % len(bad))
+        lines.append("**SIFTEC did not start** in %d of %d run(s):\n" % (len(bad), len(glob.glob(os.path.join(res, "siftec-*")))))
         lines += ["- %s: `%s`" % (r, e) for r, e in sorted(bad.items())]
         lines.append("")
     if not REPORT_ONLY:
