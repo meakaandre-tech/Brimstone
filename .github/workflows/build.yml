@@ -31,6 +31,7 @@ jobs:
       matrix: ${{ steps.m.outputs.matrix }}
       server_suites: ${{ steps.m.outputs.server_suites }}
       logs: ${{ steps.m.outputs.logs }}
+      siftec_report_only: ${{ steps.m.outputs.siftec_report_only }}
     steps:
       - id: m
         shell: bash
@@ -60,6 +61,7 @@ jobs:
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           echo "logs=ci-logs-$(echo "$GITHUB_REF_NAME" | tr '/' '-')" >> "$GITHUB_OUTPUT"
+          echo "siftec_report_only=$SIFTEC_REPORT_ONLY" >> "$GITHUB_OUTPUT"
           echo "CI mode: $mode" >> "$GITHUB_STEP_SUMMARY"
 
   build:
@@ -207,6 +209,8 @@ jobs:
     # (full mode only)
     needs: [mode]
     if: needs.mode.outputs.mode == 'full'
+    # SIFTEC report-only (SIFTEC_REPORT_ONLY): its failure doesn't fail the run or hold back the core client runs
+    continue-on-error: ${{ needs.mode.outputs.siftec_report_only == '1' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -298,7 +302,9 @@ jobs:
 
   client:
     needs: [mode, build, siftec-world, core-world]
-    if: ${{ !cancelled() && needs.build.result == 'success' && needs.core-world.result == 'success' && (needs.siftec-world.result == 'success' || needs.siftec-world.result == 'skipped') }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.core-world.result == 'success' && (needs.siftec-world.result == 'success' || needs.siftec-world.result == 'skipped' || needs.mode.outputs.siftec_report_only == '1') }}
+    # SIFTEC report-only (SIFTEC_REPORT_ONLY): a SIFTEC job's failure doesn't fail the run; its results are owed
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == '1' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -415,6 +421,8 @@ jobs:
   server-base:
     # the world every scripted run of a suite starts from (vanilla, generated once per run of this workflow)
     needs: [mode, build]
+    # SIFTEC report-only (SIFTEC_REPORT_ONLY): a SIFTEC job's failure doesn't fail the run; its results are owed
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == '1' }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
@@ -461,6 +469,8 @@ jobs:
   server:
     needs: [mode, build, server-base]
     if: ${{ !cancelled() && needs.build.result == 'success' }}
+    # SIFTEC report-only (SIFTEC_REPORT_ONLY): a SIFTEC job's failure doesn't fail the run; its results are owed
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == '1' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -516,6 +526,8 @@ jobs:
     # goes; compared and gated in server-compare (ci/server/compare-p2.py)
     needs: [mode, build, server-base]
     if: ${{ !cancelled() && needs.build.result == 'success' }}
+    # SIFTEC report-only (SIFTEC_REPORT_ONLY): a SIFTEC job's failure doesn't fail the run; its results are owed
+    continue-on-error: ${{ matrix.suite == 'siftec' && needs.mode.outputs.siftec_report_only == '1' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
