@@ -1,0 +1,99 @@
+server suite=siftec run=base
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+pack lock: set core matches ci/pack-lock.txt
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+all Fabric versions of travelersbackpack:
+  GKDRZQKz 26.3-11.4.2 ['26.3'] 2026-10-27
+  SmhjfeWr 26.3-11.4.1 ['26.3'] 2026-09-29
+  I6Fg8UrJ 26.2-11.3.3 ['26.2'] 2026-09-29
+  NUbnGgy9 26.1.2-11.2.11 ['26.1.1', '26.1.2'] 2026-09-29
+  5rC23dXQ 26.3-11.4.0 ['26.3'] 2026-09-24
+  jp51VM8M 26.2-11.3.2 ['26.2'] 2026-09-01
+  7ltEXeO3 1.21.11-10.11.11 ['1.21.11'] 2026-09-01
+  Ah1lkxJY 26.1.2-11.2.10 ['26.1.1', '26.1.2'] 2026-09-01
+  npKsvQvE 1.21.1-10.1.39 ['1.21.1'] 2026-08-29
+  G60CBuLj 1.20.1-9.1.55 ['1.20.1'] 2026-08-29
+  LfmQsEdR 1.21.11-10.11.10 ['1.21.11'] 2026-08-03
+  mjQY8slD 26.2-11.3.1 ['26.2'] 2026-07-28
+  5I4utX2T 1.21.1-10.1.38 ['1.21.1'] 2026-07-28
+  ZgfhEJnC 26.1.2-11.2.9 ['26.1.1', '26.1.2'] 2026-07-28
+  NXJGtmmW 1.21.1-10.1.37 ['1.21.1'] 2026-07-22
+  5H4yAyuO 1.20.1-9.1.54 ['1.20.1'] 2026-07-22
+  8zYSDRGA 26.2-11.3.0 ['26.2'] 2026-07-17
+  YDNzgBWY 26.1.2-11.2.8 ['26.1.1', '26.1.2'] 2026-07-17
+  onVoNuy1 26.1.2-11.2.7 ['26.1.1', '26.1.2'] 2026-05-31
+  fTwokW7g 1.20.1-9.1.53 ['1.20.1'] 2026-05-27
+  ODmeRFc0 1.21.1-10.1.36 ['1.21.1'] 2026-05-20
+  Q6rEigkb 26.1.2-11.2.6 ['26.1.1', '26.1.2'] 2026-05-11
+  CoCSwzdR 26.1.2-11.2.5 ['26.1.1', '26.1.2'] 2026-05-09
+  ZP0ddKyI 26.1.2-11.2.4 ['26.1.1', '26.1.2'] 2026-05-05
+  FVGa8X6z 26.1.2-11.2.3 ['26.1.1', '26.1.2'] 2026-05-04
+  RfI8MfzH 1.21.1-10.1.35 ['1.21.1'] 2026-05-04
+  q2caASeP 1.20.1-9.1.52 ['1.20.1'] 2026-05-04
+  BgyhpzMJ 26.1.2-11.2.2 ['26.1.1', '26.1.2'] 2026-04-26
+  lGcINzRB 26.1.2-11.2.1 ['26.1.1', '26.1.2'] 2026-04-16
+  RKAxLV5H 26.1.2-11.2.0 ['26.1.1', '26.1.2'] 2026-04-15
+  G9VMJl43 26.1.1-11.1.0 ['26.1.1', '26.1.2'] 2026-04-08
+  XbEGJQSG 1.21.11-10.11.9 ['1.21.11'] 2026-03-28
+  D3V21Ir2 1.21.11-10.11.8 ['1.21.11'] 2026-03-27
+  3nT2UR2a 1.21.11-10.11.7 ['1.21.11'] 2026-03-26
+  85PLLyUF 1.21.1-10.1.34 ['1.21.1'] 2026-03-26
+  E4UZZZAV 1.20.1-9.1.51 ['1.20.1'] 2026-03-26
+  hIiloTnQ 1.20.1-9.1.50 ['1.20.1'] 2026-02-03
+  8JL58SeM 1.20.1-9.1.49 ['1.20.1'] 2026-01-29
+  uQ0xHxTz 1.21.10-10.10.6 ['1.21.10'] 2026-01-29
+  jDSDEMgY 1.21.11-10.11.5 ['1.21.11'] 2026-01-29
+travelersbackpack: 26.3-11.4.2 for 26.3 https://cdn.modrinth.com/data/rlloIFEV/versions/GKDRZQKz/travelersbackpack-fabric-26.3-11.4.2.jar
+  dependency optional: project fRiHVvU7 version None
+  dependency optional: project jtmvUHXj version None
+  dependency required: project ohNO6lps version None
+  forge-config-api-port: 26.3.1 for 26.3 https://cdn.modrinth.com/data/ohNO6lps/versions/JpKvrr9J/ForgeConfigAPIPort-v26.3.1-mc26.3.x-Fabric.jar
+    dependency required: project P7dR8mSH version None
+    fabric-api: the build's own (gradle.properties) is used
+    dependency optional: project mOgUt4GM version None
+  dependency optional: project DMu0oBKf version None
+  dependency optional: project SaCpeal4 version None
+  dependency optional: project tagwiZkJ version None
+  dependency optional: project vRYk0bv7 version None
+  dependency optional: project yn9u3ypm version None
+  dependency optional: project 5aaWibi9 version None
+  dependency optional: project HnD1GX6e version None
+  dependency optional: project u6dRKJwZ version None
+  dependency required: project P7dR8mSH version None
+  dependency optional: project yBW8D80W version None
+  dependency optional: project nfn13YXA version None
+modrinth:mielons-the-sift -> https://cdn.modrinth.com/data/j0IfTxBq/versions/QK8RaspH/mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+total 65408
+-rw-r--r-- 1 runner runner  3486296 Oct 31 13:52 FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+-rw-r--r-- 1 runner runner  1779949 Oct 31 13:52 cgs-fabric-26.3.jar
+-rw-r--r-- 1 runner runner    59809 Oct 31 13:52 ci-server-harness.jar
+-rw-r--r-- 1 runner runner 21140042 Oct 31 13:52 create-fly-26.3.jar
+-rw-r--r-- 1 runner runner  1031418 Oct 31 13:52 create-new-age-26.3.jar
+-rw-r--r-- 1 runner runner  3500335 Oct 31 13:52 createdieselgenerators-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2620967 Oct 31 13:52 fabric-api.jar
+-rw-r--r-- 1 runner runner   609574 Oct 31 13:52 forge-config-api-port.jar
+-rw-r--r-- 1 runner runner  1191230 Oct 31 13:52 geckolib-fabric-26.3-5.5.7.jar
+-rw-r--r-- 1 runner runner  2825077 Oct 31 13:52 mapmod-26.3.jar
+-rw-r--r-- 1 runner runner 20632725 Oct 31 13:52 mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+-rw-r--r-- 1 runner runner  3810197 Oct 31 13:52 ntgl-fabric-26.3.jar
+-rw-r--r-- 1 runner runner  2096124 Oct 31 13:52 siftec-26.3.jar
+-rw-r--r-- 1 runner runner   653702 Oct 31 13:52 siftec-selftest-26.3.jar
+-rw-r--r-- 1 runner runner  1515277 Oct 31 13:52 travelersbackpack.jar
+07aa1346c23010c5f40405ce63cb8a793f5c246cff331aa892ef9dfdae523f17  siftec/FarmersDelight-26.3-3.6.27%2Brefabricated.jar
+351e83cc2d90f47fb80cef61c6adc3f672c514d002578cf054b05c4802b22917  siftec/cgs-fabric-26.3.jar
+fe089016dc1c850e7119037d8ae49e4d30afb553d90f9acf97cc694b8711b01f  siftec/create-fly-26.3.jar
+c5d70743acd2fc03645f1e38516b1fdda62cb8ef0a2e4e40f249bac645bb79e5  siftec/create-new-age-26.3.jar
+7c81a5c8c3e76fd9117c0e9ccbbb1b10b731a230a787b6ff134a2aca73833aee  siftec/createdieselgenerators-fabric-26.3.jar
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  siftec/fabric-api.jar
+95cc2bd7a943f910a54baf2f65acde301dcfb3d8aeff2c989c04c416d5a4a1cd  siftec/forge-config-api-port.jar
+0e397991dae6e1aee9a342f80b740fe4fef6d161dc8abe694c6a555317163f82  siftec/geckolib-fabric-26.3-5.5.7.jar
+b97620966deb98c98992b0a3025fb48312119e98775f4a72ae4a752a54c74e9c  siftec/mapmod-26.3.jar
+5b53b8bc2002d01d1bedd70e5c975c82c57f61e29726426b78affa9bfdcaf7bc  siftec/mielon%27s-the-sift-1.1.2-mc26.3-fabric.jar
+aec3dae28e9fdba20ce594d25958bdf69f485b02058d5e92fcc3853e190d302c  siftec/ntgl-fabric-26.3.jar
+ef811d34e0893e801979540cc61598f5976522324715e83fbb25dab01e57210c  siftec/siftec-26.3.jar
+pack changed: siftec-26.3.jar (sha256 ef811d34e0893e801979540cc61598f5976522324715e83fbb25dab01e57210c, locked 20910aec59b1f5e0255cc5c523acca0afc4e163d2e6ee13e59d88a3693c83351)
+54d07dc0897a76ebc93914ce82d4c10bda1de8924749e39dca7fcf0cfd6c5c03  siftec/siftec-selftest-26.3.jar
+pack changed: siftec-selftest-26.3.jar (sha256 54d07dc0897a76ebc93914ce82d4c10bda1de8924749e39dca7fcf0cfd6c5c03, locked 0e08ce6e5e97b4e195df04c30b4d1929806f5a75ddadb211304ff74f79d8792d)
+edd8947f6c143dfbcb8b0a6aaab50e2435d784ca4dc33a087849ff3fca2b689c  siftec/travelersbackpack.jar
+the pack changed (see above)
+could not assemble SIFTEC's pack

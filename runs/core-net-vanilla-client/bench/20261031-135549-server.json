@@ -1,0 +1,30 @@
+{
+  "kind": "server",
+  "seconds": 50,
+  "time": "2026-10-31T13:55:49.024428987",
+  "quicksilver": "0.0.1+26.3",
+  "minecraft": "26.3",
+  "server": {
+    "side": "dedicated",
+    "ticks": 1008,
+    "tps": 20.16,
+    "msptAvg": 7.279,
+    "msptP50": 3.303,
+    "msptP99": 45.07,
+    "msptMax": 393.817,
+    "ticksOver50ms": 7,
+    "heapUsedMB": 293.266,
+    "heapUsedAfterGcMB": 192.042,
+    "startupMs": 22751,
+    "worldLoadMs": 3680,
+    "network": {
+      "counting": true,
+      "serverBytesInWindow": 921805,
+      "serverBytesIn": 6410,
+      "serverBytesOut": 2476168,
+      "clientBytesIn": 0,
+      "clientBytesOut": 0
+    },
+    "players": 1
+  }
+}

@@ -1,0 +1,240 @@
+# The core suite's mob scene (phase 2, P2-2): a crowd of mobs moving, colliding and pushing each other over mixed
+# block shapes, for entity movement, collisions and block access. Played by the CI harness on the base world (same
+# format as scripted-run-core.txt). The perf job (ci/server/perf-run.sh) runs it on one runner, vanilla and Quicksilver
+# alternately, for MSPT; its saved worlds are compared like the scripted run's (ci/server/compare-p2.py).
+area minecraft:overworld -4 -4 3 3
+
+cmd time set 1000
+cmd weather clear 100000
+# the mobs are summoned (from the harness's pinned seeds); no natural spawning, no random ticks (see scripted-run-core.txt)
+cmd gamerule spawn_mobs false
+cmd gamerule random_tick_speed 0
+
+# a grass floor high above spawn, walled with glass, split into four pens by fences
+cmd fill 0 198 0 31 198 31 minecraft:stone
+cmd fill 0 199 0 31 199 31 minecraft:grass_block
+cmd fill 0 200 0 31 202 0 minecraft:glass
+cmd fill 0 200 31 31 202 31 minecraft:glass
+cmd fill 0 200 0 0 202 31 minecraft:glass
+cmd fill 31 200 0 31 202 31 minecraft:glass
+cmd fill 1 200 15 30 200 15 minecraft:oak_fence
+cmd fill 15 200 1 15 200 30 minecraft:oak_fence
+
+# pen 1 (x 1-14, z 1-14): an obstacle course: slabs, stairs, fences, a wall, carpets, a trapdoor, a hopper, a cauldron
+cmd fill 3 200 3 5 200 5 minecraft:oak_slab
+cmd fill 8 200 3 10 200 3 minecraft:stone_stairs[facing=north]
+cmd fill 8 200 5 10 200 5 minecraft:stone_stairs[facing=south]
+cmd fill 3 200 9 3 200 12 minecraft:cobblestone_wall
+cmd fill 6 200 9 7 200 10 minecraft:oak_fence
+cmd fill 9 200 8 12 200 11 minecraft:white_carpet
+cmd setblock 12 200 3 minecraft:oak_trapdoor[half=bottom]
+cmd setblock 12 200 5 minecraft:hopper
+cmd setblock 5 200 12 minecraft:cauldron
+cmd setblock 12 200 13 minecraft:anvil
+cmd setblock 1 200 7 minecraft:soul_sand
+cmd setblock 2 200 7 minecraft:honey_block
+
+# pen 2 (x 16-30, z 1-14): a pool with a shallow edge and lily pads
+cmd fill 19 199 4 27 199 11 minecraft:water
+cmd fill 20 198 5 26 198 10 minecraft:water
+cmd setblock 23 200 7 minecraft:lily_pad
+cmd setblock 25 200 9 minecraft:lily_pad
+
+# pen 3 (x 1-14, z 16-30): open grass, with a 3 by 3 pit two blocks deep where mobs crowd and push
+cmd fill 6 198 21 8 199 23 minecraft:air
+cmd fill 6 197 21 8 197 23 minecraft:stone
+
+# pen 4 (x 16-30, z 16-30): stone steps and a block of leaves
+cmd fill 18 200 18 20 200 20 minecraft:stone
+cmd fill 18 201 18 19 201 19 minecraft:stone
+cmd setblock 18 202 18 minecraft:stone
+cmd fill 25 200 25 27 201 27 minecraft:oak_leaves[persistent=true]
+
+# 40 mobs in each pen
+cmd summon minecraft:cow 2.5 203 2.5
+cmd summon minecraft:sheep 4.5 203 2.5
+cmd summon minecraft:pig 6.5 203 2.5
+cmd summon minecraft:chicken 8.5 203 2.5
+cmd summon minecraft:cow 10.5 203 2.5
+cmd summon minecraft:sheep 12.5 203 2.5
+cmd summon minecraft:pig 2.5 203 4.5
+cmd summon minecraft:chicken 4.5 203 4.5
+cmd summon minecraft:cow 6.5 203 4.5
+cmd summon minecraft:sheep 8.5 203 4.5
+cmd summon minecraft:pig 10.5 203 4.5
+cmd summon minecraft:chicken 12.5 203 4.5
+cmd summon minecraft:cow 2.5 203 6.5
+cmd summon minecraft:sheep 4.5 203 6.5
+cmd summon minecraft:pig 6.5 203 6.5
+cmd summon minecraft:chicken 8.5 203 6.5
+cmd summon minecraft:cow 10.5 203 6.5
+cmd summon minecraft:sheep 12.5 203 6.5
+cmd summon minecraft:pig 2.5 203 8.5
+cmd summon minecraft:chicken 4.5 203 8.5
+cmd summon minecraft:cow 6.5 203 8.5
+cmd summon minecraft:sheep 8.5 203 8.5
+cmd summon minecraft:pig 10.5 203 8.5
+cmd summon minecraft:chicken 12.5 203 8.5
+cmd summon minecraft:cow 2.5 203 10.5
+cmd summon minecraft:sheep 4.5 203 10.5
+cmd summon minecraft:pig 6.5 203 10.5
+cmd summon minecraft:chicken 8.5 203 10.5
+cmd summon minecraft:cow 10.5 203 10.5
+cmd summon minecraft:sheep 12.5 203 10.5
+cmd summon minecraft:pig 2.5 203 12.5
+cmd summon minecraft:chicken 4.5 203 12.5
+cmd summon minecraft:cow 6.5 203 12.5
+cmd summon minecraft:sheep 8.5 203 12.5
+cmd summon minecraft:pig 10.5 203 12.5
+cmd summon minecraft:chicken 12.5 203 12.5
+cmd summon minecraft:cow 2.5 203 14.5
+cmd summon minecraft:sheep 4.5 203 14.5
+cmd summon minecraft:pig 6.5 203 14.5
+cmd summon minecraft:chicken 8.5 203 14.5
+cmd summon minecraft:cow 17.5 203 2.5
+cmd summon minecraft:sheep 19.5 203 2.5
+cmd summon minecraft:pig 21.5 203 2.5
+cmd summon minecraft:chicken 23.5 203 2.5
+cmd summon minecraft:pig 25.5 203 2.5
+cmd summon minecraft:cow 27.5 203 2.5
+cmd summon minecraft:sheep 17.5 203 4.5
+cmd summon minecraft:pig 19.5 203 4.5
+cmd summon minecraft:chicken 21.5 203 4.5
+cmd summon minecraft:pig 23.5 203 4.5
+cmd summon minecraft:cow 25.5 203 4.5
+cmd summon minecraft:sheep 27.5 203 4.5
+cmd summon minecraft:pig 17.5 203 6.5
+cmd summon minecraft:chicken 19.5 203 6.5
+cmd summon minecraft:pig 21.5 203 6.5
+cmd summon minecraft:cow 23.5 203 6.5
+cmd summon minecraft:sheep 25.5 203 6.5
+cmd summon minecraft:pig 27.5 203 6.5
+cmd summon minecraft:chicken 17.5 203 8.5
+cmd summon minecraft:pig 19.5 203 8.5
+cmd summon minecraft:cow 21.5 203 8.5
+cmd summon minecraft:sheep 23.5 203 8.5
+cmd summon minecraft:pig 25.5 203 8.5
+cmd summon minecraft:chicken 27.5 203 8.5
+cmd summon minecraft:pig 17.5 203 10.5
+cmd summon minecraft:cow 19.5 203 10.5
+cmd summon minecraft:sheep 21.5 203 10.5
+cmd summon minecraft:pig 23.5 203 10.5
+cmd summon minecraft:chicken 25.5 203 10.5
+cmd summon minecraft:pig 27.5 203 10.5
+cmd summon minecraft:cow 17.5 203 12.5
+cmd summon minecraft:sheep 19.5 203 12.5
+cmd summon minecraft:pig 21.5 203 12.5
+cmd summon minecraft:chicken 23.5 203 12.5
+cmd summon minecraft:pig 25.5 203 12.5
+cmd summon minecraft:cow 27.5 203 12.5
+cmd summon minecraft:sheep 17.5 203 14.5
+cmd summon minecraft:pig 19.5 203 14.5
+cmd summon minecraft:chicken 21.5 203 14.5
+cmd summon minecraft:pig 23.5 203 14.5
+cmd summon minecraft:chicken 2.5 203 17.5
+cmd summon minecraft:sheep 4.5 203 17.5
+cmd summon minecraft:cow 6.5 203 17.5
+cmd summon minecraft:pig 8.5 203 17.5
+cmd summon minecraft:chicken 10.5 203 17.5
+cmd summon minecraft:sheep 12.5 203 17.5
+cmd summon minecraft:cow 2.5 203 19.5
+cmd summon minecraft:pig 4.5 203 19.5
+cmd summon minecraft:chicken 6.5 203 19.5
+cmd summon minecraft:sheep 8.5 203 19.5
+cmd summon minecraft:cow 10.5 203 19.5
+cmd summon minecraft:pig 12.5 203 19.5
+cmd summon minecraft:chicken 2.5 203 21.5
+cmd summon minecraft:sheep 4.5 203 21.5
+cmd summon minecraft:cow 6.5 203 21.5
+cmd summon minecraft:pig 8.5 203 21.5
+cmd summon minecraft:chicken 10.5 203 21.5
+cmd summon minecraft:sheep 12.5 203 21.5
+cmd summon minecraft:cow 2.5 203 23.5
+cmd summon minecraft:pig 4.5 203 23.5
+cmd summon minecraft:chicken 6.5 203 23.5
+cmd summon minecraft:sheep 8.5 203 23.5
+cmd summon minecraft:cow 10.5 203 23.5
+cmd summon minecraft:pig 12.5 203 23.5
+cmd summon minecraft:chicken 2.5 203 25.5
+cmd summon minecraft:sheep 4.5 203 25.5
+cmd summon minecraft:cow 6.5 203 25.5
+cmd summon minecraft:pig 8.5 203 25.5
+cmd summon minecraft:chicken 10.5 203 25.5
+cmd summon minecraft:sheep 12.5 203 25.5
+cmd summon minecraft:cow 2.5 203 27.5
+cmd summon minecraft:pig 4.5 203 27.5
+cmd summon minecraft:chicken 6.5 203 27.5
+cmd summon minecraft:sheep 8.5 203 27.5
+cmd summon minecraft:cow 10.5 203 27.5
+cmd summon minecraft:pig 12.5 203 27.5
+cmd summon minecraft:chicken 2.5 203 29.5
+cmd summon minecraft:sheep 4.5 203 29.5
+cmd summon minecraft:cow 6.5 203 29.5
+cmd summon minecraft:pig 8.5 203 29.5
+cmd summon minecraft:sheep 17.5 203 17.5
+cmd summon minecraft:chicken 19.5 203 17.5
+cmd summon minecraft:pig 21.5 203 17.5
+cmd summon minecraft:cow 23.5 203 17.5
+cmd summon minecraft:sheep 25.5 203 17.5
+cmd summon minecraft:chicken 27.5 203 17.5
+cmd summon minecraft:pig 17.5 203 19.5
+cmd summon minecraft:cow 19.5 203 19.5
+cmd summon minecraft:sheep 21.5 203 19.5
+cmd summon minecraft:chicken 23.5 203 19.5
+cmd summon minecraft:pig 25.5 203 19.5
+cmd summon minecraft:cow 27.5 203 19.5
+cmd summon minecraft:sheep 17.5 203 21.5
+cmd summon minecraft:chicken 19.5 203 21.5
+cmd summon minecraft:pig 21.5 203 21.5
+cmd summon minecraft:cow 23.5 203 21.5
+cmd summon minecraft:sheep 25.5 203 21.5
+cmd summon minecraft:chicken 27.5 203 21.5
+cmd summon minecraft:pig 17.5 203 23.5
+cmd summon minecraft:cow 19.5 203 23.5
+cmd summon minecraft:sheep 21.5 203 23.5
+cmd summon minecraft:chicken 23.5 203 23.5
+cmd summon minecraft:pig 25.5 203 23.5
+cmd summon minecraft:cow 27.5 203 23.5
+cmd summon minecraft:sheep 17.5 203 25.5
+cmd summon minecraft:chicken 19.5 203 25.5
+cmd summon minecraft:pig 21.5 203 25.5
+cmd summon minecraft:cow 23.5 203 25.5
+cmd summon minecraft:sheep 25.5 203 25.5
+cmd summon minecraft:chicken 27.5 203 25.5
+cmd summon minecraft:pig 17.5 203 27.5
+cmd summon minecraft:cow 19.5 203 27.5
+cmd summon minecraft:sheep 21.5 203 27.5
+cmd summon minecraft:chicken 23.5 203 27.5
+cmd summon minecraft:pig 25.5 203 27.5
+cmd summon minecraft:cow 27.5 203 27.5
+cmd summon minecraft:sheep 17.5 203 29.5
+cmd summon minecraft:chicken 19.5 203 29.5
+cmd summon minecraft:pig 21.5 203 29.5
+cmd summon minecraft:cow 23.5 203 29.5
+# a crowd in the pit
+
+cmd summon minecraft:chicken 6.3 199 21.3
+cmd summon minecraft:pig 7.4 199 21.3
+cmd summon minecraft:sheep 8.5 199 21.3
+cmd summon minecraft:chicken 6.3 199 22.0
+cmd summon minecraft:pig 7.4 199 22.0
+cmd summon minecraft:sheep 8.5 199 22.0
+cmd summon minecraft:chicken 6.3 199 22.7
+cmd summon minecraft:pig 7.4 199 22.7
+cmd summon minecraft:sheep 8.5 199 22.7
+cmd summon minecraft:chicken 6.3 199 23.4
+cmd summon minecraft:pig 7.4 199 23.4
+cmd summon minecraft:sheep 8.5 199 23.4
+
+# entities others collide with like blocks (a boat on the pool, a minecart in pen 4), so lookups near them find some
+cmd summon minecraft:oak_boat 22.5 200 7.5
+cmd summon minecraft:minecart 28.5 200 18.5
+
+# item entities on the floor (merging, settling) and some dropped onto the hopper
+cmd summon minecraft:item 10.5 203 13.5 {Item:{id:"minecraft:wheat",count:3}}
+cmd summon minecraft:item 10.7 204 13.5 {Item:{id:"minecraft:wheat",count:2}}
+cmd summon minecraft:item 12.5 203 5.5 {Item:{id:"minecraft:carrot",count:4}}
+
+ticks 2400
+
+at 0 tick sprint 4800

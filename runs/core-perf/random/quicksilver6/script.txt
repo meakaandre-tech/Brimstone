@@ -1,0 +1,83 @@
+# The core suite's random-tick run (P2-1): random ticks, precipitation and natural spawning, which the scripted run
+# (scripted-run-core.txt) turns off. Played on the same base world and compared with vanilla's runs by the world diff,
+# like the scripted run.
+#   random-ticks MIN_Y   random ticks on, pinned per chunk (ci/server/harness/.../Pins.java): each chunk's random ticks
+#                        and precipitation draw on a random seeded by the chunk and the game time, not the level's
+#                        shared random, and only sections at or above MIN_Y tick (the scenes below; the terrain stays
+#                        still, so its cave vines and grass can't move the shared random by how far the light engine's
+#                        thread had got)
+#   spawn-player X Y Z   a fake player in the overworld's player list only (the spawner needs one near: a mob farther
+#                        than 128 blocks from every player isn't spawned), creative
+#   spawn CX CZ          natural spawning in chunk CX CZ every tick (monsters; creatures every 400 game ticks), as the
+#                        game spawns near a player, from a random pinned per chunk and tick
+area minecraft:overworld -4 -4 3 3
+
+cmd time set 1000
+cmd weather rain 100000
+# the harness spawns in the listed chunks itself; the game's own spawning (which needs a real player) stays off
+cmd gamerule spawn_mobs false
+cmd gamerule random_tick_speed 20
+random-ticks 192
+spawn-player 16.5 64 16.5
+spawn -3 2
+spawn 2 -3
+
+# a two-layer stone platform high above the terrain: every scene below is at y 198 to 205 (sections 192 to 207)
+cmd fill 0 198 0 31 199 31 minecraft:stone
+
+# crops on hydrated farmland (water channel at z 3)
+cmd fill 2 199 2 13 199 4 minecraft:farmland[moisture=7]
+cmd fill 2 199 3 13 199 3 minecraft:water
+cmd fill 2 200 2 4 200 2 minecraft:wheat
+cmd fill 5 200 2 7 200 2 minecraft:carrots
+cmd fill 8 200 2 10 200 2 minecraft:potatoes
+cmd fill 11 200 2 13 200 2 minecraft:beetroots
+cmd fill 2 200 4 4 200 4 minecraft:wheat
+cmd fill 5 200 4 7 200 4 minecraft:carrots
+cmd fill 8 200 4 10 200 4 minecraft:potatoes
+cmd fill 11 200 4 13 200 4 minecraft:beetroots
+
+# a melon and a pumpkin stem, with dirt around for the fruit
+cmd fill 1 199 6 9 199 8 minecraft:dirt
+cmd setblock 2 199 7 minecraft:farmland[moisture=7]
+cmd setblock 7 199 7 minecraft:farmland[moisture=7]
+cmd setblock 2 200 7 minecraft:melon_stem
+cmd setblock 7 200 7 minecraft:pumpkin_stem
+cmd setblock 4 199 7 minecraft:water
+
+# sugar cane and cactus on sand, bamboo and a berry bush on grass
+cmd fill 16 199 2 24 199 2 minecraft:sand
+cmd setblock 17 199 2 minecraft:water
+cmd setblock 16 200 2 minecraft:sugar_cane
+cmd setblock 18 200 2 minecraft:sugar_cane
+cmd setblock 20 200 2 minecraft:cactus
+cmd setblock 22 199 2 minecraft:grass_block
+cmd setblock 22 200 2 minecraft:bamboo_sapling
+cmd setblock 24 199 2 minecraft:grass_block
+cmd setblock 24 200 2 minecraft:sweet_berry_bush
+
+# saplings on dirt (they grow into trees)
+cmd fill 2 199 12 18 199 12 minecraft:dirt
+cmd setblock 4 200 12 minecraft:oak_sapling
+cmd setblock 10 200 12 minecraft:birch_sapling
+cmd setblock 16 200 12 minecraft:spruce_sapling
+
+# grass spreading over dirt, copper ageing
+cmd fill 20 199 10 27 199 15 minecraft:dirt
+cmd setblock 20 199 10 minecraft:grass_block
+cmd setblock 26 200 6 minecraft:copper_block
+cmd setblock 27 200 6 minecraft:cut_copper
+cmd setblock 28 200 6 minecraft:copper_bulb
+
+# leaves with no log near them decay
+cmd fill 4 201 20 8 203 24 minecraft:oak_leaves[persistent=false,distance=7]
+
+# ice and snow: a snowy biome over a pool and a patch of stone, a cauldron in it and one outside (rain fills it)
+cmd fillbiome 20 196 20 31 215 31 minecraft:snowy_plains
+cmd fill 22 199 22 29 199 29 minecraft:water
+cmd setblock 21 200 21 minecraft:cauldron
+cmd setblock 12 200 20 minecraft:cauldron
+
+ticks 1200
+
+at 0 tick sprint 6000

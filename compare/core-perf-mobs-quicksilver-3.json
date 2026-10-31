@@ -1,0 +1,92 @@
+{
+ "mode": "world",
+ "a": "/tmp/sres/core-perf/mobs/vanilla1/world",
+ "b": "/tmp/sres/core-perf/mobs/quicksilver3/world",
+ "dimensions": {
+  "dimensions/minecraft/overworld/region": {
+   "chunks": 1764,
+   "onlyA": 0,
+   "onlyB": 0,
+   "unreadable": 0,
+   "blocks": 0,
+   "blockEntities": 0,
+   "scheduledTicks": 0,
+   "keys": [],
+   "entitiesA": 206,
+   "entitiesB": 206,
+   "entitiesExact": true,
+   "entityTypes": {
+    "minecraft:chest_minecart": {
+     "a": 4,
+     "b": 4,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:chicken": {
+     "a": 42,
+     "b": 42,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:cow": {
+     "a": 38,
+     "b": 38,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:item": {
+     "a": 29,
+     "b": 29,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:minecart": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:oak_boat": {
+     "a": 1,
+     "b": 1,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:pig": {
+     "a": 50,
+     "b": 50,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    },
+    "minecraft:sheep": {
+     "a": 41,
+     "b": 41,
+     "maxPosDelta": 0.0,
+     "maxHealthDelta": 0.0,
+     "exact": true
+    }
+   },
+   "entities": 0
+  }
+ },
+ "total": {
+  "onlyA": 0,
+  "onlyB": 0,
+  "unreadable": 0,
+  "differ": 0,
+  "blocks": 0,
+  "blockEntities": 0,
+  "scheduledTicks": 0,
+  "entities": 0,
+  "chunks": 1764,
+  "missingDimensions": 0,
+  "differences": 0
+ }
+}

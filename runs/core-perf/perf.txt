@@ -1,0 +1,65 @@
+perf suite=core
+86f16178a3cecc887a85a4cfe9a79d92fa7341d8f39b5951a4d6ad800ab657a6  core/fabric-api.jar
+pack lock: set core matches ci/pack-lock.txt
+fabric server 26.3, loader 0.19.5, fabric api 0.161.0+26.3 in /home/runner/work/Quicksilver/Quicksilver/srv
+4
+model name	: AMD EPYC 7763 64-Core Processor
+openjdk version "25.0.5" 2026-10-20 LTS
+== scene mobs (scripted-run-core-mobs.txt, 4800 ticks sprinting, keep: world)
+mobs vanilla r1: mspt avg/p50/p99 2.47 1.857 12.181  (42 s)
+mobs quicksilver r1: mspt avg/p50/p99 2.29 1.758 11.819  (38 s)
+mobs quicksilver r2: mspt avg/p50/p99 2.171 1.597 14.411  (37 s)
+mobs vanilla r2: mspt avg/p50/p99 2.534 1.901 14.5  (39 s)
+mobs vanilla r3: mspt avg/p50/p99 2.395 1.855 11.75  (37 s)
+mobs quicksilver r3: mspt avg/p50/p99 2.323 1.651 16.036  (39 s)
+mobs quicksilver r4: mspt avg/p50/p99 2.243 1.623 12.683  (37 s)
+mobs vanilla r4: mspt avg/p50/p99 2.429 1.823 15.397  (38 s)
+mobs vanilla r5: mspt avg/p50/p99 2.568 1.931 14.9  (38 s)
+mobs quicksilver r5: mspt avg/p50/p99 2.126 1.602 11.59  (37 s)
+mobs quicksilver r6: mspt avg/p50/p99 2.233 1.648 14.27  (38 s)
+mobs vanilla r6: mspt avg/p50/p99 2.478 1.892 15.068  (38 s)
+mobs vanilla r7: mspt avg/p50/p99 2.502 1.884 11.854  (38 s)
+mobs quicksilver r7: mspt avg/p50/p99 2.254 1.643 11.819  (38 s)
+mobs quicksilver r8: mspt avg/p50/p99 2.375 1.8 12.646  (41 s)
+/tmp/sout/core-perf/mobs/quicksilver8/rec.jfr: 9390 server-thread samples while ticking
+mobs vanilla r8: mspt avg/p50/p99 2.705 2.095 15.599  (42 s)
+/tmp/sout/core-perf/mobs/vanilla8/rec.jfr: 10793 server-thread samples while ticking
+== scene random (scripted-run-core-random.txt, 6000 ticks sprinting, keep: -)
+random vanilla r1: mspt avg/p50/p99 0.535 0.374 2.691  (29 s)
+random quicksilver r1: mspt avg/p50/p99 0.55 0.434 2.432  (31 s)
+random quicksilver r2: mspt avg/p50/p99 0.568 0.437 2.534  (31 s)
+random vanilla r2: mspt avg/p50/p99 0.541 0.394 2.658  (29 s)
+random vanilla r3: mspt avg/p50/p99 0.566 0.407 2.78  (30 s)
+random quicksilver r3: mspt avg/p50/p99 0.587 0.449 2.987  (31 s)
+random quicksilver r4: mspt avg/p50/p99 0.523 0.371 2.437  (30 s)
+random vanilla r4: mspt avg/p50/p99 0.601 0.461 2.958  (31 s)
+random vanilla r5: mspt avg/p50/p99 0.571 0.478 2.798  (30 s)
+random quicksilver r5: mspt avg/p50/p99 0.516 0.364 2.807  (30 s)
+random quicksilver r6: mspt avg/p50/p99 0.564 0.452 2.545  (31 s)
+random vanilla r6: mspt avg/p50/p99 0.544 0.44 2.548  (30 s)
+random vanilla r7: mspt avg/p50/p99 0.573 0.432 2.813  (29 s)
+random quicksilver r7: mspt avg/p50/p99 0.568 0.443 2.669  (31 s)
+random quicksilver r8: mspt avg/p50/p99 0.638 0.501 2.747  (32 s)
+/tmp/sout/core-perf/random/quicksilver8/rec.jfr: 3049 server-thread samples while ticking
+random vanilla r8: mspt avg/p50/p99 0.609 0.46 3.076  (31 s)
+/tmp/sout/core-perf/random/vanilla8/rec.jfr: 2900 server-thread samples while ticking
+== scene run (scripted-run-core.txt, 4800 ticks sprinting, keep: -)
+run vanilla r1: mspt avg/p50/p99 0.809 0.522 4.085  (30 s)
+run quicksilver r1: mspt avg/p50/p99 0.816 0.524 4.069  (30 s)
+run quicksilver r2: mspt avg/p50/p99 0.805 0.535 4.228  (31 s)
+run vanilla r2: mspt avg/p50/p99 0.794 0.524 4.378  (30 s)
+run vanilla r3: mspt avg/p50/p99 0.847 0.554 4.543  (30 s)
+run quicksilver r3: mspt avg/p50/p99 0.821 0.549 4.511  (31 s)
+run quicksilver r4: mspt avg/p50/p99 0.832 0.546 4.44  (31 s)
+run vanilla r4: mspt avg/p50/p99 0.825 0.524 4.699  (31 s)
+run vanilla r5: mspt avg/p50/p99 0.816 0.516 4.38  (30 s)
+run quicksilver r5: mspt avg/p50/p99 0.816 0.563 4.291  (31 s)
+run quicksilver r6: mspt avg/p50/p99 0.834 0.552 4.421  (31 s)
+run vanilla r6: mspt avg/p50/p99 0.741 0.409 4.294  (29 s)
+run vanilla r7: mspt avg/p50/p99 0.854 0.546 4.902  (30 s)
+run quicksilver r7: mspt avg/p50/p99 0.774 0.493 4.292  (31 s)
+run quicksilver r8: mspt avg/p50/p99 0.819 0.464 4.823  (32 s)
+/tmp/sout/core-perf/run/quicksilver8/rec.jfr: 2795 server-thread samples while ticking
+run vanilla r8: mspt avg/p50/p99 0.907 0.571 5.562  (32 s)
+/tmp/sout/core-perf/run/vanilla8/rec.jfr: 3036 server-thread samples while ticking
+perf done

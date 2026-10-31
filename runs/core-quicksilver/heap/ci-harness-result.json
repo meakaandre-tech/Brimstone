@@ -1,0 +1,22 @@
+{
+  "startupMs": 14237,
+  "worldLoadMs": 662,
+  "quicksilverLoaded": true,
+  "mode": "heap",
+  "ticks": 12000,
+  "loadWaitTicks": 3,
+  "commandErrors": 0,
+  "lightSettleTicks": 200,
+  "heapAfterLoadMB": 139.586,
+  "heapLiveLoadMB": 138.05,
+  "ticksRenumbered": 3694,
+  "msptAvg": 0.571,
+  "msptP50": 0.394,
+  "msptP99": 2.786,
+  "msptMax": 147.461,
+  "ticksOver50ms": 3,
+  "heapEndMB": 140.887,
+  "chunksResaved": 144,
+  "heapLiveEndMB": 138.888,
+  "lightLayers": "SKY: layers\u003d1629 arrays\u003d423 uniform\u003d212 uniformValues\u003d{15\u003d212}; BLOCK: layers\u003d1629 arrays\u003d757 uniform\u003d1 uniformValues\u003d{0\u003d1}; "
+}

@@ -1,0 +1,164 @@
+{
+ "fails": [
+  "core perf random: the median of Quicksilver's per-round MSPT ratios to vanilla is 1.028, not below 1"
+ ],
+ "owed": [
+  "siftec perf train vanilla round 1: did not finish (no result)",
+  "siftec perf train vanilla round 2: did not finish (no result)",
+  "siftec perf train vanilla round 3: did not finish (no result)",
+  "siftec perf train vanilla round 4: did not finish (no result)",
+  "siftec perf train vanilla round 5: did not finish (no result)",
+  "siftec perf train vanilla round 6: did not finish (no result)",
+  "siftec perf train vanilla round 7: did not finish (no result)",
+  "siftec perf train vanilla round 8: did not finish (no result)",
+  "siftec perf train quicksilver round 1: did not finish (no result)",
+  "siftec perf train quicksilver round 2: did not finish (no result)",
+  "siftec perf train quicksilver round 3: did not finish (no result)",
+  "siftec perf train quicksilver round 4: did not finish (no result)",
+  "siftec perf train quicksilver round 5: did not finish (no result)",
+  "siftec perf train quicksilver round 6: did not finish (no result)",
+  "siftec perf train quicksilver round 7: did not finish (no result)",
+  "siftec perf train quicksilver round 8: did not finish (no result)",
+  "compare-server: siftec worldgen vanilla-a: the harness did not finish (no result)",
+  "compare-server: siftec worldgen vanilla-a: no CI HARNESS GEN DONE in its log",
+  "compare-server: siftec worldgen vanilla-b: the harness did not finish (no result)",
+  "compare-server: siftec worldgen vanilla-b: no CI HARNESS GEN DONE in its log",
+  "compare-server: siftec worldgen vanilla-c: the harness did not finish (no result)",
+  "compare-server: siftec worldgen vanilla-c: no CI HARNESS GEN DONE in its log",
+  "compare-server: siftec worldgen quicksilver: the harness did not finish (no result)",
+  "compare-server: siftec worldgen quicksilver: no CI HARNESS GEN DONE in its log",
+  "compare-server: siftec worldgen (byte for byte): a world is missing or the comparison failed",
+  "compare-server: siftec worldgen (block by block): a world is missing or the comparison failed",
+  "compare-server: siftec world diff after the scripted run: a world is missing or the comparison failed",
+  "compare-server: siftec scripted run vanilla-a: did not finish (no result)",
+  "compare-server: siftec scripted run vanilla-b: did not finish (no result)",
+  "compare-server: siftec scripted run vanilla-c: did not finish (no result)",
+  "compare-server: siftec scripted run quicksilver: did not finish (no result)",
+  "compare-server: siftec: Quicksilver not in the quicksilver run's mod list",
+  "compare-server: siftec heap run vanilla-a: no finished heap run (no result)",
+  "compare-server: siftec heap run vanilla-b: no finished heap run (no result)",
+  "compare-server: siftec heap run vanilla-c: no finished heap run (no result)",
+  "compare-server: siftec heap run quicksilver: no finished heap run (no result)",
+  "compare-server: siftec heap run: no live heap after load in every run",
+  "compare-server: siftec heap run: no live heap after ten minutes in every run",
+  "compare-server: siftec: no server bench report in the quicksilver run",
+  "compare-server: siftec train: no result in vanilla-a",
+  "compare-server: siftec train: no result in vanilla-b",
+  "compare-server: siftec train: no result in vanilla-c",
+  "compare-server: siftec train: no result in quicksilver",
+  "compare-server: siftec self-tests: no results in vanilla-a",
+  "compare-server: siftec self-tests: no results in vanilla-b",
+  "compare-server: siftec self-tests: no results in vanilla-c",
+  "compare-server: siftec self-tests: no results in quicksilver"
+ ],
+ "perf": {
+  "core": {
+   "mobs": {
+    "vanilla": [
+     2.47,
+     2.534,
+     2.395,
+     2.429,
+     2.568,
+     2.478,
+     2.502
+    ],
+    "quicksilver": [
+     2.29,
+     2.171,
+     2.323,
+     2.243,
+     2.126,
+     2.233,
+     2.254
+    ],
+    "vanillaMedian": 2.478,
+    "quicksilverMedian": 2.243,
+    "ratios": [
+     0.9271255060728745,
+     0.8567482241515391,
+     0.969937369519833,
+     0.9234252778921367,
+     0.8278816199376946,
+     0.9011299435028248,
+     0.9008792965627499
+    ],
+    "medianRatio": 0.9011299435028248
+   },
+   "random": {
+    "vanilla": [
+     0.535,
+     0.541,
+     0.566,
+     0.601,
+     0.571,
+     0.544,
+     0.573
+    ],
+    "quicksilver": [
+     0.55,
+     0.568,
+     0.587,
+     0.523,
+     0.516,
+     0.564,
+     0.568
+    ],
+    "vanillaMedian": 0.566,
+    "quicksilverMedian": 0.564,
+    "ratios": [
+     1.0280373831775702,
+     1.0499075785582253,
+     1.0371024734982333,
+     0.8702163061564061,
+     0.9036777583187392,
+     1.0367647058823528,
+     0.9912739965095986
+    ],
+    "medianRatio": 1.0280373831775702
+   },
+   "run": {
+    "vanilla": [
+     0.809,
+     0.794,
+     0.847,
+     0.825,
+     0.816,
+     0.741,
+     0.854
+    ],
+    "quicksilver": [
+     0.816,
+     0.805,
+     0.821,
+     0.832,
+     0.816,
+     0.834,
+     0.774
+    ],
+    "vanillaMedian": 0.816,
+    "quicksilverMedian": 0.816,
+    "ratios": [
+     1.0086526576019776,
+     1.013853904282116,
+     0.9693034238488784,
+     1.0084848484848485,
+     1.0,
+     1.125506072874494,
+     0.9063231850117096
+    ],
+    "medianRatio": 1.0084848484848485
+   }
+  },
+  "siftec": {
+   "train": {
+    "vanilla": [],
+    "quicksilver": [],
+    "vanillaMedian": null,
+    "quicksilverMedian": null,
+    "ratios": [],
+    "medianRatio": null
+   }
+  }
+ }
+}

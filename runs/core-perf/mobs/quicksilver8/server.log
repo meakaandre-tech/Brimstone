@@ -1,0 +1,305 @@
+[0.619s][info][jfr,startup] Started recording 1. No limit specified, using maxsize=250MB as default.
+[0.619s][info][jfr,startup] 
+[0.619s][info][jfr,startup] Use jcmd 3895 JFR.dump name=1 to copy recording data to file.
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[14:02:33] [main/INFO]: Loading Minecraft 26.3 with Fabric Loader 0.19.5
+[14:02:33] [main/INFO]: Mappings not present!
+[14:02:34] [main/INFO]: Loading 44 mods:
+	- ci_server_harness 1
+	- fabric-api 0.161.0+26.3
+	   |-- fabric-advancement-api-v1 1.0.0+38c7a2d55d
+	   |-- fabric-api-base 2.0.6+fcdff87f5d
+	   |-- fabric-api-lookup-api-v1 2.0.24+3434d6d95d
+	   |-- fabric-biome-api-v1 20.0.9+74ed1ea55d
+	   |-- fabric-block-api-v1 3.1.0+0ae6f9115d
+	   |-- fabric-block-getter-api-v2 2.0.9+3434d6d95d
+	   |-- fabric-command-api-v2 3.1.2+fcdff87f5d
+	   |-- fabric-content-registries-v0 15.0.4+74ed1ea55d
+	   |-- fabric-convention-tags-v2 4.10.3+6b5b47fd5d
+	   |-- fabric-crash-report-info-v1 1.0.7+fcdff87f5d
+	   |-- fabric-creative-tab-api-v1 5.0.21+fcdff87f5d
+	   |-- fabric-data-attachment-api-v1 2.2.30+3434d6d95d
+	   |-- fabric-data-generation-api-v1 27.2.4+427eab975d
+	   |-- fabric-debug-api-v1 1.0.4+3434d6d95d
+	   |-- fabric-dimensions-v1 5.1.19+47f74c985d
+	   |-- fabric-entity-events-v1 6.0.4+3434d6d95d
+	   |-- fabric-events-interaction-v0 5.3.6+3434d6d95d
+	   |-- fabric-game-rule-api-v1 4.0.10+3434d6d95d
+	   |-- fabric-item-api-v1 14.7.0+cf6bc2db5d
+	   |-- fabric-lifecycle-events-v1 4.1.9+ffef5f675d
+	   |-- fabric-loot-api-v3 4.0.8+4068fd645d
+	   |-- fabric-menu-api-v1 2.0.27+ed66f0a35d
+	   |-- fabric-message-api-v1 7.0.10+3434d6d95d
+	   |-- fabric-networking-api-v1 6.3.8+fcdff87f5d
+	   |-- fabric-object-builder-api-v1 24.1.9+3434d6d95d
+	   |-- fabric-particles-v1 5.0.24+3434d6d95d
+	   |-- fabric-permission-api-v1 1.0.8+fcdff87f5d
+	   |-- fabric-recipe-api-v1 10.0.8+fcdff87f5d
+	   |-- fabric-registry-sync-v0 8.0.1+fcdff87f5d
+	   |-- fabric-rendering-fluids-v1 6.0.6+3434d6d95d
+	   |-- fabric-resource-conditions-api-v1 6.1.5+3434d6d95d
+	   |-- fabric-resource-loader-v0 3.3.26+4fc5413f5d
+	   |-- fabric-resource-loader-v1 3.0.4+fcdff87f5d
+	   |-- fabric-serialization-api-v1 2.0.7+74ed1ea55d
+	   |-- fabric-tag-api-v1 2.1.10+fcdff87f5d
+	   |-- fabric-transfer-api-v1 8.0.25+fcdff87f5d
+	   \-- fabric-transitive-access-wideners-v1 8.1.16+52268a0e5d
+	- fabricloader 0.19.5
+	   \-- mixinextras 0.5.5
+	- java 25
+	- minecraft 26.3
+	- quicksilver 0.0.1+26.3
+[14:02:34] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/home/runner/work/Quicksilver/Quicksilver/srv/libraries/net/fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/sponge-mixin-0.17.4+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[14:02:35] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/home/runner/work/Quicksilver/Quicksilver/srv/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[14:02:43] [main/INFO]: Quicksilver logic: block-collisions=on, entity-sections=on, entity-collisions=on
+[14:02:43] [main/INFO]: Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[14:02:46] [Worker-Main-1/INFO]: Loaded 1866 advancements
+[14:02:46] [main/INFO]: Applied 0 biome modifications to 0 of 67 new biomes in 1.741 ms
+[14:02:46] [Server thread/INFO]: Starting minecraft server version 26.3
+[14:02:46] [Server thread/INFO]: Loading properties
+[14:02:46] [Server thread/INFO]: Default game type: SURVIVAL
+[14:02:46] [Server thread/INFO]: Generating keypair
+[14:02:46] [Server thread/INFO]: Starting Minecraft server on *:25565
+[14:02:47] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[14:02:47] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[14:02:47] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[14:02:47] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[14:02:47] [Server thread/INFO]: Preparing level "world"
+[14:02:47] [Server thread/INFO]: Loading 0 persistent chunks...
+[14:02:47] [Server thread/INFO]: Preparing spawn area: 100%
+[14:02:47] [Server thread/INFO]: Time elapsed: 72 ms
+[14:02:47] [Server thread/INFO]: Done (0.508s)! For help, type "help"
+[14:02:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:overworld
+[14:02:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+[14:02:47] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+[14:02:50] [Server thread/INFO]: CI HARNESS RUN: frozen, waiting for 1 areas to load
+[14:02:50] [Server thread/INFO]: Quicksilver memory: state-neighbours=on, shape-dedup=on, datafixer-caches=on, bench-buffers=on; state tables: 888 blocks, 35357 states (403 with one state, unchanged); shapes: 35723 states, 48010 shapes sharing internals, 23807 face slots and 21020 face arrays shared, 35467 sturdiness arrays shared; data fixer caches emptied: 0 times, 0 entries
+[14:02:50] [Server thread/INFO]: Quicksilver logic: block-collisions=on, entity-sections=on, entity-collisions=on
+[14:02:50] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 2622ms or 52 ticks behind
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1000 time set 1000
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=100000 weather clear 100000
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=0 gamerule spawn_mobs false
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=0 gamerule random_tick_speed 0
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1024 fill 0 198 0 31 198 31 minecraft:stone
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1024 fill 0 199 0 31 199 31 minecraft:grass_block
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=96 fill 0 200 0 31 202 0 minecraft:glass
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=96 fill 0 200 31 31 202 31 minecraft:glass
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=90 fill 0 200 0 0 202 31 minecraft:glass
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=90 fill 31 200 0 31 202 31 minecraft:glass
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=30 fill 1 200 15 30 200 15 minecraft:oak_fence
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=29 fill 15 200 1 15 200 30 minecraft:oak_fence
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=9 fill 3 200 3 5 200 5 minecraft:oak_slab
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=3 fill 8 200 3 10 200 3 minecraft:stone_stairs[facing=north]
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=3 fill 8 200 5 10 200 5 minecraft:stone_stairs[facing=south]
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=4 fill 3 200 9 3 200 12 minecraft:cobblestone_wall
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=4 fill 6 200 9 7 200 10 minecraft:oak_fence
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=16 fill 9 200 8 12 200 11 minecraft:white_carpet
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 12 200 3 minecraft:oak_trapdoor[half=bottom]
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 12 200 5 minecraft:hopper
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 5 200 12 minecraft:cauldron
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 12 200 13 minecraft:anvil
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 1 200 7 minecraft:soul_sand
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 2 200 7 minecraft:honey_block
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=72 fill 19 199 4 27 199 11 minecraft:water
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=42 fill 20 198 5 26 198 10 minecraft:water
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 23 200 7 minecraft:lily_pad
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 25 200 9 minecraft:lily_pad
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=18 fill 6 198 21 8 199 23 minecraft:air
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=9 fill 6 197 21 8 197 23 minecraft:stone
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=9 fill 18 200 18 20 200 20 minecraft:stone
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=4 fill 18 201 18 19 201 19 minecraft:stone
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 setblock 18 202 18 minecraft:stone
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=18 fill 25 200 25 27 201 27 minecraft:oak_leaves[persistent=true]
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 6.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 8.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 10.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 12.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 2.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 4.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 10.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 12.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 6.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 8.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 10.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 12.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 2.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 4.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 10.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 12.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 6.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 8.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 10.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 12.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 2.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 4.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 10.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 12.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 6.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 8.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 17.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 19.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 23.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 25.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 27.5 203 2.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 17.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 19.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 21.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 23.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 25.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 27.5 203 4.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 17.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 19.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 23.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 25.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 27.5 203 6.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 17.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 19.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 21.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 23.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 25.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 27.5 203 8.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 17.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 19.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 21.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 23.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 25.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 27.5 203 10.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 17.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 19.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 23.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 25.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 27.5 203 12.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 17.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 19.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 21.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 23.5 203 14.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 2.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 8.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 10.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 12.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 4.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 10.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 12.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 2.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 8.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 10.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 12.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 4.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 10.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 12.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 2.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 8.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 10.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 12.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 2.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 4.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 10.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 12.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 2.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 4.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 6.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 8.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 17.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 19.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 23.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 25.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 27.5 203 17.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 17.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 19.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 21.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 23.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 25.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 27.5 203 19.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 17.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 19.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 23.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 25.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 27.5 203 21.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 17.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 19.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 21.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 23.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 25.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 27.5 203 23.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 17.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 19.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 23.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 25.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 27.5 203 25.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 17.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 19.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 21.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 23.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 25.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 27.5 203 27.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 17.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 19.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 21.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:cow 23.5 203 29.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.3 199 21.3
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 7.4 199 21.3
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 199 21.3
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.3 199 22.0
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 7.4 199 22.0
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 199 22.0
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.3 199 22.7
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 7.4 199 22.7
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 199 22.7
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:chicken 6.3 199 23.4
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:pig 7.4 199 23.4
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:sheep 8.5 199 23.4
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:oak_boat 22.5 200 7.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:minecart 28.5 200 18.5
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:item 10.5 203 13.5 {Item:{id:"minecraft:wheat",count:3}}
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:item 10.7 204 13.5 {Item:{id:"minecraft:wheat",count:2}}
+[14:02:50] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 summon minecraft:item 12.5 203 5.5 {Item:{id:"minecraft:carrot",count:4}}
+[14:03:00] [Server thread/INFO]: CI HARNESS RUN: 3817 pending scheduled ticks put in a fixed order
+[14:03:00] [Server thread/INFO]: CI HARNESS RUN START after 3 loading and 200 light ticks: 4800 ticks
+[14:03:00] [Server thread/INFO]: CI HARNESS CMD t=0 result=1 tick sprint 4800
+[14:03:11] [Server thread/INFO]: CI HARNESS RUN: 144 chunks marked to be saved as they are now
+[14:03:11] [Server thread/INFO]: CI HARNESS RUN DONE: 4800 ticks, mspt avg 2.375
+[14:03:11] [Server thread/INFO]: Stopping server
+[14:03:11] [Server thread/INFO]: Saving players
+[14:03:11] [Server thread/INFO]: Saving worlds
+[14:03:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:overworld
+[14:03:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_nether
+[14:03:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[base]'/minecraft:the_end
+EXIT 0
