@@ -1,0 +1,151 @@
+[
+  {
+    "scene": "spawn",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "water_glass",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "nether",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "mobs",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "outline",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "bare": 1
+    },
+    "uploadWaits": [
+      0.0,
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "occlusion",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "occlusion_move",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "x2297": 1,
+      "x2305": 1,
+      "x2309": 1,
+      "open": 1,
+      "closed": 1,
+      "bare_x2300": 1,
+      "bare_x2297": 1,
+      "bare_x2305": 1,
+      "bare_x2309": 1,
+      "bare_open": 1
+    },
+    "uploadWaits": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "translucent_move",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "x2404": 1,
+      "x2414": 1,
+      "x2424": 1,
+      "low": 1,
+      "back": 1,
+      "bare_back": 1
+    },
+    "uploadWaits": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "particles",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "bare": 1
+    },
+    "uploadWaits": [
+      0.0,
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "animation",
+    "steadyAfter": 1,
+    "shot": true,
+    "extraShots": {
+      "behind": 1,
+      "front": 1
+    },
+    "uploadWaits": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "bench": "done"
+  },
+  {
+    "scene": "animated_items",
+    "steadyAfter": 1,
+    "shot": true,
+    "uploadWaits": [
+      0.0
+    ],
+    "bench": "done"
+  }
+]
