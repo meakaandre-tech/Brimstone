@@ -2535,7 +2535,41 @@ sweep cost is real collisions), `chunk_access` (vanilla's 4-entry chunk cache al
 
 ### Results
 
-(filled in from the final full run)
+Full run [41207368802](https://github.com/meakaandre-tech/Quicksilver/actions/runs/41207368802) on `ef8622b` (rebased:
+main hasn't moved since `8f17607`). Everything passes except one gate: **the random-tick scene's MSPT is not down**.
+SIFTEC is owed (below).
+
+| scene (one runner, 7 rounds, sprinting) | vanilla MSPT median | Quicksilver MSPT median | per-round Quicksilver / vanilla, median | gate |
+|---|---|---|---|---|
+| core `mobs` (4800 ticks) | 2.478 | 2.243 | -9.9% (every round faster: 0.83 to 0.97) | pass |
+| core `random` (6000 ticks) | 0.566 | 0.564 | +2.8% (0.87 to 1.05) | **fail** |
+| core `run` (4800 ticks, reported) | 0.816 | 0.816 | +0.8% | reported |
+
+Where the mob scene's saving came from (JFR round, ms per tick, vanilla to Quicksilver): block state reads 0.49 to 0.23
+(`block-collisions`), block collision sweeps 0.81 to 0.63, entity collision lookups 0.24 to 0.11 (`entity-collisions`),
+entity section walks 0.44 to 0.30; entity movement as a whole 1.33 to 1.02, the tick 2.71 to 2.38. Pushing (0.22),
+inside-block effects and AI are unchanged. The random-tick scene spends about 15% of its tick in entity movement and the
+rest in random ticks, precipitation, spawning and the harness's own pins; its JFR rounds have shown Quicksilver from 10%
+faster to 5% slower, its plain rounds spread by up to 15%, so this package's saving there is within its noise.
+
+Correctness (same run): the mob scene's saved world equals vanilla's in all eight rounds (vanilla's own rounds agree on
+every key); core and Terralith worldgen byte for byte, core world diff and random-tick run equal, every GameTest in the
+same tick (villager_trade 46 in all four runs), network check, heap gate (Terralith 31% below vanilla); phase 1's client
+suite (core: every pixel and count gate) passes; the Logic module on in every Quicksilver server start and client, off in
+every measure client, no fallback anywhere.
+
+Runs before this one, for the record: run 41196261046 and 41205535911 failed `villager_trade` in vanilla against itself
+(open bugs); 41203978837 had the random-tick scene 5-8% slower in every round pair, before the write and lookup hooks
+stopped allocating callback objects; the perf gate moved from per-side medians of 3, then 5, rounds to the median of 7
+per-round ratios as the runner's drift between rounds showed up.
+
+### SIFTEC checks still owed
+
+SIFTEC's latest release no longer matches `ci/pack-lock.txt` (its `siftec-26.3.jar` and `siftec-selftest-26.3.jar`), so
+every SIFTEC job stops at its pack check, vanilla's too. Owed once SIFTEC runs again (with MapMod's latest and an
+updated lock): SIFTEC worldgen (overworld, nether, the Sift) byte for byte; the SIFTEC world diff and heap run; the
+self-tests (30 suites); the Create train's arrivals (11, same ticks); the `train` perf scene; SIFTEC's client scenes
+(pixels and counts); the factory MSPT (the design's factory scene).
 
 ### Review
 
@@ -2606,9 +2640,12 @@ toggles, fallbacks and the same heap gate.
 
 - **villager_trade GameTest, vanilla against itself (found 2026-10-31, P2-2).** Run
   [41196261046](https://github.com/meakaandre-tech/Quicksilver/actions/runs/41196261046): vanilla-b finished
-  `villager_trade` at tick 25, vanilla-a, vanilla-c and Quicksilver at 46 (same offers). vanilla-b has no Quicksilver
-  at all, so something in the GameTest server isn't pinned (the villager's job-site claim is the likely place). Seen
-  once; the harness belongs to the `fix-worldgen-diff` work, so P2-2 left it alone. Before P2-3 (which changes AI):
+  `villager_trade` at tick 25, vanilla-a, vanilla-c and Quicksilver at 46 (same offers); run
+  [41205535911](https://github.com/meakaandre-tech/Quicksilver/actions/runs/41205535911): vanilla-a at 39, the others at
+  46. Vanilla runs have no Quicksilver at all, so something in the GameTest server isn't pinned (the villager's job-site
+  claim is the likely place). Seen twice in four full runs; the harness belongs to the `fix-worldgen-diff` work, so P2-2
+  left it alone. Measured on the way (plain JVM): a thread started before the server thread, or by it, and reflection on a
+  class each change every identity hash the server thread hands out, which is one thing to rule out. Before P2-3 (which changes AI):
   find what varies and pin it.
 
 ## Hand-off
